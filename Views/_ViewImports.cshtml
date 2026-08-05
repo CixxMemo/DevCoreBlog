@@ -1,0 +1,16 @@
+﻿@* ============================================================================= *@
+@* _ViewImports.cshtml — Global View Imports *@
+@* ============================================================================= *@
+@* This file is automatically included by the Razor engine for EVERY view in the *@
+@* application. It sets up common @using directives and tag helpers so that *@
+@* individual views don't need to repeat these imports. *@
+@* ============================================================================= *@
+
+@* Import the root namespace (for accessing classes like ErrorViewModel) *@
+@using DevCoreBlog
+@* Import the Models namespace so views can use @model Post, @model Category, etc. *@
+@* without writing the full namespace each time *@
+@using DevCoreBlog.Models
+@* Enable ASP.NET Core Tag Helpers (asp-for, asp-action, asp-controller, etc.) *@
+@* These allow Razor-like syntax in HTML attributes for form binding and URL generation *@
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers

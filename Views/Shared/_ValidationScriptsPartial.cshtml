@@ -1,0 +1,15 @@
+﻿@* ============================================================================= *@
+@* _ValidationScriptsPartial.cshtml — jQuery Validation Scripts Partial *@
+@* ============================================================================= *@
+@* This partial view includes the jQuery Validation and Unobtrusive Validation *@
+@* scripts. It is rendered in the @section Scripts of forms that need client-side *@
+@* validation (e.g. Create.cshtml, Edit.cshtml). *@
+@* *@
+@* Usage: @{await Html.RenderPartialAsync("_ValidationScriptsPartial");} *@
+@* ============================================================================= *@
+
+@* jQuery Validation — core validation library (checks required, min/max, pattern, etc.) *@
+<script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+@* jQuery Unobtrusive Validation — bridges ASP.NET Core's data annotations *@
+@* (like [Required], [StringLength]) to jQuery Validation rules automatically *@
+<script src="~/lib/jquery-validation-unobtrusive/dist/jquery.validate.unobtrusive.min.js"></script>

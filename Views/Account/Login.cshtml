@@ -1,0 +1,55 @@
+@* ============================================================================= *@
+@* Login.cshtml — Admin Login Form *@
+@* ============================================================================= *@
+@* This view renders the admin login form with username and password fields. *@
+@* It displays an error alert if ViewBag.Error is set (invalid credentials). *@
+@* Uses the default _Layout (public site layout), NOT the admin layout. *@
+@* ============================================================================= *@
+
+@* Set the page title shown in the browser tab *@
+@{
+    ViewData["Title"] = "Giriş Yap";
+}
+
+@* Center the login card vertically and horizontally on the page *@
+<div class="row justify-content-center mt-5">
+    @* Login card — narrow width for a compact login form *@
+    <div class="col-md-4">
+        <div class="card shadow">
+            @* Card header with title *@
+            <div class="card-header text-center">
+                <h4>Admin Girişi</h4>
+            </div>
+            <div class="card-body">
+                @* Show error message if ViewBag.Error is set (e.g. wrong credentials) *@
+                @if (ViewBag.Error != null)
+                {
+                    @* Bootstrap danger alert for error feedback *@
+                    <div class="alert alert-danger" role="alert">
+                        @ViewBag.Error
+                    </div>
+                }
+
+                @* Login form — POSTs to Account/Login with username and password *@
+                <form asp-controller="Account" asp-action="Login" method="post">
+                    @* Username field *@
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Kullanıcı Adı</label>
+                        @* Text input with name="username" for model binding *@
+                        <input type="text" class="form-control" id="username" name="username" required autofocus />
+                    </div>
+
+                    @* Password field *@
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Şifre</label>
+                        @* Password input with name="password" for model binding *@
+                        <input type="password" class="form-control" id="password" name="password" required />
+                    </div>
+
+                    @* Submit button — full width for better UX *@
+                    <button type="submit" class="btn btn-primary w-100">Giriş Yap</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

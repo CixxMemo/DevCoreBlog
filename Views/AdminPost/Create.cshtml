@@ -1,0 +1,68 @@
+@* ============================================================================= *@
+@* AdminPost/Create.cshtml — New Blog Post Form View *@
+@* ============================================================================= *@
+@* This view renders a form for creating a new blog post. *@
+@* Fields: Title, Summary (textarea), Content (textarea), Category (dropdown), *@
+@* IsPublished (checkbox). The Slug is auto-generated on the server. *@
+@* The category dropdown is populated via ViewBag.CategoryId (a SelectList). *@
+@* ============================================================================= *@
+
+@* The view expects a Post model (initially empty for a new post) *@
+@model Post
+
+@{
+    ViewData["Title"] = "Yeni Yazı";
+}
+
+<h1>Yeni Yazı</h1>
+
+<div class="row">
+    <div class="col-md-8">
+        @* Form posts to the Create action (POST) on the AdminPostController *@
+        <form asp-action="Create" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            @* ---- Title input ---- *@
+            <div class="mb-3">
+                <label asp-for="Title" class="form-label">Başlık</label>
+                <input asp-for="Title" class="form-control" />
+                <span asp-validation-for="Title" class="text-danger"></span>
+            </div>
+            @* ---- Summary textarea (3 rows) ---- *@
+            <div class="mb-3">
+                <label asp-for="Summary" class="form-label">Özet</label>
+                <textarea asp-for="Summary" class="form-control" rows="3"></textarea>
+                <span asp-validation-for="Summary" class="text-danger"></span>
+            </div>
+            @* ---- Content textarea (15 rows for longer text) ---- *@
+            <div class="mb-3">
+                <label asp-for="Content" class="form-label">İçerik</label>
+                <textarea asp-for="Content" class="form-control" rows="15"></textarea>
+                <span asp-validation-for="Content" class="text-danger"></span>
+            </div>
+            @* ---- Category dropdown ---- *@
+            @* asp-items binds the SelectList from ViewBag.CategoryId to this <select> *@
+            <div class="mb-3">
+                <label asp-for="CategoryId" class="form-label">Kategori</label>
+                <select asp-for="CategoryId" asp-items="ViewBag.CategoryId" class="form-select">
+                    <option value="">Kategori seçiniz...</option>
+                </select>
+                <span asp-validation-for="CategoryId" class="text-danger"></span>
+            </div>
+            @* ---- Published checkbox ---- *@
+            <div class="mb-3 form-check">
+                <input asp-for="IsPublished" class="form-check-input" />
+                <label asp-for="IsPublished" class="form-check-label">Yayında</label>
+            </div>
+            @* ---- Submit and Cancel buttons ---- *@
+            <div class="mb-3">
+                <button type="submit" class="btn btn-primary">Kaydet</button>
+                <a asp-action="Index" class="btn btn-secondary">İptal</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@* ---- Client-side validation scripts ---- *@
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

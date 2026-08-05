@@ -1,0 +1,43 @@
+@* ============================================================================= *@
+@* AdminCategory/Create.cshtml — New Category Form View *@
+@* ============================================================================= *@
+@* This view renders a form for creating a new blog category. *@
+@* It only has one input field: Name (the Slug is auto-generated on the server). *@
+@* Client-side validation is enabled via jQuery Validation scripts. *@
+@* ============================================================================= *@
+
+@* The view expects a Category model (initially empty for a new category) *@
+@model Category
+
+@{
+    ViewData["Title"] = "Yeni Kategori";
+}
+
+<h1>Yeni Kategori</h1>
+
+<div class="row">
+    <div class="col-md-6">
+        @* Form posts to the Create action (POST) on the AdminCategoryController *@
+        <form asp-action="Create" method="post">
+            @* Show model-level validation errors only (not field-level — those are inline) *@
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            @* ---- Category Name input ---- *@
+            <div class="mb-3">
+                <label asp-for="Name" class="form-label">Kategori Adı</label>
+                <input asp-for="Name" class="form-control" />
+                @* Inline validation error message for the Name field *@
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            @* ---- Submit and Cancel buttons ---- *@
+            <div class="mb-3">
+                <button type="submit" class="btn btn-primary">Kaydet</button>
+                <a asp-action="Index" class="btn btn-secondary">İptal</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@* ---- Client-side validation scripts ---- *@
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

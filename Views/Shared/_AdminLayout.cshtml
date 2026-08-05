@@ -1,0 +1,103 @@
+@* ============================================================================= *@
+@* _AdminLayout.cshtml — Admin Panel Master Layout *@
+@* ============================================================================= *@
+@* This is the layout template for all admin panel pages. It provides: *@
+@*   - A dark top navbar with the "DevCoreBlog Admin" brand *@
+@*   - A left sidebar with navigation links (Dashboard, Categories, Posts, etc.) *@
+@*   - A main content area where admin views render via @RenderBody() *@
+@* *@
+@* Admin views use this layout via their own _ViewStart.cshtml files, *@
+@* which override the root _ViewStart.cshtml's Layout = "_Layout" setting. *@
+@* ============================================================================= *@
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - DevCoreBlog Admin</title>
+    @* Bootstrap CSS from local wwwroot/lib *@
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/DevCoreBlog.styles.css" asp-append-version="true" />
+    @* Inline styles for the admin sidebar layout *@
+    <style>
+        /* Sidebar: full viewport height minus navbar, light gray background, right border */
+        .admin-sidebar {
+            min-height: calc(100vh - 56px);
+            background-color: #f8f9fa;
+            border-right: 1px solid #dee2e6;
+        }
+        /* Sidebar navigation links: dark text with comfortable padding */
+        .admin-sidebar .nav-link {
+            color: #212529;
+            padding: 0.75rem 1rem;
+        }
+        /* Sidebar link hover effect: slightly darker background */
+        .admin-sidebar .nav-link:hover {
+            background-color: #e9ecef;
+        }
+        /* Main content area: padding around the admin page content */
+        .admin-content {
+            padding: 2rem;
+        }
+    </style>
+</head>
+<body>
+    @* ---- TOP NAVBAR (dark theme) ---- *@
+    <nav class="navbar navbar-expand-sm navbar-dark bg-dark">
+        <div class="container-fluid">
+            @* Admin brand link — navigates to the admin dashboard *@
+            <a class="navbar-brand" asp-controller="Admin" asp-action="Dashboard">DevCoreBlog Admin</a>
+        </div>
+    </nav>
+
+    @* ---- SIDEBAR + MAIN CONTENT (Bootstrap grid) ---- *@
+    <div class="container-fluid">
+        <div class="row">
+            @* ---- LEFT SIDEBAR (2 columns on medium+ screens, hidden on mobile) ---- *@
+            <nav class="col-md-2 d-none d-md-block admin-sidebar">
+                <div class="sidebar-sticky pt-3">
+                    <ul class="nav flex-column">
+                        @* Dashboard link *@
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Admin" asp-action="Dashboard">Dashboard</a>
+                        </li>
+                        @* Category management link — goes to category list *@
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="AdminCategory" asp-action="Index">Kategoriler</a>
+                        </li>
+                        @* Post management link — goes to post list *@
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="AdminPost" asp-action="Index">Yazılar</a>
+                        </li>
+                        @* "View Site" link — opens the public site in a new tab *@
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Home" asp-action="Index" target="_blank">Siteyi Görüntüle</a>
+                        </li>
+                        @* Logout button — uses a POST form (not a GET link) for security. *@
+                        @* The AccountController.Logout action requires [HttpPost]. *@
+                        <li class="nav-item">
+                            <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                                <button type="submit" class="nav-link btn btn-link text-start">Çıkış</button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            @* ---- MAIN CONTENT AREA (10 columns on medium+ screens) ---- *@
+            <main class="col-md-10 admin-content">
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+
+    @* ---- SCRIPTS ---- *@
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @* Optional Scripts section for page-specific JavaScript *@
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

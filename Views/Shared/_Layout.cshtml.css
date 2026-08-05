@@ -1,0 +1,61 @@
+﻿/* =============================================================================
+ * _Layout.cshtml.css — Scoped CSS for the Public Site Layout
+ * =============================================================================
+ * These styles are scoped to _Layout.cshtml (ASP.NET Core scoped CSS feature).
+ * They apply only to elements within the _Layout.cshtml template.
+ * ============================================================================= */
+
+/* Allow the navbar brand text to wrap and center on small screens */
+a.navbar-brand {
+  white-space: normal;
+  text-align: center;
+  word-break: break-all;
+}
+
+/* Set the default link color for the site */
+a {
+  color: #0077cc;
+}
+
+/* Primary button styling (Bootstrap override) */
+.btn-primary {
+  color: #fff;
+  background-color: #1b6ec2;
+  border-color: #1861ac;
+}
+
+/* Active nav pill styling */
+.nav-pills .nav-link.active, .nav-pills .show > .nav-link {
+  color: #fff;
+  background-color: #1b6ec2;
+  border-color: #1861ac;
+}
+
+/* Top border utility */
+.border-top {
+  border-top: 1px solid #e5e5e5;
+}
+/* Bottom border utility */
+.border-bottom {
+  border-bottom: 1px solid #e5e5e5;
+}
+
+/* Subtle box shadow for navbar and other elements */
+.box-shadow {
+  box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05);
+}
+
+/* Cookie consent / policy acceptance button sizing */
+button.accept-policy {
+  font-size: 1rem;
+  line-height: inherit;
+}
+
+/* Footer: fixed at the bottom of the page with a set height */
+.footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  white-space: nowrap;
+  line-height: 60px;
+}

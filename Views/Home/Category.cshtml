@@ -1,0 +1,75 @@
+@* ============================================================================= *@
+@* Home/Category.cshtml — Category Posts List View *@
+@* ============================================================================= *@
+@* This view displays all published posts in a specific category. The category *@
+@* name is shown as a heading, followed by a list of posts in the same card *@
+@* structure as the home page. If there are no posts in the category, a *@
+@* friendly message is shown instead. *@
+@* This view is rendered by HomeController.Category(string slug) action. *@
+@* ============================================================================= *@
+
+@* Import the Post model so we can use it in the @model directive *@
+@using DevCoreBlog.Models
+@* Declare the model type: a list of Post objects passed from HomeController.Category() *@
+@model List<Post>
+
+@* Set the page title to the category name (shown in browser tab and <title> tag) *@
+@{
+    ViewData["Title"] = ViewBag.CategoryName;
+}
+
+@* --------------------------------------------------------------------------- *@
+@* PAGE HEADER *@
+@* --------------------------------------------------------------------------- *@
+@* Main heading: shows the category name from ViewBag *@
+<h1 class="mb-4">"@ViewBag.CategoryName" kategorisindeki yazılar</h1>
+
+@* --------------------------------------------------------------------------- *@
+@* POST LIST OR EMPTY MESSAGE *@
+@* --------------------------------------------------------------------------- *@
+@* Check if there are any posts in this category *@
+@if (Model.Any())
+{
+    @* Loop through each post and render a Bootstrap card for it *@
+    @foreach (var item in Model)
+    {
+        @* Each post is displayed as a Bootstrap card with consistent spacing *@
+        <div class="card mb-3">
+            <div class="card-body">
+                @* Post title as a heading *@
+                <h2 class="card-title h4">
+                    @* Title links to the post detail page using the slug-based URL *@
+                    <a asp-controller="Home" asp-action="Detail" asp-route-slug="@item.Slug" class="text-decoration-none">
+                        @item.Title
+                    </a>
+                </h2>
+
+                @* Meta information row: category badge + creation date *@
+                <div class="mb-2">
+                    @* Category badge — links to the category page (/kategori/{slug}) *@
+                    @if (item.Category != null)
+                    {
+                        <a href="/kategori/@item.Category.Slug" class="badge text-bg-primary text-decoration-none">
+                            @item.Category.Name
+                        </a>
+                    }
+                    @* Creation date formatted as dd.MM.yyyy (e.g. 05.08.2026) *@
+                    <small class="text-muted ms-2">@item.CreatedAt.ToString("dd.MM.yyyy")</small>
+                </div>
+
+                @* Post summary text *@
+                <p class="card-text">@item.Summary</p>
+
+                @* "Read More" button — links to the post detail page *@
+                <a href="/yazi/@item.Slug" class="btn btn-sm btn-outline-primary">Devamını Oku</a>
+            </div>
+        </div>
+    }
+}
+else
+{
+    @* Shown when there are no published posts in this category *@
+    <div class="alert alert-info">
+        Bu kategoride yazı yok.
+    </div>
+}

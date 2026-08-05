@@ -1,0 +1,43 @@
+@* ============================================================================= *@
+@* AdminCategory/Edit.cshtml — Edit Category Form View *@
+@* ============================================================================= *@
+@* This view renders a form for editing an existing blog category. *@
+@* It is identical to Create.cshtml but includes a hidden Id field so the *@
+@* controller knows which category to update. *@
+@* ============================================================================= *@
+
+@* The view expects a Category model (pre-filled with existing data) *@
+@model Category
+
+@{
+    ViewData["Title"] = "Kategori Düzenle";
+}
+
+<h1>Kategori Düzenle</h1>
+
+<div class="row">
+    <div class="col-md-6">
+        @* Form posts to the Edit action (POST) on the AdminCategoryController *@
+        <form asp-action="Edit" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            @* Hidden field — carries the category Id so the controller can identify it *@
+            <input type="hidden" asp-for="Id" />
+            @* ---- Category Name input (pre-filled with existing value) ---- *@
+            <div class="mb-3">
+                <label asp-for="Name" class="form-label">Kategori Adı</label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            @* ---- Submit and Cancel buttons ---- *@
+            <div class="mb-3">
+                <button type="submit" class="btn btn-primary">Kaydet</button>
+                <a asp-action="Index" class="btn btn-secondary">İptal</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@* ---- Client-side validation scripts ---- *@
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

@@ -1,0 +1,12 @@
+@* ============================================================================= *@
+@* Admin/_ViewStart.cshtml — Admin Views Layout Assignment *@
+@* ============================================================================= *@
+@* This file runs before every view inside the Views/Admin/ folder. *@
+@* It overrides the root _ViewStart.cshtml to use "_AdminLayout" instead of *@
+@* the public "_Layout". This gives admin pages the sidebar navigation. *@
+@* ============================================================================= *@
+
+@{
+    @* Use the admin layout (dark navbar + sidebar) for all admin views *@
+    Layout = "_AdminLayout";
+}

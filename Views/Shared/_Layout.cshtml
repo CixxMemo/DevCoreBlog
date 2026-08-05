@@ -1,0 +1,96 @@
+﻿@* ============================================================================= *@
+@* _Layout.cshtml — Public Site Master Layout *@
+@* ============================================================================= *@
+@* This is the main layout template for the public-facing (visitor) pages. *@
+@* It defines the HTML structure, Bootstrap navbar, and footer that all public *@
+@* views share. Individual views fill in the @RenderBody() section. *@
+@* *@
+@* The layout injects ApplicationDbContext to dynamically load categories for *@
+@* the navigation dropdown. The footer is simplified to show only copyright. *@
+@* ============================================================================= *@
+
+@* Inject the database context to access categories for the navbar dropdown *@
+@inject DevCoreBlog.Data.ApplicationDbContext DbContext
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    @* Responsive viewport meta tag — ensures proper rendering on mobile devices *@
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    @* Page title: combines the view-specific title with the site name *@
+    <title>@ViewData["Title"] - DevCoreBlog</title>
+    <script type="importmap"></script>
+    @* Bootstrap CSS — loaded from the local wwwroot/lib folder (not CDN) *@
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    @* Custom site CSS — asp-append-version adds a cache-busting hash to the URL *@
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    @* Scoped CSS for this layout (from _Layout.cshtml.css) *@
+    <link rel="stylesheet" href="~/DevCoreBlog.styles.css" asp-append-version="true" />
+</head>
+<body>
+    @* ---- HEADER / NAVBAR ---- *@
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+            <div class="container-fluid">
+                @* Site logo / brand link — navigates to the home page *@
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">DevCoreBlog</a>
+                @* Mobile hamburger toggle button — collapses/expands the nav menu *@
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                @* Collapsible navigation links *@
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav flex-grow-1">
+                        @* Home link *@
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                        </li>
+                        @* Categories dropdown — dynamically populated from the database *@
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle text-dark" href="#" id="categoriesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Kategoriler
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="categoriesDropdown">
+                                @* Loop through all categories and create a link for each *@
+                                @foreach (var cat in DbContext.Categories.ToList())
+                                {
+                                    <li><a class="dropdown-item" href="/kategori/@cat.Slug">@cat.Name</a></li>
+                                }
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    @* ---- MAIN CONTENT AREA ---- *@
+    @* The container wraps the page content with horizontal padding. *@
+    @* Individual views render their HTML inside @RenderBody(). *@
+    <div class="container">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    @* ---- FOOTER ---- *@
+    <footer class="border-top footer text-muted">
+        <div class="container">
+            &copy; 2026 DevCoreBlog
+        </div>
+    </footer>
+
+    @* ---- SCRIPTS ---- *@
+    @* jQuery — required for Bootstrap's JS components and form validation *@
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    @* Bootstrap JS bundle (includes Popper.js for dropdowns/tooltips) *@
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @* Custom site JavaScript *@
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @* Optional Scripts section — views can inject page-specific JS here *@
+    @* Example: @section Scripts { <script>...</script> } *@
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
