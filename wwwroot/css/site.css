@@ -4,11 +4,9 @@
  * This is the main custom CSS file for the DevCoreBlog application.
  * It is loaded on every page (both public and admin) via the layout files.
  *
- * In Phase 6 (step 6.1), this file will be updated to add:
- *   - Card hover effects
- *   - Card bottom spacing
- *   - Admin table adjustments
- *   - Optional monospace font for textareas
+ * Includes: base font sizing, focus ring accessibility, sticky footer,
+ * floating label alignment, card hover effects, admin table styling,
+ * and monospace font for textareas (Phase 6 final touches).
  * ============================================================================= */
 
 /* Set the base font size for the entire page */
@@ -50,4 +48,31 @@ body {
 /* Floating label placeholder alignment — left-aligned when focused */
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
   text-align: start;
+}
+
+/* =============================================================================
+ * Phase 6 — Final Touches: Card hover, spacing, admin table, textarea font
+ * ============================================================================= */
+
+/* Add a subtle lift effect when hovering over any Bootstrap card */
+/* The card slightly elevates with a shadow to indicate interactivity */
+.card {
+  margin-bottom: 1.5rem;
+  transition: box-shadow 0.2s ease-in-out, transform 0.2s ease-in-out;
+}
+
+/* On hover, raise the card with a deeper shadow and a tiny upward shift */
+.card:hover {
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
+}
+
+/* Admin table — add vertical alignment and striped rows for readability */
+.table-admin {
+  vertical-align: middle;
+}
+
+/* Make textareas in admin forms use monospace font for better code/content editing */
+textarea.form-control {
+  font-family: 'Courier New', Courier, monospace;
 }

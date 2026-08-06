@@ -183,6 +183,7 @@
 /Users/mehmetcankocakurt/Documents/development/DevCoreBlog/obj/Debug/net10.0/DevCoreBlog.pdb
 /Users/mehmetcankocakurt/Documents/development/DevCoreBlog/obj/Debug/net10.0/DevCoreBlog.genruntimeconfig.cache
 /Users/mehmetcankocakurt/Documents/development/DevCoreBlog/obj/Debug/net10.0/ref/DevCoreBlog.dll
-/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/obj/Debug/net10.0/compressed/tr2xps9d7i-{0}-ttmcc9nicy-ttmcc9nicy.gz
 /Users/mehmetcankocakurt/Documents/development/DevCoreBlog/obj/Debug/net10.0/compressed/6i8yl18wt0-{0}-0c5wllr5db-0c5wllr5db.gz
 /Users/mehmetcankocakurt/Documents/development/DevCoreBlog/obj/Debug/net10.0/compressed/cl92p73vt9-{0}-0c5wllr5db-0c5wllr5db.gz
+/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/obj/Debug/net10.0/DevCoreBlog.sourcelink.json
+/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/obj/Debug/net10.0/compressed/tr2xps9d7i-{0}-4rwaqbw8sx-4rwaqbw8sx.gz

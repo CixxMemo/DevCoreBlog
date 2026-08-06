@@ -140,9 +140,9 @@ Aşağıdakiler **YASAKTIR**. Plan dışına çıkma, ekleme yapma:
 
 > **📝 YORUM KURALI:** Bu fazda oluşturulan veya düzenlenen tüm kod dosyalarına İngilizce açıklayıcı yorum satırları eklenecektir. Her dosyanın en üstünde dosyanın ne yaptığını anlatan bir başlık bloğu, her önemli satır/blok için ise ne işe yaradığını açıklayan satır içi yorumlar yazılacaktır.Ve her faz bitiminde  [ ] parantezi [x] olarak doldurulacaktır.
 
-- [ ] **6.1** `wwwroot/css/site.css` **düzenle** → Sadece: kart hover efekti, `.card` alt boşlukları, admin tablo düzenlemesi, textarea fontu (monospace opsiyonel). Tema/renk paleti değişikliği YOK.
-- [ ] **6.2** `Views/Admin/Dashboard.cshtml` **düzenle** → Kartlara toplam kategori/yazı sayısı göster (controller'da `ViewBag` ile 2 sayı geç).
-- [ ] **6.3** **Final doğrulama** → `dotnet build` hatasız + tam kullanıcı turu: login → kategori ekle → yazı ekle → logout → `/`'de görünüyor mu → `/kategori/...` filtreliyor mu → `/yazi/...` açılıyor mu.
+- [x] **6.1** `wwwroot/css/site.css` **düzenle** → Sadece: kart hover efekti, `.card` alt boşlukları, admin tablo düzenlemesi, textarea fontu (monospace opsiyonel). Tema/renk paleti değişikliği YOK.
+- [x] **6.2** `Views/Admin/Dashboard.cshtml` **düzenle** → Kartlara toplam kategori/yazı sayısı göster (controller'da `ViewBag` ile 2 sayı geç).
+- [x] **6.3** **Final doğrulama** → `dotnet build` hatasız + tam kullanıcı turu: login → kategori ekle → yazı ekle → logout → `/`'de görünüyor mu → `/kategori/...` filtreliyor mu → `/yazi/...` açılıyor mu.
 
 ---
 

@@ -2,10 +2,8 @@
 @* Admin/Dashboard.cshtml — Admin Dashboard View *@
 @* ============================================================================= *@
 @* This is the admin panel's main page. It shows two Bootstrap cards that link *@
-@* to the Category and Post management sections. *@
-@* *@
-@* In Phase 6 (step 6.2), this view will be updated to show total counts of *@
-@* categories and posts on the dashboard cards. *@
+@* to the Category and Post management sections. Each card displays the total *@
+@* count of categories or posts, passed from AdminController via ViewBag. *@
 @* ============================================================================= *@
 
 @{
@@ -16,22 +14,26 @@
 
 @* Dashboard cards row — two cards side by side on medium+ screens *@
 <div class="row mt-4">
-    @* ---- Category Management Card ---- *@
+    @* ---- Category Management Card — shows total category count from ViewBag ---- *@
     <div class="col-md-4">
         <div class="card">
             <div class="card-body">
                 <h5 class="card-title">Kategori Yönetimi</h5>
+                @* Display total category count as a large badge-style number *@
+                <p class="display-4 fw-bold mb-2">@ViewBag.CategoryCount</p>
                 <p class="card-text">Blog yazılarınız için kategorileri ekleyin, düzenleyin veya silin.</p>
                 @* Link to the category list page *@
                 <a href="/AdminCategory" class="btn btn-primary">Kategorilere Git</a>
             </div>
         </div>
     </div>
-    @* ---- Post Management Card ---- *@
+    @* ---- Post Management Card — shows total post count from ViewBag ---- *@
     <div class="col-md-4">
         <div class="card">
             <div class="card-body">
                 <h5 class="card-title">Yazı Yönetimi</h5>
+                @* Display total post count as a large badge-style number *@
+                <p class="display-4 fw-bold mb-2">@ViewBag.PostCount</p>
                 <p class="card-text">Blog yazılarınızı oluşturun, düzenleyin ve yayınlayın.</p>
                 @* Link to the post list page *@
                 <a href="/AdminPost" class="btn btn-primary">Yazılara Git</a>
