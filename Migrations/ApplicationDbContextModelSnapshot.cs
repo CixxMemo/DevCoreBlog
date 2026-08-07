@@ -22,13 +22,19 @@ namespace DevCoreBlog.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("DevCoreBlog.Models.Category", b =>
+            modelBuilder.Entity("DevCoreBlog.Core.Entities.Category", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -43,7 +49,7 @@ namespace DevCoreBlog.Migrations
                     b.ToTable("Categories");
                 });
 
-            modelBuilder.Entity("DevCoreBlog.Models.Post", b =>
+            modelBuilder.Entity("DevCoreBlog.Core.Entities.Post", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -58,10 +64,10 @@ namespace DevCoreBlog.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTime>("CreatedDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<bool>("IsPublished")
+                    b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
                     b.Property<string>("Slug")
@@ -76,6 +82,9 @@ namespace DevCoreBlog.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int>("ViewCount")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CategoryId");
@@ -83,9 +92,9 @@ namespace DevCoreBlog.Migrations
                     b.ToTable("Posts");
                 });
 
-            modelBuilder.Entity("DevCoreBlog.Models.Post", b =>
+            modelBuilder.Entity("DevCoreBlog.Core.Entities.Post", b =>
                 {
-                    b.HasOne("DevCoreBlog.Models.Category", "Category")
+                    b.HasOne("DevCoreBlog.Core.Entities.Category", "Category")
                         .WithMany("Posts")
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -94,7 +103,7 @@ namespace DevCoreBlog.Migrations
                     b.Navigation("Category");
                 });
 
-            modelBuilder.Entity("DevCoreBlog.Models.Category", b =>
+            modelBuilder.Entity("DevCoreBlog.Core.Entities.Category", b =>
                 {
                     b.Navigation("Posts");
                 });

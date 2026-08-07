@@ -8,9 +8,12 @@
 
 @* Import the root namespace (for accessing classes like ErrorViewModel) *@
 @using DevCoreBlog
-@* Import the Models namespace so views can use @model Post, @model Category, etc. *@
+@* Import the Models namespace so views can use @model ErrorViewModel, etc. *@
 @* without writing the full namespace each time *@
 @using DevCoreBlog.Models
+@* Import the Core.Entities namespace so views can use @model Post, @model Category, etc. *@
+@* These entities were moved from Models/ to Core/Entities/ as part of the N-Tier architecture *@
+@using DevCoreBlog.Core.Entities
 @* Enable ASP.NET Core Tag Helpers (asp-for, asp-action, asp-controller, etc.) *@
 @* These allow Razor-like syntax in HTML attributes for form binding and URL generation *@
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers

@@ -6,16 +6,21 @@
 //
 // Relationship: One Category → Many Posts (one-to-many)
 // EF Core uses this class to map to the "Categories" table in PostgreSQL.
+//
+// Inheritance: Category inherits from BaseEntity, which provides:
+//   - Id (primary key)
+//   - CreatedDate (timestamp)
+//   - IsActive (soft-delete flag)
 // =============================================================================
 
-namespace DevCoreBlog.Models;
+using DevCoreBlog.Core.Entities;
+
+namespace DevCoreBlog.Core.Entities;
 
 // This class maps to the "Categories" table in the database
-public class Category
+// Inherits Id, CreatedDate, IsActive from BaseEntity
+public class Category : BaseEntity
 {
-    // Primary key — auto-incremented integer by EF Core convention
-    public int Id { get; set; }
-
     // The display name of the category (e.g. "C# Dersleri")
     public string Name { get; set; } = string.Empty;
 

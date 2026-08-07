@@ -10,8 +10,8 @@
 //   - Categories → "Categories" table (blog categories)
 // =============================================================================
 
-// Import the model classes (Post, Category)
-using DevCoreBlog.Models;
+// Import the entity classes (Post, Category) from Core/Entities
+using DevCoreBlog.Core.Entities;
 // Import EF Core base classes
 using Microsoft.EntityFrameworkCore;
 

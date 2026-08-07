@@ -1,68 +1,105 @@
 @* ============================================================================= *@
-@* AdminPost/Edit.cshtml — Edit Blog Post Form View *@
+@* AdminPost/Edit.cshtml — Edit Blog Post Form (Tech Minimal — Dark Zinc)        *@
 @* ============================================================================= *@
-@* This view renders a form for editing an existing blog post. *@
-@* It is identical to Create.cshtml but includes a hidden Id field so the *@
-@* controller knows which post to update. *@
-@* The category dropdown is pre-selected with the post's current category. *@
+@* This view renders a form for editing an existing blog post.                   *@
+@* It is identical to Create.cshtml but includes a hidden Id field so the        *@
+@* controller knows which post to update.                                        *@
+@* The category dropdown is pre-selected with the post's current category.       *@
+@*                                                                              *@
+@* Phase 3 (FIX): Dark zinc form inputs — no more white backgrounds.            *@
+@* All inputs use bg-zinc-900 border-zinc-800 text-zinc-100 for readability.    *@
 @* ============================================================================= *@
 
-@* The view expects a Post model (pre-filled with existing data) *@
 @model Post
 
 @{
     ViewData["Title"] = "Yazıyı Düzenle";
 }
 
-<h1>Yazıyı Düzenle</h1>
+@* ============================================================================= *@
+@* FORM CONTAINER — Tech Minimal card                                            *@
+@* ============================================================================= *@
+<div class="max-w-3xl mx-auto p-6 bg-zinc-900/50 border border-zinc-800 rounded-sm">
+    @* Page title — monospace, bordered bottom *@
+    <h1 class="text-xl font-semibold text-zinc-100 mb-6 font-mono border-b border-zinc-800 pb-3">
+        Yazıyı Düzenle
+    </h1>
 
-<div class="row">
-    <div class="col-md-8">
-        @* Form posts to the Edit action (POST) on the AdminPostController *@
-        <form asp-action="Edit" method="post">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            @* Hidden field — carries the post Id so the controller can identify it *@
-            <input type="hidden" asp-for="Id" />
-            @* ---- Title input (pre-filled) ---- *@
-            <div class="mb-3">
-                <label asp-for="Title" class="form-label">Başlık</label>
-                <input asp-for="Title" class="form-control" />
-                <span asp-validation-for="Title" class="text-danger"></span>
-            </div>
-            @* ---- Summary textarea (pre-filled) ---- *@
-            <div class="mb-3">
-                <label asp-for="Summary" class="form-label">Özet</label>
-                <textarea asp-for="Summary" class="form-control" rows="3"></textarea>
-                <span asp-validation-for="Summary" class="text-danger"></span>
-            </div>
-            @* ---- Content textarea (pre-filled, 15 rows) ---- *@
-            <div class="mb-3">
-                <label asp-for="Content" class="form-label">İçerik</label>
-                <textarea asp-for="Content" class="form-control" rows="15"></textarea>
-                <span asp-validation-for="Content" class="text-danger"></span>
-            </div>
-            @* ---- Category dropdown (pre-selected with current category) ---- *@
-            @* The SelectList in ViewBag.CategoryId was created with post.CategoryId *@
-            @* as the selected value in the controller's Edit GET action *@
-            <div class="mb-3">
-                <label asp-for="CategoryId" class="form-label">Kategori</label>
-                <select asp-for="CategoryId" asp-items="ViewBag.CategoryId" class="form-select">
-                    <option value="">Kategori seçiniz...</option>
-                </select>
-                <span asp-validation-for="CategoryId" class="text-danger"></span>
-            </div>
-            @* ---- Published checkbox (pre-filled) ---- *@
-            <div class="mb-3 form-check">
-                <input asp-for="IsPublished" class="form-check-input" />
-                <label asp-for="IsPublished" class="form-check-label">Yayında</label>
-            </div>
-            @* ---- Submit and Cancel buttons ---- *@
-            <div class="mb-3">
-                <button type="submit" class="btn btn-primary">Kaydet</button>
-                <a asp-action="Index" class="btn btn-secondary">İptal</a>
-            </div>
-        </form>
-    </div>
+    @* Form posts to the Edit action (POST) on the AdminPostController *@
+    <form asp-action="Edit" method="post">
+        <div asp-validation-summary="ModelOnly" class="text-red-400 text-sm mb-4"></div>
+
+        @* Hidden field — carries the post Id so the controller can identify it *@
+        <input type="hidden" asp-for="Id" />
+
+        @* ---- Title input (pre-filled) ---- *@
+        <div>
+            <label asp-for="Title" class="block text-xs font-mono font-medium text-zinc-400 mb-2 uppercase tracking-wider">
+                Başlık
+            </label>
+            <input asp-for="Title"
+                   class="w-full bg-zinc-900 border border-zinc-800 text-zinc-100 placeholder-zinc-500 focus:border-zinc-600 focus:outline-none px-3 py-2 text-sm rounded-sm font-sans transition-colors mb-1"
+                   placeholder="Yazı başlığını giriniz..." />
+            <span asp-validation-for="Title" class="text-red-400 text-xs"></span>
+        </div>
+
+        @* ---- Summary textarea (pre-filled, 4 rows) ---- *@
+        <div class="mt-4">
+            <label asp-for="Summary" class="block text-xs font-mono font-medium text-zinc-400 mb-2 uppercase tracking-wider">
+                Özet
+            </label>
+            <textarea asp-for="Summary" rows="4"
+                      class="w-full bg-zinc-900 border border-zinc-800 text-zinc-100 placeholder-zinc-500 focus:border-zinc-600 focus:outline-none px-3 py-2 text-sm rounded-sm font-sans transition-colors mb-1"
+                      placeholder="Yazının kısa özetini giriniz..."></textarea>
+            <span asp-validation-for="Summary" class="text-red-400 text-xs"></span>
+        </div>
+
+        @* ---- Content textarea (pre-filled, 10 rows, monospace) ---- *@
+        <div class="mt-4">
+            <label asp-for="Content" class="block text-xs font-mono font-medium text-zinc-400 mb-2 uppercase tracking-wider">
+                İçerik (Markdown)
+            </label>
+            <textarea asp-for="Content" rows="10"
+                      class="w-full bg-zinc-900 border border-zinc-800 text-zinc-100 placeholder-zinc-500 focus:border-zinc-600 focus:outline-none px-3 py-2 text-sm rounded-sm font-mono transition-colors mb-1"
+                      placeholder="Markdown formatında yazı içeriğini giriniz..."></textarea>
+            <span asp-validation-for="Content" class="text-red-400 text-xs"></span>
+        </div>
+
+        @* ---- Category dropdown (pre-selected with current category) ---- *@
+        @* The SelectList in ViewBag.CategoryId was created with post.CategoryId *@
+        @* as the selected value in the controller's Edit GET action *@
+        <div class="mt-4">
+            <label asp-for="CategoryId" class="block text-xs font-mono font-medium text-zinc-400 mb-2 uppercase tracking-wider">
+                Kategori
+            </label>
+            <select asp-for="CategoryId" asp-items="ViewBag.CategoryId"
+                    class="w-full bg-zinc-900 border border-zinc-800 text-zinc-100 focus:border-zinc-600 focus:outline-none px-3 py-2 text-sm rounded-sm font-sans transition-colors mb-1">
+                <option value="">Kategori seçiniz...</option>
+            </select>
+            <span asp-validation-for="CategoryId" class="text-red-400 text-xs"></span>
+        </div>
+
+        @* ---- Published checkbox (pre-filled) ---- *@
+        <div class="flex items-center gap-2 text-sm text-zinc-300 font-mono mt-6 mb-6">
+            <input asp-for="IsActive"
+                   class="w-4 h-4 bg-zinc-900 border border-zinc-700 text-accent focus:ring-0 focus:ring-offset-0 accent-emerald-500 cursor-pointer" />
+            <label asp-for="IsActive" class="cursor-pointer select-none">
+                Yayında
+            </label>
+        </div>
+
+        @* ---- Action buttons ---- *@
+        <div class="flex items-center pt-4 border-t border-zinc-800">
+            <button type="submit"
+                    class="px-4 py-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-950 font-mono text-xs font-medium rounded-sm transition-colors cursor-pointer">
+                Güncelle
+            </button>
+            <a asp-action="Index"
+               class="px-4 py-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 font-mono text-xs rounded-sm transition-colors ml-2">
+                İptal
+            </a>
+        </div>
+    </form>
 </div>
 
 @* ---- Client-side validation scripts ---- *@

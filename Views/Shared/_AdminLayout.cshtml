@@ -1,10 +1,14 @@
 @* ============================================================================= *@
-@* _AdminLayout.cshtml — Admin Panel Master Layout *@
+@* _AdminLayout.cshtml — Admin Panel Master Layout (Tech Minimal — Dark Zinc) *@
 @* ============================================================================= *@
 @* This is the layout template for all admin panel pages. It provides: *@
 @*   - A dark top navbar with the "DevCoreBlog Admin" brand *@
 @*   - A left sidebar with navigation links (Dashboard, Categories, Posts, etc.) *@
 @*   - A main content area where admin views render via @RenderBody() *@
+@* *@
+@* Phase 2 (FIX): Zinc dark palette. bg-zinc-950 body, bg-zinc-900 sidebar. *@
+@* Sharp borders (border-zinc-800), active states with bg-zinc-800. *@
+@* Monospace fonts for technical elements. No shadows, no gradients. *@
 @* *@
 @* Admin views use this layout via their own _ViewStart.cshtml files, *@
 @* which override the root _ViewStart.cshtml's Layout = "_Layout" setting. *@
@@ -16,88 +20,109 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - DevCoreBlog Admin</title>
-    @* Bootstrap CSS from local wwwroot/lib *@
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    
+    @* ============================================================================= *@
+    @* Tailwind CSS Play CDN — INLINE config (zinc Tech Minimal theme) *@
+    @* ============================================================================= *@
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+                        mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
+                    },
+                    colors: {
+                        accent: {
+                            DEFAULT: '#10b981',
+                            light: '#34d399',
+                            dark: '#059669',
+                        },
+                    },
+                },
+            },
+        }
+    </script>
+    
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/DevCoreBlog.styles.css" asp-append-version="true" />
-    @* Inline styles for the admin sidebar layout *@
-    <style>
-        /* Sidebar: full viewport height minus navbar, light gray background, right border */
-        .admin-sidebar {
-            min-height: calc(100vh - 56px);
-            background-color: #f8f9fa;
-            border-right: 1px solid #dee2e6;
-        }
-        /* Sidebar navigation links: dark text with comfortable padding */
-        .admin-sidebar .nav-link {
-            color: #212529;
-            padding: 0.75rem 1rem;
-        }
-        /* Sidebar link hover effect: slightly darker background */
-        .admin-sidebar .nav-link:hover {
-            background-color: #e9ecef;
-        }
-        /* Main content area: padding around the admin page content */
-        .admin-content {
-            padding: 2rem;
-        }
-    </style>
 </head>
-<body>
-    @* ---- TOP NAVBAR (dark theme) ---- *@
-    <nav class="navbar navbar-expand-sm navbar-dark bg-dark">
-        <div class="container-fluid">
-            @* Admin brand link — navigates to the admin dashboard *@
-            <a class="navbar-brand" asp-controller="Admin" asp-action="Dashboard">DevCoreBlog Admin</a>
+<body class="bg-zinc-950 text-zinc-100 font-sans antialiased">
+    @* ============================================================================= *@
+    @* TOP NAVBAR — Dark zinc, border-bottom *@
+    @* ============================================================================= *@
+    <nav class="bg-zinc-900 border-b border-zinc-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-14">
+                <div class="flex items-center">
+                    <a asp-controller="Admin" asp-action="Dashboard" 
+                       class="text-lg font-bold tracking-tight text-zinc-100 hover:text-accent transition-colors font-mono">
+                        DevCoreBlog Admin
+                    </a>
+                </div>
+                <div class="flex items-center">
+                    <a asp-controller="Home" asp-action="Index" target="_blank" 
+                       class="text-sm text-zinc-400 hover:text-zinc-100 transition-colors">
+                        Siteyi Görüntüle →
+                    </a>
+                </div>
+            </div>
         </div>
     </nav>
 
-    @* ---- SIDEBAR + MAIN CONTENT (Bootstrap grid) ---- *@
-    <div class="container-fluid">
-        <div class="row">
-            @* ---- LEFT SIDEBAR (2 columns on medium+ screens, hidden on mobile) ---- *@
-            <nav class="col-md-2 d-none d-md-block admin-sidebar">
-                <div class="sidebar-sticky pt-3">
-                    <ul class="nav flex-column">
-                        @* Dashboard link *@
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Admin" asp-action="Dashboard">Dashboard</a>
-                        </li>
-                        @* Category management link — goes to category list *@
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="AdminCategory" asp-action="Index">Kategoriler</a>
-                        </li>
-                        @* Post management link — goes to post list *@
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="AdminPost" asp-action="Index">Yazılar</a>
-                        </li>
-                        @* "View Site" link — opens the public site in a new tab *@
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Home" asp-action="Index" target="_blank">Siteyi Görüntüle</a>
-                        </li>
-                        @* Logout button — uses a POST form (not a GET link) for security. *@
-                        @* The AccountController.Logout action requires [HttpPost]. *@
-                        <li class="nav-item">
-                            <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
-                                <button type="submit" class="nav-link btn btn-link text-start">Çıkış</button>
-                            </form>
-                        </li>
-                    </ul>
-                </div>
+    @* ============================================================================= *@
+    @* SIDEBAR + MAIN CONTENT — Flexbox layout *@
+    @* ============================================================================= *@
+    <div class="flex h-[calc(100vh-3.5rem)]">
+        @* Left sidebar — bg-zinc-900, border-right, scrollable *@
+        <aside class="w-64 bg-zinc-900 border-r border-zinc-800 overflow-y-auto flex-shrink-0">
+            <nav class="p-4 space-y-1">
+                <a asp-controller="Admin" asp-action="Dashboard" 
+                   class="flex items-center px-3 py-2 text-sm font-medium text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100 rounded-sm transition-colors">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                    </svg>
+                    Dashboard
+                </a>
+                
+                <a asp-controller="AdminCategory" asp-action="Index" 
+                   class="flex items-center px-3 py-2 text-sm font-medium text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100 rounded-sm transition-colors">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                    </svg>
+                    Kategoriler
+                </a>
+                
+                <a asp-controller="AdminPost" asp-action="Index" 
+                   class="flex items-center px-3 py-2 text-sm font-medium text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100 rounded-sm transition-colors">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    Yazılar
+                </a>
+                
+                <div class="border-t border-zinc-800 my-4"></div>
+                
+                <form asp-controller="Account" asp-action="Logout" method="post" class="inline">
+                    <button type="submit" 
+                            class="flex items-center w-full px-3 py-2 text-sm font-medium text-zinc-300 hover:bg-zinc-800 hover:text-red-400 rounded-sm transition-colors">
+                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                        </svg>
+                        Çıkış
+                    </button>
+                </form>
             </nav>
+        </aside>
 
-            @* ---- MAIN CONTENT AREA (10 columns on medium+ screens) ---- *@
-            <main class="col-md-10 admin-content">
-                @RenderBody()
-            </main>
-        </div>
+        @* Main content area — scrollable, padded *@
+        <main class="flex-1 overflow-y-auto p-8">
+            @RenderBody()
+        </main>
     </div>
 
-    @* ---- SCRIPTS ---- *@
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
-    @* Optional Scripts section for page-specific JavaScript *@
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

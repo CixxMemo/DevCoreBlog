@@ -1,75 +1,69 @@
 ﻿@* ============================================================================= *@
-@* Home/Index.cshtml — Public Home Page View *@
+@* Home/Index.cshtml — Public Home Page View (Tech Minimal — Dark Zinc) *@
 @* ============================================================================= *@
 @* This is the main landing page of the blog. It displays a list of published *@
-@* blog posts as Bootstrap cards. Each card shows the post title, summary, *@
-@* category badge (linked to the category page), creation date, and a *@
-@* "Read More" button that links to the post detail page. *@
-@* If there are no published posts, a friendly message is shown instead. *@
+@* blog posts as minimalist cards with sharp borders, monospace meta tags, and *@
+@* subtle hover states. Each card shows the post title, summary, category badge *@
+@* (linked to the category page), creation date, and a "Read More" link. *@
+@* If there are no published posts, a clean empty state message is shown. *@
+@* *@
+@* Phase 2 (FIX): Zinc dark palette. Sharp borders, no shadows, no gradients. *@
+@* Tags/meta styled with font-mono text-xs bg-zinc-900 border-zinc-800. *@
 @* ============================================================================= *@
 
-@* Import the Post model so we can use it in the @model directive *@
 @using DevCoreBlog.Models
-@* Declare the model type: a list of Post objects passed from HomeController.Index() *@
 @model List<Post>
 
-@* Set the page title (shown in the browser tab and <title> tag) *@
 @{
     ViewData["Title"] = "Ana Sayfa";
 }
 
-@* --------------------------------------------------------------------------- *@
-@* PAGE HEADER *@
-@* --------------------------------------------------------------------------- *@
-@* Main heading for the home page *@
-<h1 class="mb-4">Yazılar</h1>
+@* Page heading — bold, high contrast *@
+<h1 class="text-2xl font-bold tracking-tight mb-8 text-zinc-100 font-mono">
+    Yazılar
+</h1>
 
-@* --------------------------------------------------------------------------- *@
-@* POST LIST OR EMPTY MESSAGE *@
-@* --------------------------------------------------------------------------- *@
-@* Check if there are any posts to display *@
 @if (Model.Any())
 {
-    @* Loop through each post and render a Bootstrap card for it *@
-    @foreach (var item in Model)
-    {
-        @* Each post is displayed as a Bootstrap card with consistent spacing *@
-        <div class="card mb-3">
-            <div class="card-body">
-                @* Post title as a heading *@
-                <h2 class="card-title h4">
-                    @* Title links to the post detail page using the slug-based URL *@
-                    <a asp-controller="Home" asp-action="Detail" asp-route-slug="@item.Slug" class="text-decoration-none">
+    <div class="space-y-4">
+        @foreach (var item in Model)
+        {
+            <article class="border border-zinc-800 rounded-sm p-6 hover:border-zinc-600 transition-colors">
+                <h2 class="text-lg font-semibold mb-3">
+                    <a asp-controller="Home" asp-action="Detail" asp-route-slug="@item.Slug" 
+                       class="text-zinc-100 hover:text-accent transition-colors">
                         @item.Title
                     </a>
                 </h2>
 
-                @* Meta information row: category badge + creation date *@
-                <div class="mb-2">
-                    @* Category badge — links to the category page (/kategori/{slug}) *@
+                <div class="flex items-center gap-3 mb-4">
                     @if (item.Category != null)
                     {
-                        <a href="/kategori/@item.Category.Slug" class="badge text-bg-primary text-decoration-none">
+                        <a href="/kategori/@item.Category.Slug" 
+                           class="font-mono text-xs text-zinc-400 bg-zinc-900 px-2 py-1 rounded-sm border border-zinc-800 hover:border-accent hover:text-accent transition-colors">
                             @item.Category.Name
                         </a>
                     }
-                    @* Creation date formatted as dd.MM.yyyy (e.g. 05.08.2026) *@
-                    <small class="text-muted ms-2">@item.CreatedAt.ToString("dd.MM.yyyy")</small>
+                    <time class="font-mono text-xs text-zinc-500">
+                        @item.CreatedDate.ToString("dd.MM.yyyy")
+                    </time>
                 </div>
 
-                @* Post summary text *@
-                <p class="card-text">@item.Summary</p>
+                <p class="text-zinc-400 text-sm leading-relaxed mb-4">
+                    @item.Summary
+                </p>
 
-                @* "Read More" button — links to the post detail page *@
-                <a href="/yazi/@item.Slug" class="btn btn-sm btn-outline-primary">Devamını Oku</a>
-            </div>
-        </div>
-    }
+                <a href="/yazi/@item.Slug" 
+                   class="inline-block px-3 py-1.5 text-xs font-mono font-medium border border-zinc-700 text-zinc-300 hover:border-accent hover:text-accent rounded-sm transition-colors">
+                    Devamını Oku →
+                </a>
+            </article>
+        }
+    </div>
 }
 else
 {
-    @* Shown when there are no published posts yet *@
-    <div class="alert alert-info">
-        Henüz yazı yok.
+    <div class="border border-zinc-800 rounded-sm p-12 text-center">
+        <p class="text-zinc-500 font-mono text-sm">Henüz yazı yok.</p>
     </div>
 }

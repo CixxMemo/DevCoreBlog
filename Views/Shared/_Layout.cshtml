@@ -1,96 +1,225 @@
 ﻿@* ============================================================================= *@
-@* _Layout.cshtml — Public Site Master Layout *@
+@* _Layout.cshtml — Public Site Master Layout (Tech Minimal — Dark Mode) *@
 @* ============================================================================= *@
 @* This is the main layout template for the public-facing (visitor) pages. *@
-@* It defines the HTML structure, Bootstrap navbar, and footer that all public *@
-@* views share. Individual views fill in the @RenderBody() section. *@
+@* It defines the HTML structure, navbar, and footer that all public views *@
+@* share. Individual views fill in the @RenderBody() section. *@
+@* *@
+@* Phase 2 (FIX): Tailwind CSS Play CDN with INLINE config (zinc palette). *@
+@* - Dark mode forced via 'dark' class on <html> *@
+@* - Sharp edges (rounded-sm max) *@
+@* - Zinc palette (zinc-950 bg, zinc-200 text, zinc-800 borders) *@
+@* - Monospace fonts for technical elements *@
+@* - No shadows, no gradients, no glassmorphism *@
 @* *@
 @* The layout injects ApplicationDbContext to dynamically load categories for *@
-@* the navigation dropdown. The footer is simplified to show only copyright. *@
+@* the navigation dropdown. The footer shows only copyright. *@
 @* ============================================================================= *@
 
 @* Inject the database context to access categories for the navbar dropdown *@
 @inject DevCoreBlog.Data.ApplicationDbContext DbContext
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr" class="dark">
 <head>
     <meta charset="utf-8" />
-    @* Responsive viewport meta tag — ensures proper rendering on mobile devices *@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    @* Page title: combines the view-specific title with the site name *@
     <title>@ViewData["Title"] - DevCoreBlog</title>
-    <script type="importmap"></script>
-    @* Bootstrap CSS — loaded from the local wwwroot/lib folder (not CDN) *@
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    @* Custom site CSS — asp-append-version adds a cache-busting hash to the URL *@
+    
+    @* ============================================================================= *@
+    @* DYNAMIC SEO — Open Graph (OG) Meta Tags                                       *@
+    @* ============================================================================= *@
+    @* These meta tags are used by social media platforms (Facebook, Twitter,        *@
+    @* LinkedIn, etc.) to display rich previews when a page is shared.               *@
+    @*                                                                              *@
+    @* The values are set dynamically via ViewBag in each controller action:         *@
+    @*   - ViewBag.OgTitle: Custom title for the page (defaults to ViewData.Title)   *@
+    @*   - ViewBag.OgDescription: Short description (defaults to site description)   *@
+    @*   - ViewBag.OgUrl: Canonical URL of the page (defaults to current URL)        *@
+    @*   - ViewBag.OgType: Type of content (article, website, etc.)                  *@
+    @*                                                                              *@
+    @* If ViewBag values are not set, fallback values are used.                      *@
+    @* ============================================================================= *@
+    <meta property="og:title" content="@(ViewBag.OgTitle ?? ViewData["Title"])" />
+    <meta property="og:description" content="@(ViewBag.OgDescription ?? "DevCoreBlog - ASP.NET Core, C#, ve modern web geliştirme hakkında teknik yazılar")" />
+    <meta property="og:type" content="@(ViewBag.OgType ?? "website")" />
+    <meta property="og:url" content="@(ViewBag.OgUrl ?? Context.Request.Path)" />
+    <meta property="og:site_name" content="DevCoreBlog" />
+    
+    @* Twitter Card meta tags (similar to OG but for Twitter) *@
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="@(ViewBag.OgTitle ?? ViewData["Title"])" />
+    <meta name="twitter:description" content="@(ViewBag.OgDescription ?? "DevCoreBlog - ASP.NET Core, C#, ve modern web geliştirme hakkında teknik yazılar")" />
+    
+    @* ============================================================================= *@
+    @* Tailwind CSS Play CDN — INLINE config (zinc Tech Minimal theme) *@
+    @* ============================================================================= *@
+    @* The Play CDN requires config to be INLINE in a <script> tag, NOT an external *@
+    @* file. The config must be set before the CDN script processes the DOM. *@
+    @* ============================================================================= *@
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+                        mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
+                    },
+                    colors: {
+                        accent: {
+                            DEFAULT: '#10b981',
+                            light: '#34d399',
+                            dark: '#059669',
+                        },
+                    },
+                },
+            },
+        }
+    </script>
+    
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    @* Scoped CSS for this layout (from _Layout.cshtml.css) *@
-    <link rel="stylesheet" href="~/DevCoreBlog.styles.css" asp-append-version="true" />
+
+    @* ============================================================================= *@
+    @* Prism.js — Syntax Highlighting for Code Blocks (Tomorrow Night theme)         *@
+    @* ============================================================================= *@
+    @* Prism.js highlights <code> blocks that have a "language-*" class.            *@
+    @* Markdig generates these classes automatically from Markdown fenced code       *@
+    @* blocks (e.g., ```csharp → <code class="language-csharp">).                   *@
+    @*                                                                              *@
+    @* "Tomorrow Night" theme matches the Tech Minimal dark zinc palette:           *@
+    @*   - Dark background (#1d1f21) with light text (#c5c8c6)                     *@
+    @*   - Sharp, monospaced code rendering                                         *@
+    @*   - No rounded corners, no glassmorphism                                     *@
+    @*                                                                              *@
+    @* Components loaded:                                                           *@
+    @*   - prism-core: The engine that parses and highlights code                   *@
+    @*   - prism-autoloader: Auto-loads language grammars on demand                 *@
+    @*   - prism-show-language: Displays the language label on each code block      *@
+    @* ============================================================================= *@
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/plugins/show-language/prism-show-language.min.css" rel="stylesheet" />
 </head>
-<body>
-    @* ---- HEADER / NAVBAR ---- *@
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                @* Site logo / brand link — navigates to the home page *@
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">DevCoreBlog</a>
-                @* Mobile hamburger toggle button — collapses/expands the nav menu *@
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                @* Collapsible navigation links *@
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        @* Home link *@
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        @* Categories dropdown — dynamically populated from the database *@
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle text-dark" href="#" id="categoriesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                Kategoriler
-                            </a>
-                            <ul class="dropdown-menu" aria-labelledby="categoriesDropdown">
-                                @* Loop through all categories and create a link for each *@
-                                @foreach (var cat in DbContext.Categories.ToList())
-                                {
-                                    <li><a class="dropdown-item" href="/kategori/@cat.Slug">@cat.Name</a></li>
-                                }
-                            </ul>
-                        </li>
-                    </ul>
+<body class="min-h-screen bg-zinc-950 text-zinc-200 font-sans antialiased">
+    @* ============================================================================= *@
+    @* HEADER / NAVBAR — Dark Tech Minimal *@
+    @* ============================================================================= *@
+    <header class="border-b border-zinc-800">
+        <nav class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-14">
+                <div class="flex items-center gap-8">
+                    <a asp-controller="Home" asp-action="Index" 
+                       class="text-lg font-bold tracking-tight text-zinc-100 hover:text-accent transition-colors font-mono">
+                        DevCoreBlog
+                    </a>
+                    <a asp-controller="Home" asp-action="Index" 
+                       class="text-sm font-medium text-zinc-400 hover:text-zinc-100 transition-colors">
+                        Ana Sayfa
+                    </a>
+                    <div class="relative group">
+                        <button class="text-sm font-medium text-zinc-400 hover:text-zinc-100 transition-colors inline-flex items-center">
+                            Kategoriler
+                            <svg class="ml-1 w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        <div class="absolute left-0 mt-2 w-48 bg-zinc-900 border border-zinc-800 rounded-sm opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 z-50">
+                            @foreach (var cat in DbContext.Categories.ToList())
+                            {
+                                <a href="/kategori/@cat.Slug" 
+                                   class="block px-4 py-2 text-sm text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 transition-colors">
+                                    @cat.Name
+                                </a>
+                            }
+                        </div>
+                    </div>
                 </div>
+                
+                @* ================================================================= *@
+                @* SEARCH FORM — Simple search input in navbar                       *@
+                @* ================================================================= *@
+                @* Form submits to /ara?query=... via GET method.                    *@
+                @* The Search action in HomeController handles the query.            *@
+                @* ================================================================= *@
+                <div class="hidden sm:flex items-center">
+                    <form action="/ara" method="get" class="flex items-center">
+                        <input type="text" name="query" 
+                               placeholder="Ara..." 
+                               class="w-40 bg-zinc-900 border border-zinc-800 text-zinc-100 placeholder-zinc-500 focus:border-zinc-600 focus:outline-none px-3 py-1.5 text-xs rounded-sm font-mono transition-colors" />
+                    </form>
+                </div>
+                
+                <div class="sm:hidden flex items-center">
+                    <button id="mobile-menu-button" type="button" 
+                            class="text-zinc-400 hover:text-zinc-100 p-2"
+                            aria-label="Toggle mobile menu">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            
+            <div id="mobile-menu" class="sm:hidden hidden border-t border-zinc-800 py-4 space-y-2">
+                <a asp-controller="Home" asp-action="Index" 
+                   class="block px-4 py-2 text-sm font-medium text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 transition-colors">
+                    Ana Sayfa
+                </a>
+                @* Mobile search form *@
+                <div class="px-4 py-2">
+                    <form action="/ara" method="get">
+                        <input type="text" name="query" 
+                               placeholder="Ara..." 
+                               class="w-full bg-zinc-900 border border-zinc-800 text-zinc-100 placeholder-zinc-500 focus:border-zinc-600 focus:outline-none px-3 py-2 text-xs rounded-sm font-mono transition-colors" />
+                    </form>
+                </div>
+                <div class="px-4 py-2 text-xs font-semibold text-zinc-500 uppercase tracking-wider font-mono">
+                    Kategoriler
+                </div>
+                @foreach (var cat in DbContext.Categories.ToList())
+                {
+                    <a href="/kategori/@cat.Slug" 
+                       class="block px-4 py-2 text-sm text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 transition-colors">
+                        @cat.Name
+                    </a>
+                }
             </div>
         </nav>
     </header>
 
-    @* ---- MAIN CONTENT AREA ---- *@
-    @* The container wraps the page content with horizontal padding. *@
-    @* Individual views render their HTML inside @RenderBody(). *@
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
+    <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        @RenderBody()
+    </main>
 
-    @* ---- FOOTER ---- *@
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 DevCoreBlog
+    <footer class="border-t border-zinc-800 mt-16">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <p class="text-xs text-zinc-500 text-center font-mono">
+                &copy; 2026 DevCoreBlog
+            </p>
         </div>
     </footer>
 
-    @* ---- SCRIPTS ---- *@
-    @* jQuery — required for Bootstrap's JS components and form validation *@
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    @* Bootstrap JS bundle (includes Popper.js for dropdowns/tooltips) *@
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    @* Custom site JavaScript *@
+    <script>
+        document.getElementById('mobile-menu-button').addEventListener('click', function() {
+            document.getElementById('mobile-menu').classList.toggle('hidden');
+        });
+    </script>
     <script src="~/js/site.js" asp-append-version="true"></script>
-    @* Optional Scripts section — views can inject page-specific JS here *@
-    @* Example: @section Scripts { <script>...</script> } *@
+
+    @* ============================================================================= *@
+    @* Prism.js — Syntax Highlighting Scripts                                        *@
+    @* ============================================================================= *@
+    @* prism-core: The main engine that walks the DOM and highlights <code> blocks.  *@
+    @* prism-autoloader: Detects the "language-*" class and loads the grammar file   *@
+    @*   on demand (e.g., prism-csharp.min.js). This avoids loading all languages.   *@
+    @* prism-show-language: Adds a small "C#" / "Python" label to each code block    *@
+    @*   so readers know which language they are looking at.                         *@
+    @* ============================================================================= *@
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/plugins/show-language/prism-show-language.min.js"></script>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

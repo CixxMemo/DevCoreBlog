@@ -7,16 +7,21 @@
 //
 // EF Core uses this class to map to the "Posts" table in PostgreSQL.
 // The migration "InitialCreate" has already been applied to the database.
+//
+// Inheritance: Post inherits from BaseEntity, which provides:
+//   - Id (primary key)
+//   - CreatedDate (timestamp)
+//   - IsActive (soft-delete flag)
 // =============================================================================
 
-namespace DevCoreBlog.Models;
+using DevCoreBlog.Core.Entities;
+
+namespace DevCoreBlog.Core.Entities;
 
 // This class maps to the "Posts" table in the database
-public class Post
+// Inherits Id, CreatedDate, IsActive from BaseEntity
+public class Post : BaseEntity
 {
-    // Primary key — auto-incremented integer by EF Core convention
-    public int Id { get; set; }
-
     // The title of the blog post (e.g. "ASP.NET Core ile Blog Yazma")
     public string Title { get; set; } = string.Empty;
 
@@ -30,12 +35,13 @@ public class Post
     // The full content of the blog post (plain text in <textarea>)
     public string Content { get; set; } = string.Empty;
 
-    // When the post was created — always set to DateTime.UtcNow in the controller
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
-    // Whether this post is visible to the public.
-    // When false, the post only appears in the admin panel.
-    public bool IsPublished { get; set; } = true;
+    // -----------------------------------------------------------------------
+    // VIEW COUNT — Tracks how many times this post has been viewed
+    // -----------------------------------------------------------------------
+    // Every time a visitor opens the Detail page, this counter increments by 1.
+    // Default value is 0 (new posts start with zero views).
+    // This is a simple analytics metric — no user tracking or cookies involved.
+    public int ViewCount { get; set; } = 0;
 
     // -----------------------------------------------------------------------
     // RELATIONSHIP: Foreign key and navigation property to Category

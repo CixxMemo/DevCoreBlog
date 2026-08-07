@@ -12,6 +12,12 @@ using DevCoreBlog.Data;
 using Microsoft.EntityFrameworkCore;
 // Import cookie authentication defaults (e.g. "Cookies" scheme name)
 using Microsoft.AspNetCore.Authentication.Cookies;
+// Import Repository layer for dependency injection
+using DevCoreBlog.Repositories;
+// Import Service layer for dependency injection
+using DevCoreBlog.Services;
+// Import Service interfaces for dependency injection
+using DevCoreBlog.Services.Interfaces;
 
 // Create the application builder, which loads configuration from appsettings.json,
 // environment variables, and command-line arguments
@@ -26,6 +32,24 @@ var builder = WebApplication.CreateBuilder(args);
 // reading the connection string named "DefaultConnection" from appsettings.json.
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// ---------------------------------------------------------------------------
+// REPOSITORY LAYER REGISTRATION (Data Access)
+// ---------------------------------------------------------------------------
+// Register repositories with Scoped lifetime (one instance per HTTP request).
+// This ensures each request gets its own repository instance, which shares
+// the same DbContext instance within that request.
+builder.Services.AddScoped<PostRepository>();
+builder.Services.AddScoped<CategoryRepository>();
+
+// ---------------------------------------------------------------------------
+// SERVICE LAYER REGISTRATION (Business Logic)
+// ---------------------------------------------------------------------------
+// Register services with Scoped lifetime (one instance per HTTP request).
+// Services depend on repositories, which are also scoped.
+// Controllers will depend on service interfaces (IPostService, ICategoryService).
+builder.Services.AddScoped<IPostService, PostService>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
 
 // Register MVC services (controllers + views + tag helpers + model binding).
 // This is required for the app to handle controller-based routes and render Razor views.
