@@ -55,6 +55,9 @@ builder.Services.AddScoped<ICategoryService, CategoryService>();
 // This is required for the app to handle controller-based routes and render Razor views.
 builder.Services.AddControllersWithViews();
 
+// Register Output Caching services
+builder.Services.AddOutputCache();
+
 // ---------------------------------------------------------------------------
 // COOKIE AUTHENTICATION REGISTRATION
 // ---------------------------------------------------------------------------
@@ -96,6 +99,9 @@ app.UseHttpsRedirection();
 
 // Enable URL-based routing — this must come before endpoint mapping
 app.UseRouting();
+
+// Enable output caching
+app.UseOutputCache();
 
 // Enable cookie authentication middleware — MUST come before UseAuthorization.
 // This reads the auth cookie on each request and sets HttpContext.User.

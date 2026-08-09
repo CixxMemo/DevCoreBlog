@@ -27,6 +27,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 // Import the Authorize attribute to restrict access to authenticated users only
 using Microsoft.AspNetCore.Authorization;
+// Import Hosting and Http for file uploads
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using System.IO;
 
 namespace DevCoreBlog.Controllers;
 
@@ -40,12 +44,14 @@ public class AdminPostController : Controller
     // Service fields — injected via constructor (dependency injection)
     private readonly IPostService _postService;
     private readonly ICategoryService _categoryService;
+    private readonly IWebHostEnvironment _env;
 
     // Constructor receives services from the DI container
-    public AdminPostController(IPostService postService, ICategoryService categoryService)
+    public AdminPostController(IPostService postService, ICategoryService categoryService, IWebHostEnvironment env)
     {
         _postService = postService;
         _categoryService = categoryService;
+        _env = env;
     }
 
     // -------------------------------------------------------------------------
@@ -74,7 +80,10 @@ public class AdminPostController : Controller
         // "Id" is the value field, "Name" is the display text.
         // Stored in ViewBag so the view can access it via ViewBag.CategoryId.
         ViewBag.CategoryId = new SelectList(categories, "Id", "Name");
-        return View();
+        
+        // Pass a new Post with PublishDate as Local time so the form defaults correctly
+        var post = new Post { PublishDate = DateTime.Now };
+        return View(post);
     }
 
     // -------------------------------------------------------------------------
@@ -119,6 +128,12 @@ public class AdminPostController : Controller
         var post = await _postService.GetPostByIdAsync(id);
         if (post == null)
             return NotFound();
+
+        // Convert UTC PublishDate to Local time so the user sees their own time in the edit form
+        if (post.PublishDate.Kind == DateTimeKind.Utc)
+        {
+            post.PublishDate = post.PublishDate.ToLocalTime();
+        }
 
         // Get all categories for the dropdown
         var categories = await _categoryService.GetAllCategoriesAsync();
@@ -172,5 +187,42 @@ public class AdminPostController : Controller
         // Delegate to service layer — business logic is in PostService
         await _postService.DeletePostAsync(id);
         return RedirectToAction(nameof(Index));
+    }
+
+    // -------------------------------------------------------------------------
+    // UPLOAD — Image upload for markdown content
+    // -------------------------------------------------------------------------
+    // POST: /AdminPost/UploadImage
+    [HttpPost]
+    public async Task<IActionResult> UploadImage(IFormFile file)
+    {
+        if (file == null || file.Length == 0)
+        {
+            return BadRequest("Dosya seçilmedi.");
+        }
+
+        var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
+        var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+        if (!allowedExtensions.Contains(extension))
+        {
+            return BadRequest("Geçersiz dosya türü.");
+        }
+
+        var fileName = Guid.NewGuid().ToString() + extension;
+        var uploadsFolder = Path.Combine(_env.WebRootPath, "uploads");
+        
+        if (!Directory.Exists(uploadsFolder))
+        {
+            Directory.CreateDirectory(uploadsFolder);
+        }
+
+        var filePath = Path.Combine(uploadsFolder, fileName);
+        using (var stream = new FileStream(filePath, FileMode.Create))
+        {
+            await file.CopyToAsync(stream);
+        }
+
+        var url = $"/uploads/{fileName}";
+        return Ok(new { url });
     }
 }

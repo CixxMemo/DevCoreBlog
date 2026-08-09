@@ -188,4 +188,6 @@
 /Users/mehmetcankocakurt/Documents/development/DevCoreBlog/obj/Debug/net10.0/DevCoreBlog.sourcelink.json
 /Users/mehmetcankocakurt/Documents/development/DevCoreBlog/obj/Debug/net10.0/compressed/wqi93db3z8-{0}-kjn6y49ny0-kjn6y49ny0.gz
 /Users/mehmetcankocakurt/Documents/development/DevCoreBlog/bin/Debug/net10.0/Markdig.dll
-/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/obj/Debug/net10.0/compressed/tr2xps9d7i-{0}-cov5j3hv4o-cov5j3hv4o.gz
+/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/obj/Debug/net10.0/compressed/tr2xps9d7i-{0}-ahwfkomjg8-ahwfkomjg8.gz
+/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/obj/Debug/net10.0/compressed/cku6hn1ven-{0}-xyl7rh777s-xyl7rh777s.gz
+/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/obj/Debug/net10.0/compressed/31lr44se97-{0}-6ocu84dnvr-6ocu84dnvr.gz

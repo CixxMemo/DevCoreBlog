@@ -1,27 +1,39 @@
-﻿@* ============================================================================= *@
-@* _Layout.cshtml — Public Site Master Layout (Tech Minimal — Dark Mode) *@
 @* ============================================================================= *@
-@* This is the main layout template for the public-facing (visitor) pages. *@
-@* It defines the HTML structure, navbar, and footer that all public views *@
-@* share. Individual views fill in the @RenderBody() section. *@
-@* *@
-@* Phase 2 (FIX): Tailwind CSS Play CDN with INLINE config (zinc palette). *@
-@* - Dark mode forced via 'dark' class on <html> *@
-@* - Sharp edges (rounded-sm max) *@
-@* - Zinc palette (zinc-950 bg, zinc-200 text, zinc-800 borders) *@
-@* - Monospace fonts for technical elements *@
-@* - No shadows, no gradients, no glassmorphism *@
-@* *@
-@* The layout injects ApplicationDbContext to dynamically load categories for *@
-@* the navigation dropdown. The footer shows only copyright. *@
+@* _Layout.cshtml — Public Site Master Layout (Hybrid CLI & Bento UI)           *@
+@* ============================================================================= *@
+@* This is the main layout template for the public-facing (visitor) pages.      *@
+@* It defines the Bento Grid structure:                                         *@
+@*   - TOPBAR: Terminal-style prompt breadcrumb ([devcore@system] ~/path $▌)    *@
+@*   - SIDEBAR: Left panel for shortcut cards (populated in Phase 2)            *@
+@*   - CONTENT: Main content area where @RenderBody() renders                   *@
+@*   - FOOTER: Simple copyright bar                                             *@
+@*                                                                              *@
+@* Design System: "Modern Terminal" palette                                     *@
+@*   - Background: Deep Charcoal #0d1117 (GitHub Dark)                          *@
+@*   - Cards: #161b22 with 1px #30363d borders                                  *@
+@*   - Accent: Terminal Orange #FF8C00, Cyber Yellow #FFD700                     *@
+@*   - Fonts: JetBrains Mono (headers/UI), Inter (body text)                    *@
+@*   - Shape: Sharp edges (0-4px radius), solid 1px borders                     *@
+@*                                                                              *@
+@* The layout injects ApplicationDbContext to dynamically load categories       *@
+@* for the sidebar and mobile navigation.                                       *@
 @* ============================================================================= *@
 
-@* Inject the database context to access categories for the navbar dropdown *@
+@* Inject the database context to access categories for navigation *@
 @inject DevCoreBlog.Data.ApplicationDbContext DbContext
 
 <!DOCTYPE html>
-<html lang="tr" class="dark">
+<html lang="tr">
 <head>
+    <script>
+        // Apply dark mode immediately to prevent flash of light theme
+        // Since terminal theme is dark-first, we default to dark
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - DevCoreBlog</title>
@@ -52,10 +64,17 @@
     <meta name="twitter:description" content="@(ViewBag.OgDescription ?? "DevCoreBlog - ASP.NET Core, C#, ve modern web geliştirme hakkında teknik yazılar")" />
     
     @* ============================================================================= *@
-    @* Tailwind CSS Play CDN — INLINE config (zinc Tech Minimal theme) *@
+    @* Google Fonts — JetBrains Mono (UI/Headers) + Inter (Body Text)                *@
+    @* ============================================================================= *@
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    @* ============================================================================= *@
+    @* Tailwind CSS Play CDN — INLINE config (Terminal Theme palette)                 *@
     @* ============================================================================= *@
     @* The Play CDN requires config to be INLINE in a <script> tag, NOT an external *@
-    @* file. The config must be set before the CDN script processes the DOM. *@
+    @* file. The config must be set before the CDN script processes the DOM.         *@
     @* ============================================================================= *@
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -64,14 +83,28 @@
             theme: {
                 extend: {
                     fontFamily: {
-                        sans: ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
-                        mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
+                        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
                     },
                     colors: {
+                        // Terminal Orange — primary accent for interactive elements
                         accent: {
-                            DEFAULT: '#10b981',
-                            light: '#34d399',
-                            dark: '#059669',
+                            DEFAULT: '#FF8C00',
+                            light: '#FFD700',
+                            dark: '#e67e00',
+                        },
+                        // GitHub Dark palette — background surfaces
+                        surface: {
+                            primary: '#0d1117',
+                            card: '#161b22',
+                            elevated: '#1c2128',
+                        },
+                        // Terminal border color
+                        terminal: {
+                            border: '#30363d',
+                            text: '#E6EDF3',
+                            muted: '#8b949e',
+                            dim: '#484f58',
                         },
                     },
                 },
@@ -79,6 +112,13 @@
         }
     </script>
     
+    @* ============================================================================= *@
+    @* CSS Files — Terminal theme (new) + site styles (existing)                      *@
+    @* ============================================================================= *@
+    @* terminal-theme.css: Grid layout, topbar, sidebar, CSS variables               *@
+    @* site.css: Markdown content styling, animations, Prism.js overrides            *@
+    @* ============================================================================= *@
+    <link rel="stylesheet" href="~/css/terminal-theme.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 
     @* ============================================================================= *@
@@ -88,7 +128,7 @@
     @* Markdig generates these classes automatically from Markdown fenced code       *@
     @* blocks (e.g., ```csharp → <code class="language-csharp">).                   *@
     @*                                                                              *@
-    @* "Tomorrow Night" theme matches the Tech Minimal dark zinc palette:           *@
+    @* "Tomorrow Night" theme matches the terminal dark palette:                    *@
     @*   - Dark background (#1d1f21) with light text (#c5c8c6)                     *@
     @*   - Sharp, monospaced code rendering                                         *@
     @*   - No rounded corners, no glassmorphism                                     *@
@@ -101,111 +141,260 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/plugins/show-language/prism-show-language.min.css" rel="stylesheet" />
 </head>
-<body class="min-h-screen bg-zinc-950 text-zinc-200 font-sans antialiased">
+<body class="m-0 p-0 bg-[#0d1117] text-[#E6EDF3] font-sans antialiased">
     @* ============================================================================= *@
-    @* HEADER / NAVBAR — Dark Tech Minimal *@
+    @* BENTO GRID WRAPPER — Contains all page areas in a CSS Grid layout             *@
     @* ============================================================================= *@
-    <header class="border-b border-zinc-800">
-        <nav class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-14">
-                <div class="flex items-center gap-8">
-                    <a asp-controller="Home" asp-action="Index" 
-                       class="text-lg font-bold tracking-tight text-zinc-100 hover:text-accent transition-colors font-mono">
-                        DevCoreBlog
-                    </a>
-                    <a asp-controller="Home" asp-action="Index" 
-                       class="text-sm font-medium text-zinc-400 hover:text-zinc-100 transition-colors">
-                        Ana Sayfa
-                    </a>
-                    <div class="relative group">
-                        <button class="text-sm font-medium text-zinc-400 hover:text-zinc-100 transition-colors inline-flex items-center">
-                            Kategoriler
-                            <svg class="ml-1 w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                            </svg>
-                        </button>
-                        <div class="absolute left-0 mt-2 w-48 bg-zinc-900 border border-zinc-800 rounded-sm opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 z-50">
-                            @foreach (var cat in DbContext.Categories.ToList())
-                            {
-                                <a href="/kategori/@cat.Slug" 
-                                   class="block px-4 py-2 text-sm text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 transition-colors">
-                                    @cat.Name
-                                </a>
-                            }
-                        </div>
-                    </div>
+    <div class="site-grid">
+    
+        @* ============================================================================= *@
+        @* TOPBAR — Terminal-style Prompt Header                                         *@
+        @* ============================================================================= *@
+        @* Displays a terminal prompt as a dynamic breadcrumb.                           *@
+        @* The path changes based on which page the user is on:                          *@
+        @*   Home    → ~/posts                                                           *@
+        @*   Detail  → ~/posts/slug                                                       *@
+        @*   Category→ ~/kategori/slug                                                    *@
+        @*   Search  → ~/ara                                                              *@
+        @* ============================================================================= *@
+        <header class="site-topbar">
+            @* Left side: Terminal prompt *@
+            <div class="topbar-prompt">
+                @* Logo/Home link styled as terminal user@host *@
+                <a href="/" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 0.5rem;">
+                    <span class="prompt-user">devcore</span><span style="color: var(--text-muted);">@@</span><span style="color: var(--text-secondary);">system</span>
+                </a>
+                <span style="color: var(--text-muted);">:</span>
+                @* Dynamic path — changes based on current page *@
+                <span class="prompt-path">~/@(ViewData["TerminalPath"] ?? "posts")</span>
+                <span class="prompt-symbol">$</span>
+                <span class="topbar-cursor"></span>
+            </div>
+
+            @* Right side: Actions (shortcut hint + dark mode toggle + mobile menu) *@
+            <div class="topbar-actions">
+                @* Command Palette shortcut hint — click or press / to open *@
+                <div id="cmd-palette-hint" class="topbar-shortcut-hint hidden sm:flex" onclick="document.dispatchEvent(new KeyboardEvent('keydown', {key: '/', bubbles: true}))">
+                    <span class="cmd-kbd">/</span> or <span class="cmd-kbd">⌘K</span>
                 </div>
-                
-                @* ================================================================= *@
-                @* SEARCH FORM — Simple search input in navbar                       *@
-                @* ================================================================= *@
-                @* Form submits to /ara?query=... via GET method.                    *@
-                @* The Search action in HomeController handles the query.            *@
-                @* ================================================================= *@
-                <div class="hidden sm:flex items-center">
-                    <form action="/ara" method="get" class="flex items-center">
-                        <input type="text" name="query" 
-                               placeholder="Ara..." 
-                               class="w-40 bg-zinc-900 border border-zinc-800 text-zinc-100 placeholder-zinc-500 focus:border-zinc-600 focus:outline-none px-3 py-1.5 text-xs rounded-sm font-mono transition-colors" />
-                    </form>
-                </div>
-                
-                <div class="sm:hidden flex items-center">
-                    <button id="mobile-menu-button" type="button" 
-                            class="text-zinc-400 hover:text-zinc-100 p-2"
-                            aria-label="Toggle mobile menu">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                        </svg>
-                    </button>
-                </div>
+
+                @* Dark Mode Toggle Button *@
+                <button id="theme-toggle" type="button" aria-label="Toggle Dark Mode">
+                    <svg id="theme-toggle-dark-icon" class="w-5 h-5 hidden" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                    </svg>
+                    <svg id="theme-toggle-light-icon" class="w-5 h-5 hidden" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4.22 4.22a1 1 0 011.415 0l.884.884a1 1 0 01-1.414 1.415l-.884-.884a1 1 0 010-1.415zM10 6a4 4 0 100 8 4 4 0 000-8zm-4.22 8.22a1 1 0 01-1.415 0l-.884-.884a1 1 0 011.414-1.415l.884.884a1 1 0 010 1.415zM2 10a1 1 0 011-1h1a1 1 0 110 2H3a1 1 0 01-1-1zm15 0a1 1 0 011-1h1a1 1 0 110 2h-1a1 1 0 01-1-1zM4.22 4.22a1 1 0 010 1.415l-.884.884a1 1 0 01-1.414-1.415l.884-.884a1 1 0 011.415 0zM15.78 15.78a1 1 0 010 1.415l-.884.884a1 1 0 01-1.414-1.415l.884-.884a1 1 0 011.415 0z"></path>
+                    </svg>
+                </button>
+
+                @* Mobile hamburger menu button (visible on small screens) *@
+                <button id="mobile-menu-button" type="button" class="sm:hidden" aria-label="Toggle mobile menu">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        @* ============================================================================= *@
+        @* MOBILE NAVIGATION — Slide-down panel (hidden by default)                      *@
+        @* ============================================================================= *@
+        @* On mobile, this panel slides down below the topbar with navigation links,     *@
+        @* categories, and a search form. Toggled by the hamburger button.               *@
+        @* ============================================================================= *@
+        <div id="mobile-menu" class="mobile-nav">
+            <a href="/">~/home</a>
+            
+            @* Mobile search form *@
+            <div style="padding: 0.5rem 0;">
+                <form action="/ara" method="get">
+                    <input type="text" name="query" 
+                           placeholder="$ grep ..." 
+                           style="width: 100%; background: var(--bg-surface); border: 1px solid var(--border); color: var(--text-primary); font-family: var(--font-mono); font-size: 0.75rem; padding: 0.5rem 0.75rem; outline: none;" />
+                </form>
             </div>
             
-            <div id="mobile-menu" class="sm:hidden hidden border-t border-zinc-800 py-4 space-y-2">
-                <a asp-controller="Home" asp-action="Index" 
-                   class="block px-4 py-2 text-sm font-medium text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 transition-colors">
-                    Ana Sayfa
-                </a>
-                @* Mobile search form *@
-                <div class="px-4 py-2">
+            <div class="mobile-nav-label">Kategoriler</div>
+            @foreach (var cat in DbContext.Categories.ToList())
+            {
+                <a href="/kategori/@cat.Slug">@cat.Name</a>
+            }
+        </div>
+
+        @* ============================================================================= *@
+        @* SIDEBAR — Left Panel with Interactive Shortcut Cards (Phase 2)                 *@
+        @* ============================================================================= *@
+        @* The sidebar contains actionable "Cards" grouped by function:                   *@
+        @*   1. Quick Actions: Home, Latest Post shortcuts                                *@
+        @*   2. Search: Terminal grep-style search input                                  *@
+        @*   3. Categories: Dynamic category list from database                           *@
+        @*   4. Links: External links (GitHub, etc.)                                      *@
+        @*                                                                                *@
+        @* Each card: 1px solid #30363d border.                                           *@
+        @* On hover: border glows #FF8C00, text turns #FFD700.                            *@
+        @* ============================================================================= *@
+        <aside class="site-sidebar">
+
+            @* ── Card 1: Quick Actions ── *@
+            @* Shortcut links styled as terminal commands *@
+            <div class="sidebar-card">
+                <div class="sidebar-card-header">
+                    <span class="sidebar-card-icon">⚡</span> Quick Actions
+                </div>
+                <div class="sidebar-card-body">
+                    <a href="/" class="sidebar-link">
+                        <span class="sidebar-link-icon">›</span> ~/home
+                    </a>
+                    <a href="/?page=1" class="sidebar-link">
+                        <span class="sidebar-link-icon">›</span> ~/newest
+                    </a>
+                </div>
+            </div>
+
+            @* ── Card 2: Search ── *@
+            @* Terminal grep-style search input *@
+            <div class="sidebar-card">
+                <div class="sidebar-card-header">
+                    <span class="sidebar-card-icon">🔍</span> Search
+                </div>
+                <div class="sidebar-card-body">
                     <form action="/ara" method="get">
                         <input type="text" name="query" 
-                               placeholder="Ara..." 
-                               class="w-full bg-zinc-900 border border-zinc-800 text-zinc-100 placeholder-zinc-500 focus:border-zinc-600 focus:outline-none px-3 py-2 text-xs rounded-sm font-mono transition-colors" />
+                               placeholder="$ grep ..." 
+                               class="sidebar-search-input" />
                     </form>
                 </div>
-                <div class="px-4 py-2 text-xs font-semibold text-zinc-500 uppercase tracking-wider font-mono">
-                    Kategoriler
-                </div>
-                @foreach (var cat in DbContext.Categories.ToList())
-                {
-                    <a href="/kategori/@cat.Slug" 
-                       class="block px-4 py-2 text-sm text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 transition-colors">
-                        @cat.Name
-                    </a>
-                }
             </div>
-        </nav>
-    </header>
 
-    <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        @RenderBody()
-    </main>
+            @* ── Card 3: Categories ── *@
+            @* Dynamic category list loaded from the database *@
+            <div class="sidebar-card">
+                <div class="sidebar-card-header">
+                    <span class="sidebar-card-icon">📂</span> Kategoriler
+                </div>
+                <div class="sidebar-card-body">
+                    @foreach (var cat in DbContext.Categories.ToList())
+                    {
+                        <a href="/kategori/@cat.Slug" class="sidebar-link">
+                            <span class="sidebar-link-icon">›</span> @cat.Name
+                        </a>
+                    }
+                </div>
+            </div>
 
-    <footer class="border-t border-zinc-800 mt-16">
-        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <p class="text-xs text-zinc-500 text-center font-mono">
-                &copy; 2026 DevCoreBlog
-            </p>
+            @* ── Card 4: Links ── *@
+            @* External links — GitHub, social profiles, etc. *@
+            <div class="sidebar-card">
+                <div class="sidebar-card-header">
+                    <span class="sidebar-card-icon">🔗</span> Links
+                </div>
+                <div class="sidebar-card-body">
+                    <a href="https://github.com" target="_blank" rel="noopener noreferrer" class="sidebar-link">
+                        <span class="sidebar-link-icon">↗</span> GitHub
+                    </a>
+                </div>
+            </div>
+
+        </aside>
+
+        @* ============================================================================= *@
+        @* MAIN CONTENT — Blog posts, articles, and page content render here             *@
+        @* ============================================================================= *@
+        <main class="site-content">
+            @RenderBody()
+        </main>
+
+        @* ============================================================================= *@
+        @* FOOTER — Simple copyright bar                                                 *@
+        @* ============================================================================= *@
+        <footer class="site-footer">
+            &copy; 2026 DevCoreBlog
+        </footer>
+    </div>
+
+    @* ============================================================================= *@
+    @* COMMAND PALETTE MODAL — Hidden overlay triggered by `/` or `Ctrl+K`            *@
+    @* ============================================================================= *@
+    @* This modal sits outside the grid wrapper (fixed position).                     *@
+    @* When opened, it shows a large input + filtered command list.                   *@
+    @* Design: Solid dark bg + orange border (NO glassmorphism per AGENTS.md).        *@
+    @* ============================================================================= *@
+    <div id="cmd-palette-overlay" class="cmd-palette-overlay">
+        <div id="cmd-palette-modal" class="cmd-palette-modal">
+            @* Command input — monospace, large, with placeholder *@
+            <input id="cmd-palette-input" 
+                   class="cmd-palette-input" 
+                   type="text" 
+                   placeholder="Bir komut yazın... (/home, /grep, /focus)" 
+                   autocomplete="off" 
+                   spellcheck="false" />
+            
+            @* Filtered results list — populated by JavaScript *@
+            <div id="cmd-palette-results" class="cmd-palette-results">
+                @* Results are dynamically rendered by command-palette.js *@
+            </div>
+
+            @* Footer — keyboard shortcut hints *@
+            <div class="cmd-palette-footer">
+                <span>
+                    <span class="cmd-kbd">↑↓</span> gezin
+                    <span class="cmd-kbd">↵</span> çalıştır
+                    <span class="cmd-kbd">esc</span> kapat
+                </span>
+                <span>DevCoreBlog Terminal</span>
+            </div>
         </div>
-    </footer>
+    </div>
 
+    @* ============================================================================= *@
+    @* JavaScript — Mobile menu toggle + Dark mode toggle                             *@
+    @* ============================================================================= *@
     <script>
+        // Mobile menu toggle — show/hide the mobile navigation panel
         document.getElementById('mobile-menu-button').addEventListener('click', function() {
-            document.getElementById('mobile-menu').classList.toggle('hidden');
+            document.getElementById('mobile-menu').classList.toggle('is-open');
+        });
+
+        // Theme toggle logic — switch between dark and light mode
+        var themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
+        var themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+
+        // Show the correct icon based on current theme
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            themeToggleLightIcon.classList.remove('hidden');
+        } else {
+            themeToggleDarkIcon.classList.remove('hidden');
+        }
+
+        // Toggle button click handler
+        var themeToggleBtn = document.getElementById('theme-toggle');
+        themeToggleBtn.addEventListener('click', function() {
+            themeToggleDarkIcon.classList.toggle('hidden');
+            themeToggleLightIcon.classList.toggle('hidden');
+
+            if (localStorage.getItem('theme')) {
+                if (localStorage.getItem('theme') === 'light') {
+                    document.documentElement.classList.add('dark');
+                    localStorage.setItem('theme', 'dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                    localStorage.setItem('theme', 'light');
+                }
+            } else {
+                if (document.documentElement.classList.contains('dark')) {
+                    document.documentElement.classList.remove('dark');
+                    localStorage.setItem('theme', 'light');
+                } else {
+                    document.documentElement.classList.add('dark');
+                    localStorage.setItem('theme', 'dark');
+                }
+            }
         });
     </script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    @* Command Palette — Keyboard shortcuts and command execution *@
+    <script src="~/js/command-palette.js" asp-append-version="true"></script>
 
     @* ============================================================================= *@
     @* Prism.js — Syntax Highlighting Scripts                                        *@

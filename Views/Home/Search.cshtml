@@ -1,5 +1,5 @@
 @* ============================================================================= *@
-@* Home/Search.cshtml — Search Results View (Tech Minimal — Dark Zinc)           *@
+@* Home/Search.cshtml — Search Results View (Terminal Theme)                     *@
 @* ============================================================================= *@
 @* This view displays search results when a user searches for posts.             *@
 @* It shows the search query and a list of matching posts (if any).              *@
@@ -14,39 +14,44 @@
 
 @{
     ViewData["Title"] = "Arama Sonuçları";
+    // Set the terminal breadcrumb path for the topbar
+    ViewData["TerminalPath"] = "ara";
 }
 
 <article class="max-w-3xl">
     @* Page title with search query *@
-    <h1 class="text-3xl font-bold tracking-tight mb-4 text-zinc-100">
+    <h1 class="text-3xl font-bold tracking-tight mb-4" style="color: var(--text-primary);">
         Arama Sonuçları
     </h1>
 
     @* Search query display — shows what the user searched for *@
     @if (!string.IsNullOrEmpty(ViewBag.SearchQuery))
     {
-        <p class="font-mono text-sm text-zinc-400 mb-8 pb-6 border-b border-zinc-800">
-            "<span class="text-accent">@ViewBag.SearchQuery</span>" için arama sonuçları:
+        <p class="font-mono text-sm mb-8 pb-6" style="color: var(--text-secondary); border-bottom: 1px solid var(--border);">
+            $ grep "<span style="color: var(--accent);">@ViewBag.SearchQuery</span>" ./posts/*
         </p>
     }
 
     @* ===================================================================== *@
     @* SEARCH RESULTS — List of matching posts                               *@
     @* ===================================================================== *@
-    @* If there are results, display them as cards. Otherwise, show a        *@
-    @* "no results" message.                                                 *@
-    @* ===================================================================== *@
     @if (Model.Any())
     {
         <div class="space-y-6">
             @foreach (var post in Model)
             {
-                @* Post card — Tech Minimal style (sharp edges, border, no shadow) *@
-                <article class="border border-zinc-800 bg-zinc-900/30 p-6 hover:border-zinc-700 transition-colors">
+                @* Post card — Terminal-styled *@
+                <article class="p-6 transition-colors duration-200"
+                         style="background-color: var(--bg-card); border: 1px solid var(--border);"
+                         onmouseover="this.style.borderColor='var(--accent)';"
+                         onmouseout="this.style.borderColor='var(--border)';">
                     @* Post title — linked to detail page *@
                     <h2 class="text-xl font-semibold mb-2">
                         <a href="/yazi/@post.Slug" 
-                           class="text-zinc-100 hover:text-accent transition-colors">
+                           class="transition-colors"
+                           style="color: var(--text-primary); text-decoration: none;"
+                           onmouseover="this.style.color='var(--accent)';"
+                           onmouseout="this.style.color='var(--text-primary)';">
                             @post.Title
                         </a>
                     </h2>
@@ -56,23 +61,29 @@
                         @if (post.Category != null)
                         {
                             <a href="/kategori/@post.Category.Slug" 
-                               class="font-mono text-xs text-zinc-400 bg-zinc-900 px-2 py-1 rounded-sm border border-zinc-800 hover:border-accent hover:text-accent transition-colors">
+                               class="font-mono text-xs px-2 py-1 transition-colors"
+                               style="color: var(--text-secondary); background: var(--bg-surface); border: 1px solid var(--border);"
+                               onmouseover="this.style.borderColor='var(--accent)'; this.style.color='var(--accent)';"
+                               onmouseout="this.style.borderColor='var(--border)'; this.style.color='var(--text-secondary)';">
                                 @post.Category.Name
                             </a>
                         }
-                        <time class="font-mono text-xs text-zinc-500">
-                            @post.CreatedDate.ToString("dd.MM.yyyy")
+                        <time class="font-mono text-xs" style="color: var(--text-muted);">
+                            @post.CreatedDate.ToString("yyyy-MM-dd")
                         </time>
                     </div>
 
                     @* Post summary — short excerpt *@
-                    <p class="text-zinc-400 text-sm leading-relaxed mb-4">
+                    <p class="text-sm leading-relaxed mb-4" style="color: var(--text-secondary);">
                         @post.Summary
                     </p>
 
                     @* Read more link *@
                     <a href="/yazi/@post.Slug" 
-                       class="inline-block text-sm font-mono text-accent hover:text-accent-light transition-colors">
+                       class="inline-block text-sm font-mono transition-colors"
+                       style="color: var(--accent);"
+                       onmouseover="this.style.color='var(--accent-hover)';"
+                       onmouseout="this.style.color='var(--accent)';">
                         Devamını oku →
                     </a>
                 </article>
@@ -81,21 +92,27 @@
     }
     else
     {
-        @* No results message — displayed when search returns empty *@
-        <div class="border border-zinc-800 rounded-sm p-12 text-center">
-            <p class="text-zinc-500 font-mono text-sm mb-2">
+        @* No results message *@
+        <div class="p-12 text-center" style="border: 1px solid var(--border);">
+            <p class="font-mono text-sm mb-2" style="color: var(--text-muted);">
                 Arama kriterlerinize uygun yazı bulunamadı.
             </p>
-            <p class="text-zinc-600 font-mono text-xs">
-                Farklı anahtar kelimeler deneyin veya <a href="/" class="text-accent hover:text-accent-light transition-colors">ana sayfaya</a> dönün.
+            <p class="font-mono text-xs" style="color: var(--text-secondary);">
+                Farklı anahtar kelimeler deneyin veya 
+                <a href="/" style="color: var(--accent); transition: color 0.15s;" 
+                   onmouseover="this.style.color='var(--accent-hover)';"
+                   onmouseout="this.style.color='var(--accent)';">ana sayfaya</a> dönün.
             </p>
         </div>
     }
 
     @* Navigation — back to home page *@
-    <div class="mt-12 pt-6 border-t border-zinc-800">
+    <div class="mt-12 pt-6" style="border-top: 1px solid var(--border);">
         <a href="/" 
-           class="inline-block px-4 py-2 text-sm font-mono font-medium border border-zinc-700 text-zinc-300 hover:border-accent hover:text-accent rounded-sm transition-colors">
+           class="inline-block px-4 py-2 text-sm font-mono font-medium transition-colors"
+           style="border: 1px solid var(--border); color: var(--text-secondary);"
+           onmouseover="this.style.borderColor='var(--accent)'; this.style.color='var(--accent)';"
+           onmouseout="this.style.borderColor='var(--border)'; this.style.color='var(--text-secondary)';">
             ← Ana Sayfaya Dön
         </a>
     </div>

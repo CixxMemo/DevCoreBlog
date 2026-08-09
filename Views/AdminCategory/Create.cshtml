@@ -13,28 +13,35 @@
     ViewData["Title"] = "Yeni Kategori";
 }
 
-<h1>Yeni Kategori</h1>
+<div class="max-w-3xl mx-auto p-6 bg-zinc-900/50 border border-zinc-800 rounded-sm">
+    <h1 class="text-xl font-semibold text-zinc-100 mb-6 font-mono border-b border-zinc-800 pb-3">
+        Yeni Kategori
+    </h1>
 
-<div class="row">
-    <div class="col-md-6">
-        @* Form posts to the Create action (POST) on the AdminCategoryController *@
-        <form asp-action="Create" method="post">
-            @* Show model-level validation errors only (not field-level — those are inline) *@
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            @* ---- Category Name input ---- *@
-            <div class="mb-3">
-                <label asp-for="Name" class="form-label">Kategori Adı</label>
-                <input asp-for="Name" class="form-control" />
-                @* Inline validation error message for the Name field *@
-                <span asp-validation-for="Name" class="text-danger"></span>
-            </div>
-            @* ---- Submit and Cancel buttons ---- *@
-            <div class="mb-3">
-                <button type="submit" class="btn btn-primary">Kaydet</button>
-                <a asp-action="Index" class="btn btn-secondary">İptal</a>
-            </div>
-        </form>
-    </div>
+    <form asp-action="Create" method="post">
+        <div asp-validation-summary="ModelOnly" class="text-red-400 text-sm mb-4"></div>
+        
+        <div>
+            <label asp-for="Name" class="block text-xs font-mono font-medium text-zinc-400 mb-2 uppercase tracking-wider">
+                Kategori Adı
+            </label>
+            <input asp-for="Name"
+                   class="w-full bg-zinc-900 border border-zinc-800 text-zinc-100 placeholder-zinc-500 focus:border-zinc-600 focus:outline-none px-3 py-2 text-sm rounded-sm font-sans transition-colors mb-1"
+                   placeholder="Kategori adını giriniz..." />
+            <span asp-validation-for="Name" class="text-red-400 text-xs"></span>
+        </div>
+
+        <div class="flex items-center pt-6 mt-6 border-t border-zinc-800">
+            <button type="submit"
+                    class="px-4 py-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-950 font-mono text-xs font-medium rounded-sm transition-colors cursor-pointer">
+                Kaydet
+            </button>
+            <a asp-action="Index"
+               class="px-4 py-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 font-mono text-xs rounded-sm transition-colors ml-2">
+                İptal
+            </a>
+        </div>
+    </form>
 </div>
 
 @* ---- Client-side validation scripts ---- *@

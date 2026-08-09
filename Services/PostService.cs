@@ -86,6 +86,24 @@ public class PostService : IPostService
         return await _postRepository.SearchPostsAsync(query);
     }
 
+    // Get published posts with pagination
+    public async Task<(IEnumerable<Post> Posts, int TotalCount)> GetPublishedPostsPagedAsync(int page, int pageSize)
+    {
+        return await _postRepository.GetPublishedPostsPagedAsync(page, pageSize);
+    }
+
+    // Get published posts by category with pagination
+    public async Task<(IEnumerable<Post> Posts, int TotalCount)> GetPostsByCategorySlugPagedAsync(string categorySlug, int page, int pageSize)
+    {
+        return await _postRepository.GetPostsByCategorySlugPagedAsync(categorySlug, page, pageSize);
+    }
+
+    // Get related posts in the same category (excluding the current post)
+    public async Task<IEnumerable<Post>> GetRelatedPostsAsync(int currentPostId, int categoryId)
+    {
+        return await _postRepository.GetRelatedPostsAsync(currentPostId, categoryId);
+    }
+
     // -------------------------------------------------------------------------
     // VIEW COUNT — Increment when Detail page is visited
     // -------------------------------------------------------------------------
@@ -158,6 +176,16 @@ public class PostService : IPostService
         // This ensures consistent timestamps across different time zones
         post.CreatedDate = DateTime.UtcNow;
 
+        // BUSINESS RULE: Ensure PublishDate is in UTC (form bindings are usually Unspecified Local time)
+        if (post.PublishDate.Kind == DateTimeKind.Unspecified)
+        {
+            post.PublishDate = DateTime.SpecifyKind(post.PublishDate, DateTimeKind.Local).ToUniversalTime();
+        }
+        else
+        {
+            post.PublishDate = post.PublishDate.ToUniversalTime();
+        }
+
         // Add the post to the database via repository
         await _postRepository.AddAsync(post);
 
@@ -169,12 +197,32 @@ public class PostService : IPostService
     // Business rule: Slug is regenerated in case the Title was changed
     public async Task UpdatePostAsync(Post post)
     {
+        // Get the existing post from database to avoid overwriting CreatedDate/ViewCount
+        var existingPost = await _postRepository.GetByIdAsync(post.Id);
+        if (existingPost == null)
+            return;
+
         // BUSINESS RULE: Regenerate slug in case the title was changed
         // This ensures the slug always matches the current title
-        post.Slug = SlugGenerator.Generate(post.Title);
+        existingPost.Title = post.Title;
+        existingPost.Slug = SlugGenerator.Generate(post.Title);
+        existingPost.Summary = post.Summary;
+        existingPost.Content = post.Content;
+        existingPost.CategoryId = post.CategoryId;
+        existingPost.IsActive = post.IsActive;
+
+        // Ensure PublishDate is in UTC
+        if (post.PublishDate.Kind == DateTimeKind.Unspecified)
+        {
+            existingPost.PublishDate = DateTime.SpecifyKind(post.PublishDate, DateTimeKind.Local).ToUniversalTime();
+        }
+        else
+        {
+            existingPost.PublishDate = post.PublishDate.ToUniversalTime();
+        }
 
         // Update the post in the database via repository
-        await _postRepository.UpdateAsync(post);
+        await _postRepository.UpdateAsync(existingPost);
 
         // Commit the transaction to the database
         await _postRepository.SaveChangesAsync();

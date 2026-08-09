@@ -24,6 +24,8 @@ using DevCoreBlog.Models;
 using DevCoreBlog.Services.Interfaces;
 // Import the Post entity (used in Search action return type)
 using DevCoreBlog.Core.Entities;
+// Import Output Caching for performance
+using Microsoft.AspNetCore.OutputCaching;
 
 namespace DevCoreBlog.Controllers;
 
@@ -55,10 +57,14 @@ public class HomeController : Controller
     // Displays the public home page with a list of published blog posts.
     // Only published posts are shown, ordered by creation date (newest first).
     // Each post includes its related Category for display in the view.
-    public async Task<IActionResult> Index()
+    [OutputCache(Duration = 60)]
+    public async Task<IActionResult> Index(int page = 1)
     {
-        // Delegate to service layer — business logic is in PostService
-        var posts = await _postService.GetPublishedPostsAsync();
+        int pageSize = 9;
+        var result = await _postService.GetPublishedPostsPagedAsync(page, pageSize);
+
+        ViewBag.CurrentPage = page;
+        ViewBag.TotalPages = (int)Math.Ceiling((double)result.TotalCount / pageSize);
 
         // Set Open Graph (OG) meta tags for social media sharing (home page)
         ViewBag.OgTitle = "DevCoreBlog - ASP.NET Core ve Modern Web Geliştirme";
@@ -67,7 +73,7 @@ public class HomeController : Controller
         ViewBag.OgUrl = "/";
 
         // Pass the list of posts to the view
-        return View(posts);
+        return View(result.Posts.ToList());
     }
 
     // GET: /yazi/{slug}
@@ -77,6 +83,7 @@ public class HomeController : Controller
     //
     // Side Effect: Increments the ViewCount by 1 every time this action is called.
     // This provides a simple analytics metric for post popularity.
+    [OutputCache(Duration = 60)]
     public async Task<IActionResult> Detail(string slug)
     {
         // Step 1: Get the post by slug from service layer
@@ -113,6 +120,9 @@ public class HomeController : Controller
         // ViewBag is a dynamic container for passing extra data from Controller to View
         ViewBag.ViewCount = updatedPost.ViewCount;
         ViewBag.ReadingTime = readingTimeMinutes;
+        
+        // Fetch related posts and pass to ViewBag
+        ViewBag.RelatedPosts = await _postService.GetRelatedPostsAsync(updatedPost.Id, updatedPost.CategoryId);
 
         // Step 5: Set Open Graph (OG) meta tags for social media sharing
         // These values are used by _Layout.cshtml to generate <meta property="og:..."> tags
@@ -130,7 +140,8 @@ public class HomeController : Controller
     // Displays all published posts in a specific category (identified by slug).
     // If the category doesn't exist, returns 404.
     // The category name is passed via ViewBag for display in the view.
-    public async Task<IActionResult> Category(string slug)
+    [OutputCache(Duration = 60)]
+    public async Task<IActionResult> Category(string slug, int page = 1)
     {
         // First, get the category by slug from service layer
         var category = await _categoryService.GetCategoryBySlugAsync(slug);
@@ -141,11 +152,14 @@ public class HomeController : Controller
             return NotFound();
         }
 
-        // Get all posts in this category from service layer
-        var posts = await _postService.GetPostsByCategorySlugAsync(slug);
+        int pageSize = 9;
+        var result = await _postService.GetPostsByCategorySlugPagedAsync(slug, page, pageSize);
 
-        // Pass the category name to the view via ViewBag
+        // Pass the category name and slug to the view via ViewBag
         ViewBag.CategoryName = category.Name;
+        ViewBag.CategorySlug = category.Slug;
+        ViewBag.CurrentPage = page;
+        ViewBag.TotalPages = (int)Math.Ceiling((double)result.TotalCount / pageSize);
 
         // Set Open Graph (OG) meta tags for social media sharing
         ViewBag.OgTitle = $"{category.Name} Kategorisi - DevCoreBlog";
@@ -154,7 +168,7 @@ public class HomeController : Controller
         ViewBag.OgUrl = $"/kategori/{category.Slug}";
 
         // Pass the list of posts to the Category view
-        return View(posts);
+        return View(result.Posts.ToList());
     }
 
     // -------------------------------------------------------------------------
@@ -172,6 +186,7 @@ public class HomeController : Controller
     //   4. Service delegates to PostRepository.SearchPostsAsync(query)
     //   5. Repository filters posts where Title OR Content contains the query
     //   6. Results are displayed in Search.cshtml view
+    [Route("ara")]
     public async Task<IActionResult> Search(string query)
     {
         // Guard clause: if query is empty or whitespace, return empty results

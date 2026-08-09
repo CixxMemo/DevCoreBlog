@@ -1,14 +1,14 @@
-﻿@* ============================================================================= *@
-@* Home/Index.cshtml — Public Home Page View (Tech Minimal — Dark Zinc) *@
 @* ============================================================================= *@
-@* This is the main landing page of the blog. It displays a list of published *@
-@* blog posts as minimalist cards with sharp borders, monospace meta tags, and *@
-@* subtle hover states. Each card shows the post title, summary, category badge *@
-@* (linked to the category page), creation date, and a "Read More" link. *@
-@* If there are no published posts, a clean empty state message is shown. *@
-@* *@
-@* Phase 2 (FIX): Zinc dark palette. Sharp borders, no shadows, no gradients. *@
-@* Tags/meta styled with font-mono text-xs bg-zinc-900 border-zinc-800. *@
+@* Home/Index.cshtml — Public Home Page View (Phase 2 — Grid Card Layout)       *@
+@* ============================================================================= *@
+@* This is the main landing page of the blog. It displays a grid of published   *@
+@* blog posts as terminal-styled cards.                                         *@
+@*                                                                              *@
+@* Phase 2 Card Design:                                                         *@
+@*   - Header: Monospace date and category [2026-08-09] [C#]                    *@
+@*   - Body: Post title in Terminal Orange, brief description                   *@
+@*   - Interaction: Entire card is clickable, minimalist hover transition       *@
+@*   - Grid: 2 columns on desktop, 1 column on mobile                          *@
 @* ============================================================================= *@
 
 @using DevCoreBlog.Models
@@ -16,54 +16,94 @@
 
 @{
     ViewData["Title"] = "Ana Sayfa";
+    // Set the terminal breadcrumb path for the topbar
+    ViewData["TerminalPath"] = "posts";
 }
 
-@* Page heading — bold, high contrast *@
-<h1 class="text-2xl font-bold tracking-tight mb-8 text-zinc-100 font-mono">
-    Yazılar
+@* Page heading — bold, high contrast, monospace *@
+<h1 class="text-2xl font-bold tracking-tight mb-8 font-mono" style="color: var(--text-primary);">
+    $ ls ./posts/
 </h1>
 
 @if (Model.Any())
 {
-    <div class="space-y-4">
+    @* Post Grid — 2 columns on desktop, 1 on mobile *@
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        @{ int index = 0; }
         @foreach (var item in Model)
         {
-            <article class="border border-zinc-800 rounded-sm p-6 hover:border-zinc-600 transition-colors">
-                <h2 class="text-lg font-semibold mb-3">
-                    <a asp-controller="Home" asp-action="Detail" asp-route-slug="@item.Slug" 
-                       class="text-zinc-100 hover:text-accent transition-colors">
-                        @item.Title
-                    </a>
-                </h2>
-
-                <div class="flex items-center gap-3 mb-4">
+            @* ── Post Card ── *@
+            @* Entire card is wrapped in an <a> tag for full-card clickability *@
+            <a href="/yazi/@item.Slug" 
+               class="group block animate-fade-up post-card"
+               style="animation-delay: @(index * 75)ms;">
+                
+                @* Card Header — Terminal-style meta: [date] [category] *@
+                <div class="post-card-meta">
+                    <span class="post-card-tag">[@item.CreatedDate.ToString("yyyy-MM-dd")]</span>
                     @if (item.Category != null)
                     {
-                        <a href="/kategori/@item.Category.Slug" 
-                           class="font-mono text-xs text-zinc-400 bg-zinc-900 px-2 py-1 rounded-sm border border-zinc-800 hover:border-accent hover:text-accent transition-colors">
-                            @item.Category.Name
-                        </a>
+                        <span class="post-card-tag">[@item.Category.Name]</span>
                     }
-                    <time class="font-mono text-xs text-zinc-500">
-                        @item.CreatedDate.ToString("dd.MM.yyyy")
-                    </time>
                 </div>
 
-                <p class="text-zinc-400 text-sm leading-relaxed mb-4">
+                @* Card Body — Title (orange) + description *@
+                <h2 class="post-card-title">
+                    @item.Title
+                </h2>
+
+                <p class="post-card-summary">
                     @item.Summary
                 </p>
 
-                <a href="/yazi/@item.Slug" 
-                   class="inline-block px-3 py-1.5 text-xs font-mono font-medium border border-zinc-700 text-zinc-300 hover:border-accent hover:text-accent rounded-sm transition-colors">
-                    Devamını Oku →
-                </a>
-            </article>
+                @* Card Footer — Read more indicator *@
+                <div class="post-card-footer">
+                    <span>cat README.md</span>
+                    <span class="post-card-arrow">&rarr;</span>
+                </div>
+            </a>
+            index++;
         }
     </div>
+
+    @* Pagination — terminal-styled page navigation *@
+    @if (ViewBag.TotalPages > 1)
+    {
+        <div class="mt-8 flex justify-between items-center pt-6" style="border-top: 1px solid var(--border);">
+            @if (ViewBag.CurrentPage > 1)
+            {
+                <a href="?page=@(ViewBag.CurrentPage - 1)" class="pagination-link">
+                    ← prev
+                </a>
+            }
+            else
+            {
+                <div></div>
+            }
+
+            <span class="font-mono text-xs" style="color: var(--text-muted);">
+                [@ViewBag.CurrentPage/@ViewBag.TotalPages]
+            </span>
+
+            @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+            {
+                <a href="?page=@(ViewBag.CurrentPage + 1)" class="pagination-link">
+                    next →
+                </a>
+            }
+            else
+            {
+                <div></div>
+            }
+        </div>
+    }
 }
 else
 {
-    <div class="border border-zinc-800 rounded-sm p-12 text-center">
-        <p class="text-zinc-500 font-mono text-sm">Henüz yazı yok.</p>
+    <div class="p-12 text-center" style="border: 1px solid var(--border);">
+        <p class="font-mono text-sm" style="color: var(--text-muted);">
+            $ ls ./posts/<br>
+            <span style="color: var(--accent);">0 results</span>
+        </p>
     </div>
 }

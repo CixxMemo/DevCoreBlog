@@ -1,75 +1,121 @@
 @* ============================================================================= *@
-@* Home/Category.cshtml — Category Posts List View *@
+@* Home/Category.cshtml — Category Posts List View (Terminal Theme)              *@
 @* ============================================================================= *@
-@* This view displays all published posts in a specific category. The category *@
-@* name is shown as a heading, followed by a list of posts in the same card *@
-@* structure as the home page. If there are no posts in the category, a *@
-@* friendly message is shown instead. *@
-@* This view is rendered by HomeController.Category(string slug) action. *@
+@* This view displays all published posts in a specific category. The category  *@
+@* name is shown as a heading, followed by a list of posts in the same card     *@
+@* structure as the home page. If there are no posts in the category, a         *@
+@* friendly message is shown instead.                                           *@
+@* This view is rendered by HomeController.Category(string slug) action.        *@
 @* ============================================================================= *@
 
-@* Import the Post model so we can use it in the @model directive *@
 @using DevCoreBlog.Models
-@* Declare the model type: a list of Post objects passed from HomeController.Category() *@
 @model List<Post>
 
-@* Set the page title to the category name (shown in browser tab and <title> tag) *@
 @{
     ViewData["Title"] = ViewBag.CategoryName;
+    // Set the terminal breadcrumb path for the topbar
+    ViewData["TerminalPath"] = $"kategori/{ViewBag.CategorySlug}";
 }
 
-@* --------------------------------------------------------------------------- *@
-@* PAGE HEADER *@
-@* --------------------------------------------------------------------------- *@
-@* Main heading: shows the category name from ViewBag *@
-<h1 class="mb-4">"@ViewBag.CategoryName" kategorisindeki yazılar</h1>
+@* Page heading — bold, high contrast, monospace *@
+<h1 class="text-2xl font-bold tracking-tight mb-8 font-mono" style="color: var(--text-primary);">
+    "@ViewBag.CategoryName" Kategorisi
+</h1>
 
-@* --------------------------------------------------------------------------- *@
-@* POST LIST OR EMPTY MESSAGE *@
-@* --------------------------------------------------------------------------- *@
-@* Check if there are any posts in this category *@
 @if (Model.Any())
 {
-    @* Loop through each post and render a Bootstrap card for it *@
-    @foreach (var item in Model)
-    {
-        @* Each post is displayed as a Bootstrap card with consistent spacing *@
-        <div class="card mb-3">
-            <div class="card-body">
-                @* Post title as a heading *@
-                <h2 class="card-title h4">
-                    @* Title links to the post detail page using the slug-based URL *@
-                    <a asp-controller="Home" asp-action="Detail" asp-route-slug="@item.Slug" class="text-decoration-none">
+    <div class="space-y-4">
+        @foreach (var item in Model)
+        {
+            @* Post card — Terminal-styled with orange hover border *@
+            <article class="p-6 transition-colors duration-200"
+                     style="background-color: var(--bg-card); border: 1px solid var(--border);"
+                     onmouseover="this.style.borderColor='var(--accent)';"
+                     onmouseout="this.style.borderColor='var(--border)';">
+                <h2 class="text-lg font-semibold mb-3">
+                    <a asp-controller="Home" asp-action="Detail" asp-route-slug="@item.Slug" 
+                       class="transition-colors"
+                       style="color: var(--text-primary); text-decoration: none;"
+                       onmouseover="this.style.color='var(--accent)';"
+                       onmouseout="this.style.color='var(--text-primary)';">
                         @item.Title
                     </a>
                 </h2>
 
-                @* Meta information row: category badge + creation date *@
-                <div class="mb-2">
-                    @* Category badge — links to the category page (/kategori/{slug}) *@
+                <div class="flex items-center gap-3 mb-4">
                     @if (item.Category != null)
                     {
-                        <a href="/kategori/@item.Category.Slug" class="badge text-bg-primary text-decoration-none">
+                        <a href="/kategori/@item.Category.Slug" 
+                           class="font-mono text-xs px-2 py-1 transition-colors"
+                           style="color: var(--text-secondary); background: var(--bg-surface); border: 1px solid var(--border);"
+                           onmouseover="this.style.borderColor='var(--accent)'; this.style.color='var(--accent)';"
+                           onmouseout="this.style.borderColor='var(--border)'; this.style.color='var(--text-secondary)';">
                             @item.Category.Name
                         </a>
                     }
-                    @* Creation date formatted as dd.MM.yyyy (e.g. 05.08.2026) *@
-                    <small class="text-muted ms-2">@item.CreatedDate.ToString("dd.MM.yyyy")</small>
+                    <time class="font-mono text-xs" style="color: var(--text-muted);">
+                        @item.CreatedDate.ToString("yyyy-MM-dd")
+                    </time>
                 </div>
 
-                @* Post summary text *@
-                <p class="card-text">@item.Summary</p>
+                <p class="text-sm leading-relaxed mb-4" style="color: var(--text-secondary);">
+                    @item.Summary
+                </p>
 
-                @* "Read More" button — links to the post detail page *@
-                <a href="/yazi/@item.Slug" class="btn btn-sm btn-outline-primary">Devamını Oku</a>
-            </div>
+                <a href="/yazi/@item.Slug" 
+                   class="inline-block px-3 py-1.5 text-xs font-mono font-medium transition-colors"
+                   style="border: 1px solid var(--border); color: var(--text-secondary);"
+                   onmouseover="this.style.borderColor='var(--accent)'; this.style.color='var(--accent)';"
+                   onmouseout="this.style.borderColor='var(--border)'; this.style.color='var(--text-secondary)';">
+                    Devamını Oku →
+                </a>
+            </article>
+        }
+    </div>
+
+    @* Pagination *@
+    @if (ViewBag.TotalPages > 1)
+    {
+        <div class="mt-8 flex justify-between items-center pt-6" style="border-top: 1px solid var(--border);">
+            @if (ViewBag.CurrentPage > 1)
+            {
+                <a href="?page=@(ViewBag.CurrentPage - 1)" 
+                   class="px-4 py-2 text-sm font-mono font-medium transition-colors"
+                   style="border: 1px solid var(--border); color: var(--text-secondary);"
+                   onmouseover="this.style.borderColor='var(--accent)'; this.style.color='var(--accent)';"
+                   onmouseout="this.style.borderColor='var(--border)'; this.style.color='var(--text-secondary)';">
+                    ← Önceki Sayfa
+                </a>
+            }
+            else
+            {
+                <div></div>
+            }
+
+            <span class="font-mono text-xs" style="color: var(--text-muted);">
+                Sayfa @ViewBag.CurrentPage / @ViewBag.TotalPages
+            </span>
+
+            @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+            {
+                <a href="?page=@(ViewBag.CurrentPage + 1)" 
+                   class="px-4 py-2 text-sm font-mono font-medium transition-colors"
+                   style="border: 1px solid var(--border); color: var(--text-secondary);"
+                   onmouseover="this.style.borderColor='var(--accent)'; this.style.color='var(--accent)';"
+                   onmouseout="this.style.borderColor='var(--border)'; this.style.color='var(--text-secondary)';">
+                    Sonraki Sayfa →
+                </a>
+            }
+            else
+            {
+                <div></div>
+            }
         </div>
     }
 }
 else
 {
-    @* Shown when there are no published posts in this category *@
-    <div class="alert alert-info">
-        Bu kategoride yazı yok.
+    <div class="p-12 text-center" style="border: 1px solid var(--border);">
+        <p class="font-mono text-sm" style="color: var(--text-muted);">Bu kategoride yazı yok.</p>
     </div>
 }

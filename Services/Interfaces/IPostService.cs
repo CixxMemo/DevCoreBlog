@@ -42,6 +42,15 @@ public interface IPostService
     // Search posts by title or content (only published posts)
     Task<IEnumerable<Post>> SearchPostsAsync(string query);
 
+    // Get published posts with pagination
+    Task<(IEnumerable<Post> Posts, int TotalCount)> GetPublishedPostsPagedAsync(int page, int pageSize);
+
+    // Get published posts by category with pagination
+    Task<(IEnumerable<Post> Posts, int TotalCount)> GetPostsByCategorySlugPagedAsync(string categorySlug, int page, int pageSize);
+
+    // Get related posts in the same category (excluding the current post)
+    Task<IEnumerable<Post>> GetRelatedPostsAsync(int currentPostId, int categoryId);
+
     // Increment the view count of a post by 1 (called when Detail page is visited)
     // Returns the updated Post with the new ViewCount value
     Task<Post?> IncrementViewCountAsync(int id);

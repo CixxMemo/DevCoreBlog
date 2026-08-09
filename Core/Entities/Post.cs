@@ -44,6 +44,14 @@ public class Post : BaseEntity
     public int ViewCount { get; set; } = 0;
 
     // -----------------------------------------------------------------------
+    // SCHEDULED PUBLISHING
+    // -----------------------------------------------------------------------
+    // The date and time when the post should become visible to visitors.
+    // If this date is in the future, the post remains hidden on the public site.
+    // Defaults to UTC Now (immediately published).
+    public DateTime PublishDate { get; set; } = DateTime.UtcNow;
+
+    // -----------------------------------------------------------------------
     // RELATIONSHIP: Foreign key and navigation property to Category
     // -----------------------------------------------------------------------
     // CategoryId is the foreign key — stores the Id of the parent Category.

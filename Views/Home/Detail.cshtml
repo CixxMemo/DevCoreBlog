@@ -1,12 +1,12 @@
 @* ============================================================================= *@
-@* Home/Detail.cshtml — Single Blog Post Detail View (Tech Minimal — Dark Zinc) *@
+@* Home/Detail.cshtml — Single Blog Post Detail View (Terminal Theme)            *@
 @* ============================================================================= *@
-@* This view displays a single blog post in detail. It shows the post title, *@
-@* category badge (linked to the category page), creation date, and the full *@
-@* post content. A link back to the home page is provided at the bottom. *@
-@* *@
-@* Phase 2 (FIX): Zinc dark palette. Sharp borders, monospace meta tags. *@
-@* Tags styled with font-mono text-xs bg-zinc-900 border-zinc-800. *@
+@* This view displays a single blog post in detail. It shows the post title,    *@
+@* category badge (linked to the category page), creation date, reading time,   *@
+@* view count, and the full post content rendered from Markdown.                *@
+@* A link back to the home page is provided at the bottom.                      *@
+@*                                                                              *@
+@* Terminal Theme: #0d1117 bg, #FF8C00 accent, monospace meta, sharp edges.     *@
 @* ============================================================================= *@
 
 @using DevCoreBlog.Models
@@ -15,30 +15,35 @@
 
 @{
     ViewData["Title"] = Model.Title;
+    // Set the terminal breadcrumb path for the topbar
+    ViewData["TerminalPath"] = $"posts/{Model.Slug}";
 }
 
 <article class="max-w-3xl">
     @* Post title — large, bold, high contrast *@
-    <h1 class="text-3xl font-bold tracking-tight mb-4 text-zinc-100">
+    <h1 class="text-3xl font-bold tracking-tight mb-4" style="color: var(--text-primary);">
         @Model.Title
     </h1>
 
     @* Meta information row: category badge + creation date + reading time + view count *@
-    <div class="flex items-center gap-3 mb-8 pb-6 border-b border-zinc-800">
+    <div class="flex items-center gap-3 mb-8 pb-6" style="border-bottom: 1px solid var(--border);">
         @if (Model.Category != null)
         {
             <a href="/kategori/@Model.Category.Slug" 
-               class="font-mono text-xs text-zinc-400 bg-zinc-900 px-2 py-1 rounded-sm border border-zinc-800 hover:border-accent hover:text-accent transition-colors">
+               class="font-mono text-xs px-2 py-1 transition-colors"
+               style="color: var(--text-secondary); background: var(--bg-surface); border: 1px solid var(--border);"
+               onmouseover="this.style.borderColor='var(--accent)'; this.style.color='var(--accent)';"
+               onmouseout="this.style.borderColor='var(--border)'; this.style.color='var(--text-secondary)';">
                 @Model.Category.Name
             </a>
         }
-        <time class="font-mono text-xs text-zinc-500">
-            @Model.CreatedDate.ToString("dd.MM.yyyy")
+        <time class="font-mono text-xs" style="color: var(--text-muted);">
+            @Model.CreatedDate.ToString("yyyy-MM-dd")
         </time>
-        <span class="font-mono text-xs text-zinc-500">
+        <span class="font-mono text-xs" style="color: var(--text-muted);">
             @ViewBag.ReadingTime min read
         </span>
-        <span class="font-mono text-xs text-zinc-500">
+        <span class="font-mono text-xs" style="color: var(--text-muted);">
             @ViewBag.ViewCount views
         </span>
     </div>
@@ -51,14 +56,44 @@
     @* Prism.js (loaded in _Layout.cshtml) highlights code blocks            *@
     @* automatically via the "language-*" classes Markdig generates.         *@
     @* ===================================================================== *@
-    <div class="markdown-content prose prose-invert max-w-none text-zinc-300 leading-relaxed">
+    <div class="markdown-content prose prose-invert max-w-none leading-relaxed" style="color: var(--text-secondary);">
         @Html.Raw(MarkdownHelper.ToHtml(Model.Content))
     </div>
 
-    @* Navigation — back to home page *@
-    <div class="mt-12 pt-6 border-t border-zinc-800">
+    @* Navigation — back to home page & Related Posts *@
+    <div class="mt-12 pt-6" style="border-top: 1px solid var(--border);">
+        @if (ViewBag.RelatedPosts != null && ((IEnumerable<DevCoreBlog.Core.Entities.Post>)ViewBag.RelatedPosts).Any())
+        {
+            <div class="mb-8">
+                <h3 class="text-lg font-bold mb-4 font-mono" style="color: var(--text-primary);">
+                    Benzer Yazılar
+                </h3>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    @foreach (var relatedPost in (IEnumerable<DevCoreBlog.Core.Entities.Post>)ViewBag.RelatedPosts)
+                    {
+                        <a href="/yazi/@relatedPost.Slug" 
+                           class="block p-4 transition-all duration-200 group"
+                           style="border: 1px solid var(--border); border-left: 4px solid transparent;"
+                           onmouseover="this.style.borderColor='var(--accent)'; this.style.borderLeftColor='var(--accent)'; this.style.transform='translateY(-2px)';"
+                           onmouseout="this.style.borderColor='var(--border)'; this.style.borderLeftColor='transparent'; this.style.transform='none';">
+                            <h4 class="text-sm font-semibold mb-2 line-clamp-2 transition-colors"
+                                style="color: var(--text-primary);">
+                                @relatedPost.Title
+                            </h4>
+                            <time class="font-mono text-xs" style="color: var(--text-muted);">
+                                @relatedPost.CreatedDate.ToString("yyyy-MM-dd")
+                            </time>
+                        </a>
+                    }
+                </div>
+            </div>
+        }
+
         <a href="/" 
-           class="inline-block px-4 py-2 text-sm font-mono font-medium border border-zinc-700 text-zinc-300 hover:border-accent hover:text-accent rounded-sm transition-colors">
+           class="inline-block px-4 py-2 text-sm font-mono font-medium transition-colors"
+           style="border: 1px solid var(--border); color: var(--text-secondary);"
+           onmouseover="this.style.borderColor='var(--accent)'; this.style.color='var(--accent)';"
+           onmouseout="this.style.borderColor='var(--border)'; this.style.color='var(--text-secondary)';">
             ← Ana Sayfaya Dön
         </a>
     </div>
