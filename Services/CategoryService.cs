@@ -29,7 +29,7 @@
 // =============================================================================
 
 using DevCoreBlog.Core.Entities;
-using DevCoreBlog.Helpers;
+using DevCoreBlog.Shared.Helpers;
 using DevCoreBlog.Repositories;
 using DevCoreBlog.Services.Interfaces;
 

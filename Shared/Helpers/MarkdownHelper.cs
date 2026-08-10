@@ -21,7 +21,7 @@
 //   - This is important for performance — building a pipeline is expensive.
 //
 // Usage in Views:
-//   @Html.Raw(DevCoreBlog.Helpers.MarkdownHelper.ToHtml(Model.Content))
+//   @Html.Raw(DevCoreBlog.Shared.Helpers.MarkdownHelper.ToHtml(Model.Content))
 //
 // Security Note:
 //   - Markdig does NOT sanitize HTML by default. If user input is untrusted,
@@ -31,7 +31,7 @@
 
 using Markdig;
 
-namespace DevCoreBlog.Helpers;
+namespace DevCoreBlog.Shared.Helpers;
 
 // Static helper class — no instantiation needed, call MarkdownHelper.ToHtml() directly
 public static class MarkdownHelper

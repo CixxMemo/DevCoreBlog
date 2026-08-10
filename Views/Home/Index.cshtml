@@ -28,7 +28,7 @@
 @if (Model.Any())
 {
     @* Post Grid — 2 columns on desktop, 1 on mobile *@
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
         @{ int index = 0; }
         @foreach (var item in Model)
         {
@@ -52,7 +52,7 @@
                     @item.Title
                 </h2>
 
-                <p class="post-card-summary">
+                <p class="post-card-summary leading-relaxed">
                     @item.Summary
                 </p>
 

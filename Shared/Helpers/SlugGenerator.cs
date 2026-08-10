@@ -17,7 +17,7 @@
 // Import Regex for pattern-based string replacement
 using System.Text.RegularExpressions;
 
-namespace DevCoreBlog.Helpers;
+namespace DevCoreBlog.Shared.Helpers;
 
 // Static class — cannot be instantiated, accessed as SlugGenerator.Generate(...)
 public static class SlugGenerator

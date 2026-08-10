@@ -69,9 +69,9 @@ namespace DevCoreBlog.Controllers
         [HttpPost]
         public async Task<IActionResult> Login(string username, string password)
         {
-            // Read expected credentials from appsettings.json
-            var expectedUsername = _configuration["AdminCredentials:Username"];
-            var expectedPassword = _configuration["AdminCredentials:Password"];
+            // Read expected credentials from environment variables (.env file)
+            var expectedUsername = Environment.GetEnvironmentVariable("ADMIN_USERNAME");
+            var expectedPassword = Environment.GetEnvironmentVariable("ADMIN_PASSWORD");
 
             // Compare submitted credentials with configured ones
             if (username == expectedUsername && password == expectedPassword)

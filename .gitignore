@@ -1,0 +1,6 @@
+## .NET Build Outputs
+bin/
+obj/
+
+## Environment variables (secrets — NEVER commit)
+.env
