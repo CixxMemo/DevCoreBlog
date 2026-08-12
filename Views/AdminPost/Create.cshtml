@@ -19,116 +19,118 @@
 @* ============================================================================= *@
 @* FORM CONTAINER — Tech Minimal card                                            *@
 @* ============================================================================= *@
-<div class="max-w-3xl mx-auto p-6 bg-zinc-900/50 border border-zinc-800 rounded-sm">
-    @* Page title — monospace, bordered bottom *@
-    <h1 class="text-xl font-semibold text-zinc-100 mb-6 font-mono border-b border-zinc-800 pb-3">
-        Yeni Yazı
-    </h1>
+<form asp-action="Create" method="post">
+    @* ============================================================================= *@
+    @* TOP HEADER BAR                                                                *@
+    @* ============================================================================= *@
+    <div class="flex justify-between items-center mb-6 pb-3 border-b border-zinc-800">
+        <h1 class="text-xl font-semibold text-zinc-100 font-mono">
+            Yeni Yazı
+        </h1>
+        <div class="flex items-center gap-4">
+            <div class="flex items-center gap-2 text-sm text-zinc-300 font-mono">
+                <input asp-for="IsActive" class="w-4 h-4 bg-zinc-900 border border-zinc-700 text-accent focus:ring-0 focus:ring-offset-0 accent-emerald-500 cursor-pointer" />
+                <label asp-for="IsActive" class="cursor-pointer select-none">
+                    Yayında
+                </label>
+            </div>
+            <a asp-action="Index" class="px-4 py-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 font-mono text-xs rounded-sm transition-colors">
+                İptal
+            </a>
+            <button type="submit" class="px-4 py-2 bg-accent hover:bg-accent-light text-zinc-950 font-mono text-xs font-bold rounded-sm transition-colors cursor-pointer">
+                Kaydet
+            </button>
+        </div>
+    </div>
 
-    @* Form posts to the Create action (POST) on the AdminPostController *@
-    <form asp-action="Create" method="post">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        @* ============================================================================= *@
+        @* LEFT COLUMN: Main Writing Area (9/12)                                         *@
+        @* ============================================================================= *@
+        <div class="lg:col-span-9 bg-zinc-900/50 border border-zinc-800 rounded-sm p-6">
         <div asp-validation-summary="ModelOnly" class="text-red-400 text-sm mb-4"></div>
 
         @* ---- Title input ---- *@
-        <div>
-            <label asp-for="Title" class="block text-xs font-mono font-medium text-zinc-400 mb-2 uppercase tracking-wider">
-                Başlık
-            </label>
+        <div class="mb-6">
             <input asp-for="Title"
-                   class="w-full bg-zinc-900 border border-zinc-800 text-zinc-100 placeholder-zinc-500 focus:border-zinc-600 focus:outline-none px-3 py-2 text-sm rounded-sm font-sans transition-colors mb-1"
+                   class="w-full bg-transparent border-none text-zinc-100 placeholder-zinc-600 focus:ring-0 focus:outline-none text-4xl font-bold font-sans px-0 py-2 mb-1"
                    placeholder="Yazı başlığını giriniz..." />
             <span asp-validation-for="Title" class="text-red-400 text-xs"></span>
         </div>
 
-        @* ---- Summary textarea (4 rows) ---- *@
-        <div class="mt-4">
-            <label asp-for="Summary" class="block text-xs font-mono font-medium text-zinc-400 mb-2 uppercase tracking-wider">
-                Özet
-            </label>
-            <textarea asp-for="Summary" rows="4"
-                      class="w-full bg-zinc-900 border border-zinc-800 text-zinc-100 placeholder-zinc-500 focus:border-zinc-600 focus:outline-none px-3 py-2 text-sm rounded-sm font-sans transition-colors mb-1"
-                      placeholder="Yazının kısa özetini giriniz..."></textarea>
-            <span asp-validation-for="Summary" class="text-red-400 text-xs"></span>
-        </div>
-
-        @* ---- Image Upload ---- *@
-        <div class="mt-4 mb-4 p-4 border border-zinc-800 bg-zinc-950 rounded-sm">
+        @* ---- Content Editor (Toast UI) ---- *@
+        <div class="mb-6">
             <label class="block text-xs font-mono font-medium text-zinc-400 mb-2 uppercase tracking-wider">
-                İçeriğe Görsel Ekle
+                İçerik (Markdown)
             </label>
-            <div class="flex items-center gap-3">
-                <input type="file" id="imageUpload" accept="image/*" class="text-xs text-zinc-400 file:mr-4 file:py-2 file:px-4 file:rounded-sm file:border-0 file:text-xs file:font-mono file:font-semibold file:bg-zinc-800 file:text-zinc-300 hover:file:bg-zinc-700 cursor-pointer" />
-                <button type="button" id="btnUpload" class="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 font-mono text-xs rounded-sm transition-colors cursor-pointer hidden">
-                    Yükle
-                </button>
+            <div id="editor" class="mb-1 border border-zinc-800 rounded-sm"></div>
+            @* Hidden textarea for form submission *@
+            <textarea asp-for="Content" id="Content" class="hidden"></textarea>
+            <span asp-validation-for="Content" class="text-red-400 text-xs"></span>
+        </div>
+    </div>
+
+    @* ============================================================================= *@
+    @* RIGHT COLUMN: Post Settings Panel (3/12)                                      *@
+    @* ============================================================================= *@
+    <div class="lg:col-span-3 space-y-6">
+        
+
+
+        @* Meta Settings Card *@
+        <div class="bg-zinc-900/50 border border-zinc-800 rounded-sm p-4">
+            <h2 class="text-xs font-mono font-medium text-zinc-100 mb-4 uppercase tracking-wider border-b border-zinc-800 pb-2">
+                Yazı Ayarları
+            </h2>
+
+            @* ---- Category dropdown ---- *@
+            <div class="mb-4">
+                <label asp-for="CategoryId" class="block text-xs font-mono text-zinc-400 mb-2">Kategori</label>
+                <select asp-for="CategoryId" asp-items="ViewBag.CategoryId"
+                        class="w-full bg-zinc-900 border border-zinc-800 text-zinc-100 focus:border-zinc-600 focus:outline-none px-3 py-2 text-sm rounded-sm font-sans transition-colors mb-1">
+                    <option value="">Seçiniz...</option>
+                </select>
+                <span asp-validation-for="CategoryId" class="text-red-400 text-xs"></span>
             </div>
-            <div id="uploadResult" class="mt-3 hidden">
-                <div class="flex items-center gap-2">
-                    <input type="text" id="markdownCode" readonly class="flex-1 bg-zinc-900 border border-zinc-800 text-zinc-300 px-3 py-1.5 text-xs rounded-sm font-mono focus:outline-none" />
-                    <button type="button" id="btnCopy" class="px-3 py-1.5 bg-accent hover:bg-accent-light text-zinc-950 font-mono text-xs rounded-sm transition-colors cursor-pointer font-bold">
-                        Kopyala
+
+            @* ---- Publish Date input ---- *@
+            <div class="mb-4">
+                <label asp-for="PublishDate" class="block text-xs font-mono text-zinc-400 mb-2">Yayınlanma Tarihi</label>
+                <input asp-for="PublishDate" type="datetime-local"
+                       class="w-full bg-zinc-900 border border-zinc-800 text-zinc-100 placeholder-zinc-500 focus:border-zinc-600 focus:outline-none px-3 py-2 text-sm rounded-sm font-sans transition-colors mb-1" />
+                <span asp-validation-for="PublishDate" class="text-red-400 text-xs"></span>
+            </div>
+
+            @* ---- Summary textarea ---- *@
+            <div class="mb-4">
+                <label asp-for="Summary" class="block text-xs font-mono text-zinc-400 mb-2">Özet</label>
+                <textarea asp-for="Summary" rows="4"
+                          class="w-full bg-zinc-900 border border-zinc-800 text-zinc-100 placeholder-zinc-500 focus:border-zinc-600 focus:outline-none px-3 py-2 text-sm rounded-sm font-sans transition-colors mb-1"
+                          placeholder="Yazının kısa özetini giriniz..."></textarea>
+                <span asp-validation-for="Summary" class="text-red-400 text-xs"></span>
+            </div>
+
+            @* ---- Image Upload ---- *@
+            <div class="mt-4 p-3 border border-zinc-800 bg-zinc-950 rounded-sm">
+                <label class="block text-xs font-mono text-zinc-400 mb-2 uppercase tracking-wider">İçeriğe Görsel Ekle</label>
+                <div class="flex flex-col gap-2">
+                    <input type="file" id="imageUpload" accept="image/*" class="w-full text-xs text-zinc-400 file:mr-2 file:py-1 file:px-2 file:rounded-sm file:border-0 file:text-xs file:font-mono file:font-semibold file:bg-zinc-800 file:text-zinc-300 hover:file:bg-zinc-700 cursor-pointer" />
+                    <button type="button" id="btnUpload" class="w-full px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 font-mono text-xs rounded-sm transition-colors cursor-pointer hidden">
+                        Yükle
                     </button>
+                </div>
+                <div id="uploadResult" class="mt-2 hidden">
+                    <div class="flex items-center gap-2">
+                        <input type="text" id="markdownCode" readonly class="flex-1 w-0 bg-zinc-900 border border-zinc-800 text-zinc-300 px-2 py-1 text-xs rounded-sm font-mono focus:outline-none" />
+                        <button type="button" id="btnCopy" class="px-2 py-1 bg-accent hover:bg-accent-light text-zinc-950 font-mono text-xs rounded-sm transition-colors cursor-pointer font-bold shrink-0">
+                            Kopyala
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
-
-        @* ---- Content textarea (10 rows, monospace for code-friendly editing) ---- *@
-        <div class="mt-4">
-            <label asp-for="Content" class="block text-xs font-mono font-medium text-zinc-400 mb-2 uppercase tracking-wider">
-                İçerik (Markdown)
-            </label>
-            <textarea asp-for="Content" rows="10"
-                      class="w-full bg-zinc-900 border border-zinc-800 text-zinc-100 placeholder-zinc-500 focus:border-zinc-600 focus:outline-none px-3 py-2 text-sm rounded-sm font-mono transition-colors mb-1"
-                      placeholder="Markdown formatında yazı içeriğini giriniz..."></textarea>
-            <span asp-validation-for="Content" class="text-red-400 text-xs"></span>
-        </div>
-
-        @* ---- Category dropdown ---- *@
-        @* asp-items binds the SelectList from ViewBag.CategoryId to this <select> *@
-        <div class="mt-4">
-            <label asp-for="CategoryId" class="block text-xs font-mono font-medium text-zinc-400 mb-2 uppercase tracking-wider">
-                Kategori
-            </label>
-            <select asp-for="CategoryId" asp-items="ViewBag.CategoryId"
-                    class="w-full bg-zinc-900 border border-zinc-800 text-zinc-100 focus:border-zinc-600 focus:outline-none px-3 py-2 text-sm rounded-sm font-sans transition-colors mb-1">
-                <option value="">Kategori seçiniz...</option>
-            </select>
-            <span asp-validation-for="CategoryId" class="text-red-400 text-xs"></span>
-        </div>
-
-        @* ---- Publish Date input ---- *@
-        <div class="mt-4">
-            <label asp-for="PublishDate" class="block text-xs font-mono font-medium text-zinc-400 mb-2 uppercase tracking-wider">
-                Yayınlanma Tarihi
-            </label>
-            <input asp-for="PublishDate" type="datetime-local"
-                   class="w-full bg-zinc-900 border border-zinc-800 text-zinc-100 placeholder-zinc-500 focus:border-zinc-600 focus:outline-none px-3 py-2 text-sm rounded-sm font-sans transition-colors mb-1" />
-            <span asp-validation-for="PublishDate" class="text-red-400 text-xs"></span>
-            <p class="text-xs text-zinc-500 mt-1 font-mono">İleri bir tarih seçilirse yazı o tarihe kadar ziyaretçilere gizli kalır.</p>
-        </div>
-
-        @* ---- Published checkbox ---- *@
-        <div class="flex items-center gap-2 text-sm text-zinc-300 font-mono mt-6 mb-6">
-            <input asp-for="IsActive"
-                   class="w-4 h-4 bg-zinc-900 border border-zinc-700 text-accent focus:ring-0 focus:ring-offset-0 accent-emerald-500 cursor-pointer" />
-            <label asp-for="IsActive" class="cursor-pointer select-none">
-                Yayında
-            </label>
-        </div>
-
-        @* ---- Action buttons ---- *@
-        <div class="flex items-center pt-4 border-t border-zinc-800">
-            <button type="submit"
-                    class="px-4 py-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-950 font-mono text-xs font-medium rounded-sm transition-colors cursor-pointer">
-                Kaydet
-            </button>
-            <a asp-action="Index"
-               class="px-4 py-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 font-mono text-xs rounded-sm transition-colors ml-2">
-                İptal
-            </a>
-        </div>
-    </form>
-</div>
+    </div>
+</form>
 
 @* ---- Client-side validation scripts ---- *@
 @section Scripts {
@@ -140,6 +142,46 @@
             const uploadResult = document.getElementById('uploadResult');
             const markdownCode = document.getElementById('markdownCode');
             const btnCopy = document.getElementById('btnCopy');
+
+            // Initialize Toast UI Editor
+            const editorElement = document.querySelector('#editor');
+            let editor;
+            if (editorElement) {
+                editor = new toastui.Editor({
+                    el: editorElement,
+                    height: '600px',
+                    initialEditType: 'markdown',
+                    previewStyle: 'vertical',
+                    theme: 'dark',
+                    initialValue: document.getElementById('Content').value,
+                    hooks: {
+                        addImageBlobHook: async (blob, callback) => {
+                            const formData = new FormData();
+                            formData.append('file', blob);
+                            try {
+                                const response = await fetch('/AdminPost/UploadImage', {
+                                    method: 'POST',
+                                    body: formData
+                                });
+                                if (response.ok) {
+                                    const data = await response.json();
+                                    callback(data.url, blob.name || 'Görsel');
+                                } else {
+                                    alert('Görsel yüklenemedi.');
+                                }
+                            } catch (err) {
+                                console.error(err);
+                                alert('Görsel yüklenirken bir hata oluştu.');
+                            }
+                        }
+                    }
+                });
+
+                // Sync editor content to hidden textarea before form submission
+                document.querySelector('form').addEventListener('submit', function() {
+                    document.getElementById('Content').value = editor.getMarkdown();
+                });
+            }
 
             if (!imageUpload) return; // Prevent errors if elements don't exist
 

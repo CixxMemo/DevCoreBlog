@@ -12,44 +12,46 @@
 }
 
 @* Center the login card vertically and horizontally on the page *@
-<div class="row justify-content-center mt-5">
-    @* Login card — narrow width for a compact login form *@
-    <div class="col-md-4">
-        <div class="card shadow">
-            @* Card header with title *@
-            <div class="card-header text-center">
-                <h4>Admin Girişi</h4>
-            </div>
-            <div class="card-body">
-                @* Show error message if ViewBag.Error is set (e.g. wrong credentials) *@
-                @if (ViewBag.Error != null)
-                {
-                    @* Bootstrap danger alert for error feedback *@
-                    <div class="alert alert-danger" role="alert">
-                        @ViewBag.Error
-                    </div>
-                }
-
-                @* Login form — POSTs to Account/Login with username and password *@
-                <form asp-controller="Account" asp-action="Login" method="post">
-                    @* Username field *@
-                    <div class="mb-3">
-                        <label for="username" class="form-label">Kullanıcı Adı</label>
-                        @* Text input with name="username" for model binding *@
-                        <input type="text" class="form-control" id="username" name="username" required autofocus />
-                    </div>
-
-                    @* Password field *@
-                    <div class="mb-3">
-                        <label for="password" class="form-label">Şifre</label>
-                        @* Password input with name="password" for model binding *@
-                        <input type="password" class="form-control" id="password" name="password" required />
-                    </div>
-
-                    @* Submit button — full width for better UX *@
-                    <button type="submit" class="btn btn-primary w-100">Giriş Yap</button>
-                </form>
-            </div>
+<div class="flex items-center justify-center min-h-[70vh]">
+    @* Login card — Tech Minimal design, sharp edges, dark theme *@
+    <div class="w-full max-w-md bg-[#0a0a0a] border border-[#333] p-8 shadow-sm">
+        @* Card header with title *@
+        <div class="mb-8 border-b border-[#333] pb-4">
+            <h4 class="text-xl font-bold text-gray-200 tracking-wider uppercase">Admin Girişi</h4>
         </div>
+
+        @* Show error message if ViewBag.Error is set (e.g. wrong credentials) *@
+        @if (ViewBag.Error != null)
+        {
+            @* Danger alert for error feedback *@
+            <div class="bg-red-900/30 border border-red-500 text-red-300 p-4 mb-6 text-sm" role="alert">
+                @ViewBag.Error
+            </div>
+        }
+
+        @* Login form — POSTs to Account/Login with username and password *@
+        <form asp-controller="Account" asp-action="Login" method="post">
+            @* Username field *@
+            <div class="mb-6">
+                <label for="username" class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Kullanıcı Adı</label>
+                @* Text input with name="username" for model binding *@
+                <input type="text" id="username" name="username" required autofocus 
+                       class="w-full bg-black border border-[#333] text-gray-200 p-3 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors" />
+            </div>
+
+            @* Password field *@
+            <div class="mb-8">
+                <label for="password" class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Şifre</label>
+                @* Password input with name="password" for model binding *@
+                <input type="password" id="password" name="password" required 
+                       class="w-full bg-black border border-[#333] text-gray-200 p-3 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors" />
+            </div>
+
+            @* Submit button — Tech Minimal style *@
+            <button type="submit" 
+                    class="w-full bg-emerald-600/10 hover:bg-emerald-600/20 text-emerald-500 border border-emerald-500 font-bold py-3 px-4 uppercase tracking-wider text-sm transition-colors">
+                Giriş Yap
+            </button>
+        </form>
     </div>
 </div>

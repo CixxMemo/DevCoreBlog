@@ -24,8 +24,9 @@ using DevCoreBlog.Services.Interfaces;
 var builder = WebApplication.CreateBuilder(args);
 
 // Load environment variables from the .env file in the project root.
-// This allows secrets (like DB connection strings) to be stored outside source control.
-DotNetEnv.Env.Load();
+// We use builder.Environment.ContentRootPath to ensure it finds the file regardless of where it's run from.
+var dotenvPath = Path.Combine(builder.Environment.ContentRootPath, ".env");
+DotNetEnv.Env.Load(dotenvPath);
 
 // ---------------------------------------------------------------------------
 // SERVICE REGISTRATION (Dependency Injection Container)
@@ -34,6 +35,11 @@ DotNetEnv.Env.Load();
 // Read the database connection string from the .env file (loaded above).
 // Environment.GetEnvironmentVariable reads the value that DotNetEnv.Env.Load() injected.
 var connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING");
+
+if (string.IsNullOrEmpty(connectionString))
+{
+    throw new InvalidOperationException("DB_CONNECTION_STRING was not found in the .env file or environment variables.");
+}
 
 // Register the ApplicationDbContext with the DI container.
 // This tells EF Core to use PostgreSQL (via Npgsql) as the database provider.

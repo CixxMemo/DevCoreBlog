@@ -47,6 +47,10 @@
     </script>
     
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    
+    @* Toast UI Editor CSS *@
+    <link rel="stylesheet" href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css" />
+    <link rel="stylesheet" href="https://uicdn.toast.com/editor/latest/theme/toastui-editor-dark.min.css" />
 </head>
 <body class="bg-zinc-950 text-zinc-100 font-sans antialiased">
     @* ============================================================================= *@
@@ -123,6 +127,10 @@
     </div>
 
     <script src="~/js/site.js" asp-append-version="true"></script>
+    
+    @* Toast UI Editor JS *@
+    <script src="https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js"></script>
+    
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
