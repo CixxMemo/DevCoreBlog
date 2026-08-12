@@ -1,13 +1,8 @@
 @* ============================================================================= *@
-@* AdminPost/Index.cshtml — Blog Post List View (Tech Minimal — Dark Zinc) *@
+@* AdminPost/Index.cshtml — Blog Post List View (Light — Notion Style)        *@
 @* ============================================================================= *@
-@* This view displays a table of all blog posts with their category, publish *@
-@* status, and creation date. It includes "Edit" and "Delete" actions per row *@
-@* and a "New Post" button at the top. *@
-@* *@
-@* Phase 2 (FIX): Zinc dark palette. Border-based table (border-zinc-800). *@
-@* Hover effect on rows (bg-zinc-900). Monospace font for technical fields. *@
-@* Buttons: border border-zinc-700 bg-zinc-900 hover:bg-zinc-800 font-mono. *@
+@* Phase 3.1: Wrapped table in a white, rounded card with clean row dividers.  *@
+@* Phase 3.3: Standardized action buttons (Edit, Delete) with soft badges.     *@
 @* ============================================================================= *@
 
 @model List<Post>
@@ -16,69 +11,209 @@
     ViewData["Title"] = "Yazılar";
 }
 
-<div class="flex justify-between items-center mb-8">
-    <h1 class="text-2xl font-bold tracking-tight text-zinc-100 font-mono">
-        Yazılar
-    </h1>
-    <a asp-action="Create" 
-       class="px-4 py-2 text-sm font-mono font-medium border border-zinc-700 bg-zinc-900 text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100 rounded-sm transition-colors">
-        + Yeni Yazı
-    </a>
-</div>
+<style>
+    /* Data table container styling */
+    .data-table-container {
+        background-color: var(--admin-surface);
+        border: 1px solid var(--admin-border);
+        border-radius: 8px;
+        overflow: hidden;
+    }
 
-<div class="border border-zinc-800 rounded-sm overflow-hidden">
-    <table class="w-full">
-        <thead class="bg-zinc-900 border-b border-zinc-800">
-            <tr>
-                <th class="px-4 py-3 text-left text-xs font-mono font-semibold text-zinc-500 uppercase tracking-wider">Id</th>
-                <th class="px-4 py-3 text-left text-xs font-mono font-semibold text-zinc-500 uppercase tracking-wider">Başlık</th>
-                <th class="px-4 py-3 text-left text-xs font-mono font-semibold text-zinc-500 uppercase tracking-wider">Kategori</th>
-                <th class="px-4 py-3 text-left text-xs font-mono font-semibold text-zinc-500 uppercase tracking-wider">Yayında</th>
-                <th class="px-4 py-3 text-left text-xs font-mono font-semibold text-zinc-500 uppercase tracking-wider">Tarih</th>
-                <th class="px-4 py-3 text-left text-xs font-mono font-semibold text-zinc-500 uppercase tracking-wider">İşlemler</th>
-            </tr>
-        </thead>
-        <tbody class="divide-y divide-zinc-800">
-            @foreach (var item in Model)
-            {
-                <tr class="hover:bg-zinc-900/50 transition-colors">
-                    <td class="px-4 py-3 text-sm font-mono text-zinc-500">@item.Id</td>
-                    <td class="px-4 py-3 text-sm font-medium text-zinc-100">@item.Title</td>
-                    <td class="px-4 py-3 text-sm text-zinc-400">@item.Category.Name</td>
-                    <td class="px-4 py-3 text-sm">
-                        @if (item.IsActive)
-                        {
-                            <span class="text-accent font-mono">✓</span>
-                        }
-                        else
-                        {
-                            <span class="text-zinc-600 font-mono">✗</span>
-                        }
-                    </td>
-                    <td class="px-4 py-3 text-sm font-mono text-zinc-500">@item.CreatedDate.ToString("dd.MM.yyyy")</td>
-                    <td class="px-4 py-3 text-sm">
-                        <div class="flex items-center gap-2">
-                            <a asp-action="Edit" asp-route-id="@item.Id" 
-                               class="px-3 py-1 text-xs font-mono font-medium border border-zinc-700 bg-zinc-900 text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100 rounded-sm transition-colors">
-                                Düzenle
-                            </a>
-                            <form asp-action="Delete" asp-route-id="@item.Id" method="post" class="inline" onsubmit="return confirm('Bu yazıyı silmek istediğinize emin misiniz?');">
-                                <button type="submit" 
-                                        class="px-3 py-1 text-xs font-mono font-medium border border-zinc-700 bg-zinc-900 text-zinc-300 hover:bg-zinc-800 hover:text-red-400 rounded-sm transition-colors">
-                                    Sil
-                                </button>
-                            </form>
-                        </div>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-</div>
+    .data-table-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 24px;
+        border-bottom: 1px solid var(--admin-border);
+    }
+    
+    .data-table-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--admin-text);
+        margin: 0;
+    }
 
-@if (!Model.Any())
-{
-    <div class="border border-zinc-800 rounded-sm p-12 text-center mt-8">
-        <p class="text-zinc-500 font-mono text-sm">Henüz yazı yok.</p>
+    /* Primary CTA Button */
+    .btn-primary {
+        display: inline-flex;
+        align-items: center;
+        padding: 8px 16px;
+        background-color: var(--admin-accent);
+        color: #ffffff;
+        font-size: 0.8125rem;
+        font-weight: 500;
+        border-radius: 6px;
+        text-decoration: none;
+        transition: opacity 0.1s ease;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-primary:hover {
+        opacity: 0.9;
+        color: #ffffff;
+    }
+
+    /* Table styles */
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .data-table th {
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: var(--admin-secondary);
+        text-align: left;
+        padding: 12px 24px;
+        border-bottom: 1px solid var(--admin-border);
+        background-color: #fafafa;
+    }
+
+    .data-table td {
+        font-size: 0.8125rem;
+        color: var(--admin-text);
+        padding: 16px 24px;
+        border-bottom: 1px solid var(--admin-border);
+        vertical-align: middle;
+    }
+
+    .data-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .data-table tr:hover {
+        background-color: var(--admin-hover);
+    }
+    
+    .text-muted {
+        color: var(--admin-secondary);
+    }
+
+    /* Standardized action buttons */
+    .action-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 6px 12px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        border-radius: 4px;
+        text-decoration: none;
+        transition: all 0.1s ease;
+        border: 1px solid transparent;
+        cursor: pointer;
+        background: transparent;
+    }
+
+    .action-btn-edit {
+        color: var(--admin-text);
+        border-color: var(--admin-border);
+        background-color: var(--admin-surface);
+    }
+    
+    .action-btn-edit:hover {
+        background-color: var(--admin-hover);
+        border-color: #d4d4d0;
+    }
+
+    .action-btn-delete {
+        color: var(--admin-danger);
+        background-color: #fdf2f2;
+    }
+
+    .action-btn-delete:hover {
+        background-color: #fce8e8;
+    }
+    
+    /* Status badges */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.6875rem;
+        font-weight: 500;
+    }
+
+    .status-active {
+        background-color: #e6f4ea;
+        color: #0d7c3f;
+    }
+
+    .status-inactive {
+        background-color: #f3f3f2;
+        color: var(--admin-secondary);
+    }
+</style>
+
+<div class="data-table-container">
+    <div class="data-table-header">
+        <h1 class="data-table-title">Yazılar</h1>
+        <a asp-action="Create" class="btn-primary">
+            + Yeni Yazı
+        </a>
     </div>
-}
+
+    @if (Model.Any())
+    {
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Başlık</th>
+                    <th>Kategori</th>
+                    <th>Durum</th>
+                    <th>Tarih</th>
+                    <th style="text-align: right;">İşlemler</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td style="font-weight: 500;">@item.Title</td>
+                        <td>
+                            <span style="background-color: var(--admin-hover); color: var(--admin-secondary); padding: 2px 8px; border-radius: 4px; font-size: 0.6875rem; font-weight: 500;">
+                                @item.Category.Name
+                            </span>
+                        </td>
+                        <td>
+                            @if (item.IsActive)
+                            {
+                                <span class="status-badge status-active">Yayında</span>
+                            }
+                            else
+                            {
+                                <span class="status-badge status-inactive">Taslak</span>
+                            }
+                        </td>
+                        <td class="text-muted">@item.CreatedDate.ToString("dd MMM yyyy")</td>
+                        <td style="text-align: right;">
+                            <div style="display: inline-flex; gap: 8px;">
+                                <a asp-action="Edit" asp-route-id="@item.Id" class="action-btn action-btn-edit">
+                                    Düzenle
+                                </a>
+                                <form asp-action="Delete" asp-route-id="@item.Id" method="post" style="margin: 0;" onsubmit="return confirm('Bu yazıyı silmek istediğinize emin misiniz?');">
+                                    <button type="submit" class="action-btn action-btn-delete">
+                                        Sil
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <div style="padding: 64px 20px; text-align: center;">
+            <p style="color: var(--admin-secondary); font-size: 0.875rem; margin-bottom: 16px;">Henüz yazı yok.</p>
+            <a asp-action="Create" class="btn-primary">
+                İlk yazınızı oluşturun
+            </a>
+        </div>
+    }
+</div>

@@ -1,52 +1,303 @@
 @* ============================================================================= *@
-@* Admin/Dashboard.cshtml — Admin Dashboard View (Tech Minimal — Dark Zinc) *@
+@* Admin/Dashboard.cshtml — Admin Dashboard (Light — Notion Style)              *@
 @* ============================================================================= *@
-@* This is the admin panel's main page. It shows two metric cards that link *@
-@* to the Category and Post management sections. Each card displays the total *@
-@* count of categories or posts, passed from AdminController via ViewBag. *@
-@* *@
-@* Phase 2 (FIX): Zinc dark palette. Sharp bordered metric cards *@
-@* (border border-zinc-800, bg-zinc-900/50, rounded-sm, p-5). *@
-@* Buttons: border border-zinc-700 bg-zinc-900 hover:bg-zinc-800 font-mono. *@
+@* Phase 2.1: Responsive CSS Grid layout for the dashboard.                     *@
+@* Phase 2.2: Quick Stat Cards — Posts, Categories, Total Views.                *@
+@* Phase 2.3: Recent Posts list + Quick Actions panel.                           *@
+@*                                                                               *@
+@* Data from AdminController via ViewBag:                                        *@
+@*   - ViewBag.PostCount      (int)                                              *@
+@*   - ViewBag.CategoryCount  (int)                                              *@
+@*   - ViewBag.TotalViews     (int)                                              *@
+@*   - ViewBag.RecentPosts    (List<Post> — last 5, with Category included)      *@
 @* ============================================================================= *@
+
+@using DevCoreBlog.Core.Entities
 
 @{
     ViewData["Title"] = "Dashboard";
+
+    // Cast RecentPosts to a typed list so we can iterate cleanly in Razor
+    var recentPosts = ViewBag.RecentPosts as List<Post> ?? new List<Post>();
 }
 
-<h1 class="text-2xl font-bold tracking-tight mb-8 text-zinc-100 font-mono">
-    Admin Paneli
-</h1>
+@* ---- Dashboard inline styles ---- *@
+<style>
+    /* Stat card — white surface, subtle border, clean padding */
+    .stat-card {
+        background-color: var(--admin-surface);
+        border: 1px solid var(--admin-border);
+        border-radius: 8px;
+        padding: 20px 24px;
+    }
 
-@* Dashboard cards row — two cards side by side on medium+ screens *@
-<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-    @* Category Management Card — shows total category count from ViewBag *@
-    <div class="border border-zinc-800 bg-zinc-900/50 rounded-sm p-5">
-        <h5 class="text-sm font-mono font-semibold text-zinc-400 uppercase tracking-wider mb-2">
-            Kategori Yönetimi
-        </h5>
-        <p class="text-4xl font-bold text-zinc-100 mb-3 font-mono">@ViewBag.CategoryCount</p>
-        <p class="text-sm text-zinc-400 mb-4">
-            Blog yazılarınız için kategorileri ekleyin, düzenleyin veya silin.
-        </p>
-        <a href="/AdminCategory" 
-           class="inline-block px-4 py-2 text-sm font-mono font-medium border border-zinc-700 bg-zinc-900 text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100 rounded-sm transition-colors">
-            Kategorilere Git →
-        </a>
+    .stat-card .stat-label {
+        font-size: 0.8125rem;
+        font-weight: 500;
+        color: var(--admin-secondary);
+        margin-bottom: 4px;
+    }
+
+    .stat-card .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--admin-text);
+        line-height: 1.2;
+    }
+
+    .stat-card .stat-footer {
+        font-size: 0.75rem;
+        color: var(--admin-secondary);
+        margin-top: 8px;
+    }
+
+    /* Dashboard card container — white surface with border */
+    .dashboard-card {
+        background-color: var(--admin-surface);
+        border: 1px solid var(--admin-border);
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .dashboard-card-header {
+        padding: 16px 20px;
+        border-bottom: 1px solid var(--admin-border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .dashboard-card-header h2 {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--admin-text);
+        margin: 0;
+    }
+
+    .dashboard-card-body {
+        padding: 0;
+    }
+
+    /* Recent posts table — clean, minimal rows */
+    .recent-posts-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .recent-posts-table th {
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: var(--admin-secondary);
+        text-align: left;
+        padding: 8px 20px;
+        border-bottom: 1px solid var(--admin-border);
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+    }
+
+    .recent-posts-table td {
+        font-size: 0.8125rem;
+        color: var(--admin-text);
+        padding: 10px 20px;
+        border-bottom: 1px solid var(--admin-border);
+    }
+
+    .recent-posts-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .recent-posts-table .post-title {
+        font-weight: 500;
+    }
+
+    .recent-posts-table .post-category {
+        display: inline-block;
+        font-size: 0.6875rem;
+        font-weight: 500;
+        padding: 2px 8px;
+        border-radius: 4px;
+        background-color: var(--admin-hover);
+        color: var(--admin-secondary);
+    }
+
+    .recent-posts-table .post-date,
+    .recent-posts-table .post-views {
+        color: var(--admin-secondary);
+        font-size: 0.8125rem;
+    }
+
+    /* Quick action button — Notion style */
+    .quick-action-btn {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        padding: 12px 16px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--admin-text);
+        background-color: var(--admin-surface);
+        border: 1px solid var(--admin-border);
+        border-radius: 6px;
+        text-decoration: none;
+        transition: background-color 0.1s ease, border-color 0.1s ease;
+    }
+
+    .quick-action-btn:hover {
+        background-color: var(--admin-hover);
+        border-color: var(--admin-active);
+    }
+
+    .quick-action-btn .action-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 12px;
+        flex-shrink: 0;
+    }
+
+    .quick-action-btn .action-icon.blue {
+        background-color: #e8f0fe;
+        color: var(--admin-accent);
+    }
+
+    .quick-action-btn .action-icon.green {
+        background-color: #e6f4ea;
+        color: #0d7c3f;
+    }
+
+    .quick-action-btn .action-desc {
+        font-size: 0.75rem;
+        color: var(--admin-secondary);
+        font-weight: 400;
+    }
+</style>
+
+@* ============================================================================= *@
+@* STAT CARDS — 3-column responsive grid (Phase 2.2)                             *@
+@* ============================================================================= *@
+<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px;">
+    @* Total Posts *@
+    <div class="stat-card">
+        <div class="stat-label">Toplam Yazı</div>
+        <div class="stat-value">@ViewBag.PostCount</div>
+        <div class="stat-footer">Yayınlanan blog yazıları</div>
     </div>
-    
-    @* Post Management Card — shows total post count from ViewBag *@
-    <div class="border border-zinc-800 bg-zinc-900/50 rounded-sm p-5">
-        <h5 class="text-sm font-mono font-semibold text-zinc-400 uppercase tracking-wider mb-2">
-            Yazı Yönetimi
-        </h5>
-        <p class="text-4xl font-bold text-zinc-100 mb-3 font-mono">@ViewBag.PostCount</p>
-        <p class="text-sm text-zinc-400 mb-4">
-            Blog yazılarınızı oluşturun, düzenleyin ve yayınlayın.
-        </p>
-        <a href="/AdminPost" 
-           class="inline-block px-4 py-2 text-sm font-mono font-medium border border-zinc-700 bg-zinc-900 text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100 rounded-sm transition-colors">
-            Yazılara Git →
-        </a>
+
+    @* Total Categories *@
+    <div class="stat-card">
+        <div class="stat-label">Toplam Kategori</div>
+        <div class="stat-value">@ViewBag.CategoryCount</div>
+        <div class="stat-footer">Aktif kategoriler</div>
+    </div>
+
+    @* Total Views *@
+    <div class="stat-card">
+        <div class="stat-label">Toplam Görüntülenme</div>
+        <div class="stat-value">@ViewBag.TotalViews</div>
+        <div class="stat-footer">Tüm yazıların toplam görüntülenme sayısı</div>
     </div>
 </div>
+
+@* ============================================================================= *@
+@* RECENT POSTS + QUICK ACTIONS — 2-column layout (Phase 2.3)                   *@
+@* ============================================================================= *@
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 16px;">
+    @* ---- Recent Posts Card ---- *@
+    <div class="dashboard-card">
+        <div class="dashboard-card-header">
+            <h2>Son Yazılar</h2>
+            <a asp-controller="AdminPost" asp-action="Index"
+               style="font-size: 0.8125rem; color: var(--admin-accent); text-decoration: none; font-weight: 500;">
+                Tümünü Gör →
+            </a>
+        </div>
+        <div class="dashboard-card-body">
+            @if (recentPosts.Any())
+            {
+                <table class="recent-posts-table">
+                    <thead>
+                        <tr>
+                            <th>Başlık</th>
+                            <th>Kategori</th>
+                            <th>Tarih</th>
+                            <th style="text-align: right;">Görüntülenme</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var post in recentPosts)
+                        {
+                            <tr>
+                                <td class="post-title">
+                                    <a asp-controller="AdminPost" asp-action="Edit" asp-route-id="@post.Id"
+                                       style="color: var(--admin-text); text-decoration: none;">
+                                        @post.Title
+                                    </a>
+                                </td>
+                                <td><span class="post-category">@post.Category.Name</span></td>
+                                <td class="post-date">@post.CreatedDate.ToString("dd MMM yyyy")</td>
+                                <td class="post-views" style="text-align: right;">@post.ViewCount</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <div style="padding: 40px 20px; text-align: center; color: var(--admin-secondary); font-size: 0.875rem;">
+                    Henüz yazı bulunmuyor. İlk yazınızı oluşturun!
+                </div>
+            }
+        </div>
+    </div>
+
+    @* ---- Quick Actions Card ---- *@
+    <div class="dashboard-card">
+        <div class="dashboard-card-header">
+            <h2>Hızlı İşlemler</h2>
+        </div>
+        <div style="padding: 16px; display: flex; flex-direction: column; gap: 8px;">
+            @* New Post button *@
+            <a asp-controller="AdminPost" asp-action="Create" class="quick-action-btn">
+                <div class="action-icon blue">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                </div>
+                <div>
+                    <div>Yeni Yazı</div>
+                    <div class="action-desc">Yeni bir blog yazısı oluştur</div>
+                </div>
+            </a>
+
+            @* New Category button *@
+            <a asp-controller="AdminCategory" asp-action="Create" class="quick-action-btn">
+                <div class="action-icon green">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <div>Yeni Kategori</div>
+                    <div class="action-desc">Yeni bir kategori ekle</div>
+                </div>
+            </a>
+
+            @* View site button *@
+            <a asp-controller="Home" asp-action="Index" target="_blank" class="quick-action-btn">
+                <div class="action-icon" style="background-color: #f3e8ff; color: #7c3aed;">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                    </svg>
+                </div>
+                <div>
+                    <div>Siteyi Görüntüle</div>
+                    <div class="action-desc">Blogu yeni sekmede aç</div>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+

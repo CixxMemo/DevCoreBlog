@@ -1,18 +1,54 @@
 @* ============================================================================= *@
-@* _AdminLayout.cshtml — Admin Panel Master Layout (Tech Minimal — Dark Zinc) *@
+@* _AdminLayout.cshtml — Admin Panel Master Layout (Light — Notion Style)       *@
 @* ============================================================================= *@
-@* This is the layout template for all admin panel pages. It provides: *@
-@*   - A dark top navbar with the "DevCoreBlog Admin" brand *@
-@*   - A left sidebar with navigation links (Dashboard, Categories, Posts, etc.) *@
-@*   - A main content area where admin views render via @RenderBody() *@
-@* *@
-@* Phase 2 (FIX): Zinc dark palette. bg-zinc-950 body, bg-zinc-900 sidebar. *@
-@* Sharp borders (border-zinc-800), active states with bg-zinc-800. *@
-@* Monospace fonts for technical elements. No shadows, no gradients. *@
-@* *@
-@* Admin views use this layout via their own _ViewStart.cshtml files, *@
-@* which override the root _ViewStart.cshtml's Layout = "_Layout" setting. *@
+@* This is the layout template for all admin panel pages. It provides:           *@
+@*   - A fixed left sidebar with navigation (Dashboard, Categories, Posts, etc.) *@
+@*   - A main content area where admin views render via @RenderBody()            *@
+@*                                                                               *@
+@* Phase 1.1: Switched from dark zinc to light Notion palette.                   *@
+@* Phase 1.2: Sidebar redesign — CSS hover/active states, active page            *@
+@*   detection via Razor RouteData, section labels, proper visual hierarchy.      *@
+@* Phase 1.3: Top header bar in content area — breadcrumbs + user profile.        *@
+@* Phase 1.4: Global CSS custom properties for the light theme.                   *@
+@*                                                                               *@
+@* Admin views use this layout via their own _ViewStart.cshtml files,            *@
+@* which override the root _ViewStart.cshtml's Layout = "_Layout" setting.       *@
 @* ============================================================================= *@
+
+@{
+    // Detect the current controller and action names from route data.
+    // Used for: sidebar active state highlighting + breadcrumb generation.
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+
+    // Map controller names to human-readable Turkish labels for breadcrumbs
+    var controllerLabels = new Dictionary<string, string>
+    {
+        { "Admin", "Dashboard" },
+        { "AdminCategory", "Kategoriler" },
+        { "AdminPost", "Yazılar" },
+    };
+
+    // Map action names to human-readable labels for breadcrumb second segment
+    var actionLabels = new Dictionary<string, string>
+    {
+        { "Index", "Liste" },
+        { "Create", "Yeni Oluştur" },
+        { "Edit", "Düzenle" },
+        { "Dashboard", "" }, // Dashboard has no sub-action label
+    };
+
+    // Resolve display names (fallback to raw route value if not in dictionary)
+    var controllerLabel = controllerLabels.ContainsKey(currentController)
+        ? controllerLabels[currentController]
+        : currentController;
+    var actionLabel = actionLabels.ContainsKey(currentAction)
+        ? actionLabels[currentAction]
+        : currentAction;
+
+    // Get logged-in username for the header avatar
+    var userName = User.Identity?.Name ?? "Admin";
+}
 
 <!DOCTYPE html>
 <html lang="tr">
@@ -22,23 +58,38 @@
     <title>@ViewData["Title"] - DevCoreBlog Admin</title>
     
     @* ============================================================================= *@
-    @* Tailwind CSS Play CDN — INLINE config (zinc Tech Minimal theme) *@
+    @* Google Fonts — Inter for clean, modern readability                             *@
+    @* ============================================================================= *@
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+    @* ============================================================================= *@
+    @* Tailwind CSS Play CDN — INLINE config (Light Notion theme)                    *@
     @* ============================================================================= *@
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
-            darkMode: 'class',
             theme: {
                 extend: {
                     fontFamily: {
-                        sans: ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+                        // Inter as the primary sans-serif font for clean readability
+                        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
                         mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
                     },
                     colors: {
-                        accent: {
-                            DEFAULT: '#10b981',
-                            light: '#34d399',
-                            dark: '#059669',
+                        // Notion-inspired semantic color tokens
+                        'notion': {
+                            'bg':       '#f7f7f5',   // Page background (warm off-white)
+                            'surface':  '#ffffff',   // Card / content surface (pure white)
+                            'sidebar':  '#f7f7f5',   // Sidebar background (matches page bg)
+                            'border':   '#e8e8e3',   // Subtle borders
+                            'text':     '#37352f',   // Primary text (Notion dark brown-black)
+                            'secondary':'#787774',   // Secondary / muted text
+                            'hover':    '#efefed',   // Hover background for nav items
+                            'active':   '#e8e8e3',   // Active state background
+                            'accent':   '#2383e2',   // Primary action blue (Notion blue)
+                            'danger':   '#eb5757',   // Destructive action red
                         },
                     },
                 },
@@ -46,84 +97,308 @@
         }
     </script>
     
+    @* ============================================================================= *@
+    @* Admin sidebar & nav styles — CSS-based hover/active (no inline JS)            *@
+    @* ============================================================================= *@
+    <style>
+        /* ============================================================= */
+        /* Phase 1.4: Global CSS custom properties for admin light theme  */
+        /* All admin components should reference these variables instead  */
+        /* of hardcoded hex values for consistency and easy theming.      */
+        /* ============================================================= */
+        :root {
+            --admin-bg:         #f7f7f5;   /* Page background            */
+            --admin-surface:    #ffffff;   /* Card / content surface     */
+            --admin-sidebar-bg: #f7f7f5;   /* Sidebar background         */
+            --admin-border:     #e8e8e3;   /* Borders                    */
+            --admin-text:       #37352f;   /* Primary text               */
+            --admin-secondary:  #787774;   /* Muted / secondary text     */
+            --admin-hover:      #efefed;   /* Hover backgrounds          */
+            --admin-active:     #efefed;   /* Active state backgrounds   */
+            --admin-accent:     #2383e2;   /* Primary action color       */
+            --admin-danger:     #eb5757;   /* Destructive action color   */
+            --admin-label:      #9b9a97;   /* Section labels             */
+            --admin-font:       'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        /* Reset any dark theme from site.css for admin pages */
+        body.admin-body {
+            background-color: var(--admin-bg);
+            color: var(--admin-text);
+            font-family: var(--admin-font);
+        }
+
+        /* ---- Sidebar nav item base ---- */
+        /* All sidebar links share this base. Hover/active are pure CSS. */
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 6px 12px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--admin-text);
+            border-radius: 4px;
+            transition: background-color 0.1s ease, color 0.1s ease;
+            text-decoration: none;
+        }
+
+        /* Hover: soft gray background */
+        .nav-item:hover {
+            background-color: var(--admin-hover);
+        }
+
+        /* Active: slightly darker bg + semibold text to mark current page */
+        .nav-item.active {
+            background-color: var(--admin-active);
+            font-weight: 600;
+        }
+
+        /* Active icon gets darker color to match the bolder text */
+        .nav-item.active .nav-icon {
+            color: var(--admin-text);
+        }
+
+        /* ---- Sidebar footer links (secondary) ---- */
+        .nav-item-secondary {
+            display: flex;
+            align-items: center;
+            padding: 6px 12px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--admin-secondary);
+            border-radius: 4px;
+            transition: background-color 0.1s ease, color 0.1s ease;
+            text-decoration: none;
+        }
+
+        .nav-item-secondary:hover {
+            background-color: var(--admin-hover);
+            color: var(--admin-text);
+        }
+
+        /* Logout button turns red on hover */
+        .nav-item-danger:hover {
+            color: var(--admin-danger) !important;
+        }
+
+        /* Section label — small uppercase group header (like Notion) */
+        .nav-section-label {
+            font-size: 0.6875rem;
+            font-weight: 600;
+            color: var(--admin-label);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 16px 12px 4px 12px;
+        }
+
+        /* ---- Phase 1.3: Top header bar ---- */
+        .admin-top-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 32px;
+            border-bottom: 1px solid var(--admin-border);
+            background-color: var(--admin-bg);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        /* Breadcrumb styling */
+        .admin-breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.8125rem;
+            color: var(--admin-secondary);
+        }
+
+        .admin-breadcrumb a {
+            color: var(--admin-secondary);
+            text-decoration: none;
+            transition: color 0.1s ease;
+        }
+
+        .admin-breadcrumb a:hover {
+            color: var(--admin-text);
+        }
+
+        .admin-breadcrumb .separator {
+            color: var(--admin-label);
+            font-size: 0.75rem;
+        }
+
+        .admin-breadcrumb .current {
+            color: var(--admin-text);
+            font-weight: 500;
+        }
+
+        /* User info chip in top header */
+        .admin-user-chip {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8125rem;
+            color: var(--admin-secondary);
+        }
+
+        .admin-user-avatar {
+            width: 26px;
+            height: 26px;
+            border-radius: 4px;
+            background-color: var(--admin-active);
+            color: var(--admin-text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* Smooth scrollbar styling for the sidebar */
+        .admin-sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .admin-sidebar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .admin-sidebar::-webkit-scrollbar-thumb {
+            background-color: #d4d4d0;
+            border-radius: 2px;
+        }
+
+        /* Main content scrollable area below header */
+        .admin-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 32px;
+        }
+    </style>
+
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     
-    @* Toast UI Editor CSS *@
+    @* Toast UI Editor CSS — Light theme only *@
     <link rel="stylesheet" href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css" />
-    <link rel="stylesheet" href="https://uicdn.toast.com/editor/latest/theme/toastui-editor-dark.min.css" />
 </head>
-<body class="bg-zinc-950 text-zinc-100 font-sans antialiased">
+<body class="admin-body font-sans antialiased">
     @* ============================================================================= *@
-    @* TOP NAVBAR — Dark zinc, border-bottom *@
+    @* SIDEBAR + MAIN CONTENT — Full-height flexbox layout                           *@
     @* ============================================================================= *@
-    <nav class="bg-zinc-900 border-b border-zinc-800">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-14">
-                <div class="flex items-center">
-                    <a asp-controller="Admin" asp-action="Dashboard" 
-                       class="text-lg font-bold tracking-tight text-zinc-100 hover:text-accent transition-colors font-mono">
-                        DevCoreBlog Admin
-                    </a>
-                </div>
-                <div class="flex items-center">
-                    <a asp-controller="Home" asp-action="Index" target="_blank" 
-                       class="text-sm text-zinc-400 hover:text-zinc-100 transition-colors">
-                        Siteyi Görüntüle →
-                    </a>
-                </div>
-            </div>
-        </div>
-    </nav>
-
-    @* ============================================================================= *@
-    @* SIDEBAR + MAIN CONTENT — Flexbox layout *@
-    @* ============================================================================= *@
-    <div class="flex h-[calc(100vh-3.5rem)]">
-        @* Left sidebar — bg-zinc-900, border-right, scrollable *@
-        <aside class="w-64 bg-zinc-900 border-r border-zinc-800 overflow-y-auto flex-shrink-0">
-            <nav class="p-4 space-y-1">
+    <div class="flex h-screen">
+        @* ===================================================================== *@
+        @* LEFT SIDEBAR — Fixed column, Notion-style navigation                  *@
+        @* Brand at top, grouped nav links, footer actions at bottom.            *@
+        @* Active page is highlighted via Razor-based controller matching.       *@
+        @* ===================================================================== *@
+        <aside class="admin-sidebar w-60 flex-shrink-0 border-r overflow-y-auto flex flex-col"
+               style="background-color: var(--admin-sidebar-bg); border-color: var(--admin-border);">
+            
+            @* Sidebar header — Brand *@
+            <div class="px-3 pt-4 pb-1">
                 <a asp-controller="Admin" asp-action="Dashboard" 
-                   class="flex items-center px-3 py-2 text-sm font-medium text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100 rounded-sm transition-colors">
-                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                   class="text-sm font-semibold tracking-tight hover:opacity-80 transition-opacity"
+                   style="color: var(--admin-text); text-decoration: none;">
+                    DevCoreBlog Admin
+                </a>
+            </div>
+
+            @* ---- Main navigation group ---- *@
+            <nav class="flex-1 px-2">
+                <div class="nav-section-label">Menu</div>
+
+                @* Dashboard link — active when controller is "Admin" *@
+                <a asp-controller="Admin" asp-action="Dashboard" 
+                   class="nav-item @(currentController == "Admin" ? "active" : "")">
+                    <svg class="nav-icon w-4 h-4 mr-3 flex-shrink-0" style="color: var(--admin-secondary);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
                     </svg>
                     Dashboard
                 </a>
                 
+                @* Categories link — active when controller is "AdminCategory" *@
                 <a asp-controller="AdminCategory" asp-action="Index" 
-                   class="flex items-center px-3 py-2 text-sm font-medium text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100 rounded-sm transition-colors">
-                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                   class="nav-item @(currentController == "AdminCategory" ? "active" : "")">
+                    <svg class="nav-icon w-4 h-4 mr-3 flex-shrink-0" style="color: var(--admin-secondary);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
                     </svg>
                     Kategoriler
                 </a>
                 
+                @* Posts link — active when controller is "AdminPost" *@
                 <a asp-controller="AdminPost" asp-action="Index" 
-                   class="flex items-center px-3 py-2 text-sm font-medium text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100 rounded-sm transition-colors">
-                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                   class="nav-item @(currentController == "AdminPost" ? "active" : "")">
+                    <svg class="nav-icon w-4 h-4 mr-3 flex-shrink-0" style="color: var(--admin-secondary);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                     </svg>
                     Yazılar
                 </a>
+            </nav>
+
+            @* ---- Sidebar footer — secondary actions ---- *@
+            <div class="px-2 pb-3" style="border-top: 1px solid var(--admin-border); margin-top: auto;">
+                <div class="nav-section-label">Sistem</div>
+
+                @* View public site (opens in new tab) *@
+                <a asp-controller="Home" asp-action="Index" target="_blank" 
+                   class="nav-item-secondary">
+                    <svg class="w-4 h-4 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                    </svg>
+                    Siteyi Görüntüle
+                </a>
                 
-                <div class="border-t border-zinc-800 my-4"></div>
-                
-                <form asp-controller="Account" asp-action="Logout" method="post" class="inline">
-                    <button type="submit" 
-                            class="flex items-center w-full px-3 py-2 text-sm font-medium text-zinc-300 hover:bg-zinc-800 hover:text-red-400 rounded-sm transition-colors">
-                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                @* Logout *@
+                <form asp-controller="Account" asp-action="Logout" method="post">
+                    <button type="submit" class="nav-item-secondary nav-item-danger w-full">
+                        <svg class="w-4 h-4 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
                         </svg>
                         Çıkış
                     </button>
                 </form>
-            </nav>
+            </div>
         </aside>
 
-        @* Main content area — scrollable, padded *@
-        <main class="flex-1 overflow-y-auto p-8">
-            @RenderBody()
-        </main>
+        @* ===================================================================== *@
+        @* MAIN CONTENT COLUMN — Header + scrollable content area               *@
+        @* Phase 1.3: Top header with breadcrumbs and user info, then content.  *@
+        @* ===================================================================== *@
+        <div class="flex-1 flex flex-col overflow-hidden" style="background-color: var(--admin-bg);">
+            @* ---- Top Header Bar ---- *@
+            <header class="admin-top-header">
+                @* Left side: Breadcrumbs *@
+                <div class="admin-breadcrumb">
+                    <a asp-controller="Admin" asp-action="Dashboard">Admin</a>
+                    <span class="separator">/</span>
+                    @if (currentController != "Admin")
+                    {
+                        <a asp-controller="@currentController" asp-action="Index">@controllerLabel</a>
+                        @if (!string.IsNullOrEmpty(actionLabel))
+                        {
+                            <span class="separator">/</span>
+                            <span class="current">@actionLabel</span>
+                        }
+                    }
+                    else
+                    {
+                        <span class="current">Dashboard</span>
+                    }
+                </div>
+
+                @* Right side: User info *@
+                <div class="admin-user-chip">
+                    <div class="admin-user-avatar">
+                        @userName[0].ToString().ToUpper()
+                    </div>
+                    <span>@userName</span>
+                </div>
+            </header>
+
+            @* ---- Scrollable content area ---- *@
+            <main class="admin-content">
+                @RenderBody()
+            </main>
+        </div>
     </div>
 
     <script src="~/js/site.js" asp-append-version="true"></script>
@@ -134,3 +409,4 @@
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
+

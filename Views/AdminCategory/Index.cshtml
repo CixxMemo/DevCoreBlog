@@ -1,14 +1,8 @@
 @* ============================================================================= *@
-@* AdminCategory/Index.cshtml — Category List View (Tech Minimal — Dark Zinc) *@
+@* AdminCategory/Index.cshtml — Category List View (Light — Notion Style)     *@
 @* ============================================================================= *@
-@* This view displays a table of all blog categories with their post counts. *@
-@* It includes "Edit" and "Delete" actions per row, and a "New Category" button. *@
-@* If TempData["Error"] is set (e.g. when trying to delete a category that has *@
-@* posts), a dismissible alert is shown at the top. *@
-@* *@
-@* Phase 2 (FIX): Zinc dark palette. Border-based table (border-zinc-800). *@
-@* Hover effect on rows (bg-zinc-900). Monospace font for technical fields. *@
-@* Buttons: border border-zinc-700 bg-zinc-900 hover:bg-zinc-800 font-mono. *@
+@* Phase 3.2: Wrapped table in a white, rounded card with clean row dividers.  *@
+@* Phase 3.3: Standardized action buttons (Edit, Delete) with soft badges.     *@
 @* ============================================================================= *@
 
 @model List<Category>
@@ -17,71 +11,206 @@
     ViewData["Title"] = "Kategoriler";
 }
 
-<div class="flex justify-between items-center mb-8">
-    <h1 class="text-2xl font-bold tracking-tight text-zinc-100 font-mono">
-        Kategoriler
-    </h1>
-    <a asp-action="Create" 
-       class="px-4 py-2 text-sm font-mono font-medium border border-zinc-700 bg-zinc-900 text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100 rounded-sm transition-colors">
-        + Yeni Kategori
-    </a>
-</div>
+<style>
+    /* Data table container styling */
+    .data-table-container {
+        background-color: var(--admin-surface);
+        border: 1px solid var(--admin-border);
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .data-table-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 24px;
+        border-bottom: 1px solid var(--admin-border);
+    }
+    
+    .data-table-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--admin-text);
+        margin: 0;
+    }
+
+    /* Primary CTA Button */
+    .btn-primary {
+        display: inline-flex;
+        align-items: center;
+        padding: 8px 16px;
+        background-color: var(--admin-accent);
+        color: #ffffff;
+        font-size: 0.8125rem;
+        font-weight: 500;
+        border-radius: 6px;
+        text-decoration: none;
+        transition: opacity 0.1s ease;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-primary:hover {
+        opacity: 0.9;
+        color: #ffffff;
+    }
+
+    /* Table styles */
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .data-table th {
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: var(--admin-secondary);
+        text-align: left;
+        padding: 12px 24px;
+        border-bottom: 1px solid var(--admin-border);
+        background-color: #fafafa;
+    }
+
+    .data-table td {
+        font-size: 0.8125rem;
+        color: var(--admin-text);
+        padding: 16px 24px;
+        border-bottom: 1px solid var(--admin-border);
+        vertical-align: middle;
+    }
+
+    .data-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .data-table tr:hover {
+        background-color: var(--admin-hover);
+    }
+    
+    .text-muted {
+        color: var(--admin-secondary);
+    }
+
+    /* Standardized action buttons */
+    .action-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 6px 12px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        border-radius: 4px;
+        text-decoration: none;
+        transition: all 0.1s ease;
+        border: 1px solid transparent;
+        cursor: pointer;
+        background: transparent;
+    }
+
+    .action-btn-edit {
+        color: var(--admin-text);
+        border-color: var(--admin-border);
+        background-color: var(--admin-surface);
+    }
+    
+    .action-btn-edit:hover {
+        background-color: var(--admin-hover);
+        border-color: #d4d4d0;
+    }
+
+    .action-btn-delete {
+        color: var(--admin-danger);
+        background-color: #fdf2f2;
+    }
+
+    .action-btn-delete:hover {
+        background-color: #fce8e8;
+    }
+    
+    /* Error Alert */
+    .error-alert {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 16px;
+        background-color: #fdf2f2;
+        border: 1px solid #f9dada;
+        color: var(--admin-danger);
+        border-radius: 6px;
+        margin-bottom: 24px;
+        font-size: 0.8125rem;
+        font-weight: 500;
+    }
+</style>
 
 @if (TempData["Error"] != null)
 {
-    <div class="mb-6 px-4 py-3 border border-red-800 bg-red-950/30 text-red-400 rounded-sm flex justify-between items-center">
-        <span class="text-sm">@TempData["Error"]</span>
+    <div class="error-alert">
+        <span>@TempData["Error"]</span>
         <button type="button" onclick="this.parentElement.remove()" 
-                class="text-red-500 hover:text-red-300 transition-colors">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                style="background: none; border: none; cursor: pointer; color: var(--admin-danger); opacity: 0.7;">
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
             </svg>
         </button>
     </div>
 }
 
-<div class="border border-zinc-800 rounded-sm overflow-hidden">
-    <table class="w-full">
-        <thead class="bg-zinc-900 border-b border-zinc-800">
-            <tr>
-                <th class="px-4 py-3 text-left text-xs font-mono font-semibold text-zinc-500 uppercase tracking-wider">Id</th>
-                <th class="px-4 py-3 text-left text-xs font-mono font-semibold text-zinc-500 uppercase tracking-wider">Ad</th>
-                <th class="px-4 py-3 text-left text-xs font-mono font-semibold text-zinc-500 uppercase tracking-wider">Slug</th>
-                <th class="px-4 py-3 text-left text-xs font-mono font-semibold text-zinc-500 uppercase tracking-wider">Yazı Sayısı</th>
-                <th class="px-4 py-3 text-left text-xs font-mono font-semibold text-zinc-500 uppercase tracking-wider">İşlemler</th>
-            </tr>
-        </thead>
-        <tbody class="divide-y divide-zinc-800">
-            @foreach (var item in Model)
-            {
-                <tr class="hover:bg-zinc-900/50 transition-colors">
-                    <td class="px-4 py-3 text-sm font-mono text-zinc-500">@item.Id</td>
-                    <td class="px-4 py-3 text-sm font-medium text-zinc-100">@item.Name</td>
-                    <td class="px-4 py-3 text-sm font-mono text-zinc-500">@item.Slug</td>
-                    <td class="px-4 py-3 text-sm font-mono text-zinc-400">@item.Posts.Count</td>
-                    <td class="px-4 py-3 text-sm">
-                        <div class="flex items-center gap-2">
-                            <a asp-action="Edit" asp-route-id="@item.Id" 
-                               class="px-3 py-1 text-xs font-mono font-medium border border-zinc-700 bg-zinc-900 text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100 rounded-sm transition-colors">
-                                Düzenle
-                            </a>
-                            <form asp-action="Delete" asp-route-id="@item.Id" method="post" class="inline" onsubmit="return confirm('Bu kategoriyi silmek istediğinize emin misiniz?');">
-                                <button type="submit" 
-                                        class="px-3 py-1 text-xs font-mono font-medium border border-zinc-700 bg-zinc-900 text-zinc-300 hover:bg-zinc-800 hover:text-red-400 rounded-sm transition-colors">
-                                    Sil
-                                </button>
-                            </form>
-                        </div>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-</div>
-
-@if (!Model.Any())
-{
-    <div class="border border-zinc-800 rounded-sm p-12 text-center mt-8">
-        <p class="text-zinc-500 font-mono text-sm">Henüz kategori yok.</p>
+<div class="data-table-container">
+    <div class="data-table-header">
+        <h1 class="data-table-title">Kategoriler</h1>
+        <a asp-action="Create" class="btn-primary">
+            + Yeni Kategori
+        </a>
     </div>
-}
+
+    @if (Model.Any())
+    {
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Ad</th>
+                    <th>Slug</th>
+                    <th>Yazı Sayısı</th>
+                    <th style="text-align: right;">İşlemler</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td style="font-weight: 500;">@item.Name</td>
+                        <td class="text-muted" style="font-family: monospace; font-size: 0.75rem;">@item.Slug</td>
+                        <td>
+                            <span style="background-color: var(--admin-hover); color: var(--admin-secondary); padding: 2px 8px; border-radius: 4px; font-size: 0.6875rem; font-weight: 500;">
+                                @item.Posts.Count
+                            </span>
+                        </td>
+                        <td style="text-align: right;">
+                            <div style="display: inline-flex; gap: 8px;">
+                                <a asp-action="Edit" asp-route-id="@item.Id" class="action-btn action-btn-edit">
+                                    Düzenle
+                                </a>
+                                <form asp-action="Delete" asp-route-id="@item.Id" method="post" style="margin: 0;" onsubmit="return confirm('Bu kategoriyi silmek istediğinize emin misiniz?');">
+                                    <button type="submit" class="action-btn action-btn-delete">
+                                        Sil
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <div style="padding: 64px 20px; text-align: center;">
+            <p style="color: var(--admin-secondary); font-size: 0.875rem; margin-bottom: 16px;">Henüz kategori yok.</p>
+            <a asp-action="Create" class="btn-primary">
+                İlk kategorinizi oluşturun
+            </a>
+        </div>
+    }
+</div>

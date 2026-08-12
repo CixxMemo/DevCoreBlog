@@ -1,13 +1,11 @@
 @* ============================================================================= *@
-@* AdminPost/Create.cshtml — New Blog Post Form (Tech Minimal — Dark Zinc)       *@
+@* AdminPost/Create.cshtml — New Blog Post Form (Light — Notion Style)           *@
 @* ============================================================================= *@
-@* This view renders a form for creating a new blog post.                        *@
-@* Fields: Title, Summary (textarea), Content (textarea), Category (dropdown),  *@
-@* IsActive (checkbox). The Slug is auto-generated on the server.                *@
-@* The category dropdown is populated via ViewBag.CategoryId (a SelectList).     *@
-@*                                                                              *@
-@* Phase 3 (FIX): Dark zinc form inputs — no more white backgrounds.            *@
-@* All inputs use bg-zinc-900 border-zinc-800 text-zinc-100 for readability.    *@
+@* Phase 4.1: Split layout 3fr (writing) / 1fr (settings).                       *@
+@* Phase 4.2: Toast UI Editor in Light mode, textarea hidden.                    *@
+@* Phase 4.3: Seamless Title and TUI Editor overrides (no borders).              *@
+@* Phase 4.4: Right column styled with light gray background, publish CTA.       *@
+@* Phase 4.5: imageBlobHook active for editor.                                   *@
 @* ============================================================================= *@
 
 @model Post
@@ -16,144 +14,230 @@
     ViewData["Title"] = "Yeni Yazı";
 }
 
-@* ============================================================================= *@
-@* FORM CONTAINER — Tech Minimal card                                            *@
-@* ============================================================================= *@
-<form asp-action="Create" method="post">
-    @* ============================================================================= *@
-    @* TOP HEADER BAR                                                                *@
-    @* ============================================================================= *@
-    <div class="flex justify-between items-center mb-6 pb-3 border-b border-zinc-800">
-        <h1 class="text-xl font-semibold text-zinc-100 font-mono">
-            Yeni Yazı
-        </h1>
-        <div class="flex items-center gap-4">
-            <div class="flex items-center gap-2 text-sm text-zinc-300 font-mono">
-                <input asp-for="IsActive" class="w-4 h-4 bg-zinc-900 border border-zinc-700 text-accent focus:ring-0 focus:ring-offset-0 accent-emerald-500 cursor-pointer" />
-                <label asp-for="IsActive" class="cursor-pointer select-none">
-                    Yayında
-                </label>
-            </div>
-            <a asp-action="Index" class="px-4 py-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 font-mono text-xs rounded-sm transition-colors">
-                İptal
-            </a>
-            <button type="submit" class="px-4 py-2 bg-accent hover:bg-accent-light text-zinc-950 font-mono text-xs font-bold rounded-sm transition-colors cursor-pointer">
-                Kaydet
-            </button>
-        </div>
-    </div>
+<style>
+    /* Phase 4.3: Seamless Title Input */
+    .editor-title-input {
+        width: 100%;
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--admin-text);
+        background: transparent;
+        border: none;
+        outline: none;
+        padding: 0;
+        margin-bottom: 24px;
+        font-family: var(--admin-font);
+    }
+    .editor-title-input::placeholder {
+        color: #d4d4d0;
+    }
 
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        @* ============================================================================= *@
-        @* LEFT COLUMN: Main Writing Area (9/12)                                         *@
-        @* ============================================================================= *@
-        <div class="lg:col-span-9 bg-zinc-900/50 border border-zinc-800 rounded-sm p-6">
-        <div asp-validation-summary="ModelOnly" class="text-red-400 text-sm mb-4"></div>
+    /* Phase 4.3: Seamless TUI Editor overrides */
+    .toastui-editor-defaultUI {
+        border: none !important; /* Remove outer border */
+        font-family: var(--admin-font) !important;
+    }
+    .toastui-editor-defaultUI .toastui-editor-toolbar {
+        background-color: var(--admin-surface) !important;
+        border-bottom: 1px solid var(--admin-border) !important;
+    }
+    .toastui-editor-mode-switch {
+        background-color: transparent !important;
+        border-top: none !important;
+    }
 
-        @* ---- Title input ---- *@
-        <div class="mb-6">
-            <input asp-for="Title"
-                   class="w-full bg-transparent border-none text-zinc-100 placeholder-zinc-600 focus:ring-0 focus:outline-none text-4xl font-bold font-sans px-0 py-2 mb-1"
-                   placeholder="Yazı başlığını giriniz..." />
-            <span asp-validation-for="Title" class="text-red-400 text-xs"></span>
-        </div>
+    /* Phase 4.4: Right Column Styles */
+    .settings-panel {
+        background-color: #f9f9f9;
+        border-radius: 8px;
+        padding: 24px;
+        border: 1px solid var(--admin-border);
+    }
+    .settings-section-title {
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--admin-secondary);
+        margin-bottom: 16px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid var(--admin-border);
+    }
+    
+    .settings-label {
+        display: block;
+        font-size: 0.8125rem;
+        font-weight: 500;
+        color: var(--admin-text);
+        margin-bottom: 6px;
+    }
+    
+    .settings-input, .settings-select, .settings-textarea {
+        width: 100%;
+        background-color: var(--admin-surface);
+        border: 1px solid var(--admin-border);
+        color: var(--admin-text);
+        font-size: 0.875rem;
+        border-radius: 6px;
+        padding: 8px 12px;
+        transition: border-color 0.1s ease;
+        outline: none;
+        font-family: var(--admin-font);
+    }
+    .settings-input:focus, .settings-select:focus, .settings-textarea:focus {
+        border-color: var(--admin-accent);
+    }
 
-        @* ---- Content Editor (Toast UI) ---- *@
-        <div class="mb-6">
-            <label class="block text-xs font-mono font-medium text-zinc-400 mb-2 uppercase tracking-wider">
-                İçerik (Markdown)
-            </label>
-            <div id="editor" class="mb-1 border border-zinc-800 rounded-sm"></div>
-            @* Hidden textarea for form submission *@
-            <textarea asp-for="Content" id="Content" class="hidden"></textarea>
-            <span asp-validation-for="Content" class="text-red-400 text-xs"></span>
-        </div>
-    </div>
+    /* Submit button */
+    .btn-publish {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        padding: 10px 16px;
+        background-color: var(--admin-accent);
+        color: #fff;
+        font-size: 0.875rem;
+        font-weight: 500;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        transition: opacity 0.1s;
+        margin-bottom: 24px;
+    }
+    .btn-publish:hover {
+        opacity: 0.9;
+    }
 
-    @* ============================================================================= *@
-    @* RIGHT COLUMN: Post Settings Panel (3/12)                                      *@
-    @* ============================================================================= *@
-    <div class="lg:col-span-3 space-y-6">
+    .btn-cancel {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        padding: 8px 16px;
+        background-color: transparent;
+        color: var(--admin-secondary);
+        font-size: 0.875rem;
+        font-weight: 500;
+        border-radius: 6px;
+        border: 1px solid var(--admin-border);
+        cursor: pointer;
+        text-decoration: none;
+        margin-top: 12px;
+    }
+    .btn-cancel:hover {
+        background-color: var(--admin-hover);
+        color: var(--admin-text);
+    }
+    
+    /* Image upload area in settings */
+    .image-upload-box {
+        border: 1px dashed var(--admin-border);
+        background-color: var(--admin-surface);
+        border-radius: 6px;
+        padding: 16px;
+        text-align: center;
+    }
+    .image-upload-box:hover {
+        border-color: var(--admin-accent);
+    }
+
+    /* Responsive grid layout */
+    .post-editor-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 32px;
+        align-items: start;
+    }
+    @@media (min-width: 1024px) {
+        .post-editor-grid {
+            grid-template-columns: 3fr 1fr;
+        }
+    }
+</style>
+
+<form asp-action="Create" method="post" id="postForm">
+    <div class="post-editor-grid">
         
+        @* ===================================================================== *@
+        @* LEFT COLUMN: Title & Editor                                           *@
+        @* ===================================================================== *@
+        <div>
+            <div asp-validation-summary="ModelOnly" style="color: var(--admin-danger); font-size: 0.875rem; margin-bottom: 16px;"></div>
+            
+            <input asp-for="Title" class="editor-title-input" placeholder="Yazı başlığını giriniz..." autocomplete="off" />
+            <span asp-validation-for="Title" style="color: var(--admin-danger); font-size: 0.75rem;"></span>
 
+            @* Toast UI Editor container *@
+            <div id="editor"></div>
+            <textarea asp-for="Content" id="Content" style="display: none;"></textarea>
+            <span asp-validation-for="Content" style="color: var(--admin-danger); font-size: 0.75rem;"></span>
+        </div>
 
-        @* Meta Settings Card *@
-        <div class="bg-zinc-900/50 border border-zinc-800 rounded-sm p-4">
-            <h2 class="text-xs font-mono font-medium text-zinc-100 mb-4 uppercase tracking-wider border-b border-zinc-800 pb-2">
-                Yazı Ayarları
-            </h2>
+        @* ===================================================================== *@
+        @* RIGHT COLUMN: Settings Panel                                          *@
+        @* ===================================================================== *@
+        <div class="settings-panel">
+            <button type="submit" class="btn-publish">Yayınla / Kaydet</button>
+            
+            <div class="settings-section-title">Yazı Ayarları</div>
 
-            @* ---- Category dropdown ---- *@
-            <div class="mb-4">
-                <label asp-for="CategoryId" class="block text-xs font-mono text-zinc-400 mb-2">Kategori</label>
-                <select asp-for="CategoryId" asp-items="ViewBag.CategoryId"
-                        class="w-full bg-zinc-900 border border-zinc-800 text-zinc-100 focus:border-zinc-600 focus:outline-none px-3 py-2 text-sm rounded-sm font-sans transition-colors mb-1">
+            <div style="margin-bottom: 20px;">
+                <label asp-for="CategoryId" class="settings-label">Kategori</label>
+                <select asp-for="CategoryId" asp-items="ViewBag.CategoryId" class="settings-select">
                     <option value="">Seçiniz...</option>
                 </select>
-                <span asp-validation-for="CategoryId" class="text-red-400 text-xs"></span>
+                <span asp-validation-for="CategoryId" style="color: var(--admin-danger); font-size: 0.75rem;"></span>
             </div>
 
-            @* ---- Publish Date input ---- *@
-            <div class="mb-4">
-                <label asp-for="PublishDate" class="block text-xs font-mono text-zinc-400 mb-2">Yayınlanma Tarihi</label>
-                <input asp-for="PublishDate" type="datetime-local"
-                       class="w-full bg-zinc-900 border border-zinc-800 text-zinc-100 placeholder-zinc-500 focus:border-zinc-600 focus:outline-none px-3 py-2 text-sm rounded-sm font-sans transition-colors mb-1" />
-                <span asp-validation-for="PublishDate" class="text-red-400 text-xs"></span>
+            <div style="margin-bottom: 20px;">
+                <label asp-for="PublishDate" class="settings-label">Yayınlanma Tarihi</label>
+                <input asp-for="PublishDate" type="datetime-local" class="settings-input" />
+                <span asp-validation-for="PublishDate" style="color: var(--admin-danger); font-size: 0.75rem;"></span>
             </div>
 
-            @* ---- Summary textarea ---- *@
-            <div class="mb-4">
-                <label asp-for="Summary" class="block text-xs font-mono text-zinc-400 mb-2">Özet</label>
-                <textarea asp-for="Summary" rows="4"
-                          class="w-full bg-zinc-900 border border-zinc-800 text-zinc-100 placeholder-zinc-500 focus:border-zinc-600 focus:outline-none px-3 py-2 text-sm rounded-sm font-sans transition-colors mb-1"
-                          placeholder="Yazının kısa özetini giriniz..."></textarea>
-                <span asp-validation-for="Summary" class="text-red-400 text-xs"></span>
+            <div style="margin-bottom: 20px;">
+                <label asp-for="Summary" class="settings-label">Özet</label>
+                <textarea asp-for="Summary" rows="4" class="settings-textarea" placeholder="Yazının kısa özetini giriniz..."></textarea>
+                <span asp-validation-for="Summary" style="color: var(--admin-danger); font-size: 0.75rem;"></span>
             </div>
 
-            @* ---- Image Upload ---- *@
-            <div class="mt-4 p-3 border border-zinc-800 bg-zinc-950 rounded-sm">
-                <label class="block text-xs font-mono text-zinc-400 mb-2 uppercase tracking-wider">İçeriğe Görsel Ekle</label>
-                <div class="flex flex-col gap-2">
-                    <input type="file" id="imageUpload" accept="image/*" class="w-full text-xs text-zinc-400 file:mr-2 file:py-1 file:px-2 file:rounded-sm file:border-0 file:text-xs file:font-mono file:font-semibold file:bg-zinc-800 file:text-zinc-300 hover:file:bg-zinc-700 cursor-pointer" />
-                    <button type="button" id="btnUpload" class="w-full px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 font-mono text-xs rounded-sm transition-colors cursor-pointer hidden">
-                        Yükle
-                    </button>
-                </div>
-                <div id="uploadResult" class="mt-2 hidden">
-                    <div class="flex items-center gap-2">
-                        <input type="text" id="markdownCode" readonly class="flex-1 w-0 bg-zinc-900 border border-zinc-800 text-zinc-300 px-2 py-1 text-xs rounded-sm font-mono focus:outline-none" />
-                        <button type="button" id="btnCopy" class="px-2 py-1 bg-accent hover:bg-accent-light text-zinc-950 font-mono text-xs rounded-sm transition-colors cursor-pointer font-bold shrink-0">
-                            Kopyala
-                        </button>
-                    </div>
+            <div style="margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
+                <input asp-for="IsActive" style="width: 16px; height: 16px; accent-color: var(--admin-accent); cursor: pointer;" />
+                <label asp-for="IsActive" class="settings-label" style="margin: 0; cursor: pointer;">Yayında</label>
+            </div>
+
+            <div class="settings-section-title" style="margin-top: 32px;">Harici Görsel Yükle</div>
+            <div class="image-upload-box">
+                <input type="file" id="imageUpload" accept="image/*" style="font-size: 0.75rem; width: 100%; color: var(--admin-secondary);" />
+                <button type="button" id="btnUpload" class="btn-cancel" style="display: none; margin-top: 12px; width: 100%;">Yükle</button>
+                <div id="uploadResult" style="display: none; margin-top: 12px;">
+                    <input type="text" id="markdownCode" readonly class="settings-input" style="font-family: monospace; font-size: 0.75rem; margin-bottom: 8px;" />
+                    <button type="button" id="btnCopy" class="btn-cancel" style="margin-top: 0; padding: 4px 8px;">Kopyala</button>
                 </div>
             </div>
+
+            <a asp-action="Index" class="btn-cancel">İptal</a>
         </div>
     </div>
 </form>
 
-@* ---- Client-side validation scripts ---- *@
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const imageUpload = document.getElementById('imageUpload');
-            const btnUpload = document.getElementById('btnUpload');
-            const uploadResult = document.getElementById('uploadResult');
-            const markdownCode = document.getElementById('markdownCode');
-            const btnCopy = document.getElementById('btnCopy');
-
-            // Initialize Toast UI Editor
+            // Remove 'dark' theme from editor initialization (Phase 4.2)
             const editorElement = document.querySelector('#editor');
             let editor;
             if (editorElement) {
                 editor = new toastui.Editor({
                     el: editorElement,
-                    height: '600px',
+                    height: '600px', // Standard height for writing
                     initialEditType: 'markdown',
                     previewStyle: 'vertical',
-                    theme: 'dark',
                     initialValue: document.getElementById('Content').value,
+                    // Note: 'theme: dark' is intentionally removed here
+                    // Phase 4.5: Image Blob Hook (Handles image pasting/dropping directly in editor)
                     hooks: {
                         addImageBlobHook: async (blob, callback) => {
                             const formData = new FormData();
@@ -177,58 +261,64 @@
                     }
                 });
 
-                // Sync editor content to hidden textarea before form submission
-                document.querySelector('form').addEventListener('submit', function() {
+                document.getElementById('postForm').addEventListener('submit', function() {
                     document.getElementById('Content').value = editor.getMarkdown();
                 });
             }
 
-            if (!imageUpload) return; // Prevent errors if elements don't exist
+            // Old image upload handlers... (keep them functional for manual uploading)
+            const imageUpload = document.getElementById('imageUpload');
+            const btnUpload = document.getElementById('btnUpload');
+            const uploadResult = document.getElementById('uploadResult');
+            const markdownCode = document.getElementById('markdownCode');
+            const btnCopy = document.getElementById('btnCopy');
 
-            imageUpload.addEventListener('change', function() {
-                if (this.files && this.files.length > 0) {
-                    btnUpload.classList.remove('hidden');
-                } else {
-                    btnUpload.classList.add('hidden');
-                    uploadResult.classList.add('hidden');
-                }
-            });
-
-            btnUpload.addEventListener('click', async function() {
-                if (!imageUpload.files || imageUpload.files.length === 0) return;
-                
-                const file = imageUpload.files[0];
-                const formData = new FormData();
-                formData.append('file', file);
-                
-                try {
-                    const response = await fetch('/AdminPost/UploadImage', {
-                        method: 'POST',
-                        body: formData
-                    });
-
-                    if (response.ok) {
-                        const data = await response.json();
-                        markdownCode.value = `![Görsel](${data.url})`;
-                        uploadResult.classList.remove('hidden');
+            if (imageUpload && btnUpload) {
+                imageUpload.addEventListener('change', function() {
+                    if (this.files && this.files.length > 0) {
+                        btnUpload.style.display = 'block';
                     } else {
-                        alert('Görsel yüklenemedi.');
+                        btnUpload.style.display = 'none';
+                        uploadResult.style.display = 'none';
                     }
-                } catch (err) {
-                    console.error(err);
-                    alert('Görsel yüklenirken bir hata oluştu.');
-                }
-            });
+                });
 
-            btnCopy.addEventListener('click', function() {
-                markdownCode.select();
-                document.execCommand('copy');
-                const originalText = btnCopy.innerText;
-                btnCopy.innerText = 'Kopyalandı!';
-                setTimeout(() => {
-                    btnCopy.innerText = originalText;
-                }, 2000);
-            });
+                btnUpload.addEventListener('click', async function() {
+                    if (!imageUpload.files || imageUpload.files.length === 0) return;
+                    
+                    const file = imageUpload.files[0];
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    
+                    try {
+                        const response = await fetch('/AdminPost/UploadImage', {
+                            method: 'POST',
+                            body: formData
+                        });
+
+                        if (response.ok) {
+                            const data = await response.json();
+                            markdownCode.value = `![Görsel](${data.url})`;
+                            uploadResult.style.display = 'block';
+                        } else {
+                            alert('Görsel yüklenemedi.');
+                        }
+                    } catch (err) {
+                        console.error(err);
+                        alert('Görsel yüklenirken bir hata oluştu.');
+                    }
+                });
+
+                btnCopy.addEventListener('click', function() {
+                    markdownCode.select();
+                    document.execCommand('copy');
+                    const originalText = btnCopy.innerText;
+                    btnCopy.innerText = 'Kopyalandı!';
+                    setTimeout(() => {
+                        btnCopy.innerText = originalText;
+                    }, 2000);
+                });
+            }
         });
     </script>
 }

@@ -1,50 +1,118 @@
 @* ============================================================================= *@
-@* AdminCategory/Create.cshtml — New Category Form View *@
+@* AdminCategory/Create.cshtml — New Category Form View (Light — Notion Style) *@
 @* ============================================================================= *@
-@* This view renders a form for creating a new blog category. *@
-@* It only has one input field: Name (the Slug is auto-generated on the server). *@
-@* Client-side validation is enabled via jQuery Validation scripts. *@
+@* Phase 5.1: Clean, centered, white card layout. Minimalist inputs.             *@
 @* ============================================================================= *@
 
-@* The view expects a Category model (initially empty for a new category) *@
 @model Category
 
 @{
     ViewData["Title"] = "Yeni Kategori";
 }
 
-<div class="max-w-3xl mx-auto p-6 bg-zinc-900/50 border border-zinc-800 rounded-sm">
-    <h1 class="text-xl font-semibold text-zinc-100 mb-6 font-mono border-b border-zinc-800 pb-3">
-        Yeni Kategori
-    </h1>
+<style>
+    .form-card {
+        max-width: 500px;
+        margin: 40px auto;
+        background-color: var(--admin-surface);
+        border: 1px solid var(--admin-border);
+        border-radius: 8px;
+        padding: 32px;
+    }
+    
+    .form-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--admin-text);
+        margin-bottom: 24px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid var(--admin-border);
+    }
+    
+    .form-label {
+        display: block;
+        font-size: 0.8125rem;
+        font-weight: 500;
+        color: var(--admin-text);
+        margin-bottom: 6px;
+    }
+    
+    .form-input {
+        width: 100%;
+        background-color: var(--admin-surface);
+        border: 1px solid var(--admin-border);
+        color: var(--admin-text);
+        font-size: 0.875rem;
+        border-radius: 6px;
+        padding: 10px 12px;
+        transition: border-color 0.1s ease;
+        outline: none;
+        font-family: var(--admin-font);
+        margin-bottom: 4px;
+    }
+    .form-input:focus {
+        border-color: var(--admin-accent);
+    }
+    
+    .form-actions {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-top: 32px;
+    }
+    
+    .btn-submit {
+        padding: 8px 20px;
+        background-color: var(--admin-accent);
+        color: #fff;
+        font-size: 0.875rem;
+        font-weight: 500;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        transition: opacity 0.1s;
+    }
+    .btn-submit:hover {
+        opacity: 0.9;
+    }
+    
+    .btn-cancel {
+        padding: 8px 16px;
+        background-color: transparent;
+        color: var(--admin-secondary);
+        font-size: 0.875rem;
+        font-weight: 500;
+        border-radius: 6px;
+        border: 1px solid var(--admin-border);
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.1s;
+    }
+    .btn-cancel:hover {
+        background-color: var(--admin-hover);
+        color: var(--admin-text);
+    }
+</style>
+
+<div class="form-card">
+    <h1 class="form-title">Yeni Kategori</h1>
 
     <form asp-action="Create" method="post">
-        <div asp-validation-summary="ModelOnly" class="text-red-400 text-sm mb-4"></div>
+        <div asp-validation-summary="ModelOnly" style="color: var(--admin-danger); font-size: 0.875rem; margin-bottom: 16px;"></div>
         
         <div>
-            <label asp-for="Name" class="block text-xs font-mono font-medium text-zinc-400 mb-2 uppercase tracking-wider">
-                Kategori Adı
-            </label>
-            <input asp-for="Name"
-                   class="w-full bg-zinc-900 border border-zinc-800 text-zinc-100 placeholder-zinc-500 focus:border-zinc-600 focus:outline-none px-3 py-2 text-sm rounded-sm font-sans transition-colors mb-1"
-                   placeholder="Kategori adını giriniz..." />
-            <span asp-validation-for="Name" class="text-red-400 text-xs"></span>
+            <label asp-for="Name" class="form-label">Kategori Adı</label>
+            <input asp-for="Name" class="form-input" placeholder="Kategori adını giriniz..." autocomplete="off" />
+            <span asp-validation-for="Name" style="color: var(--admin-danger); font-size: 0.75rem;"></span>
         </div>
 
-        <div class="flex items-center pt-6 mt-6 border-t border-zinc-800">
-            <button type="submit"
-                    class="px-4 py-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-950 font-mono text-xs font-medium rounded-sm transition-colors cursor-pointer">
-                Kaydet
-            </button>
-            <a asp-action="Index"
-               class="px-4 py-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 font-mono text-xs rounded-sm transition-colors ml-2">
-                İptal
-            </a>
+        <div class="form-actions">
+            <button type="submit" class="btn-submit">Kaydet</button>
+            <a asp-action="Index" class="btn-cancel">İptal</a>
         </div>
     </form>
 </div>
 
-@* ---- Client-side validation scripts ---- *@
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 }

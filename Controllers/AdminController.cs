@@ -46,6 +46,15 @@ public class AdminController : Controller
         ViewBag.CategoryCount = await _context.Categories.CountAsync();
         // Count total posts — quick scalar query, no need to load entities
         ViewBag.PostCount = await _context.Posts.CountAsync();
+        // Sum total views across all posts — returns 0 if no posts exist
+        ViewBag.TotalViews = await _context.Posts.SumAsync(p => p.ViewCount);
+        // Fetch the 5 most recent posts for the "Recent Posts" widget
+        // Include Category so we can display the category name in the dashboard
+        ViewBag.RecentPosts = await _context.Posts
+            .Include(p => p.Category)
+            .OrderByDescending(p => p.CreatedDate)
+            .Take(5)
+            .ToListAsync();
         // Return the Dashboard view with ViewBag data available for rendering
         return View();
     }
