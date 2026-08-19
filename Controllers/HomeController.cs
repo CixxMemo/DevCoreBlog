@@ -214,6 +214,19 @@ public class HomeController : Controller
         return View(posts);
     }
 
+    // -------------------------------------------------------------------------
+    // API ENDPOINTS (for Phase 3 Terminal CLI)
+    // -------------------------------------------------------------------------
+    // GET: /api/categories
+    // Lightweight JSON endpoint for the JS terminal 'ls' command to consume.
+    [HttpGet("api/categories")]
+    public async Task<IActionResult> ApiCategories()
+    {
+        var categories = await _categoryService.GetAllCategoriesAsync();
+        var result = categories.Select(c => new { slug = c.Slug, name = c.Name });
+        return Json(result);
+    }
+
     // GET: /Home/Error
     // Displays the error page with a RequestId for debugging.
     // [ResponseCache] prevents caching so each error gets a fresh trace ID.

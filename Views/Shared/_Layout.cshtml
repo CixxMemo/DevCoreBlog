@@ -87,11 +87,11 @@
                         mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
                     },
                     colors: {
-                        // Terminal Orange — primary accent for interactive elements
+                        // Terminal Orange/Yellow — primary accent for interactive elements
                         accent: {
-                            DEFAULT: '#FF8C00',
-                            light: '#FFD700',
-                            dark: '#e67e00',
+                            DEFAULT: '#f97316', // orange-500
+                            light: '#facc15',   // yellow-400
+                            dark: '#ea580c',    // orange-600
                         },
                         // GitHub Dark palette — background surfaces
                         surface: {
@@ -141,11 +141,11 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/plugins/show-language/prism-show-language.min.css" rel="stylesheet" />
 </head>
-<body class="m-0 p-0 bg-[#0d1117] text-[#E6EDF3] font-sans antialiased">
+<body class="m-0 p-0 bg-[#0d1117] text-[#E6EDF3] font-sans antialiased overflow-x-hidden">
     @* ============================================================================= *@
     @* BENTO GRID WRAPPER — Contains all page areas in a CSS Grid layout             *@
     @* ============================================================================= *@
-    <div class="site-grid">
+    <div class="site-grid max-w-[1440px] mx-auto w-full border-x border-[#30363d]">
     
         @* ============================================================================= *@
         @* TOPBAR — Terminal-style Prompt Header                                         *@
@@ -158,26 +158,15 @@
         @*   Search  → ~/ara                                                              *@
         @* ============================================================================= *@
         <header class="site-topbar">
-            @* Left side: Terminal prompt *@
-            <div class="topbar-prompt">
-                @* Logo/Home link styled as terminal user@host *@
-                <a href="/" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 0.5rem;">
-                    <span class="prompt-user">devcore</span><span style="color: var(--text-muted);">@@</span><span style="color: var(--text-secondary);">system</span>
-                </a>
-                <span style="color: var(--text-muted);">:</span>
-                @* Dynamic path — changes based on current page *@
-                <span class="prompt-path">~/@(ViewData["TerminalPath"] ?? "posts")</span>
-                <span class="prompt-symbol">$</span>
-                <span class="topbar-cursor"></span>
+            @* Central Command Line (Top Bar) *@
+            <div class="topbar-central-cli">
+                <span class="cli-prompt">devcore:~$</span>
+                <input id="central-cli-input" type="text" autocomplete="off" spellcheck="false"
+                       placeholder="Aramak için kelime veya komut girin... (Ctrl+K)" />
             </div>
 
-            @* Right side: Actions (shortcut hint + dark mode toggle + mobile menu) *@
+            @* Right side: Actions (dark mode toggle + mobile menu) *@
             <div class="topbar-actions">
-                @* Command Palette shortcut hint — click or press / to open *@
-                <div id="cmd-palette-hint" class="topbar-shortcut-hint hidden sm:flex" onclick="document.dispatchEvent(new KeyboardEvent('keydown', {key: '/', bubbles: true}))">
-                    <span class="cmd-kbd">/</span> or <span class="cmd-kbd">⌘K</span>
-                </div>
-
                 @* Dark Mode Toggle Button *@
                 <button id="theme-toggle" type="button" aria-label="Toggle Dark Mode">
                     <svg id="theme-toggle-dark-icon" class="w-5 h-5 hidden" fill="currentColor" viewBox="0 0 20 20">
@@ -236,42 +225,25 @@
         @* ============================================================================= *@
         <aside class="site-sidebar">
 
-            @* ── Card 1: Quick Actions ── *@
-            @* Shortcut links styled as terminal commands *@
-            <div class="sidebar-card">
-                <div class="sidebar-card-header">
-                    <span class="sidebar-card-icon">⚡</span> Quick Actions
-                </div>
-                <div class="sidebar-card-body">
-                    <a href="/" class="sidebar-link">
-                        <span class="sidebar-link-icon">›</span> ~/home
-                    </a>
-                    <a href="/?page=1" class="sidebar-link">
-                        <span class="sidebar-link-icon">›</span> ~/newest
-                    </a>
-                </div>
+            @* Logo Area *@
+            <div class="sidebar-logo">
+                <a href="/">
+                    <span class="logo-text">devcore</span><span class="logo-cursor">_</span>
+                </a>
             </div>
 
-            @* ── Card 2: Search ── *@
-            @* Terminal grep-style search input *@
-            <div class="sidebar-card">
-                <div class="sidebar-card-header">
-                    <span class="sidebar-card-icon">🔍</span> Search
-                </div>
-                <div class="sidebar-card-body">
-                    <form action="/ara" method="get">
-                        <input type="text" name="query" 
-                               placeholder="$ grep ..." 
-                               class="sidebar-search-input" />
-                    </form>
-                </div>
+            @* Navigation Links *@
+            <div class="sidebar-nav" style="margin-bottom: 1rem;">
+                <a href="/" class="sidebar-nav-link">
+                    <span class="nav-icon">~/</span> Ana Sayfa
+                </a>
             </div>
 
-            @* ── Card 3: Categories ── *@
+            @* ── Card 1: Categories ── *@
             @* Dynamic category list loaded from the database *@
             <div class="sidebar-card">
                 <div class="sidebar-card-header">
-                    <span class="sidebar-card-icon">📂</span> Kategoriler
+                    <span class="sidebar-card-icon">[#]</span> Kategoriler
                 </div>
                 <div class="sidebar-card-body">
                     @foreach (var cat in DbContext.Categories.ToList())
@@ -309,10 +281,10 @@
         </main>
 
         @* ============================================================================= *@
-        @* FOOTER — Simple copyright bar                                                 *@
+        @* FOOTER                                                                        *@
         @* ============================================================================= *@
         <footer class="site-footer">
-            &copy; 2026 DevCoreBlog
+            <p>&copy; @DateTime.Now.Year - DevCoreBlog. All rights reserved.</p>
         </footer>
     </div>
 
@@ -398,6 +370,8 @@
     <script src="~/js/site.js" asp-append-version="true"></script>
     @* Command Palette — Keyboard shortcuts and command execution *@
     <script src="~/js/command-palette.js" asp-append-version="true"></script>
+    @* Terminal Logic (Phase 3) *@
+    <script src="~/js/terminal.js" asp-append-version="true"></script>
 
     @* ============================================================================= *@
     @* Prism.js — Syntax Highlighting Scripts                                        *@

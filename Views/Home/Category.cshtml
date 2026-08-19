@@ -24,52 +24,43 @@
 
 @if (Model.Any())
 {
-    <div class="space-y-4">
+    @* Linear Layout — Terminal Output Style *@
+    <div class="flex flex-col gap-6">
+        @{ int index = 0; }
         @foreach (var item in Model)
         {
-            @* Post card — Terminal-styled with orange hover border *@
-            <article class="p-6 transition-colors duration-200"
-                     style="background-color: var(--bg-card); border: 1px solid var(--border);"
-                     onmouseover="this.style.borderColor='var(--accent)';"
-                     onmouseout="this.style.borderColor='var(--border)';">
-                <h2 class="text-lg font-semibold mb-3">
-                    <a asp-controller="Home" asp-action="Detail" asp-route-slug="@item.Slug" 
-                       class="transition-colors"
-                       style="color: var(--text-primary); text-decoration: none;"
-                       onmouseover="this.style.color='var(--accent)';"
-                       onmouseout="this.style.color='var(--text-primary)';">
-                        @item.Title
+            @* ── Terminal Output Line ── *@
+            <div class="group flex flex-col gap-2 mb-4 animate-fade-up" style="animation-delay: @(index * 75)ms;">
+                
+                @* Simulated Command Prompt (Phase 1 Exact Test Match) *@
+                <div class="flex items-center gap-2 font-mono text-sm sm:text-base mb-1">
+                    <span class="prompt" style="color: var(--accent);">cixxmemo@devcore:~$</span> 
+                    <span style="color: var(--text-primary);">cat</span>
+                    <a href="/yazi/@item.Slug" class="hover:underline transition-colors" style="color: var(--text-primary);">
+                        @(item.Slug).md
                     </a>
-                </h2>
-
-                <div class="flex items-center gap-3 mb-4">
-                    @if (item.Category != null)
-                    {
-                        <a href="/kategori/@item.Category.Slug" 
-                           class="font-mono text-xs px-2 py-1 transition-colors"
-                           style="color: var(--text-secondary); background: var(--bg-surface); border: 1px solid var(--border);"
-                           onmouseover="this.style.borderColor='var(--accent)'; this.style.color='var(--accent)';"
-                           onmouseout="this.style.borderColor='var(--border)'; this.style.color='var(--text-secondary)';">
-                            @item.Category.Name
-                        </a>
-                    }
-                    <time class="font-mono text-xs" style="color: var(--text-muted);">
-                        @item.CreatedDate.ToString("yyyy-MM-dd")
-                    </time>
                 </div>
 
-                <p class="text-sm leading-relaxed mb-4" style="color: var(--text-secondary);">
-                    @item.Summary
-                </p>
-
-                <a href="/yazi/@item.Slug" 
-                   class="inline-block px-3 py-1.5 text-xs font-mono font-medium transition-colors"
-                   style="border: 1px solid var(--border); color: var(--text-secondary);"
-                   onmouseover="this.style.borderColor='var(--accent)'; this.style.color='var(--accent)';"
-                   onmouseout="this.style.borderColor='var(--border)'; this.style.color='var(--text-secondary)';">
-                    Devamını Oku →
-                </a>
-            </article>
+                @* Output / Content (Title and Summary) *@
+                <div class="pl-4 ml-2" style="border-left: 2px solid var(--border);">
+                    <div class="font-mono text-xs mb-2" style="color: var(--text-muted);">
+                        <span>[@item.CreatedDate.ToString("yyyy-MM-dd")]</span>
+                        @if (item.Category != null)
+                        {
+                            <span class="ml-2">[@item.Category.Name]</span>
+                        }
+                    </div>
+                    <h2 class="text-lg sm:text-xl font-bold mb-1" style="color: var(--text-primary);">
+                        <a href="/yazi/@item.Slug" class="hover:opacity-80 transition-opacity">
+                            @item.Title
+                        </a>
+                    </h2>
+                    <p class="text-sm leading-relaxed" style="color: var(--text-secondary);">
+                        @item.Summary
+                    </p>
+                </div>
+            </div>
+            index++;
         }
     </div>
 

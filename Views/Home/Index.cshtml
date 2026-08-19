@@ -11,99 +11,190 @@
 @*   - Grid: 2 columns on desktop, 1 column on mobile                          *@
 @* ============================================================================= *@
 
-@using DevCoreBlog.Models
+@using DevCoreBlog.Core.Entities
 @model List<Post>
 
 @{
     ViewData["Title"] = "Ana Sayfa";
     // Set the terminal breadcrumb path for the topbar
     ViewData["TerminalPath"] = "posts";
+    
+    var heroPosts = Model.Take(3).ToList();
+    var feedPosts = Model.Skip(3).ToList();
 }
 
 @* Page heading — bold, high contrast, monospace *@
 <h1 class="text-2xl font-bold tracking-tight mb-8 font-mono" style="color: var(--text-primary);">
-    $ ls ./posts/
+    $ ls ./posts/ --featured
 </h1>
 
 @if (Model.Any())
 {
-    @* Post Grid — 2 columns on desktop, 1 on mobile *@
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-        @{ int index = 0; }
-        @foreach (var item in Model)
-        {
-            @* ── Post Card ── *@
-            @* Entire card is wrapped in an <a> tag for full-card clickability *@
-            <a href="/yazi/@item.Slug" 
-               class="group block animate-fade-up post-card"
-               style="animation-delay: @(index * 75)ms;">
+    <!-- CYBER CAROUSEL (VİTRİN) -->
+    <div class="cyber-carousel-container mb-12 animate-fade-up relative overflow-hidden group" style="border: 1px solid var(--border); background: var(--bg-card); border-radius: 2px;">
+        <div class="cyber-carousel-track" id="hero-carousel-track" style="display: flex; transition: transform 0.5s cubic-bezier(0.2, 0, 0.2, 1);">
+            @for (int i = 0; i < heroPosts.Count; i++)
+            {
+                var post = heroPosts[i];
+                var accentColor = (i % 2 == 0) ? "var(--accent)" : "var(--accent-hover)";
                 
-                @* Card Header — Terminal-style meta: [date] [category] *@
-                <div class="post-card-meta">
-                    <span class="post-card-tag">[@item.CreatedDate.ToString("yyyy-MM-dd")]</span>
-                    @if (item.Category != null)
-                    {
-                        <span class="post-card-tag">[@item.Category.Name]</span>
-                    }
+                <div class="cyber-carousel-slide flex-shrink-0 w-full" style="padding: 2.5rem 2rem; position: relative;">
+                    <!-- Decorator elements for Vibe Coding -->
+                    <div style="position: absolute; top: 1rem; right: 1rem; font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted);">
+                        [SLIDE_0@(i+1)/0@(heroPosts.Count)]
+                    </div>
+                    
+                    <a href="/yazi/@post.Slug" class="block h-full w-full flex flex-col justify-center" style="text-decoration: none;">
+                        <div class="p-6 transition-colors" style="background: var(--bg-primary); border: 1px solid var(--border); border-left: 4px solid @accentColor;">
+                            <div class="font-mono text-xs mb-3" style="color: @accentColor;">
+                                > FEATURED_@(i+1) [@post.PublishDate.ToString("yyyy-MM-dd")]
+                            </div>
+                            <h2 class="text-2xl sm:text-3xl font-bold mb-3 font-sans tracking-tight transition-colors hover:text-accent" style="color: var(--text-primary);">
+                                @post.Title
+                            </h2>
+                            <p class="text-sm font-sans mb-4 leading-relaxed" style="color: var(--text-secondary); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                                @post.Summary
+                            </p>
+                            @if(post.Category != null)
+                            {
+                                <span class="inline-block px-2 py-1 text-xs font-mono" style="background: var(--bg-surface); color: var(--text-primary); border: 1px solid var(--border);">
+                                    #@post.Category.Name
+                                </span>
+                            }
+                        </div>
+                    </a>
                 </div>
-
-                @* Card Body — Title (orange) + description *@
-                <h2 class="post-card-title">
-                    @item.Title
-                </h2>
-
-                <p class="post-card-summary leading-relaxed">
-                    @item.Summary
-                </p>
-
-                @* Card Footer — Read more indicator *@
-                <div class="post-card-footer">
-                    <span>cat README.md</span>
-                    <span class="post-card-arrow">&rarr;</span>
-                </div>
-            </a>
-            index++;
-        }
-    </div>
-
-    @* Pagination — terminal-styled page navigation *@
-    @if (ViewBag.TotalPages > 1)
-    {
-        <div class="mt-8 flex justify-between items-center pt-6" style="border-top: 1px solid var(--border);">
-            @if (ViewBag.CurrentPage > 1)
-            {
-                <a href="?page=@(ViewBag.CurrentPage - 1)" class="pagination-link">
-                    ← prev
-                </a>
-            }
-            else
-            {
-                <div></div>
-            }
-
-            <span class="font-mono text-xs" style="color: var(--text-muted);">
-                [@ViewBag.CurrentPage/@ViewBag.TotalPages]
-            </span>
-
-            @if (ViewBag.CurrentPage < ViewBag.TotalPages)
-            {
-                <a href="?page=@(ViewBag.CurrentPage + 1)" class="pagination-link">
-                    next →
-                </a>
-            }
-            else
-            {
-                <div></div>
             }
         </div>
-    }
+        
+        <!-- Controls & Status Bar -->
+        <div class="cyber-carousel-controls" style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 1rem; border-top: 1px solid var(--border); background: var(--bg-surface); font-family: var(--font-mono); font-size: 0.75rem;">
+            <div style="display: flex; gap: 0.5rem;">
+                <button id="carousel-prev" class="carousel-btn hover:text-accent hover:border-accent transition-colors" style="background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); cursor: pointer; padding: 0.2rem 0.6rem; border-radius: 0;">&lt;</button>
+                <button id="carousel-next" class="carousel-btn hover:text-accent hover:border-accent transition-colors" style="background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); cursor: pointer; padding: 0.2rem 0.6rem; border-radius: 0;">&gt;</button>
+            </div>
+            
+            <!-- Terminal Loading Bar -->
+            <div id="carousel-status" style="color: var(--text-secondary); font-family: var(--font-mono); letter-spacing: 0.05em;">
+                Status: <span style="color: var(--accent);">[░░░░░░░░░░]</span> %0
+            </div>
+        </div>
+    </div>
+
+    <!-- FAZ 3: GRID (FEED & SYSTEM STATUS) -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+        
+        <!-- SOL SÜTUN: FEED (Vibe Coding Akışı) -->
+        <div class="lg:col-span-2">
+            <h2 class="text-xl font-bold tracking-tight mb-6 font-mono border-b border-zinc-800 pb-2 animate-fade-up" style="color: var(--text-primary); animation-delay: 100ms;">
+                $ tail -f ./posts/feed.log
+            </h2>
+
+            <div class="flex flex-col gap-4">
+                @{ int index = 0; }
+                @foreach (var item in feedPosts)
+                {
+                    // Simulate Read Time
+                    int wordCount = string.IsNullOrWhiteSpace(item.Content) ? 0 : item.Content.Split(new char[] { ' ', '\n' }, StringSplitOptions.RemoveEmptyEntries).Length;
+                    int readTime = Math.Max(1, wordCount / 200);
+
+                    <a href="/yazi/@item.Slug" class="post-card animate-fade-up" style="animation-delay: @((index * 75) + 150)ms;">
+                        <div class="post-card-meta">
+                            <span class="post-card-tag">[@item.PublishDate.ToString("yyyy-MM-dd")]</span>
+                            @if (item.Category != null)
+                            {
+                                <span class="post-card-tag">[#@item.Category.Name.ToLower()]</span>
+                            }
+                        </div>
+                        
+                        <h3 class="post-card-title">@item.Title</h3>
+                        <p class="post-card-summary">@item.Summary</p>
+                        
+                        <div class="post-card-footer">
+                            <span>
+                                <span style="color: var(--text-muted);">author:</span> root
+                                <span style="margin: 0 0.5rem; color: var(--border);">|</span>
+                                <span style="color: var(--text-muted);">time:</span> @(readTime)m
+                            </span>
+                            <span class="post-card-arrow text-accent">cat post.md →</span>
+                        </div>
+                    </a>
+                    index++;
+                }
+            </div>
+
+            @* Pagination — terminal-styled page navigation *@
+            @if (ViewBag.TotalPages > 1)
+            {
+                <div class="mt-10 flex justify-between items-center pt-6 border-t border-zinc-800 font-mono text-sm animate-fade-up" style="animation-delay: @((feedPosts.Count * 75) + 150)ms;">
+                    @if (ViewBag.CurrentPage > 1)
+                    {
+                        <a href="?page=@(ViewBag.CurrentPage - 1)" class="pagination-link">
+                            ← prev_page
+                        </a>
+                    }
+                    else
+                    {
+                        <div></div>
+                    }
+
+                    <span style="color: var(--accent);">
+                        page_@(ViewBag.CurrentPage)_of_@(ViewBag.TotalPages)
+                    </span>
+
+                    @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+                    {
+                        <a href="?page=@(ViewBag.CurrentPage + 1)" class="pagination-link">
+                            next_page →
+                        </a>
+                    }
+                    else
+                    {
+                        <div></div>
+                    }
+                </div>
+            }
+        </div>
+
+        <!-- SAĞ SÜTUN: SYSTEM STATUS (Trendler) -->
+        <div class="lg:col-span-1">
+            <div class="sticky top-[80px]">
+                <h2 class="text-xl font-bold tracking-tight mb-6 font-mono border-b border-zinc-800 pb-2 animate-fade-up" style="color: var(--text-primary); animation-delay: 200ms;">
+                    $ systemctl status trends
+                </h2>
+                
+                <div class="bg-card border border-terminal p-5 font-mono text-xs animate-fade-up shadow-[4px_4px_0_0_var(--border)] transition-shadow hover:shadow-[4px_4px_0_0_var(--accent)]" style="border-radius: 2px; animation-delay: 300ms; background-color: var(--bg-card); border-color: var(--border);">
+                    <div class="mb-5" style="color: var(--text-secondary); line-height: 1.6;">
+                        [<span style="color: var(--accent);">OK</span>] Loaded current trends.<br/>
+                        [<span style="color: var(--accent);">OK</span>] Analyzing read counts...
+                    </div>
+                    
+                    <div class="flex flex-col gap-4">
+                        @* Use Model ordered by ViewCount descending as an approximation for trends *@
+                        @foreach (var (trendPost, idx) in Model.OrderByDescending(x => x.ViewCount).Take(6).Select((p, i) => (p, i)))
+                        {
+                            var prefix = idx == 0 ? "[HOT]" : (idx < 3 ? "[TREND]" : "[INFO]");
+                            var prefixColor = idx == 0 ? "var(--accent)" : (idx < 3 ? "var(--accent-hover)" : "var(--text-secondary)");
+                            
+                            <div class="flex gap-3 group items-start">
+                                <span class="flex-shrink-0 font-bold" style="color: @prefixColor; width: 3.5rem;">@prefix</span>
+                                <a href="/yazi/@trendPost.Slug" class="transition-colors line-clamp-2" style="color: var(--text-primary); font-family: var(--font-sans); font-size: 0.875rem;">
+                                    <span class="group-hover:text-accent transition-colors">@trendPost.Title</span>
+                                </a>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 }
 else
 {
-    <div class="p-12 text-center" style="border: 1px solid var(--border);">
-        <p class="font-mono text-sm" style="color: var(--text-muted);">
-            $ ls ./posts/<br>
-            <span style="color: var(--accent);">0 results</span>
+    <div class="p-12 text-center border border-zinc-800 bg-zinc-900" style="border-radius: 2px;">
+        <p class="font-mono text-sm text-zinc-400">
+            $ ls ./posts/ --featured<br>
+            <span class="text-orange-500 mt-2 block">Error: 0 results found.</span>
         </p>
     </div>
 }
