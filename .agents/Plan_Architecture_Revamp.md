@@ -51,32 +51,30 @@
 
 ---
 
-## Faz 4: DTO ve AutoMapper Kurulumu
-*Amaç: Entity modellerini doğrudan UI katmanına taşımayı engellemek ve güvenliği artırmak.*
+## Faz 4: Form Güvenliği ve Anti Over-Posting (Bind Attribute)
+*Amaç: DTO kullanılmadığı için oluşabilecek aşırı veri gönderimi (over-posting) zafiyetlerini Controller seviyesinde engellemek.*
 
-- [ ] **Adım 4.1:** Gerekli paketi kur (`dotnet add package AutoMapper.Extensions.Microsoft.DependencyInjection`).
-- [ ] **Adım 4.2:** `DevCoreBlog.Core` içerisine `DTOs` klasörü aç. `PostDto`, `PostCreateDto`, `PostUpdateDto` sınıflarını oluştur.
-- [ ] **Adım 4.3:** `DevCoreBlog.Services` içerisinde `MappingProfile.cs` oluştur ve haritalamaları (Entity <-> DTO) yapılandır.
-- [ ] **Adım 4.4:** `PostService` ve Controller'ları güncelleyerek Entity yerine DTO dönmelerini sağla.
-- [ ] **TEST:** Front-end (HomeController) ve Admin sayfalarında verilerin eksiksiz ve doğru listelendiğini doğrula.
-
+- [x] **Adım 4.1:** `AdminPostController.cs` dosyasındaki `Create` (HttpPost) metodunun parametresine `[Bind("Title,Content,CategoryId,ThumbnailUrl,Excerpt,IsPublished")]` güvenlik kısıtlamasını ekle.
+- [x] **Adım 4.2:** `AdminPostController.cs` dosyasındaki `Edit` (HttpPost) metoduna da aynı `[Bind("Id,Title,Content,CategoryId,ThumbnailUrl,Excerpt,IsPublished")]` kısıtlamasını uygula.
+- [x] **Adım 4.3:** `AdminCategoryController.cs` dosyasındaki `Create` ve `Edit` (HttpPost) metotlarına modelin kendi alanlarını içeren `[Bind("Name,Description")]` parametresini ekleyerek kategori güvenliğini sağla.
+- [x] **TEST:** Projeyi derle (`dotnet build`). Admin panelinden Post ve Kategori ekleme/güncelleme işlemlerinin sorunsuz çalıştığını test et.
 ---
 
 ## Faz 5: Global Exception Handling (Merkezi Hata Yönetimi)
 *Amaç: Controller'lardaki try-catch bloklarını temizlemek ve hataları merkezi bir noktadan yönetmek.*
 
-- [ ] **Adım 5.1:** Web projesinde `Middlewares` klasörü oluştur. İçine `ExceptionHandlingMiddleware.cs` ekle.
-- [ ] **Adım 5.2:** Middleware içinde, hataları yakalayıp loglayacak ve uygun HTTP 500 formatında veya Error View ile dönecek mantığı yaz.
-- [ ] **Adım 5.3:** `Program.cs` içerisinde `app.UseMiddleware<ExceptionHandlingMiddleware>();` tanımlamasını yap.
-- [ ] **TEST:** Herhangi bir Controller'da kasten `throw new Exception("Test Hatası");` yaz. Uygulamanın çökmediğini ve özel hata sayfasının/mesajının döndüğünü gör. Ardından test kodunu sil.
+- [x] **Adım 5.1:** Web projesinde `Middlewares` klasörü oluştur. İçine `ExceptionHandlingMiddleware.cs` ekle.
+- [x] **Adım 5.2:** Middleware içinde, hataları yakalayıp loglayacak ve uygun HTTP 500 formatında veya Error View ile dönecek mantığı yaz.
+- [x] **Adım 5.3:** `Program.cs` içerisinde `app.UseMiddleware<ExceptionHandlingMiddleware>();` tanımlamasını yap.
+- [x] **TEST:** Herhangi bir Controller'da kasten `throw new Exception("Test Hatası");` yaz. Uygulamanın çökmediğini ve özel hata sayfasının/mesajının döndüğünü gör. Ardından test kodunu sil.
 
 ---
 
 ## Faz 6: Caching (Önbellekleme)
 *Amaç: Ana sayfadaki veritabanı yükünü düşürmek ve yanıt sürelerini hızlandırmak.*
 
-- [ ] **Adım 6.1:** `Program.cs` içerisine `builder.Services.AddMemoryCache();` ekle.
-- [ ] **Adım 6.2:** `PostService.cs` içerisine `IMemoryCache` inject et.
-- [ ] **Adım 6.3:** Ana sayfaya gönderilen post listesini (örneğin `GetAllPublishedPostsAsync`) cache'e al. (Örn: 10 dakikalık Absolute Expiration ile).
-- [ ] **Adım 6.4:** Admin panelinden yeni bir Post eklendiğinde, güncellendiğinde veya silindiğinde ilgili Cache anahtarını (Cache Key) temizleyen mekanizmayı ekle.
-- [ ] **TEST:** Uygulamayı çalıştır. Ana sayfayı yenile. Loglardan veritabanına sadece ilk seferde sorgu atıldığını, sonraki yenilemelerde verinin bellekten (Cache) anında geldiğini doğrula.
+- [x] **Adım 6.1:** `Program.cs` içerisine `builder.Services.AddMemoryCache();` ekle.
+- [x] **Adım 6.2:** `PostService.cs` içerisine `IMemoryCache` inject et.
+- [x] **Adım 6.3:** Ana sayfaya gönderilen post listesini (örneğin `GetAllPublishedPostsAsync`) cache'e al. (Örn: 10 dakikalık Absolute Expiration ile).
+- [x] **Adım 6.4:** Admin panelinden yeni bir Post eklendiğinde, güncellendiğinde veya silindiğinde ilgili Cache anahtarını (Cache Key) temizleyen mekanizmayı ekle.
+- [x] **TEST:** Uygulamayı çalıştır. Ana sayfayı yenile. Loglardan veritabanına sadece ilk seferde sorgu atıldığını, sonraki yenilemelerde verinin bellekten (Cache) anında geldiğini doğrula.

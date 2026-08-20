@@ -32,8 +32,15 @@ using DevCoreBlog.Core.Entities;
 using DevCoreBlog.Core.Shared.Helpers;
 using DevCoreBlog.Data.Repositories;
 using DevCoreBlog.Services.Interfaces;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Primitives;
 
 namespace DevCoreBlog.Services;
+
+internal static class PostCacheTokens
+{
+    public static CancellationTokenSource TokenSource = new CancellationTokenSource();
+}
 
 // Service class for Post-related business logic
 // Implements IPostService interface
@@ -41,13 +48,22 @@ public class PostService : IPostService
 {
     // Private readonly field to hold the injected PostRepository
     private readonly PostRepository _postRepository;
+    private readonly IMemoryCache _cache;
 
     // Constructor receives PostRepository via dependency injection
     // The DI container (configured in Program.cs) provides the instance
-    public PostService(PostRepository postRepository)
+    public PostService(PostRepository postRepository, IMemoryCache cache)
     {
         // Store the injected repository for use in all service methods
         _postRepository = postRepository;
+        _cache = cache;
+    }
+
+    private void InvalidateCache()
+    {
+        PostCacheTokens.TokenSource.Cancel();
+        PostCacheTokens.TokenSource.Dispose();
+        PostCacheTokens.TokenSource = new CancellationTokenSource();
     }
 
     // -------------------------------------------------------------------------
@@ -86,10 +102,27 @@ public class PostService : IPostService
         return await _postRepository.SearchPostsAsync(query);
     }
 
-    // Get published posts with pagination
+    // Get published posts with pagination (Cached)
     public async Task<(IEnumerable<Post> Posts, int TotalCount)> GetPublishedPostsPagedAsync(int page, int pageSize)
     {
-        return await _postRepository.GetPublishedPostsPagedAsync(page, pageSize);
+        string cacheKey = $"PublishedPosts_Page_{page}_Size_{pageSize}";
+        
+        if (!_cache.TryGetValue(cacheKey, out (IEnumerable<Post> Posts, int TotalCount) cachedResult))
+        {
+            cachedResult = await _postRepository.GetPublishedPostsPagedAsync(page, pageSize);
+            
+            var cacheOptions = new MemoryCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10)
+            };
+            
+            // Add cancellation token to clear cache when a post is modified
+            cacheOptions.AddExpirationToken(new CancellationChangeToken(PostCacheTokens.TokenSource.Token));
+            
+            _cache.Set(cacheKey, cachedResult, cacheOptions);
+        }
+        
+        return cachedResult;
     }
 
     // Get published posts by category with pagination
@@ -191,6 +224,9 @@ public class PostService : IPostService
 
         // Commit the transaction to the database
         await _postRepository.SaveChangesAsync();
+        
+        // Clear cache
+        InvalidateCache();
     }
 
     // Update an existing post (handles slug regeneration)
@@ -229,6 +265,9 @@ public class PostService : IPostService
 
         // Commit the transaction to the database
         await _postRepository.SaveChangesAsync();
+        
+        // Clear cache
+        InvalidateCache();
     }
 
     // Delete a post by its Id
@@ -242,6 +281,9 @@ public class PostService : IPostService
         {
             await _postRepository.DeleteAsync(post);
             await _postRepository.SaveChangesAsync();
+            
+            // Clear cache
+            InvalidateCache();
         }
     }
 }

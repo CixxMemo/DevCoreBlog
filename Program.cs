@@ -18,6 +18,8 @@ using DevCoreBlog.Data.Repositories;
 using DevCoreBlog.Services;
 // Import Service interfaces for dependency injection
 using DevCoreBlog.Services.Interfaces;
+// Import Middlewares
+using DevCoreBlog.Middlewares;
 
 // Create the application builder, which loads configuration from appsettings.json,
 // environment variables, and command-line arguments
@@ -72,6 +74,9 @@ builder.Services.AddControllersWithViews();
 // Register Output Caching services
 builder.Services.AddOutputCache();
 
+// Register Memory Caching services for data layer
+builder.Services.AddMemoryCache();
+
 // ---------------------------------------------------------------------------
 // COOKIE AUTHENTICATION REGISTRATION
 // ---------------------------------------------------------------------------
@@ -98,6 +103,9 @@ var app = builder.Build();
 // ---------------------------------------------------------------------------
 // MIDDLEWARE PIPELINE (order matters — top to bottom)
 // ---------------------------------------------------------------------------
+
+// Global Error Handling Middleware
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 // In non-development environments, use a generic error handler page
 // and enable HTTP Strict Transport Security (HSTS) for browser security.
