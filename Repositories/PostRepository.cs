@@ -44,7 +44,7 @@ public class PostRepository : GenericRepository<Post>
         // order by CreatedDate descending (newest first), and convert to a List.
         return await _context.Posts
             .Include(p => p.Category)           // Eager-load the related Category
-            .Where(p => p.IsActive && p.PublishDate <= DateTime.UtcNow)              // Only show published posts
+            .Where(p => p.IsActive && p.IsPublished)              // Only show published posts
             .OrderByDescending(p => p.CreatedDate) // Newest posts first
             .ToListAsync();                     // Execute query asynchronously
     }
@@ -60,7 +60,7 @@ public class PostRepository : GenericRepository<Post>
         // Include the Category navigation property so the view can display it.
         return await _context.Posts
             .Include(p => p.Category)                              // Eager-load Category
-            .FirstOrDefaultAsync(p => p.Slug == slug && p.IsActive && p.PublishDate <= DateTime.UtcNow); // Match slug + published
+            .FirstOrDefaultAsync(p => p.Slug == slug && p.IsActive && p.IsPublished); // Match slug + published
     }
 
     // -------------------------------------------------------------------------
@@ -82,7 +82,7 @@ public class PostRepository : GenericRepository<Post>
         // Query published posts in this category, ordered by creation date (newest first)
         return await _context.Posts
             .Include(p => p.Category)                // Eager-load Category for display
-            .Where(p => p.CategoryId == category.Id && p.IsActive && p.PublishDate <= DateTime.UtcNow) // Filter by category + published
+            .Where(p => p.CategoryId == category.Id && p.IsActive && p.IsPublished) // Filter by category + published
             .OrderByDescending(p => p.CreatedDate)      // Newest posts first
             .ToListAsync();                           // Execute query asynchronously
     }
@@ -95,7 +95,7 @@ public class PostRepository : GenericRepository<Post>
     {
         return await _context.Posts
             .Include(p => p.Category)
-            .Where(p => p.CategoryId == categoryId && p.Id != currentPostId && p.IsActive && p.PublishDate <= DateTime.UtcNow)
+            .Where(p => p.CategoryId == categoryId && p.Id != currentPostId && p.IsActive && p.IsPublished)
             .OrderByDescending(p => p.CreatedDate)
             .Take(3)
             .ToListAsync();
@@ -106,7 +106,7 @@ public class PostRepository : GenericRepository<Post>
     // -------------------------------------------------------------------------
     public async Task<(IEnumerable<Post> Posts, int TotalCount)> GetPublishedPostsPagedAsync(int page, int pageSize)
     {
-        var query = _context.Posts.Where(p => p.IsActive && p.PublishDate <= DateTime.UtcNow);
+        var query = _context.Posts.Where(p => p.IsActive && p.IsPublished);
         var totalCount = await query.CountAsync();
         var posts = await query
             .Include(p => p.Category)
@@ -126,7 +126,7 @@ public class PostRepository : GenericRepository<Post>
         var category = await _context.Categories.FirstOrDefaultAsync(c => c.Slug == categorySlug);
         if (category == null) return (Enumerable.Empty<Post>(), 0);
 
-        var query = _context.Posts.Where(p => p.CategoryId == category.Id && p.IsActive && p.PublishDate <= DateTime.UtcNow);
+        var query = _context.Posts.Where(p => p.CategoryId == category.Id && p.IsActive && p.IsPublished);
         var totalCount = await query.CountAsync();
         var posts = await query
             .Include(p => p.Category)
@@ -153,7 +153,7 @@ public class PostRepository : GenericRepository<Post>
         // 3. Newest first (Fallback)
         return await _context.Posts
             .Include(p => p.Category)                // Eager-load Category for display
-            .Where(p => p.IsActive && p.PublishDate <= DateTime.UtcNow &&                 // Only published posts
+            .Where(p => p.IsActive && p.IsPublished &&                 // Only published posts
                        (p.Title.ToLower().Contains(lowerQuery) ||
                         p.Content.ToLower().Contains(lowerQuery)))
             .OrderByDescending(p => p.Title.ToLower() == lowerQuery)

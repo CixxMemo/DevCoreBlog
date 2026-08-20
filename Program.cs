@@ -63,6 +63,7 @@ builder.Services.AddScoped<CategoryRepository>();
 // Controllers will depend on service interfaces (IPostService, ICategoryService).
 builder.Services.AddScoped<IPostService, PostService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<IImageService, ImageService>();
 
 // Register MVC services (controllers + views + tag helpers + model binding).
 // This is required for the app to handle controller-based routes and render Razor views.

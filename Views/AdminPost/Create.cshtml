@@ -156,7 +156,7 @@
     }
 </style>
 
-<form asp-action="Create" method="post" id="postForm">
+<form asp-action="Create" method="post" id="postForm" enctype="multipart/form-data">
     <div class="post-editor-grid">
         
         @* ===================================================================== *@
@@ -202,9 +202,26 @@
                 <span asp-validation-for="Summary" style="color: var(--admin-danger); font-size: 0.75rem;"></span>
             </div>
 
+            <div style="margin-bottom: 20px;">
+                <label asp-for="Excerpt" class="settings-label">Kısa Alıntı (Excerpt)</label>
+                <textarea asp-for="Excerpt" rows="3" class="settings-textarea" placeholder="Yazıdan kısa bir alıntı..."></textarea>
+                <span asp-validation-for="Excerpt" style="color: var(--admin-danger); font-size: 0.75rem;"></span>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label class="settings-label">Kapak Görseli</label>
+                <input type="file" name="thumbnailFile" class="settings-input" accept="image/*" />
+                <input type="hidden" asp-for="ThumbnailUrl" />
+            </div>
+
+            <div style="margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
+                <input asp-for="IsPublished" style="width: 16px; height: 16px; accent-color: var(--admin-accent); cursor: pointer;" />
+                <label asp-for="IsPublished" class="settings-label" style="margin: 0; cursor: pointer;">Yayınlandı Mı?</label>
+            </div>
+
             <div style="margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
                 <input asp-for="IsActive" style="width: 16px; height: 16px; accent-color: var(--admin-accent); cursor: pointer;" />
-                <label asp-for="IsActive" class="settings-label" style="margin: 0; cursor: pointer;">Yayında</label>
+                <label asp-for="IsActive" class="settings-label" style="margin: 0; cursor: pointer;">Aktif (IsActive)</label>
             </div>
 
             <div class="settings-section-title" style="margin-top: 32px;">Harici Görsel Yükle</div>

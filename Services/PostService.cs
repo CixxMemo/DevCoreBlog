@@ -208,6 +208,9 @@ public class PostService : IPostService
         existingPost.Slug = SlugGenerator.Generate(post.Title);
         existingPost.Summary = post.Summary;
         existingPost.Content = post.Content;
+        existingPost.ThumbnailUrl = post.ThumbnailUrl;
+        existingPost.Excerpt = post.Excerpt;
+        existingPost.IsPublished = post.IsPublished;
         existingPost.CategoryId = post.CategoryId;
         existingPost.IsActive = post.IsActive;
 

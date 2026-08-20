@@ -194,3 +194,4 @@
 /Users/mehmetcankocakurt/Documents/development/DevCoreBlog/obj/Debug/net10.0/compressed/tr2xps9d7i-{0}-25grmnifnh-25grmnifnh.gz
 /Users/mehmetcankocakurt/Documents/development/DevCoreBlog/obj/Debug/net10.0/compressed/cku6hn1ven-{0}-kplgobu9hi-kplgobu9hi.gz
 /Users/mehmetcankocakurt/Documents/development/DevCoreBlog/obj/Debug/net10.0/compressed/er34a2ilza-{0}-axuc7eiyej-axuc7eiyej.gz
+/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/bin/Debug/net10.0/CloudinaryDotNet.dll

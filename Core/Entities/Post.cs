@@ -32,6 +32,16 @@ public class Post : BaseEntity
     // A short summary/excerpt shown on the post listing page
     public string Summary { get; set; } = string.Empty;
 
+    // The thumbnail URL for the post image
+    public string ThumbnailUrl { get; set; } = string.Empty;
+
+    // A short excerpt for the post (can be used instead of Summary if needed)
+    public string Excerpt { get; set; } = string.Empty;
+
+    // Is the post published or draft?
+    public bool IsPublished { get; set; } = false;
+
+
     // The full content of the blog post (plain text in <textarea>)
     public string Content { get; set; } = string.Empty;
 

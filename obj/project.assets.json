@@ -2,6 +2,22 @@
   "version": 4,
   "targets": {
     "net10.0": {
+      "CloudinaryDotNet/1.29.3": {
+        "type": "package",
+        "dependencies": {
+          "Newtonsoft.Json": "13.0.3"
+        },
+        "compile": {
+          "lib/netstandard2.0/CloudinaryDotNet.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/netstandard2.0/CloudinaryDotNet.dll": {
+            "related": ".xml"
+          }
+        }
+      },
       "DotNetEnv/3.2.0": {
         "type": "package",
         "dependencies": {
@@ -504,7 +520,7 @@
       "Newtonsoft.Json/13.0.3": {
         "type": "package",
         "compile": {
-          "lib/net6.0/_._": {
+          "lib/net6.0/Newtonsoft.Json.dll": {
             "related": ".xml"
           }
         },
@@ -687,6 +703,25 @@
     }
   },
   "libraries": {
+    "CloudinaryDotNet/1.29.3": {
+      "sha512": "C9UpTh7YoOrfeUXcdjnsEloTaWKTNeDgvMpWoGAOTkC6HOxPIbcQAiSGhoqPPT8scAKAFjrPzf89nyZkGvtoCg==",
+      "type": "package",
+      "path": "cloudinarydotnet/1.29.3",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "CloudinaryIcon.png",
+        "README.md",
+        "cloudinarydotnet.1.29.3.nupkg.sha512",
+        "cloudinarydotnet.nuspec",
+        "lib/net452/CloudinaryDotNet.dll",
+        "lib/net452/CloudinaryDotNet.xml",
+        "lib/netstandard1.3/CloudinaryDotNet.dll",
+        "lib/netstandard1.3/CloudinaryDotNet.xml",
+        "lib/netstandard2.0/CloudinaryDotNet.dll",
+        "lib/netstandard2.0/CloudinaryDotNet.xml"
+      ]
+    },
     "DotNetEnv/3.2.0": {
       "sha512": "2q+PD+aJcRW9QuRcIv4F8WbvEDxI6cwxzZJec2i45cBY4cAKCAoW4ZPkApJ7H82wr6Yfmxx/0kb1nLnRmZrGZA==",
       "type": "package",
@@ -2260,6 +2295,7 @@
   },
   "projectFileDependencyGroups": {
     "net10.0": [
+      "CloudinaryDotNet >= 1.29.3",
       "DotNetEnv >= 3.2.0",
       "Markdig >= 1.3.2",
       "Microsoft.EntityFrameworkCore.Design >= 10.0.10",
@@ -2312,6 +2348,10 @@
         "framework": "net10.0",
         "targetAlias": "net10.0",
         "dependencies": {
+          "CloudinaryDotNet": {
+            "target": "Package",
+            "version": "[1.29.3, )"
+          },
           "DotNetEnv": {
             "target": "Package",
             "version": "[3.2.0, )"
