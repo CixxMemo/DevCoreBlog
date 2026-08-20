@@ -35,19 +35,19 @@
 ## Faz 3: N-Tier (Çok Katmanlı / Shared) Mimariye Geçiş
 *Amaç: Monolitik klasör yapısını, bağımsız Class Library (Shared) projelerine bölmek. (DİKKAT: En riskli fazdır, adım adım ve derleyerek ilerle).*
 
-- [ ] **Adım 3.1:** Solution kök dizininde yeni projeleri oluştur:
+- [x] **Adım 3.1:** Solution kök dizininde yeni projeleri oluştur:
   - `dotnet new classlib -n DevCoreBlog.Core`
   - `dotnet new classlib -n DevCoreBlog.Data`
   - `dotnet new classlib -n DevCoreBlog.Services`
-- [ ] **Adım 3.2:** Proje referanslarını bağla:
+- [x] **Adım 3.2:** Proje referanslarını bağla:
   - Data -> Core referansı ekle.
   - Services -> Core ve Data referanslarını ekle.
   - DevCoreBlog (Web) -> Tüm projelere referans ekle.
-- [ ] **Adım 3.3:** `Core` klasöründeki her şeyi (`Entities`, `Interfaces`) `DevCoreBlog.Core` projesine fiziksel olarak taşı ve namespace'leri düzelt.
-- [ ] **Adım 3.4:** `Data` (DbContext) ve `Repositories` klasörlerini `DevCoreBlog.Data` projesine taşı ve namespace'leri düzelt.
-- [ ] **Adım 3.5:** `Services` klasörünü `DevCoreBlog.Services` projesine taşı ve namespace'leri düzelt.
-- [ ] **Adım 3.6:** Ana `DevCoreBlog` projesindeki (Web) gereksiz klasörleri temizle. `Program.cs` içindeki DI ve using bildirimlerini yeni namespace'lere göre onar.
-- [ ] **TEST:** Çözümü derle (`dotnet build`). Sıfır hata ile derlendiğinden emin ol. Projeyi çalıştır ve sayfaların kırılmadığını test et.
+- [x] **Adım 3.3:** `Core` klasöründeki her şeyi (`Entities`, `Interfaces`) `DevCoreBlog.Core` projesine fiziksel olarak taşı ve namespace'leri düzelt.
+- [x] **Adım 3.4:** `Data` (DbContext) ve `Repositories` klasörlerini `DevCoreBlog.Data` projesine taşı ve namespace'leri düzelt.
+- [x] **Adım 3.5:** `Services` klasörünü `DevCoreBlog.Services` projesine taşı ve namespace'leri düzelt.
+- [x] **Adım 3.6:** Ana `DevCoreBlog` projesindeki (Web) gereksiz klasörleri temizle. `Program.cs` içindeki DI ve using bildirimlerini yeni namespace'lere göre onar.
+- [x] **TEST:** Çözümü derle (`dotnet build`). Sıfır hata ile derlendiğinden emin ol. Projeyi çalıştır ve sayfaların kırılmadığını test et.
 
 ---
 

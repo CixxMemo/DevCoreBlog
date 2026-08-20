@@ -13,7 +13,7 @@ using Microsoft.EntityFrameworkCore;
 // Import cookie authentication defaults (e.g. "Cookies" scheme name)
 using Microsoft.AspNetCore.Authentication.Cookies;
 // Import Repository layer for dependency injection
-using DevCoreBlog.Repositories;
+using DevCoreBlog.Data.Repositories;
 // Import Service layer for dependency injection
 using DevCoreBlog.Services;
 // Import Service interfaces for dependency injection

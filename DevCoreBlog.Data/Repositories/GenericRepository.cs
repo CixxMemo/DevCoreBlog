@@ -35,7 +35,7 @@ using DevCoreBlog.Core.Interfaces;
 using DevCoreBlog.Data;
 using Microsoft.EntityFrameworkCore;
 
-namespace DevCoreBlog.Repositories;
+namespace DevCoreBlog.Data.Repositories;
 
 // Generic repository class — implements IRepository<T> for any entity type T
 // T must inherit from BaseEntity (ensures Id, CreatedDate, IsActive exist)

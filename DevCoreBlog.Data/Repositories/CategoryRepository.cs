@@ -22,7 +22,7 @@ using DevCoreBlog.Core.Entities;
 using DevCoreBlog.Data;
 using Microsoft.EntityFrameworkCore;
 
-namespace DevCoreBlog.Repositories;
+namespace DevCoreBlog.Data.Repositories;
 
 // CategoryRepository extends GenericRepository<Category>
 // T is replaced with Category, so all methods work with Category entities

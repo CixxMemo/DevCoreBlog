@@ -21,4 +21,27 @@
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.3" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="DevCoreBlog.Core\DevCoreBlog.Core.csproj" />
+    <ProjectReference Include="DevCoreBlog.Data\DevCoreBlog.Data.csproj" />
+    <ProjectReference Include="DevCoreBlog.Services\DevCoreBlog.Services.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="DevCoreBlog.Core\**" />
+    <Content Remove="DevCoreBlog.Core\**" />
+    <EmbeddedResource Remove="DevCoreBlog.Core\**" />
+    <None Remove="DevCoreBlog.Core\**" />
+
+    <Compile Remove="DevCoreBlog.Data\**" />
+    <Content Remove="DevCoreBlog.Data\**" />
+    <EmbeddedResource Remove="DevCoreBlog.Data\**" />
+    <None Remove="DevCoreBlog.Data\**" />
+
+    <Compile Remove="DevCoreBlog.Services\**" />
+    <Content Remove="DevCoreBlog.Services\**" />
+    <EmbeddedResource Remove="DevCoreBlog.Services\**" />
+    <None Remove="DevCoreBlog.Services\**" />
+  </ItemGroup>
+
 </Project>

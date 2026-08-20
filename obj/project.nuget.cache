@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "xTRUvAkDFSM=",
+  "dgSpecHash": "6bzxvOiuxfY=",
   "success": true,
   "projectFilePath": "/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/DevCoreBlog.csproj",
   "expectedPackageFiles": [
@@ -15,9 +15,9 @@
     "/Users/mehmetcankocakurt/.nuget/packages/microsoft.codeanalysis.csharp.workspaces/5.0.0/microsoft.codeanalysis.csharp.workspaces.5.0.0.nupkg.sha512",
     "/Users/mehmetcankocakurt/.nuget/packages/microsoft.codeanalysis.workspaces.common/5.0.0/microsoft.codeanalysis.workspaces.common.5.0.0.nupkg.sha512",
     "/Users/mehmetcankocakurt/.nuget/packages/microsoft.codeanalysis.workspaces.msbuild/5.0.0/microsoft.codeanalysis.workspaces.msbuild.5.0.0.nupkg.sha512",
-    "/Users/mehmetcankocakurt/.nuget/packages/microsoft.entityframeworkcore/10.0.10/microsoft.entityframeworkcore.10.0.10.nupkg.sha512",
-    "/Users/mehmetcankocakurt/.nuget/packages/microsoft.entityframeworkcore.abstractions/10.0.10/microsoft.entityframeworkcore.abstractions.10.0.10.nupkg.sha512",
-    "/Users/mehmetcankocakurt/.nuget/packages/microsoft.entityframeworkcore.analyzers/10.0.10/microsoft.entityframeworkcore.analyzers.10.0.10.nupkg.sha512",
+    "/Users/mehmetcankocakurt/.nuget/packages/microsoft.entityframeworkcore/10.0.11/microsoft.entityframeworkcore.10.0.11.nupkg.sha512",
+    "/Users/mehmetcankocakurt/.nuget/packages/microsoft.entityframeworkcore.abstractions/10.0.11/microsoft.entityframeworkcore.abstractions.10.0.11.nupkg.sha512",
+    "/Users/mehmetcankocakurt/.nuget/packages/microsoft.entityframeworkcore.analyzers/10.0.11/microsoft.entityframeworkcore.analyzers.10.0.11.nupkg.sha512",
     "/Users/mehmetcankocakurt/.nuget/packages/microsoft.entityframeworkcore.design/10.0.10/microsoft.entityframeworkcore.design.10.0.10.nupkg.sha512",
     "/Users/mehmetcankocakurt/.nuget/packages/microsoft.entityframeworkcore.relational/10.0.10/microsoft.entityframeworkcore.relational.10.0.10.nupkg.sha512",
     "/Users/mehmetcankocakurt/.nuget/packages/microsoft.entityframeworkcore.tools/10.0.10/microsoft.entityframeworkcore.tools.10.0.10.nupkg.sha512",

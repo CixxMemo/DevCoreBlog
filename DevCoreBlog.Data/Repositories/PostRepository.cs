@@ -22,7 +22,7 @@ using DevCoreBlog.Core.Entities;
 using DevCoreBlog.Data;
 using Microsoft.EntityFrameworkCore;
 
-namespace DevCoreBlog.Repositories;
+namespace DevCoreBlog.Data.Repositories;
 
 // PostRepository extends GenericRepository<Post>
 // T is replaced with Post, so all methods work with Post entities

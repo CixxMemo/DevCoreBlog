@@ -29,8 +29,8 @@
 // =============================================================================
 
 using DevCoreBlog.Core.Entities;
-using DevCoreBlog.Shared.Helpers;
-using DevCoreBlog.Repositories;
+using DevCoreBlog.Core.Shared.Helpers;
+using DevCoreBlog.Data.Repositories;
 using DevCoreBlog.Services.Interfaces;
 
 namespace DevCoreBlog.Services;

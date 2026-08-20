@@ -31,7 +31,7 @@
 
 using Markdig;
 
-namespace DevCoreBlog.Shared.Helpers;
+namespace DevCoreBlog.Core.Shared.Helpers;
 
 // Static helper class — no instantiation needed, call MarkdownHelper.ToHtml() directly
 public static class MarkdownHelper
