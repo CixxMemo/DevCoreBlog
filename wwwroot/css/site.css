@@ -14,55 +14,49 @@
 /* =============================================================================
  * CSS Custom Properties (Design Tokens) — Tech Minimal Theme
  * =============================================================================
- * These variables replace the old terminal-theme.css design tokens.
- * They define the color palette, typography, and spacing for both
- * Light and Dark themes.
+ * These variables define the flat, high-contrast color palette and typography
+ * for the application, aligning with the Tailwind Tech Minimal configuration.
  *
  * Strategy:
- *   1. :root = Light theme (default)
- *   2. @media (prefers-color-scheme: dark) = System dark preference
- *   3. html.dark = Manual dark mode toggle (Tailwind 'class' strategy)
+ *   1. :root = Light theme (default flat high-contrast palette)
+ *   2. html.dark = Manual dark mode toggle (Tailwind 'class' strategy)
  * ============================================================================= */
 
 /* --- Light Theme (Default) --- */
 :root {
-  /* Background colors */
-  --bg-primary: #ffffff;
-  --bg-card: #ffffff;      /* Changed from #f5f5f5 to pure white to remove grey stripes */
-  --bg-surface: #ffffff;   /* Changed from #fafafa to pure white */
+  /* Background and surface colors */
+  --bg-primary: #f9fafb;
+  --bg-card: #ffffff;
+  --bg-surface: #ffffff;
 
-  /* Accent colors — Orange/Yellow for interactive elements */
-  --accent: #f97316;
-  --accent-hover: #facc15;
+  /* Flat high-contrast accent colors (Indigo) */
+  --accent: #4f46e5;
+  --accent-hover: #4338ca;
 
-  /* Border */
-  --border: #e5e5e5;
+  /* High-contrast border */
+  --border: #1f2937;
 
   /* Text colors */
-  --text-primary: #0a0a0a;   /* Slightly darker than 171717 for better contrast */
-  --text-secondary: #262626; /* Darkened from 525252 to ensure good readability */
-  --text-muted: #525252;     /* Darkened from a3a3a3 to be legible on white */
+  --text-primary: #111827;
+  --text-secondary: #374151;
+  --text-muted: #6b7280;
 
   /* Typography */
   --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-/* --- Dark Theme (System Preference) --- */
-/* Removed: JS in _Layout.cshtml already handles system preference by applying html.dark */
-
 /* --- Dark Theme (Manual Toggle via Tailwind 'class' strategy) --- */
-/* This takes precedence when user explicitly toggles dark mode */
 html.dark {
   --bg-primary: #0a0a0a;
   --bg-card: #171717;
-  --bg-surface: #262626;
-  --accent: #f97316;
-  --accent-hover: #facc15;
-  --border: #262626;
-  --text-primary: #fafafa;
-  --text-secondary: #a3a3a3;
-  --text-muted: #525252;
+  --bg-surface: #1f2937;
+  --accent: #6366f1;
+  --accent-hover: #4f46e5;
+  --border: #374151;
+  --text-primary: #f9fafb;
+  --text-secondary: #d1d5db;
+  --text-muted: #9ca3af;
 }
 
 /* Set the base font size for the entire page */
@@ -77,38 +71,19 @@ html {
   }
 }
 
-/* Focus ring styling for interactive elements (buttons, inputs, nav links) */
-/* Creates a white inner ring + orange outer ring for accessibility */
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem var(--accent, #f97316);
-}
-
 /* Make the html element cover the full viewport height */
-/* This ensures the footer stays at the bottom even on short pages */
 html {
   position: relative;
   min-height: 100%;
 }
 
-
 /* =============================================================================
- * Card hover effects — Updated for terminal theme
+ * Legacy Layout Styles Disabled (Phase 1)
+ * =============================================================================
+ * Note: Old .card shadow and bootstrap-dependent layout styles have been
+ * disabled so that Tailwind utility classes have full control over the
+ * Tech Minimal layout, grid, and borders.
  * ============================================================================= */
-
-/* Add a subtle lift effect when hovering over any Bootstrap card */
-/* The card slightly elevates with a solid shadow to indicate interactivity */
-.card {
-  margin-bottom: 1.5rem;
-  transition: box-shadow 0.2s ease-in-out, transform 0.2s ease-in-out;
-  border-radius: 0 !important; /* Tech Minimal — sharp edges, no rounding */
-  border: 1px solid var(--border) !important;
-}
-
-/* On hover, raise the card with a solid orange shadow */
-.card:hover {
-  box-shadow: 4px 4px 0 0 var(--accent, #f97316);
-  transform: translateY(-2px);
-}
 
 /* Admin table — add vertical alignment and striped rows for readability */
 .table-admin {

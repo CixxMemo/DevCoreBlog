@@ -1,10 +1,9 @@
 @* ============================================================================= *@
-@* Home/Index.cshtml — Public Home Page View (Tech Minimal)                      *@
+@* Home/Index.cshtml — Public Home Page (Tech Minimal & Merlin'in Kazanı Layout) *@
 @* ============================================================================= *@
-@* Phase 3 Design:                                                               *@
-@*   - Carousel: Shows top 3 latest posts with auto-slide and controls.          *@
-@*   - Post Feed: Stacked list of remaining posts.                               *@
-@*   - Card Design: Sharp edges (rounded-none), orange borders on hover.         *@
+@* This view renders:                                                           *@
+@*   1. Main Central Column (Faz 3): Search bar, Asymmetric Hero, Articles Grid *@
+@*   2. Right Aside Column (Faz 4): Numbered Trends, Quotes, AI Spotlight Boxes *@
 @* ============================================================================= *@
 
 @using DevCoreBlog.Core.Entities
@@ -12,216 +11,337 @@
 
 @{
     ViewData["Title"] = "Ana Sayfa";
-    
-    var heroPosts = Model.Take(3).ToList();
-    var feedPosts = Model.Skip(3).ToList();
+
+    // Split posts into Hero features (first 3) and standard grid feed (remaining)
+    // If fewer than 3 posts exist, gracefully fallback so the page never breaks
+    var mainHero = Model.FirstOrDefault();
+    var subHeroes = Model.Skip(1).Take(2).ToList();
+    var gridPosts = Model.Skip(3).ToList();
+
+    // If there are 3 or fewer posts, display all in the grid as well for completeness
+    if (!gridPosts.Any() && Model.Any())
+    {
+        gridPosts = Model.ToList();
+    }
+
+    // Top 5 trending posts sorted by view count for the right sidebar
+    var trendingPosts = Model.OrderByDescending(p => p.ViewCount).Take(5).ToList();
 }
 
-@if (Model.Any())
-{
-    @* ========================================================================= *@
-    @* CAROUSEL (Adım 3.2 & 3.3)                                                 *@
-    @* ========================================================================= *@
-    <div id="hero-carousel" class="relative w-full overflow-hidden mb-12 bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark" style="background-color: var(--bg-card); border: 1px solid var(--border);">
-        
-        @* Carousel Track *@
-        <div id="carousel-track" class="flex transition-transform duration-500 ease-in-out" style="transform: translateX(0%);">
-            @for (int i = 0; i < heroPosts.Count; i++)
+@* ============================================================================= *@
+@* MAIN CENTRAL COLUMN (Faz 3)                                                   *@
+@* ============================================================================= *@
+<div class="flex-1 min-w-0">
+
+    @* --- 1. Top Search Bar (Tech Minimal) --- *@
+    <div class="mb-6">
+        <form action="/ara" method="get" class="w-full">
+            <input type="text" name="query" 
+                   placeholder="Yazılarda veya konularda ara... (Enter'a basınız)" 
+                   class="w-full bg-surface border-2 border-border text-gray-900 placeholder-gray-500 px-4 py-3 text-sm font-sans font-medium rounded-none focus:outline-none focus:border-primary transition-none" />
+        </form>
+    </div>
+
+    @if (Model.Any())
+    {
+        @* --- 2. Asymmetric Hero Section (Merlin'in Kazanı Style) --- *@
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-10">
+            
+            @* Left: Main Feature Post (60% / col-span-7) *@
+            @if (mainHero != null)
             {
-                var post = heroPosts[i];
-                <div class="w-full flex-shrink-0" style="padding: 3rem 2rem;">
-                    <a href="/yazi/@post.Slug" class="flex flex-col justify-center items-center w-full h-full text-center" style="text-decoration: none;">
-                        @if (!string.IsNullOrEmpty(post.ThumbnailUrl))
+                <div class="lg:col-span-7">
+                    <a href="/yazi/@mainHero.Slug" class="relative bg-surface border-2 border-border rounded-none flex flex-col justify-end h-full min-h-[360px] group no-underline text-white overflow-hidden hover:-translate-y-1 hover:translate-x-1 border-black transition-transform">
+                        @if (!string.IsNullOrEmpty(mainHero.ThumbnailUrl))
                         {
-                            <img src="@post.ThumbnailUrl" alt="@post.Title" class="mx-auto h-48 sm:h-64 object-cover mb-6 w-full max-w-2xl" style="border: 1px solid var(--border);" />
+                            <img src="@mainHero.ThumbnailUrl" alt="@mainHero.Title" class="absolute inset-0 w-full h-full object-cover rounded-none" />
                         }
-                        @if (post.Category != null)
+                        else
                         {
-                            <span class="inline-block px-2 py-1 text-xs font-mono mb-4" style="background-color: var(--bg-surface); color: var(--text-secondary); border: 1px solid var(--border);">
-                                @post.Category.Name
-                            </span>
+                            <div class="absolute inset-0 w-full h-full bg-gray-900 flex items-center justify-center font-mono text-xs text-gray-500 uppercase">
+                                [ DevCore Feature ]
+                            </div>
                         }
-                        <h2 class="text-3xl sm:text-4xl font-bold mb-4 font-sans tracking-tight transition-colors" style="color: var(--text-primary);"
-                            onmouseenter="this.style.color='var(--accent)';" onmouseleave="this.style.color='var(--text-primary)';">
-                            @post.Title
-                        </h2>
-                        <p class="text-sm font-sans mx-auto max-w-2xl leading-relaxed" style="color: var(--text-secondary); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
-                            @post.Summary
-                        </p>
+
+                        @* Flat overlay box — Zero gradient, solid sharp container *@
+                        <div class="relative z-10 bg-black bg-opacity-80 p-5 border-t-2 border-border">
+                            @if (mainHero.Category != null)
+                            {
+                                <span class="bg-primary text-white text-xs px-2 py-1 font-bold uppercase inline-block mb-2">
+                                    @mainHero.Category.Name
+                                </span>
+                            }
+                            <h2 class="text-xl lg:text-2xl font-bold font-sans tracking-tight text-white group-hover:text-primary transition-colors leading-tight mb-2">
+                                @mainHero.Title
+                            </h2>
+                            <p class="text-xs text-gray-300 line-clamp-2 leading-relaxed mb-3">
+                                @mainHero.Summary
+                            </p>
+                            <div class="flex items-center justify-between text-[11px] font-mono text-gray-400 pt-2 border-t border-gray-700">
+                                <span>@mainHero.PublishDate.ToString("dd.MM.yyyy")</span>
+                                <span>👁 @mainHero.ViewCount okunma</span>
+                            </div>
+                        </div>
                     </a>
                 </div>
             }
-        </div>
 
-        @* Left / Right Arrows *@
-        <button id="carousel-prev" class="absolute left-0 top-1/2 -translate-y-1/2 px-4 py-8 bg-transparent border-none cursor-pointer transition-colors" style="color: var(--text-muted);"
-                onmouseenter="this.style.color='var(--accent)';" onmouseleave="this.style.color='var(--text-muted)';">
-            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-            </svg>
-        </button>
-        <button id="carousel-next" class="absolute right-0 top-1/2 -translate-y-1/2 px-4 py-8 bg-transparent border-none cursor-pointer transition-colors" style="color: var(--text-muted);"
-                onmouseenter="this.style.color='var(--accent)';" onmouseleave="this.style.color='var(--text-muted)';">
-            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M9 5l7 7-7 7"></path>
-            </svg>
-        </button>
-
-        @* Pagination Dots *@
-        <div class="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
-            @for (int i = 0; i < heroPosts.Count; i++)
-            {
-                <button class="carousel-dot w-2 h-2 rounded-none border-none p-0 cursor-pointer" data-index="@i" style="background-color: @(i == 0 ? "var(--accent)" : "var(--border)");"></button>
-            }
-        </div>
-    </div>
-
-    @* Carousel Vanilla JS Logic *@
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const track = document.getElementById('carousel-track');
-            const prevBtn = document.getElementById('carousel-prev');
-            const nextBtn = document.getElementById('carousel-next');
-            const dots = document.querySelectorAll('.carousel-dot');
-            const totalSlides = @heroPosts.Count;
-            let currentSlide = 0;
-            let autoSlideInterval;
-
-            function goToSlide(index) {
-                if (index < 0) index = totalSlides - 1;
-                if (index >= totalSlides) index = 0;
-                
-                currentSlide = index;
-                track.style.transform = `translateX(-${currentSlide * 100}%)`;
-                
-                dots.forEach((dot, i) => {
-                    dot.style.backgroundColor = (i === currentSlide) ? 'var(--accent)' : 'var(--border)';
-                });
-            }
-
-            function nextSlide() { goToSlide(currentSlide + 1); }
-            function prevSlide() { goToSlide(currentSlide - 1); }
-
-            function startAutoSlide() {
-                autoSlideInterval = setInterval(nextSlide, 8000); // 8 seconds
-            }
-            function stopAutoSlide() {
-                clearInterval(autoSlideInterval);
-            }
-
-            nextBtn.addEventListener('click', () => { nextSlide(); stopAutoSlide(); startAutoSlide(); });
-            prevBtn.addEventListener('click', () => { prevSlide(); stopAutoSlide(); startAutoSlide(); });
-            
-            dots.forEach(dot => {
-                dot.addEventListener('click', (e) => {
-                    const idx = parseInt(e.target.getAttribute('data-index'));
-                    goToSlide(idx);
-                    stopAutoSlide();
-                    startAutoSlide();
-                });
-            });
-
-            // Pause on hover
-            const carousel = document.getElementById('hero-carousel');
-            carousel.addEventListener('mouseenter', stopAutoSlide);
-            carousel.addEventListener('mouseleave', startAutoSlide);
-
-            startAutoSlide();
-        });
-    </script>
-
-    @* ========================================================================= *@
-    @* POST FEED (Adım 3.4 & 3.5)                                                *@
-    @* ========================================================================= *@
-    <div class="flex flex-col gap-6 mb-12">
-        <h3 class="text-lg font-mono font-bold mb-4" style="color: var(--text-primary); border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">
-            Son Yazılar
-        </h3>
-
-        @foreach (var item in feedPosts)
-        {
-            @* Stacked Post Card — Tech Minimal (sharp edges, orange border on hover) with Thumbnail *@
-            <a href="/yazi/@item.Slug" class="block transition-all duration-200" style="text-decoration: none;">
-                <div class="flex flex-col sm:flex-row transition-colors" style="background-color: var(--bg-card); border: 1px solid var(--border);"
-                     onmouseenter="this.style.borderColor='var(--accent)';" onmouseleave="this.style.borderColor='var(--border)';">
-                    
-                    @if (!string.IsNullOrEmpty(item.ThumbnailUrl))
-                    {
-                        <div class="sm:w-1/3 flex-shrink-0" style="border-bottom: 1px solid var(--border);">
-                            <img src="@item.ThumbnailUrl" alt="@item.Title" class="w-full h-48 sm:h-full object-cover" 
-                                 style="border-right: 1px solid var(--border);" />
-                        </div>
-                    }
-                    
-                    <div class="p-6 flex-grow flex flex-col justify-center">
-                        <div class="flex items-center gap-3 mb-3">
-                            <span class="font-mono text-xs" style="color: var(--text-muted);">
-                                @item.PublishDate.ToString("dd MMM yyyy")
-                            </span>
-                            @if (item.Category != null)
+            @* Right: 2 Stacked Sub-Features (40% / col-span-5) *@
+            <div class="lg:col-span-5 flex flex-col gap-6">
+                @foreach (var sub in subHeroes)
+                {
+                    <a href="/yazi/@sub.Slug" class="bg-surface border-2 border-border rounded-none flex-1 p-4 flex flex-col justify-between hover:-translate-y-1 hover:translate-x-1 border-black transition-transform group no-underline text-gray-900">
+                        <div>
+                            @if (!string.IsNullOrEmpty(sub.ThumbnailUrl))
                             {
-                                <span style="color: var(--border);">|</span>
-                                <span class="font-mono text-xs" style="color: var(--accent);">
-                                    @item.Category.Name
+                                <img src="@sub.ThumbnailUrl" alt="@sub.Title" class="aspect-video w-full object-cover border-b-2 border-border mb-3 rounded-none" />
+                            }
+                            @if (sub.Category != null)
+                            {
+                                <span class="bg-primary text-white text-[10px] px-2 py-0.5 font-bold uppercase inline-block mb-2">
+                                    @sub.Category.Name
                                 </span>
                             }
+                            <h3 class="font-bold text-sm lg:text-base leading-snug group-hover:text-primary transition-colors mb-2">
+                                @sub.Title
+                            </h3>
                         </div>
+                        <div class="flex items-center justify-between text-[10px] font-mono text-gray-500 pt-2 border-t border-gray-200 mt-2">
+                            <span>@sub.PublishDate.ToString("dd.MM.yyyy")</span>
+                            <span>👁 @sub.ViewCount</span>
+                        </div>
+                    </a>
+                }
+            </div>
+        </div>
+
+        @* --- 3. Articles Feed (Tech Minimal 3-Column Grid) --- *@
+        <div class="flex items-center justify-between border-b-2 border-border pb-2 mb-6 mt-8">
+            <h2 class="text-xl font-mono font-black uppercase tracking-tight text-gray-900">
+                Son Yazılar
+            </h2>
+            <span class="text-xs font-mono font-bold text-gray-500 uppercase">
+                [ Akış ]
+            </span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+            @foreach (var item in gridPosts)
+            {
+                <a href="/yazi/@item.Slug" class="bg-surface border-2 border-border rounded-none flex flex-col h-full hover:-translate-y-1 hover:translate-x-1 border-black transition-transform group no-underline text-gray-900">
+                    
+                    @* Post Thumbnail / Placeholder *@
+                    @if (!string.IsNullOrEmpty(item.ThumbnailUrl))
+                    {
+                        <img src="@item.ThumbnailUrl" alt="@item.Title" class="aspect-video w-full object-cover border-b-2 border-border rounded-none" />
+                    }
+                    else
+                    {
+                        <div class="aspect-video w-full bg-gray-100 border-b-2 border-border flex items-center justify-center font-mono text-xs text-gray-400 uppercase">
+                            [ DevCore Post ]
+                        </div>
+                    }
+
+                    @* Card Body Content *@
+                    <div class="p-4 flex flex-col flex-1">
+                        @if (item.Category != null)
+                        {
+                            <span class="bg-primary text-white text-[10px] px-2 py-0.5 font-bold uppercase w-max mb-2">
+                                @item.Category.Name
+                            </span>
+                        }
                         
-                        <h2 class="text-xl sm:text-2xl font-bold font-sans tracking-tight mb-3" style="color: var(--text-primary);">
+                        <h3 class="font-bold text-sm text-gray-900 group-hover:text-primary transition-colors leading-snug mb-2 line-clamp-2">
                             @item.Title
-                        </h2>
-                        
-                        <p class="text-sm font-sans leading-relaxed m-0" style="color: var(--text-secondary); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                        </h3>
+
+                        <p class="text-xs text-gray-600 line-clamp-2 leading-relaxed mb-4">
                             @item.Summary
                         </p>
+
+                        @* Metadata Footer *@
+                        <div class="mt-auto pt-3 border-t border-gray-200 flex items-center justify-between text-[10px] font-mono text-gray-500">
+                            <span>@item.PublishDate.ToString("dd.MM.yyyy")</span>
+                            <span>👁 @item.ViewCount</span>
+                        </div>
                     </div>
-                </div>
-            </a>
+                </a>
+            }
+        </div>
+
+        @* --- 4. Pagination Controls --- *@
+        @if (ViewBag.TotalPages > 1)
+        {
+            <div class="flex justify-between items-center pt-6 border-t-2 border-border font-mono text-xs font-bold">
+                @if (ViewBag.CurrentPage > 1)
+                {
+                    <a href="?page=@(ViewBag.CurrentPage - 1)" class="px-4 py-2 border-2 border-border text-gray-900 hover:bg-border hover:text-white no-underline transition-none">
+                        &lt; Önceki
+                    </a>
+                }
+                else
+                {
+                    <span class="px-4 py-2 border-2 border-gray-200 text-gray-300 cursor-not-allowed">
+                        &lt; Önceki
+                    </span>
+                }
+
+                <span class="text-gray-600">
+                    Sayfa @(ViewBag.CurrentPage) / @(ViewBag.TotalPages)
+                </span>
+
+                @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+                {
+                    <a href="?page=@(ViewBag.CurrentPage + 1)" class="px-4 py-2 border-2 border-border text-gray-900 hover:bg-border hover:text-white no-underline transition-none">
+                        Sonraki &gt;
+                    </a>
+                }
+                else
+                {
+                    <span class="px-4 py-2 border-2 border-gray-200 text-gray-300 cursor-not-allowed">
+                        Sonraki &gt;
+                    </span>
+                }
+            </div>
+        }
+    }
+    else
+    {
+        @* Empty State if no posts exist in the database *@
+        <div class="p-12 text-center bg-surface border-2 border-border">
+            <p class="font-mono text-sm text-gray-500 m-0">
+                Henüz hiç yazı yayınlanmamış.
+            </p>
+        </div>
+    }
+
+</div>
+
+@* ============================================================================= *@
+@* RIGHT SIDEBAR COLUMN (Faz 4: Trendler & Ekstralar)                            *@
+@* ============================================================================= *@
+@* Fixed w-80 column displayed on desktop screens (hidden on smaller devices)    *@
+<aside class="w-80 flex-shrink-0 hidden xl:flex flex-col gap-6">
+
+    @* --- Widget 1: Trend Olanlar (Numbered Trending Posts) --- *@
+    <div class="bg-surface border-2 border-border rounded-none p-4">
+        <div class="flex items-center justify-between border-b-2 border-border pb-2 mb-4">
+            <h3 class="font-mono font-bold text-sm uppercase tracking-wider text-gray-900 flex items-center gap-2 m-0">
+                <span class="w-2 h-2 bg-primary inline-block"></span>
+                Trendler
+            </h3>
+            <span class="text-[10px] font-mono font-bold text-gray-600 uppercase bg-gray-100 px-1.5 py-0.5 border border-gray-300">
+                Popüler
+            </span>
+        </div>
+
+        @if (trendingPosts.Any())
+        {
+            <div class="flex flex-col">
+                @for (int i = 0; i < trendingPosts.Count; i++)
+                {
+                    var post = trendingPosts[i];
+                    <a href="/yazi/@post.Slug" class="flex items-start gap-3 py-3 border-b border-gray-100 last:border-b-0 group no-underline text-gray-900">
+                        <span class="font-mono font-black text-lg text-primary w-6 flex-shrink-0 text-center">
+                            0@(i + 1)
+                        </span>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2 mb-1">
+                                @if (i == 0 || post.ViewCount > 50)
+                                {
+                                    <span class="bg-red-600 text-white text-[9px] font-mono font-bold px-1.5 py-0.5 uppercase">
+                                        Trend
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="bg-primary text-white text-[9px] font-mono font-bold px-1.5 py-0.5 uppercase">
+                                        Yeni
+                                    </span>
+                                }
+                                <span class="text-[10px] font-mono text-gray-500">
+                                    👁 @post.ViewCount
+                                </span>
+                            </div>
+                            <h4 class="font-bold text-xs leading-snug group-hover:text-primary transition-colors line-clamp-2 m-0">
+                                @post.Title
+                            </h4>
+                        </div>
+                    </a>
+                }
+            </div>
+        }
+        else
+        {
+            <p class="font-mono text-xs text-gray-400 m-0">Trend içerik bulunamadı.</p>
         }
     </div>
 
-    @* ========================================================================= *@
-    @* PAGINATION                                                                *@
-    @* ========================================================================= *@
-    @if (ViewBag.TotalPages > 1)
-    {
-        <div class="flex justify-between items-center pt-6 font-mono text-sm" style="border-top: 1px solid var(--border);">
-            @if (ViewBag.CurrentPage > 1)
-            {
-                <a href="?page=@(ViewBag.CurrentPage - 1)" class="px-4 py-2 transition-colors" style="border: 1px solid var(--border); color: var(--text-primary); text-decoration: none;"
-                   onmouseenter="this.style.borderColor='var(--accent)'; this.style.color='var(--accent)';" onmouseleave="this.style.borderColor='var(--border)'; this.style.color='var(--text-primary)';">
-                    &lt; Önceki
-                </a>
-            }
-            else
-            {
-                <div></div>
-            }
-
-            <span style="color: var(--text-muted);">
-                Sayfa @(ViewBag.CurrentPage) / @(ViewBag.TotalPages)
-            </span>
-
-            @if (ViewBag.CurrentPage < ViewBag.TotalPages)
-            {
-                <a href="?page=@(ViewBag.CurrentPage + 1)" class="px-4 py-2 transition-colors" style="border: 1px solid var(--border); color: var(--text-primary); text-decoration: none;"
-                   onmouseenter="this.style.borderColor='var(--accent)'; this.style.color='var(--accent)';" onmouseleave="this.style.borderColor='var(--border)'; this.style.color='var(--text-primary)';">
-                    Sonraki &gt;
-                </a>
-            }
-            else
-            {
-                <div></div>
-            }
+    @* --- Widget 2: Günün Felsefe Alıntısı --- *@
+    <div class="bg-surface border-2 border-border rounded-none p-4">
+        <div class="flex items-center gap-2 border-b-2 border-border pb-2 mb-3">
+            <span class="w-2 h-2 bg-gray-900 inline-block"></span>
+            <h3 class="font-mono font-bold text-xs uppercase tracking-wider text-gray-900 m-0">
+                Günün Felsefe Alıntısı
+            </h3>
         </div>
-    }
-}
-else
-{
-    @* Empty State *@
-    <div class="p-12 text-center" style="background-color: var(--bg-card); border: 1px solid var(--border);">
-        <p class="font-mono text-sm" style="color: var(--text-muted);">
-            Henüz hiç yazı yayınlanmamış.
+        <blockquote class="font-sans text-xs italic text-gray-700 leading-relaxed border-l-2 border-primary pl-3 my-2">
+            "Basitlik, mükemmelliğin nihai derecesidir."
+        </blockquote>
+        <p class="font-mono text-[10px] text-gray-500 text-right m-0 font-bold">
+            — Leonardo da Vinci
         </p>
     </div>
-}
+
+    @* --- Widget 3: Haftanın AI Aracı (Spotlight) --- *@
+    <div class="bg-surface border-2 border-border rounded-none p-4">
+        <div class="flex items-center justify-between border-b-2 border-border pb-2 mb-3">
+            <h3 class="font-mono font-bold text-xs uppercase tracking-wider text-gray-900 flex items-center gap-2 m-0">
+                <span class="w-2 h-2 bg-primary inline-block"></span>
+                Haftanın AI Aracı
+            </h3>
+            <span class="bg-primary text-white text-[9px] font-mono font-bold px-1.5 py-0.5 uppercase">
+                Spotlight
+            </span>
+        </div>
+        <div class="bg-gray-50 border border-gray-200 p-3 mb-2">
+            <div class="font-mono font-bold text-xs text-gray-900 mb-1">
+                Claude 3.7 Sonnet & Gemini 2.0
+            </div>
+            <p class="text-[11px] text-gray-600 leading-relaxed m-0">
+                Hibrit reasoning mimarisi ile karmaşık kodlama ve mimari süreçlerini hızlandıran yeni nesil modeller.
+            </p>
+        </div>
+        <div class="text-[10px] font-mono text-gray-500 text-right">
+            #VibeCoding #LLM #DevCore
+        </div>
+    </div>
+
+    @* --- Widget 4: Öne Çıkan Başlıklar / Etiketler --- *@
+    <div class="bg-surface border-2 border-border rounded-none p-4">
+        <div class="flex items-center gap-2 border-b-2 border-border pb-2 mb-3">
+            <span class="w-2 h-2 bg-gray-900 inline-block"></span>
+            <h3 class="font-mono font-bold text-xs uppercase tracking-wider text-gray-900 m-0">
+                Öne Çıkan Başlıklar
+            </h3>
+        </div>
+        <div class="flex flex-wrap gap-1.5">
+            <a href="/kategori/vibe-coding" class="bg-gray-100 hover:bg-border hover:text-white border border-gray-300 text-gray-800 text-[10px] font-mono font-bold px-2 py-1 no-underline transition-none">
+                #VibeCoding
+            </a>
+            <a href="/kategori/ai" class="bg-gray-100 hover:bg-border hover:text-white border border-gray-300 text-gray-800 text-[10px] font-mono font-bold px-2 py-1 no-underline transition-none">
+                #AI
+            </a>
+            <a href="/kategori/felsefe" class="bg-gray-100 hover:bg-border hover:text-white border border-gray-300 text-gray-800 text-[10px] font-mono font-bold px-2 py-1 no-underline transition-none">
+                #Felsefe
+            </a>
+            <a href="/kategori/haberler" class="bg-gray-100 hover:bg-border hover:text-white border border-gray-300 text-gray-800 text-[10px] font-mono font-bold px-2 py-1 no-underline transition-none">
+                #Haberler
+            </a>
+            <a href="/kategori/kesfet" class="bg-gray-100 hover:bg-border hover:text-white border border-gray-300 text-gray-800 text-[10px] font-mono font-bold px-2 py-1 no-underline transition-none">
+                #Keşfet
+            </a>
+        </div>
+    </div>
+
+</aside>
