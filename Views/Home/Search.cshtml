@@ -37,56 +37,45 @@
     @* ===================================================================== *@
     @if (Model.Any())
     {
-        <div class="space-y-6">
+        <div class="flex flex-col gap-6">
             @foreach (var post in Model)
             {
-                @* Post card — Terminal-styled *@
-                <article class="p-6 transition-colors duration-200"
-                         style="background-color: var(--bg-card); border: 1px solid var(--border);"
-                         onmouseover="this.style.borderColor='var(--accent)';"
-                         onmouseout="this.style.borderColor='var(--border)';">
-                    @* Post title — linked to detail page *@
-                    <h2 class="text-xl font-semibold mb-2">
-                        <a href="/yazi/@post.Slug" 
-                           class="transition-colors"
-                           style="color: var(--text-primary); text-decoration: none;"
-                           onmouseover="this.style.color='var(--accent)';"
-                           onmouseout="this.style.color='var(--text-primary)';">
-                            @post.Title
-                        </a>
-                    </h2>
-
-                    @* Meta information row: category badge + creation date *@
-                    <div class="flex items-center gap-3 mb-3">
-                        @if (post.Category != null)
+                <a href="/yazi/@post.Slug" class="block transition-all duration-200" style="text-decoration: none;">
+                    <div class="flex flex-col sm:flex-row transition-colors" style="background-color: var(--bg-card); border: 1px solid var(--border);"
+                         onmouseenter="this.style.borderColor='var(--accent)';" onmouseleave="this.style.borderColor='var(--border)';">
+                        
+                        @if (!string.IsNullOrEmpty(post.ThumbnailUrl))
                         {
-                            <a href="/kategori/@post.Category.Slug" 
-                               class="font-mono text-xs px-2 py-1 transition-colors"
-                               style="color: var(--text-secondary); background: var(--bg-surface); border: 1px solid var(--border);"
-                               onmouseover="this.style.borderColor='var(--accent)'; this.style.color='var(--accent)';"
-                               onmouseout="this.style.borderColor='var(--border)'; this.style.color='var(--text-secondary)';">
-                                @post.Category.Name
-                            </a>
+                            <div class="sm:w-1/3 flex-shrink-0" style="border-bottom: 1px solid var(--border);">
+                                <img src="@post.ThumbnailUrl" alt="@post.Title" class="w-full h-48 sm:h-full object-cover" 
+                                     style="border-right: 1px solid var(--border);" />
+                            </div>
                         }
-                        <time class="font-mono text-xs" style="color: var(--text-muted);">
-                            @post.CreatedDate.ToString("yyyy-MM-dd")
-                        </time>
+                        
+                        <div class="p-6 flex-grow flex flex-col justify-center">
+                            <div class="flex items-center gap-3 mb-3">
+                                <span class="font-mono text-xs" style="color: var(--text-muted);">
+                                    @post.PublishDate.ToString("dd MMM yyyy")
+                                </span>
+                                @if (post.Category != null)
+                                {
+                                    <span style="color: var(--border);">|</span>
+                                    <span class="font-mono text-xs" style="color: var(--accent);">
+                                        @post.Category.Name
+                                    </span>
+                                }
+                            </div>
+                            
+                            <h2 class="text-xl sm:text-2xl font-bold font-sans tracking-tight mb-3" style="color: var(--text-primary);">
+                                @post.Title
+                            </h2>
+                            
+                            <p class="text-sm font-sans leading-relaxed m-0" style="color: var(--text-secondary); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                                @post.Summary
+                            </p>
+                        </div>
                     </div>
-
-                    @* Post summary — short excerpt *@
-                    <p class="text-sm leading-relaxed mb-4" style="color: var(--text-secondary);">
-                        @post.Summary
-                    </p>
-
-                    @* Read more link *@
-                    <a href="/yazi/@post.Slug" 
-                       class="inline-block text-sm font-mono transition-colors"
-                       style="color: var(--accent);"
-                       onmouseover="this.style.color='var(--accent-hover)';"
-                       onmouseout="this.style.color='var(--accent)';">
-                        Devamını oku →
-                    </a>
-                </article>
+                </a>
             }
         </div>
     }

@@ -122,12 +122,8 @@
 /Users/mehmetcankocakurt/Documents/development/DevCoreBlog/obj/Debug/net10.0/scopedcss/Views/Shared/_Layout.cshtml.rz.scp.css
 /Users/mehmetcankocakurt/Documents/development/DevCoreBlog/obj/Debug/net10.0/scopedcss/bundle/DevCoreBlog.styles.css
 /Users/mehmetcankocakurt/Documents/development/DevCoreBlog/obj/Debug/net10.0/scopedcss/projectbundle/DevCoreBlog.bundle.scp.css
-/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/obj/Debug/net10.0/compressed/tr2xps9d7i-{0}-25grmnifnh-25grmnifnh.gz
-/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/obj/Debug/net10.0/compressed/cku6hn1ven-{0}-kplgobu9hi-kplgobu9hi.gz
 /Users/mehmetcankocakurt/Documents/development/DevCoreBlog/obj/Debug/net10.0/compressed/0ftjuglpst-{0}-61n19gt1b8-61n19gt1b8.gz
-/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/obj/Debug/net10.0/compressed/31lr44se97-{0}-6ocu84dnvr-6ocu84dnvr.gz
 /Users/mehmetcankocakurt/Documents/development/DevCoreBlog/obj/Debug/net10.0/compressed/er34a2ilza-{0}-axuc7eiyej-axuc7eiyej.gz
-/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/obj/Debug/net10.0/compressed/fuhxbg47fa-{0}-acxfi3q9sp-acxfi3q9sp.gz
 /Users/mehmetcankocakurt/Documents/development/DevCoreBlog/obj/Debug/net10.0/compressed/htvtelvb7s-{0}-bqjiyaj88i-bqjiyaj88i.gz
 /Users/mehmetcankocakurt/Documents/development/DevCoreBlog/obj/Debug/net10.0/compressed/ala9vs5yui-{0}-c2jlpeoesf-c2jlpeoesf.gz
 /Users/mehmetcankocakurt/Documents/development/DevCoreBlog/obj/Debug/net10.0/compressed/e1cqnzo9tt-{0}-erw9l3u2r3-erw9l3u2r3.gz
@@ -201,3 +197,4 @@
 /Users/mehmetcankocakurt/Documents/development/DevCoreBlog/obj/Debug/net10.0/DevCoreBlog.pdb
 /Users/mehmetcankocakurt/Documents/development/DevCoreBlog/obj/Debug/net10.0/DevCoreBlog.genruntimeconfig.cache
 /Users/mehmetcankocakurt/Documents/development/DevCoreBlog/obj/Debug/net10.0/ref/DevCoreBlog.dll
+/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/obj/Debug/net10.0/compressed/tr2xps9d7i-{0}-0iwjfq87m7-0iwjfq87m7.gz

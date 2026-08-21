@@ -57,7 +57,7 @@
     @* Prism.js (loaded in _Layout.cshtml) highlights code blocks            *@
     @* automatically via the "language-*" classes Markdig generates.         *@
     @* ===================================================================== *@
-    <div class="markdown-content prose prose-invert max-w-none leading-loose text-lg" style="color: var(--text-secondary);">
+    <div class="markdown-content prose dark:prose-invert max-w-none leading-loose text-lg" style="color: var(--text-secondary);">
         @Html.Raw(MarkdownHelper.ToHtml(Model.Content))
     </div>
 
@@ -66,7 +66,7 @@
         @if (ViewBag.RelatedPosts != null && ((IEnumerable<DevCoreBlog.Core.Entities.Post>)ViewBag.RelatedPosts).Any())
         {
             <div class="mb-10">
-                <h3 class="text-xl font-bold mb-6 font-mono text-white">
+                <h3 class="text-xl font-bold mb-6 font-mono" style="color: var(--text-primary);">
                     > similar_posts.ls
                 </h3>
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">

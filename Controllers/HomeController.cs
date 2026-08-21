@@ -133,6 +133,10 @@ public class HomeController : Controller
         ViewBag.OgUrl = $"/yazi/{updatedPost.Slug}";
 
         // Pass the post to the Detail view
+        // Adım 4.1: Detay sayfasında Sidebar ve Search alanlarını gizle
+        ViewData["HideSidebar"] = true;
+        ViewData["HideSearch"] = true;
+        
         return View(updatedPost);
     }
 
