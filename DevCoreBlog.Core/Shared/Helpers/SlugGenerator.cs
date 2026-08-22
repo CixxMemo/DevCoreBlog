@@ -1,20 +1,22 @@
 // =============================================================================
 // SlugGenerator.cs — URL-Friendly Slug Generation Helper
 // =============================================================================
-// This static helper class converts arbitrary text (like a blog post title or
+// This static helper class converts arbitrary text (e.g. blog post title or
 // category name) into a URL-friendly "slug" string.
 //
-// Example: "C# Dersleri — Giriş" → "c-dersleri-giris"
+// Example: "ASP.NET Core & Modern C# 13 Guide!" -> "aspnet-core-modern-c-13-guide"
+// Example: "C# Dersleri — Giriş" -> "c-dersleri-giris"
 //
 // Features:
-//   - Turkish character conversion (ç→c, ğ→g, ı→i, ö→o, ş→s, ü→u)
-//   - Converts to lowercase
-//   - Removes special characters (keeps only letters, digits, spaces, hyphens)
-//   - Replaces spaces and multiple hyphens with a single hyphen
-//   - Trims leading/trailing hyphens
+//   - Replaces specific Turkish and special characters (ç, ğ, ı, ö, ş, ü)
+//   - Normalizes Unicode accents and diacritics (e.g., é -> e, à -> a)
+//   - Converts to lowercase ASCII
+//   - Replaces spaces and punctuation with hyphens
+//   - Collapses consecutive hyphens and trims leading/trailing hyphens
 // =============================================================================
 
-// Import Regex for pattern-based string replacement
+using System.Globalization;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace DevCoreBlog.Core.Shared.Helpers;
@@ -22,38 +24,46 @@ namespace DevCoreBlog.Core.Shared.Helpers;
 // Static class — cannot be instantiated, accessed as SlugGenerator.Generate(...)
 public static class SlugGenerator
 {
-    // Converts the given text into a URL-friendly slug string
+    // Converts the given text into a clean, lowercase URL-friendly slug string
     public static string Generate(string text)
     {
-        // Return empty string if input is null, empty, or whitespace-only
+        // Guard clause: return empty string if input is null, empty, or whitespace
         if (string.IsNullOrWhiteSpace(text))
             return string.Empty;
 
-        // Turkish-to-English character mapping (lowercase keys since we convert to lowercase first)
-        var trMap = new Dictionary<char, string>
-        {
-            { 'ç', "c" }, { 'ğ', "g" }, { 'ı', "i" }, { 'ö', "o" }, { 'ş', "s" }, { 'ü', "u" },
-            { 'Ç', "C" }, { 'Ğ', "G" }, { 'İ', "I" }, { 'Ö', "O" }, { 'Ş', "S" }, { 'Ü', "U" }
-        };
+        // Step 1: Map specific Turkish characters to ASCII before standard normalization
+        var normalized = text.Trim()
+            .Replace("ı", "i").Replace("İ", "i")
+            .Replace("ğ", "g").Replace("Ğ", "g")
+            .Replace("ü", "u").Replace("Ü", "u")
+            .Replace("ş", "s").Replace("Ş", "s")
+            .Replace("ö", "o").Replace("Ö", "o")
+            .Replace("ç", "c").Replace("Ç", "c");
 
-        // Step 1: Convert the entire text to lowercase
-        var result = text.ToLower();
+        // Step 2: Normalize Unicode to FormD to decompose accented characters (e.g., 'é' -> 'e' + diacritic)
+        var formD = normalized.Normalize(NormalizationForm.FormD);
+        var sb = new StringBuilder();
 
-        // Step 2: Replace each Turkish character with its English equivalent
-        foreach (var kvp in trMap)
+        // Step 3: Remove non-spacing marks (diacritic accents)
+        foreach (var ch in formD)
         {
-            result = result.Replace(kvp.Key.ToString(), kvp.Value.ToLower());
+            var unicodeCategory = CharUnicodeInfo.GetUnicodeCategory(ch);
+            if (unicodeCategory != UnicodeCategory.NonSpacingMark)
+            {
+                sb.Append(ch);
+            }
         }
 
-        // Step 3: Remove all characters that are NOT letters, digits, spaces, or hyphens
-        // Regex [^a-z0-9\s-] matches anything outside the allowed set
-        result = Regex.Replace(result, @"[^a-z0-9\s-]", "");
+        // Step 4: Convert to standard FormC and lowercase invariant
+        var cleanText = sb.ToString().Normalize(NormalizationForm.FormC).ToLowerInvariant();
 
-        // Step 4: Replace one or more spaces/hyphens with a single hyphen, then trim edges
-        // [\s-]+ matches consecutive whitespace or hyphens
-        result = Regex.Replace(result, @"[\s-]+", "-").Trim('-');
+        // Step 5: Remove all characters that are NOT lowercase ASCII letters, digits, spaces, or hyphens
+        cleanText = Regex.Replace(cleanText, @"[^a-z0-9\s-]", "");
 
-        // Return the final slug (e.g. "asp-net-core-ile-blog-yazma")
-        return result;
+        // Step 6: Replace one or more spaces/hyphens with a single hyphen, then trim hyphens from edges
+        cleanText = Regex.Replace(cleanText, @"[\s-]+", "-").Trim('-');
+
+        // Return the final URL-friendly slug (e.g. "building-modern-apps-with-net-10")
+        return cleanText;
     }
 }

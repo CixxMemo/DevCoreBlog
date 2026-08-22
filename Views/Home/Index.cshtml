@@ -2,15 +2,16 @@
 @* Home/Index.cshtml — Public Home Page (Tech Minimal & Merlin'in Kazanı Layout) *@
 @* ============================================================================= *@
 @* This view renders:                                                           *@
-@*   1. Main Central Column (Faz 3): Search bar, Asymmetric Hero, Articles Grid *@
-@*   2. Right Aside Column (Faz 4): Numbered Trends, Quotes, AI Spotlight Boxes *@
+@*   1. Main Central Column: Search bar, Asymmetric Hero, Articles Grid         *@
+@*   2. Right Aside Column: Numbered Trends, Quotes, AI Spotlight Boxes         *@
+@* Full support for Light & Dark mode via Tailwind 'dark' class.                 *@
 @* ============================================================================= *@
 
 @using DevCoreBlog.Core.Entities
 @model List<Post>
 
 @{
-    ViewData["Title"] = "Ana Sayfa";
+    ViewData["Title"] = "Home";
 
     // Split posts into Hero features (first 3) and standard grid feed (remaining)
     // If fewer than 3 posts exist, gracefully fallback so the page never breaks
@@ -29,42 +30,70 @@
 }
 
 @* ============================================================================= *@
-@* MAIN CENTRAL COLUMN (Faz 3)                                                   *@
+@* MAIN CENTRAL COLUMN                                                           *@
 @* ============================================================================= *@
 <div class="flex-1 min-w-0">
 
-    @* --- 1. Top Search Bar (Tech Minimal) --- *@
+    @* --- 1. Top Search Bar (Tech Minimal with Ctrl + K Indicator) --- *@
     <div class="mb-6">
-        <form action="/ara" method="get" class="w-full">
-            <input type="text" name="query" 
-                   placeholder="Yazılarda veya konularda ara... (Enter'a basınız)" 
-                   class="w-full bg-surface border-2 border-border text-gray-900 placeholder-gray-500 px-4 py-3 text-sm font-sans font-medium rounded-none focus:outline-none focus:border-primary transition-none" />
+        <form action="/ara" method="get" class="w-full relative flex items-center">
+            @* Terminal Search Prompt Symbol *@
+            <div class="absolute left-3.5 flex items-center pointer-events-none text-gray-500 dark:text-zinc-400 font-mono font-bold text-sm select-none">
+                &gt;
+            </div>
+
+            @* Streamlined Search Input Field *@
+            <input type="text" 
+                   id="global-search-input"
+                   name="query" 
+                   placeholder="Search articles, concepts, or tags..." 
+                   autocomplete="off"
+                   class="w-full bg-white dark:bg-[#121215] border-2 border-gray-900 dark:border-zinc-700 text-gray-900 dark:text-zinc-100 placeholder-gray-500 dark:placeholder-zinc-400 pl-8 pr-20 py-2.5 text-sm font-mono rounded-none focus:outline-none focus:border-primary dark:focus:border-primary focus:bg-neutral-50 dark:focus:bg-zinc-900/50 transition-none" />
+
+            @* Keyboard Shortcut Indicator Badge (Ctrl + K / ⌘K) *@
+            <div class="absolute right-3 flex items-center pointer-events-none">
+                <kbd class="hidden sm:inline-block font-mono text-[10px] font-bold border border-gray-900 dark:border-zinc-700 bg-neutral-100 dark:bg-zinc-800 text-gray-700 dark:text-zinc-300 px-1.5 py-0.5 uppercase select-none rounded-none">
+                    Ctrl + K
+                </kbd>
+            </div>
         </form>
     </div>
 
     @if (Model.Any())
     {
-        @* --- 2. Asymmetric Hero Section (Merlin'in Kazanı Style) --- *@
+        @* --- 2. Asymmetric Hero Section (Tech Minimal Style) --- *@
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-10">
             
             @* Left: Main Feature Post (60% / col-span-7) *@
             @if (mainHero != null)
             {
                 <div class="lg:col-span-7">
-                    <a href="/yazi/@mainHero.Slug" class="relative bg-surface border-2 border-border rounded-none flex flex-col justify-end h-full min-h-[360px] group no-underline text-white overflow-hidden hover:-translate-y-1 hover:translate-x-1 border-black transition-transform">
+                    <a href="/yazi/@mainHero.Slug" class="relative bg-white dark:bg-[#121215] border-2 border-gray-900 dark:border-zinc-700 rounded-none flex flex-col justify-end h-full min-h-[360px] group no-underline text-white overflow-hidden hover:-translate-y-1 hover:translate-x-1 hover:border-black dark:hover:border-primary transition-transform">
                         @if (!string.IsNullOrEmpty(mainHero.ThumbnailUrl))
                         {
                             <img src="@mainHero.ThumbnailUrl" alt="@mainHero.Title" class="absolute inset-0 w-full h-full object-cover rounded-none" />
                         }
                         else
                         {
-                            <div class="absolute inset-0 w-full h-full bg-gray-900 flex items-center justify-center font-mono text-xs text-gray-500 uppercase">
-                                [ DevCore Feature ]
+                            @* Brutalist Tech Grid Pattern Fallback for Main Hero *@
+                            <div class="absolute inset-0 w-full h-full bg-neutral-900 flex items-center justify-center overflow-hidden">
+                                <svg class="absolute inset-0 w-full h-full opacity-20 pointer-events-none" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+                                    <defs>
+                                        <pattern id="hero-grid-pattern" width="24" height="24" patternUnits="userSpaceOnUse">
+                                            <path d="M 24 0 L 0 0 0 24" fill="none" stroke="#ffffff" stroke-width="0.8" />
+                                            <circle cx="24" cy="24" r="1.5" fill="#4f46e5" />
+                                        </pattern>
+                                    </defs>
+                                    <rect width="100%" height="100%" fill="url(#hero-grid-pattern)" />
+                                </svg>
+                                <span class="relative z-0 font-mono text-xs font-bold uppercase tracking-widest border-2 border-zinc-700 bg-black text-zinc-300 px-3 py-1 select-none">
+                                    DEVCORE // FEATURE
+                                </span>
                             </div>
                         }
 
                         @* Flat overlay box — Zero gradient, solid sharp container *@
-                        <div class="relative z-10 bg-black bg-opacity-80 p-5 border-t-2 border-border">
+                        <div class="relative z-10 bg-black bg-opacity-80 dark:bg-black dark:bg-opacity-90 p-5 border-t-2 border-gray-900 dark:border-zinc-700">
                             @if (mainHero.Category != null)
                             {
                                 <span class="bg-primary text-white text-xs px-2 py-1 font-bold uppercase inline-block mb-2">
@@ -74,12 +103,12 @@
                             <h2 class="text-xl lg:text-2xl font-bold font-sans tracking-tight text-white group-hover:text-primary transition-colors leading-tight mb-2">
                                 @mainHero.Title
                             </h2>
-                            <p class="text-xs text-gray-300 line-clamp-2 leading-relaxed mb-3">
+                            <p class="text-xs text-gray-300 dark:text-zinc-300 line-clamp-2 leading-relaxed mb-3">
                                 @mainHero.Summary
                             </p>
-                            <div class="flex items-center justify-between text-[11px] font-mono text-gray-400 pt-2 border-t border-gray-700">
-                                <span>@mainHero.PublishDate.ToString("dd.MM.yyyy")</span>
-                                <span>👁 @mainHero.ViewCount okunma</span>
+                            <div class="flex items-center justify-between text-[11px] font-mono text-gray-400 dark:text-zinc-400 pt-2 border-t border-gray-700 dark:border-zinc-800">
+                                <span>@mainHero.PublishDate.ToString("MMM dd, yyyy")</span>
+                                <span>👁 @mainHero.ViewCount views</span>
                             </div>
                         </div>
                     </a>
@@ -90,11 +119,29 @@
             <div class="lg:col-span-5 flex flex-col gap-6">
                 @foreach (var sub in subHeroes)
                 {
-                    <a href="/yazi/@sub.Slug" class="bg-surface border-2 border-border rounded-none flex-1 p-4 flex flex-col justify-between hover:-translate-y-1 hover:translate-x-1 border-black transition-transform group no-underline text-gray-900">
+                    <a href="/yazi/@sub.Slug" class="bg-white dark:bg-[#121215] border-2 border-gray-900 dark:border-zinc-700 rounded-none flex-1 p-4 flex flex-col justify-between hover:-translate-y-1 hover:translate-x-1 hover:border-black dark:hover:border-primary transition-transform group no-underline text-gray-900 dark:text-zinc-100">
                         <div>
                             @if (!string.IsNullOrEmpty(sub.ThumbnailUrl))
                             {
-                                <img src="@sub.ThumbnailUrl" alt="@sub.Title" class="aspect-video w-full object-cover border-b-2 border-border mb-3 rounded-none" />
+                                <img src="@sub.ThumbnailUrl" alt="@sub.Title" class="aspect-video w-full object-cover border-b-2 border-gray-900 dark:border-zinc-700 mb-3 rounded-none" />
+                            }
+                            else
+                            {
+                                @* Brutalist Tech Grid Pattern Fallback for Sub-Hero *@
+                                <div class="aspect-video w-full bg-neutral-100 dark:bg-neutral-900 border-b-2 border-gray-900 dark:border-zinc-700 mb-3 relative flex items-center justify-center overflow-hidden">
+                                    <svg class="absolute inset-0 w-full h-full opacity-30 dark:opacity-20 pointer-events-none" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+                                        <defs>
+                                            <pattern id="subhero-grid-@sub.Id" width="20" height="20" patternUnits="userSpaceOnUse">
+                                                <path d="M 20 0 L 0 0 0 20" fill="none" stroke="currentColor" stroke-width="0.8" class="text-gray-900 dark:text-white" />
+                                                <circle cx="20" cy="20" r="1" fill="currentColor" class="text-primary" />
+                                            </pattern>
+                                        </defs>
+                                        <rect width="100%" height="100%" fill="url(#subhero-grid-@sub.Id)" />
+                                    </svg>
+                                    <span class="relative z-10 font-mono text-[10px] font-bold uppercase tracking-widest border border-gray-900 dark:border-zinc-700 bg-white dark:bg-[#121215] text-gray-900 dark:text-zinc-100 px-2 py-0.5 select-none">
+                                        DEVCORE // POST
+                                    </span>
+                                </div>
                             }
                             @if (sub.Category != null)
                             {
@@ -102,13 +149,13 @@
                                     @sub.Category.Name
                                 </span>
                             }
-                            <h3 class="font-bold text-sm lg:text-base leading-snug group-hover:text-primary transition-colors mb-2">
+                            <h3 class="font-bold text-sm lg:text-base leading-snug group-hover:text-primary dark:group-hover:text-primary transition-colors mb-2">
                                 @sub.Title
                             </h3>
                         </div>
-                        <div class="flex items-center justify-between text-[10px] font-mono text-gray-500 pt-2 border-t border-gray-200 mt-2">
-                            <span>@sub.PublishDate.ToString("dd.MM.yyyy")</span>
-                            <span>👁 @sub.ViewCount</span>
+                        <div class="flex items-center justify-between text-[10px] font-mono text-gray-500 dark:text-zinc-400 pt-2 border-t border-gray-200 dark:border-zinc-800 mt-2">
+                            <span>@sub.PublishDate.ToString("MMM dd, yyyy")</span>
+                            <span>👁 @sub.ViewCount views</span>
                         </div>
                     </a>
                 }
@@ -116,29 +163,40 @@
         </div>
 
         @* --- 3. Articles Feed (Tech Minimal 3-Column Grid) --- *@
-        <div class="flex items-center justify-between border-b-2 border-border pb-2 mb-6 mt-8">
-            <h2 class="text-xl font-mono font-black uppercase tracking-tight text-gray-900">
-                Son Yazılar
+        <div class="flex items-center justify-between border-b-2 border-gray-900 dark:border-zinc-700 pb-2 mb-6 mt-8">
+            <h2 class="text-xl font-mono font-black uppercase tracking-tight text-gray-900 dark:text-zinc-100">
+                Latest Articles
             </h2>
-            <span class="text-xs font-mono font-bold text-gray-500 uppercase">
-                [ Akış ]
+            <span class="text-xs font-mono font-bold text-gray-500 dark:text-zinc-400 uppercase">
+                [ Feed ]
             </span>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
             @foreach (var item in gridPosts)
             {
-                <a href="/yazi/@item.Slug" class="bg-surface border-2 border-border rounded-none flex flex-col h-full hover:-translate-y-1 hover:translate-x-1 border-black transition-transform group no-underline text-gray-900">
+                <a href="/yazi/@item.Slug" class="bg-white dark:bg-[#121215] border-2 border-gray-900 dark:border-zinc-700 rounded-none flex flex-col h-full hover:-translate-y-1 hover:translate-x-1 hover:border-black dark:hover:border-primary transition-transform group no-underline text-gray-900 dark:text-zinc-100">
                     
-                    @* Post Thumbnail / Placeholder *@
+                    @* Post Thumbnail / Brutalist Geometric SVG Fallback *@
                     @if (!string.IsNullOrEmpty(item.ThumbnailUrl))
                     {
-                        <img src="@item.ThumbnailUrl" alt="@item.Title" class="aspect-video w-full object-cover border-b-2 border-border rounded-none" />
+                        <img src="@item.ThumbnailUrl" alt="@item.Title" class="aspect-video w-full object-cover border-b-2 border-gray-900 dark:border-zinc-700 rounded-none" />
                     }
                     else
                     {
-                        <div class="aspect-video w-full bg-gray-100 border-b-2 border-border flex items-center justify-center font-mono text-xs text-gray-400 uppercase">
-                            [ DevCore Post ]
+                        <div class="aspect-video w-full bg-neutral-100 dark:bg-[#18181b] border-b-2 border-gray-900 dark:border-zinc-700 relative flex items-center justify-center overflow-hidden">
+                            <svg class="absolute inset-0 w-full h-full opacity-25 dark:opacity-20 pointer-events-none" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+                                <defs>
+                                    <pattern id="grid-pattern-@item.Id" width="20" height="20" patternUnits="userSpaceOnUse">
+                                        <path d="M 20 0 L 0 0 0 20" fill="none" stroke="currentColor" stroke-width="0.8" class="text-gray-900 dark:text-white" />
+                                        <circle cx="20" cy="20" r="1" fill="currentColor" class="text-primary" />
+                                    </pattern>
+                                </defs>
+                                <rect width="100%" height="100%" fill="url(#grid-pattern-@item.Id)" />
+                            </svg>
+                            <span class="relative z-10 font-mono text-[10px] font-bold uppercase tracking-widest border border-gray-900 dark:border-zinc-700 bg-white dark:bg-[#121215] text-gray-900 dark:text-zinc-100 px-2 py-0.5 select-none">
+                                DEVCORE // POST
+                            </span>
                         </div>
                     }
 
@@ -151,18 +209,18 @@
                             </span>
                         }
                         
-                        <h3 class="font-bold text-sm text-gray-900 group-hover:text-primary transition-colors leading-snug mb-2 line-clamp-2">
+                        <h3 class="font-bold text-sm text-gray-900 dark:text-zinc-100 group-hover:text-primary transition-colors leading-snug mb-2 line-clamp-2">
                             @item.Title
                         </h3>
 
-                        <p class="text-xs text-gray-600 line-clamp-2 leading-relaxed mb-4">
+                        <p class="text-xs text-gray-600 dark:text-zinc-400 line-clamp-2 leading-relaxed mb-4">
                             @item.Summary
                         </p>
 
                         @* Metadata Footer *@
-                        <div class="mt-auto pt-3 border-t border-gray-200 flex items-center justify-between text-[10px] font-mono text-gray-500">
-                            <span>@item.PublishDate.ToString("dd.MM.yyyy")</span>
-                            <span>👁 @item.ViewCount</span>
+                        <div class="mt-auto pt-3 border-t border-gray-200 dark:border-zinc-800 flex items-center justify-between text-[10px] font-mono text-gray-500 dark:text-zinc-400">
+                            <span>@item.PublishDate.ToString("MMM dd, yyyy")</span>
+                            <span>👁 @item.ViewCount views</span>
                         </div>
                     </div>
                 </a>
@@ -172,34 +230,34 @@
         @* --- 4. Pagination Controls --- *@
         @if (ViewBag.TotalPages > 1)
         {
-            <div class="flex justify-between items-center pt-6 border-t-2 border-border font-mono text-xs font-bold">
+            <div class="flex justify-between items-center pt-6 border-t-2 border-gray-900 dark:border-zinc-700 font-mono text-xs font-bold">
                 @if (ViewBag.CurrentPage > 1)
                 {
-                    <a href="?page=@(ViewBag.CurrentPage - 1)" class="px-4 py-2 border-2 border-border text-gray-900 hover:bg-border hover:text-white no-underline transition-none">
-                        &lt; Önceki
+                    <a href="?page=@(ViewBag.CurrentPage - 1)" class="px-4 py-2 border-2 border-gray-900 dark:border-zinc-700 text-gray-900 dark:text-zinc-100 hover:bg-gray-900 hover:text-white dark:hover:bg-primary dark:hover:text-white no-underline transition-none">
+                        &lt; Previous
                     </a>
                 }
                 else
                 {
-                    <span class="px-4 py-2 border-2 border-gray-200 text-gray-300 cursor-not-allowed">
-                        &lt; Önceki
+                    <span class="px-4 py-2 border-2 border-gray-200 dark:border-zinc-800 text-gray-300 dark:text-zinc-600 cursor-not-allowed">
+                        &lt; Previous
                     </span>
                 }
 
-                <span class="text-gray-600">
-                    Sayfa @(ViewBag.CurrentPage) / @(ViewBag.TotalPages)
+                <span class="text-gray-600 dark:text-zinc-400">
+                    Page @(ViewBag.CurrentPage) of @(ViewBag.TotalPages)
                 </span>
 
                 @if (ViewBag.CurrentPage < ViewBag.TotalPages)
                 {
-                    <a href="?page=@(ViewBag.CurrentPage + 1)" class="px-4 py-2 border-2 border-border text-gray-900 hover:bg-border hover:text-white no-underline transition-none">
-                        Sonraki &gt;
+                    <a href="?page=@(ViewBag.CurrentPage + 1)" class="px-4 py-2 border-2 border-gray-900 dark:border-zinc-700 text-gray-900 dark:text-zinc-100 hover:bg-gray-900 hover:text-white dark:hover:bg-primary dark:hover:text-white no-underline transition-none">
+                        Next &gt;
                     </a>
                 }
                 else
                 {
-                    <span class="px-4 py-2 border-2 border-gray-200 text-gray-300 cursor-not-allowed">
-                        Sonraki &gt;
+                    <span class="px-4 py-2 border-2 border-gray-200 dark:border-zinc-800 text-gray-300 dark:text-zinc-600 cursor-not-allowed">
+                        Next &gt;
                     </span>
                 }
             </div>
@@ -208,9 +266,9 @@
     else
     {
         @* Empty State if no posts exist in the database *@
-        <div class="p-12 text-center bg-surface border-2 border-border">
-            <p class="font-mono text-sm text-gray-500 m-0">
-                Henüz hiç yazı yayınlanmamış.
+        <div class="p-12 text-center bg-white dark:bg-[#121215] border-2 border-gray-900 dark:border-zinc-700">
+            <p class="font-mono text-sm text-gray-500 dark:text-zinc-400 m-0">
+                No articles published yet.
             </p>
         </div>
     }
@@ -218,20 +276,20 @@
 </div>
 
 @* ============================================================================= *@
-@* RIGHT SIDEBAR COLUMN (Faz 4: Trendler & Ekstralar)                            *@
+@* RIGHT SIDEBAR COLUMN (Trending & Extra Widgets)                               *@
 @* ============================================================================= *@
 @* Fixed w-80 column displayed on desktop screens (hidden on smaller devices)    *@
 <aside class="w-80 flex-shrink-0 hidden xl:flex flex-col gap-6">
 
-    @* --- Widget 1: Trend Olanlar (Numbered Trending Posts) --- *@
-    <div class="bg-surface border-2 border-border rounded-none p-4">
-        <div class="flex items-center justify-between border-b-2 border-border pb-2 mb-4">
-            <h3 class="font-mono font-bold text-sm uppercase tracking-wider text-gray-900 flex items-center gap-2 m-0">
+    @* --- Widget 1: Trending Posts --- *@
+    <div class="bg-white dark:bg-[#121215] border-2 border-gray-900 dark:border-zinc-700 rounded-none p-4">
+        <div class="flex items-center justify-between border-b-2 border-gray-900 dark:border-zinc-700 pb-2 mb-4">
+            <h3 class="font-mono font-bold text-sm uppercase tracking-wider text-gray-900 dark:text-zinc-100 flex items-center gap-2 m-0">
                 <span class="w-2 h-2 bg-primary inline-block"></span>
-                Trendler
+                Trending
             </h3>
-            <span class="text-[10px] font-mono font-bold text-gray-600 uppercase bg-gray-100 px-1.5 py-0.5 border border-gray-300">
-                Popüler
+            <span class="text-[10px] font-mono font-bold text-gray-600 dark:text-zinc-400 uppercase bg-gray-100 dark:bg-zinc-800 px-1.5 py-0.5 border border-gray-300 dark:border-zinc-700">
+                Popular
             </span>
         </div>
 
@@ -241,7 +299,7 @@
                 @for (int i = 0; i < trendingPosts.Count; i++)
                 {
                     var post = trendingPosts[i];
-                    <a href="/yazi/@post.Slug" class="flex items-start gap-3 py-3 border-b border-gray-100 last:border-b-0 group no-underline text-gray-900">
+                    <a href="/yazi/@post.Slug" class="flex items-start gap-3 py-3 border-b border-gray-100 dark:border-zinc-800/80 last:border-b-0 group no-underline text-gray-900 dark:text-zinc-100">
                         <span class="font-mono font-black text-lg text-primary w-6 flex-shrink-0 text-center">
                             0@(i + 1)
                         </span>
@@ -250,17 +308,17 @@
                                 @if (i == 0 || post.ViewCount > 50)
                                 {
                                     <span class="bg-red-600 text-white text-[9px] font-mono font-bold px-1.5 py-0.5 uppercase">
-                                        Trend
+                                        Hot
                                     </span>
                                 }
                                 else
                                 {
                                     <span class="bg-primary text-white text-[9px] font-mono font-bold px-1.5 py-0.5 uppercase">
-                                        Yeni
+                                        New
                                     </span>
                                 }
-                                <span class="text-[10px] font-mono text-gray-500">
-                                    👁 @post.ViewCount
+                                <span class="text-[10px] font-mono text-gray-500 dark:text-zinc-400">
+                                    👁 @post.ViewCount views
                                 </span>
                             </div>
                             <h4 class="font-bold text-xs leading-snug group-hover:text-primary transition-colors line-clamp-2 m-0">
@@ -273,75 +331,99 @@
         }
         else
         {
-            <p class="font-mono text-xs text-gray-400 m-0">Trend içerik bulunamadı.</p>
+            <p class="font-mono text-xs text-gray-400 dark:text-zinc-500 m-0">No trending content found.</p>
         }
     </div>
 
-    @* --- Widget 2: Günün Felsefe Alıntısı --- *@
-    <div class="bg-surface border-2 border-border rounded-none p-4">
-        <div class="flex items-center gap-2 border-b-2 border-border pb-2 mb-3">
-            <span class="w-2 h-2 bg-gray-900 inline-block"></span>
-            <h3 class="font-mono font-bold text-xs uppercase tracking-wider text-gray-900 m-0">
-                Günün Felsefe Alıntısı
+    @* --- Widget 2: Philosophy Spotlight --- *@
+    <div class="bg-white dark:bg-[#121215] border-2 border-gray-900 dark:border-zinc-700 rounded-none p-4">
+        <div class="flex items-center gap-2 border-b-2 border-gray-900 dark:border-zinc-700 pb-2 mb-3">
+            <span class="w-2 h-2 bg-gray-900 dark:bg-zinc-200 inline-block"></span>
+            <h3 class="font-mono font-bold text-xs uppercase tracking-wider text-gray-900 dark:text-zinc-100 m-0">
+                Philosophy Spotlight
             </h3>
         </div>
-        <blockquote class="font-sans text-xs italic text-gray-700 leading-relaxed border-l-2 border-primary pl-3 my-2">
-            "Basitlik, mükemmelliğin nihai derecesidir."
+        <blockquote class="font-sans text-xs italic text-gray-700 dark:text-zinc-300 leading-relaxed border-l-2 border-primary pl-3 my-2">
+            "Simplicity is the ultimate sophistication."
         </blockquote>
-        <p class="font-mono text-[10px] text-gray-500 text-right m-0 font-bold">
+        <p class="font-mono text-[10px] text-gray-500 dark:text-zinc-400 text-right m-0 font-bold">
             — Leonardo da Vinci
         </p>
     </div>
 
-    @* --- Widget 3: Haftanın AI Aracı (Spotlight) --- *@
-    <div class="bg-surface border-2 border-border rounded-none p-4">
-        <div class="flex items-center justify-between border-b-2 border-border pb-2 mb-3">
-            <h3 class="font-mono font-bold text-xs uppercase tracking-wider text-gray-900 flex items-center gap-2 m-0">
+    @* --- Widget 3: Featured AI Tool --- *@
+    <div class="bg-white dark:bg-[#121215] border-2 border-gray-900 dark:border-zinc-700 rounded-none p-4">
+        <div class="flex items-center justify-between border-b-2 border-gray-900 dark:border-zinc-700 pb-2 mb-3">
+            <h3 class="font-mono font-bold text-xs uppercase tracking-wider text-gray-900 dark:text-zinc-100 flex items-center gap-2 m-0">
                 <span class="w-2 h-2 bg-primary inline-block"></span>
-                Haftanın AI Aracı
+                Featured AI Tool
             </h3>
             <span class="bg-primary text-white text-[9px] font-mono font-bold px-1.5 py-0.5 uppercase">
                 Spotlight
             </span>
         </div>
-        <div class="bg-gray-50 border border-gray-200 p-3 mb-2">
-            <div class="font-mono font-bold text-xs text-gray-900 mb-1">
+        <div class="bg-gray-50 dark:bg-zinc-800/80 border border-gray-200 dark:border-zinc-700 p-3 mb-2">
+            <div class="font-mono font-bold text-xs text-gray-900 dark:text-zinc-100 mb-1">
                 Claude 3.7 Sonnet & Gemini 2.0
             </div>
-            <p class="text-[11px] text-gray-600 leading-relaxed m-0">
-                Hibrit reasoning mimarisi ile karmaşık kodlama ve mimari süreçlerini hızlandıran yeni nesil modeller.
+            <p class="text-[11px] text-gray-600 dark:text-zinc-300 leading-relaxed m-0">
+                Next-generation hybrid reasoning models accelerating complex coding and software architecture workflows.
             </p>
         </div>
-        <div class="text-[10px] font-mono text-gray-500 text-right">
+        <div class="text-[10px] font-mono text-gray-500 dark:text-zinc-400 text-right">
             #VibeCoding #LLM #DevCore
         </div>
     </div>
 
-    @* --- Widget 4: Öne Çıkan Başlıklar / Etiketler --- *@
-    <div class="bg-surface border-2 border-border rounded-none p-4">
-        <div class="flex items-center gap-2 border-b-2 border-border pb-2 mb-3">
-            <span class="w-2 h-2 bg-gray-900 inline-block"></span>
-            <h3 class="font-mono font-bold text-xs uppercase tracking-wider text-gray-900 m-0">
-                Öne Çıkan Başlıklar
+    @* --- Widget 4: Featured Topics / Tags --- *@
+    <div class="bg-white dark:bg-[#121215] border-2 border-gray-900 dark:border-zinc-700 rounded-none p-4">
+        <div class="flex items-center gap-2 border-b-2 border-gray-900 dark:border-zinc-700 pb-2 mb-3">
+            <span class="w-2 h-2 bg-gray-900 dark:bg-zinc-200 inline-block"></span>
+            <h3 class="font-mono font-bold text-xs uppercase tracking-wider text-gray-900 dark:text-zinc-100 m-0">
+                Featured Topics
             </h3>
         </div>
         <div class="flex flex-wrap gap-1.5">
-            <a href="/kategori/vibe-coding" class="bg-gray-100 hover:bg-border hover:text-white border border-gray-300 text-gray-800 text-[10px] font-mono font-bold px-2 py-1 no-underline transition-none">
+            <a href="/kategori/vibe-coding" class="bg-gray-100 dark:bg-zinc-800 hover:bg-gray-900 hover:text-white dark:hover:bg-primary dark:hover:text-white border border-gray-300 dark:border-zinc-700 text-gray-800 dark:text-zinc-200 text-[10px] font-mono font-bold px-2 py-1 no-underline transition-none">
                 #VibeCoding
             </a>
-            <a href="/kategori/ai" class="bg-gray-100 hover:bg-border hover:text-white border border-gray-300 text-gray-800 text-[10px] font-mono font-bold px-2 py-1 no-underline transition-none">
+            <a href="/kategori/ai" class="bg-gray-100 dark:bg-zinc-800 hover:bg-gray-900 hover:text-white dark:hover:bg-primary dark:hover:text-white border border-gray-300 dark:border-zinc-700 text-gray-800 dark:text-zinc-200 text-[10px] font-mono font-bold px-2 py-1 no-underline transition-none">
                 #AI
             </a>
-            <a href="/kategori/felsefe" class="bg-gray-100 hover:bg-border hover:text-white border border-gray-300 text-gray-800 text-[10px] font-mono font-bold px-2 py-1 no-underline transition-none">
-                #Felsefe
+            <a href="/kategori/felsefe" class="bg-gray-100 dark:bg-zinc-800 hover:bg-gray-900 hover:text-white dark:hover:bg-primary dark:hover:text-white border border-gray-300 dark:border-zinc-700 text-gray-800 dark:text-zinc-200 text-[10px] font-mono font-bold px-2 py-1 no-underline transition-none">
+                #Philosophy
             </a>
-            <a href="/kategori/haberler" class="bg-gray-100 hover:bg-border hover:text-white border border-gray-300 text-gray-800 text-[10px] font-mono font-bold px-2 py-1 no-underline transition-none">
-                #Haberler
+            <a href="/kategori/haberler" class="bg-gray-100 dark:bg-zinc-800 hover:bg-gray-900 hover:text-white dark:hover:bg-primary dark:hover:text-white border border-gray-300 dark:border-zinc-700 text-gray-800 dark:text-zinc-200 text-[10px] font-mono font-bold px-2 py-1 no-underline transition-none">
+                #News
             </a>
-            <a href="/kategori/kesfet" class="bg-gray-100 hover:bg-border hover:text-white border border-gray-300 text-gray-800 text-[10px] font-mono font-bold px-2 py-1 no-underline transition-none">
-                #Keşfet
+            <a href="/kategori/kesfet" class="bg-gray-100 dark:bg-zinc-800 hover:bg-gray-900 hover:text-white dark:hover:bg-primary dark:hover:text-white border border-gray-300 dark:border-zinc-700 text-gray-800 dark:text-zinc-200 text-[10px] font-mono font-bold px-2 py-1 no-underline transition-none">
+                #Discover
             </a>
         </div>
     </div>
 
 </aside>
+
+@section Scripts {
+    <script>
+        // =====================================================================
+        // Global Keyboard Shortcut: Ctrl + K (or Cmd + K on macOS)
+        // Focuses the top search bar instantly when pressed from anywhere on the page
+        // =====================================================================
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+                e.preventDefault();
+                var searchInput = document.getElementById('global-search-input');
+                if (searchInput) {
+                    searchInput.focus();
+                    searchInput.select();
+                }
+            } else if (e.key === 'Escape') {
+                var searchInput = document.getElementById('global-search-input');
+                if (searchInput && document.activeElement === searchInput) {
+                    searchInput.blur();
+                }
+            }
+        });
+    </script>
+}

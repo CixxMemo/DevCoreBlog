@@ -1,12 +1,5 @@
 @* ============================================================================= *@
-@* Home/Detail.cshtml — Single Blog Post Detail View (Terminal Theme)            *@
-@* ============================================================================= *@
-@* This view displays a single blog post in detail. It shows the post title,    *@
-@* category badge (linked to the category page), creation date, reading time,   *@
-@* view count, and the full post content rendered from Markdown.                *@
-@* A link back to the home page is provided at the bottom.                      *@
-@*                                                                              *@
-@* Terminal Theme: #0d1117 bg, #10b981 accent, monospace meta, sharp edges.     *@
+@* Home/Detail.cshtml — Single Blog Post Detail View (Tech Minimal)              *@
 @* ============================================================================= *@
 
 @using DevCoreBlog.Core.Entities
@@ -15,80 +8,52 @@
 
 @{
     ViewData["Title"] = Model.Title;
-    // Set the terminal breadcrumb path for the topbar
     ViewData["TerminalPath"] = $"posts/{Model.Slug}";
 }
 
-<article class="max-w-3xl mx-auto w-full animate-fade-up">
-    @* Post title — large, bold, high contrast *@
-    <h1 class="text-3xl md:text-5xl font-bold tracking-tight mb-8 font-sans" style="color: var(--text-primary);">
+<article class="max-w-4xl mx-auto w-full">
+    @* Post Title *@
+    <h1 class="text-2xl sm:text-4xl font-bold tracking-tight mb-6 font-sans text-gray-900 dark:text-zinc-100 leading-tight">
         @Model.Title
     </h1>
 
-    @* Terminal Status Bar for Meta Information *@
-    <div class="bg-zinc-950 border border-zinc-800 p-4 mb-10 flex flex-col sm:flex-row sm:items-center justify-between font-mono text-sm shadow-sm" style="border-left: 3px solid var(--accent);">
-        <div class="flex flex-wrap items-center gap-x-6 gap-y-2 text-zinc-400">
+    @* Meta Info Bar (Tech Minimal) *@
+    <div class="bg-white dark:bg-[#121215] border-2 border-gray-900 dark:border-zinc-700 p-4 mb-8 flex flex-col sm:flex-row sm:items-center justify-between font-mono text-xs gap-3">
+        <div class="flex flex-wrap items-center gap-4 text-gray-600 dark:text-zinc-400">
             <span>
-                <span class="text-orange-500">~</span>/author: <span class="text-white">root</span>
+                <span class="text-primary font-bold">#</span> @(Model.Category?.Name ?? "General")
             </span>
+            <span>|</span>
             <span>
-                <span class="text-orange-500">~</span>/date: <span class="text-white">@Model.PublishDate.ToString("yyyy-MM-dd")</span>
+                📅 @Model.PublishDate.ToString("MMM dd, yyyy")
             </span>
+            <span>|</span>
             <span>
-                <span class="text-orange-500">~</span>/read_time: <span class="text-white">@ViewBag.ReadingTime min</span>
+                ⏱ @ViewBag.ReadingTime min read
             </span>
         </div>
-        <div class="flex items-center gap-4 mt-4 sm:mt-0">
-            @if (Model.Category != null)
-            {
-                <a href="/kategori/@Model.Category.Slug" class="text-zinc-400 hover:text-yellow-400 transition-colors">
-                    [tag: @Model.Category.Name.ToLower()]
-                </a>
-            }
-            <span class="text-zinc-600">| views: @ViewBag.ViewCount</span>
+        <div class="text-gray-500 dark:text-zinc-400">
+            👁 @Model.ViewCount views
         </div>
     </div>
 
-    @* ===================================================================== *@
-    @* POST CONTENT — Markdown → HTML (via Markdig)                          *@
-    @* ===================================================================== *@
-    @* MarkdownHelper.ToHtml() converts the raw Markdown content to HTML.    *@
-    @* @Html.Raw() renders the HTML without escaping (required for tags).    *@
-    @* Prism.js (loaded in _Layout.cshtml) highlights code blocks            *@
-    @* automatically via the "language-*" classes Markdig generates.         *@
-    @* ===================================================================== *@
-    <div class="markdown-content prose dark:prose-invert max-w-none leading-loose text-lg" style="color: var(--text-secondary);">
+    @* Optional Hero Thumbnail on detail page *@
+    @if (!string.IsNullOrEmpty(Model.ThumbnailUrl))
+    {
+        <div class="mb-8 border-2 border-gray-900 dark:border-zinc-700 overflow-hidden">
+            <img src="@Model.ThumbnailUrl" alt="@Model.Title" class="w-full max-h-96 object-cover" />
+        </div>
+    }
+
+    @* Post Content — Markdown Rendered *@
+    <div class="markdown-content text-gray-800 dark:text-zinc-200 leading-relaxed text-base">
         @Html.Raw(MarkdownHelper.ToHtml(Model.Content))
     </div>
 
-    @* Navigation — back to home page & Related Posts *@
-    <div class="mt-16 pt-8 border-t border-zinc-800">
-        @if (ViewBag.RelatedPosts != null && ((IEnumerable<DevCoreBlog.Core.Entities.Post>)ViewBag.RelatedPosts).Any())
-        {
-            <div class="mb-10">
-                <h3 class="text-xl font-bold mb-6 font-mono" style="color: var(--text-primary);">
-                    > similar_posts.ls
-                </h3>
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    @foreach (var relatedPost in (IEnumerable<DevCoreBlog.Core.Entities.Post>)ViewBag.RelatedPosts)
-                    {
-                        <a href="/yazi/@relatedPost.Slug" 
-                           class="block p-5 transition-all duration-200 group bg-zinc-950 border border-zinc-800 hover:border-orange-500">
-                            <h4 class="text-base font-bold mb-3 line-clamp-2 transition-colors text-zinc-200 group-hover:text-yellow-400">
-                                @relatedPost.Title
-                            </h4>
-                            <time class="font-mono text-xs text-zinc-500">
-                                @relatedPost.PublishDate.ToString("yyyy-MM-dd")
-                            </time>
-                        </a>
-                    }
-                </div>
-            </div>
-        }
-
-        <a href="/" 
-           class="inline-block px-5 py-3 text-sm font-mono transition-colors bg-zinc-900 border border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-yellow-400 hover:border-orange-500">
-            ← cd ~/home
+    @* Footer Navigation *@
+    <div class="mt-12 pt-6 border-t-2 border-gray-900 dark:border-zinc-700 flex justify-between items-center">
+        <a href="/" class="px-4 py-2 border-2 border-gray-900 dark:border-zinc-700 text-xs font-mono font-bold text-gray-900 dark:text-zinc-200 hover:bg-gray-900 hover:text-white dark:hover:bg-primary dark:hover:text-white no-underline transition-none">
+            ← Back to Home
         </a>
     </div>
 </article>

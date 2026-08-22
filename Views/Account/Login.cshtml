@@ -1,30 +1,30 @@
 @* ============================================================================= *@
-@* Login.cshtml — Admin Login Form *@
+@* Login.cshtml — Admin Login Form (Tech Minimal)                                *@
 @* ============================================================================= *@
-@* This view renders the admin login form with username and password fields. *@
-@* It displays an error alert if ViewBag.Error is set (invalid credentials). *@
-@* Uses the default _Layout (public site layout), NOT the admin layout. *@
+@* This view renders the admin sign-in form with username and password fields.  *@
+@* It displays an error alert if ViewBag.Error is set (invalid credentials).     *@
+@* Uses the default _Layout (public site layout), NOT the admin layout.         *@
 @* ============================================================================= *@
 
 @* Set the page title shown in the browser tab *@
 @{
-    ViewData["Title"] = "Giriş Yap";
+    ViewData["Title"] = "Sign In";
 }
 
 @* Center the login card vertically and horizontally on the page *@
-<div class="flex items-center justify-center min-h-[70vh]">
+<div class="flex items-center justify-center min-h-[70vh] w-full">
     @* Login card — Tech Minimal design, sharp edges, dark theme *@
-    <div class="w-full max-w-md bg-[#0a0a0a] border border-[#333] p-8 shadow-sm">
+    <div class="w-full max-w-md bg-white dark:bg-[#121215] border-2 border-gray-900 dark:border-zinc-700 p-8 rounded-none shadow-none">
         @* Card header with title *@
-        <div class="mb-8 border-b border-[#333] pb-4">
-            <h4 class="text-xl font-bold text-gray-200 tracking-wider uppercase">Admin Girişi</h4>
+        <div class="mb-8 border-b-2 border-gray-900 dark:border-zinc-700 pb-4">
+            <h4 class="text-xl font-bold font-mono text-gray-900 dark:text-zinc-100 tracking-wider uppercase m-0">Admin Sign In</h4>
         </div>
 
         @* Show error message if ViewBag.Error is set (e.g. wrong credentials) *@
         @if (ViewBag.Error != null)
         {
             @* Danger alert for error feedback *@
-            <div class="bg-red-900/30 border border-red-500 text-red-300 p-4 mb-6 text-sm" role="alert">
+            <div class="bg-red-900/30 border-2 border-red-500 text-red-300 p-4 mb-6 text-xs font-mono font-bold" role="alert">
                 @ViewBag.Error
             </div>
         }
@@ -33,24 +33,24 @@
         <form asp-controller="Account" asp-action="Login" method="post">
             @* Username field *@
             <div class="mb-6">
-                <label for="username" class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Kullanıcı Adı</label>
+                <label for="username" class="block text-xs font-mono font-bold text-gray-700 dark:text-zinc-300 uppercase tracking-wider mb-2">Username</label>
                 @* Text input with name="username" for model binding *@
                 <input type="text" id="username" name="username" required autofocus 
-                       class="w-full bg-black border border-[#333] text-gray-200 p-3 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors" />
+                       class="w-full bg-white dark:bg-[#09090b] border-2 border-gray-900 dark:border-zinc-700 text-gray-900 dark:text-zinc-100 p-3 text-sm font-mono rounded-none focus:outline-none focus:border-primary transition-none" />
             </div>
 
             @* Password field *@
             <div class="mb-8">
-                <label for="password" class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Şifre</label>
+                <label for="password" class="block text-xs font-mono font-bold text-gray-700 dark:text-zinc-300 uppercase tracking-wider mb-2">Password</label>
                 @* Password input with name="password" for model binding *@
                 <input type="password" id="password" name="password" required 
-                       class="w-full bg-black border border-[#333] text-gray-200 p-3 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors" />
+                       class="w-full bg-white dark:bg-[#09090b] border-2 border-gray-900 dark:border-zinc-700 text-gray-900 dark:text-zinc-100 p-3 text-sm font-mono rounded-none focus:outline-none focus:border-primary transition-none" />
             </div>
 
             @* Submit button — Tech Minimal style *@
             <button type="submit" 
-                    class="w-full bg-orange-600/10 hover:bg-orange-600/20 text-orange-500 border border-orange-500 font-bold py-3 px-4 uppercase tracking-wider text-sm transition-colors">
-                Sisteme Giriş Yap
+                    class="w-full bg-primary hover:bg-primary/90 text-white border-2 border-gray-900 dark:border-zinc-700 font-mono font-bold py-3 px-4 uppercase tracking-wider text-sm rounded-none transition-none cursor-pointer">
+                Sign In
             </button>
         </form>
     </div>

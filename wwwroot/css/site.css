@@ -48,15 +48,57 @@
 
 /* --- Dark Theme (Manual Toggle via Tailwind 'class' strategy) --- */
 html.dark {
-  --bg-primary: #0a0a0a;
-  --bg-card: #171717;
-  --bg-surface: #1f2937;
+  --bg-primary: #09090b;
+  --bg-card: #121215;
+  --bg-surface: #121215;
   --accent: #6366f1;
   --accent-hover: #4f46e5;
-  --border: #374151;
-  --text-primary: #f9fafb;
-  --text-secondary: #d1d5db;
-  --text-muted: #9ca3af;
+  --border: #3f3f46;
+  --text-primary: #f4f4f5;
+  --text-secondary: #a1a1aa;
+  --text-muted: #71717a;
+}
+
+/* --- Direct Dark Mode Styles (Guaranteed Instant Theme Switch) --- */
+html.dark body {
+  background-color: #09090b !important;
+  color: #f4f4f5 !important;
+}
+
+html.dark aside,
+html.dark .bg-surface,
+html.dark .bg-white {
+  background-color: #121215 !important;
+  color: #f4f4f5 !important;
+}
+
+html.dark .border-border,
+html.dark .border-gray-900 {
+  border-color: #3f3f46 !important;
+}
+
+html.dark .border-gray-200,
+html.dark .border-gray-100 {
+  border-color: #27272a !important;
+}
+
+html.dark .text-gray-900,
+html.dark .text-gray-800 {
+  color: #f4f4f5 !important;
+}
+
+html.dark .text-gray-700,
+html.dark .text-gray-600 {
+  color: #a1a1aa !important;
+}
+
+html.dark .text-gray-500 {
+  color: #71717a !important;
+}
+
+html.dark .bg-gray-50,
+html.dark .bg-gray-100 {
+  background-color: #18181b !important;
 }
 
 /* Set the base font size for the entire page */

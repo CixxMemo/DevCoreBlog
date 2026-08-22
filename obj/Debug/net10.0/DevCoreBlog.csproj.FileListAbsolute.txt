@@ -197,4 +197,4 @@
 /Users/mehmetcankocakurt/Documents/development/DevCoreBlog/obj/Debug/net10.0/DevCoreBlog.pdb
 /Users/mehmetcankocakurt/Documents/development/DevCoreBlog/obj/Debug/net10.0/DevCoreBlog.genruntimeconfig.cache
 /Users/mehmetcankocakurt/Documents/development/DevCoreBlog/obj/Debug/net10.0/ref/DevCoreBlog.dll
-/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/obj/Debug/net10.0/compressed/tr2xps9d7i-{0}-lwtep4ep9h-lwtep4ep9h.gz
+/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/obj/Debug/net10.0/compressed/tr2xps9d7i-{0}-ushdqjak2g-ushdqjak2g.gz

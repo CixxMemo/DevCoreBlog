@@ -67,8 +67,8 @@ public class HomeController : Controller
         ViewBag.TotalPages = (int)Math.Ceiling((double)result.TotalCount / pageSize);
 
         // Set Open Graph (OG) meta tags for social media sharing (home page)
-        ViewBag.OgTitle = "DevCoreBlog - ASP.NET Core ve Modern Web Geliştirme";
-        ViewBag.OgDescription = "DevCoreBlog - ASP.NET Core, C#, Entity Framework Core ve modern web geliştirme hakkında teknik yazılar. Senior ve Junior geliştiriciler için eğitim içerikleri.";
+        ViewBag.OgTitle = "DevCoreBlog - ASP.NET Core and Modern Web Development";
+        ViewBag.OgDescription = "DevCoreBlog - Technical articles on ASP.NET Core, C#, Entity Framework Core, and modern web development.";
         ViewBag.OgType = "website";
         ViewBag.OgUrl = "/";
 
@@ -133,7 +133,6 @@ public class HomeController : Controller
         ViewBag.OgUrl = $"/yazi/{updatedPost.Slug}";
 
         // Pass the post to the Detail view
-        // Adım 4.1: Detay sayfasında Sidebar ve Search alanlarını gizle
         ViewData["HideSidebar"] = true;
         ViewData["HideSearch"] = true;
         
@@ -166,8 +165,8 @@ public class HomeController : Controller
         ViewBag.TotalPages = (int)Math.Ceiling((double)result.TotalCount / pageSize);
 
         // Set Open Graph (OG) meta tags for social media sharing
-        ViewBag.OgTitle = $"{category.Name} Kategorisi - DevCoreBlog";
-        ViewBag.OgDescription = $"{category.Name} kategorisindeki tüm yazılar. DevCoreBlog'da {category.Name} hakkında teknik içerikleri keşfedin.";
+        ViewBag.OgTitle = $"{category.Name} Category - DevCoreBlog";
+        ViewBag.OgDescription = $"All articles in the {category.Name} category on DevCoreBlog.";
         ViewBag.OgType = "website";
         ViewBag.OgUrl = $"/kategori/{category.Slug}";
 
@@ -197,8 +196,8 @@ public class HomeController : Controller
         if (string.IsNullOrWhiteSpace(query))
         {
             ViewBag.SearchQuery = "";
-            ViewBag.OgTitle = "Arama - DevCoreBlog";
-            ViewBag.OgDescription = "DevCoreBlog'da yazılarda arama yapın.";
+            ViewBag.OgTitle = "Search - DevCoreBlog";
+            ViewBag.OgDescription = "Search articles on DevCoreBlog.";
             return View(Enumerable.Empty<Post>());
         }
 
@@ -209,8 +208,8 @@ public class HomeController : Controller
         ViewBag.SearchQuery = query;
 
         // Set Open Graph (OG) meta tags for social media sharing
-        ViewBag.OgTitle = $"\"{query}\" Arama Sonuçları - DevCoreBlog";
-        ViewBag.OgDescription = $"DevCoreBlog'da \"{query}\" için arama sonuçları.";
+        ViewBag.OgTitle = $"\"{query}\" Search Results - DevCoreBlog";
+        ViewBag.OgDescription = $"Search results for \"{query}\" on DevCoreBlog.";
         ViewBag.OgType = "website";
         ViewBag.OgUrl = $"/ara?query={Uri.EscapeDataString(query)}";
 

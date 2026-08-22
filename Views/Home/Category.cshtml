@@ -1,115 +1,127 @@
 @* ============================================================================= *@
-@* Home/Category.cshtml — Category Posts List View (Terminal Theme)              *@
+@* Home/Category.cshtml — Category Posts List View (Tech Minimal)                 *@
 @* ============================================================================= *@
-@* This view displays all published posts in a specific category. The category  *@
-@* name is shown as a heading, followed by a list of posts in the same card     *@
-@* structure as the home page. If there are no posts in the category, a         *@
-@* friendly message is shown instead.                                           *@
-@* This view is rendered by HomeController.Category(string slug) action.        *@
+@* This view displays all published posts in a specific category.                *@
+@* Renders cleanly in the main canvas next to the fixed left sidebar.            *@
 @* ============================================================================= *@
 
-@using DevCoreBlog.Models
+@using DevCoreBlog.Core.Entities
 @model List<Post>
 
 @{
     ViewData["Title"] = ViewBag.CategoryName;
-    // Set the terminal breadcrumb path for the topbar
-    ViewData["TerminalPath"] = $"kategori/{ViewBag.CategorySlug}";
+    ViewData["TerminalPath"] = $"category/{ViewBag.CategorySlug}";
 }
 
-@* Page heading — bold, high contrast, monospace *@
-<h1 class="text-2xl font-bold tracking-tight mb-8 font-mono" style="color: var(--text-primary);">
-    "@ViewBag.CategoryName" Kategorisi
-</h1>
+<div class="w-full max-w-5xl mx-auto">
+    @* Page heading — bold, high contrast, monospace *@
+    <div class="flex items-center justify-between border-b-2 border-gray-900 dark:border-zinc-700 pb-3 mb-8">
+        <h1 class="text-2xl font-mono font-black uppercase tracking-tight text-gray-900 dark:text-zinc-100 m-0">
+            # @ViewBag.CategoryName
+        </h1>
+        <span class="text-xs font-mono font-bold text-gray-500 dark:text-zinc-400 uppercase">
+            @Model.Count Articles
+        </span>
+    </div>
 
-@if (Model.Any())
-{
-    @* Stacked Feed Layout — Tech Minimal (sharp edges, orange border on hover) with Thumbnails *@
-    <div class="flex flex-col gap-6">
-        @foreach (var item in Model)
-        {
-            <a href="/yazi/@item.Slug" class="block transition-all duration-200" style="text-decoration: none;">
-                <div class="flex flex-col sm:flex-row transition-colors" style="background-color: var(--bg-card); border: 1px solid var(--border);"
-                     onmouseenter="this.style.borderColor='var(--accent)';" onmouseleave="this.style.borderColor='var(--border)';">
+    @if (Model.Any())
+    {
+        @* Articles Grid *@
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+            @foreach (var item in Model)
+            {
+                <a href="/yazi/@item.Slug" class="bg-white dark:bg-[#121215] border-2 border-gray-900 dark:border-zinc-700 rounded-none flex flex-col h-full hover:-translate-y-1 hover:translate-x-1 hover:border-black dark:hover:border-primary transition-transform group no-underline text-gray-900 dark:text-zinc-100">
                     
+                    @* Post Thumbnail / Brutalist Geometric SVG Fallback *@
                     @if (!string.IsNullOrEmpty(item.ThumbnailUrl))
                     {
-                        <div class="sm:w-1/3 flex-shrink-0" style="border-bottom: 1px solid var(--border);">
-                            <img src="@item.ThumbnailUrl" alt="@item.Title" class="w-full h-48 sm:h-full object-cover" 
-                                 style="border-right: 1px solid var(--border);" />
+                        <img src="@item.ThumbnailUrl" alt="@item.Title" class="aspect-video w-full object-cover border-b-2 border-gray-900 dark:border-zinc-700 rounded-none" />
+                    }
+                    else
+                    {
+                        <div class="aspect-video w-full bg-neutral-100 dark:bg-[#18181b] border-b-2 border-gray-900 dark:border-zinc-700 relative flex items-center justify-center overflow-hidden">
+                            <svg class="absolute inset-0 w-full h-full opacity-25 dark:opacity-20 pointer-events-none" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+                                <defs>
+                                    <pattern id="cat-grid-pattern-@item.Id" width="20" height="20" patternUnits="userSpaceOnUse">
+                                        <path d="M 20 0 L 0 0 0 20" fill="none" stroke="currentColor" stroke-width="0.8" class="text-gray-900 dark:text-white" />
+                                        <circle cx="20" cy="20" r="1" fill="currentColor" class="text-primary" />
+                                    </pattern>
+                                </defs>
+                                <rect width="100%" height="100%" fill="url(#cat-grid-pattern-@item.Id)" />
+                            </svg>
+                            <span class="relative z-10 font-mono text-[10px] font-bold uppercase tracking-widest border border-gray-900 dark:border-zinc-700 bg-white dark:bg-[#121215] text-gray-900 dark:text-zinc-100 px-2 py-0.5 select-none">
+                                DEVCORE // POST
+                            </span>
                         </div>
                     }
-                    
-                    <div class="p-6 flex-grow flex flex-col justify-center">
-                        <div class="flex items-center gap-3 mb-3">
-                            <span class="font-mono text-xs" style="color: var(--text-muted);">
-                                @item.PublishDate.ToString("dd MMM yyyy")
+
+                    @* Card Body Content *@
+                    <div class="p-4 flex flex-col flex-1">
+                        @if (item.Category != null)
+                        {
+                            <span class="bg-primary text-white text-[10px] px-2 py-0.5 font-bold uppercase w-max mb-2">
+                                @item.Category.Name
                             </span>
-                            @if (item.Category != null)
-                            {
-                                <span style="color: var(--border);">|</span>
-                                <span class="font-mono text-xs" style="color: var(--accent);">
-                                    @item.Category.Name
-                                </span>
-                            }
-                        </div>
+                        }
                         
-                        <h2 class="text-xl sm:text-2xl font-bold font-sans tracking-tight mb-3" style="color: var(--text-primary);">
+                        <h3 class="font-bold text-sm text-gray-900 dark:text-zinc-100 group-hover:text-primary transition-colors leading-snug mb-2 line-clamp-2">
                             @item.Title
-                        </h2>
-                        
-                        <p class="text-sm font-sans leading-relaxed m-0" style="color: var(--text-secondary); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                        </h3>
+
+                        <p class="text-xs text-gray-600 dark:text-zinc-400 line-clamp-2 leading-relaxed mb-4">
                             @item.Summary
                         </p>
+
+                        @* Metadata Footer *@
+                        <div class="mt-auto pt-3 border-t border-gray-200 dark:border-zinc-800 flex items-center justify-between text-[10px] font-mono text-gray-500 dark:text-zinc-400">
+                            <span>@item.PublishDate.ToString("MMM dd, yyyy")</span>
+                            <span>👁 @item.ViewCount views</span>
+                        </div>
                     </div>
-                </div>
-            </a>
-        }
-    </div>
-
-    @* Pagination *@
-    @if (ViewBag.TotalPages > 1)
-    {
-        <div class="mt-8 flex justify-between items-center pt-6" style="border-top: 1px solid var(--border);">
-            @if (ViewBag.CurrentPage > 1)
-            {
-                <a href="?page=@(ViewBag.CurrentPage - 1)" 
-                   class="px-4 py-2 text-sm font-mono font-medium transition-colors"
-                   style="border: 1px solid var(--border); color: var(--text-secondary);"
-                   onmouseover="this.style.borderColor='var(--accent)'; this.style.color='var(--accent)';"
-                   onmouseout="this.style.borderColor='var(--border)'; this.style.color='var(--text-secondary)';">
-                    ← Önceki Sayfa
                 </a>
-            }
-            else
-            {
-                <div></div>
-            }
-
-            <span class="font-mono text-xs" style="color: var(--text-muted);">
-                Sayfa @ViewBag.CurrentPage / @ViewBag.TotalPages
-            </span>
-
-            @if (ViewBag.CurrentPage < ViewBag.TotalPages)
-            {
-                <a href="?page=@(ViewBag.CurrentPage + 1)" 
-                   class="px-4 py-2 text-sm font-mono font-medium transition-colors"
-                   style="border: 1px solid var(--border); color: var(--text-secondary);"
-                   onmouseover="this.style.borderColor='var(--accent)'; this.style.color='var(--accent)';"
-                   onmouseout="this.style.borderColor='var(--border)'; this.style.color='var(--text-secondary)';">
-                    Sonraki Sayfa →
-                </a>
-            }
-            else
-            {
-                <div></div>
             }
         </div>
+
+        @* Pagination *@
+        @if (ViewBag.TotalPages > 1)
+        {
+            <div class="flex justify-between items-center pt-6 border-t-2 border-gray-900 dark:border-zinc-700 font-mono text-xs font-bold">
+                @if (ViewBag.CurrentPage > 1)
+                {
+                    <a href="?page=@(ViewBag.CurrentPage - 1)" class="px-4 py-2 border-2 border-gray-900 dark:border-zinc-700 text-gray-900 dark:text-zinc-100 hover:bg-gray-900 hover:text-white dark:hover:bg-primary dark:hover:text-white no-underline transition-none">
+                        &lt; Previous
+                    </a>
+                }
+                else
+                {
+                    <span class="px-4 py-2 border-2 border-gray-200 dark:border-zinc-800 text-gray-300 dark:text-zinc-600 cursor-not-allowed">
+                        &lt; Previous
+                    </span>
+                }
+
+                <span class="text-gray-600 dark:text-zinc-400">
+                    Page @(ViewBag.CurrentPage) of @(ViewBag.TotalPages)
+                </span>
+
+                @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+                {
+                    <a href="?page=@(ViewBag.CurrentPage + 1)" class="px-4 py-2 border-2 border-gray-900 dark:border-zinc-700 text-gray-900 dark:text-zinc-100 hover:bg-gray-900 hover:text-white dark:hover:bg-primary dark:hover:text-white no-underline transition-none">
+                        Next &gt;
+                    </a>
+                }
+                else
+                {
+                    <span class="px-4 py-2 border-2 border-gray-200 dark:border-zinc-800 text-gray-300 dark:text-zinc-600 cursor-not-allowed">
+                        Next &gt;
+                    </span>
+                }
+            </div>
+        }
     }
-}
-else
-{
-    <div class="p-12 text-center" style="border: 1px solid var(--border);">
-        <p class="font-mono text-sm" style="color: var(--text-muted);">Bu kategoride yazı yok.</p>
-    </div>
-}
+    else
+    {
+        <div class="p-12 text-center bg-white dark:bg-[#121215] border-2 border-gray-900 dark:border-zinc-700">
+            <p class="font-mono text-sm text-gray-500 dark:text-zinc-400 m-0">No articles published in this category yet.</p>
+        </div>
+    }
+</div>

@@ -105,7 +105,7 @@ namespace DevCoreBlog.Controllers
             }
 
             // Credentials don't match — show error message on the login form
-            ViewBag.Error = "Kullanıcı adı veya şifre hatalı.";
+            ViewBag.Error = "Invalid username or password.";
 
             // Return the login view with the error message
             return View();

@@ -3,25 +3,66 @@
 @* ============================================================================= *@
 @* This layout structures the site with a fixed left sidebar (Tech Minimal)      *@
 @* and a flexible main content area for the middle feed and right trending bar.  *@
-@*                                                                              *@
-@* Architecture:                                                                *@
-@*   - Body: flex container with flat background                                *@
-@*   - Sidebar: fixed w-64 panel with sharp 2px border, zero radius, flat colors*@
-@*   - Main: flex-1 ml-64 content canvas with gap for center/right columns       *@
+@* Supports seamless Dark and Light theme switching via global toggleTheme().   *@
 @* ============================================================================= *@
 
 @inject DevCoreBlog.Data.ApplicationDbContext DbContext
 
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
     <script>
-        // Dark mode preference initialization to prevent flash
-        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            document.documentElement.classList.add('dark');
-        } else {
-            document.documentElement.classList.remove('dark');
+        // =====================================================================
+        // Theme Engine — Zero Flash & Global Toggle
+        // =====================================================================
+        (function() {
+            var savedTheme = localStorage.getItem('theme');
+            var systemDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (savedTheme === 'dark' || (!savedTheme && systemDark)) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        })();
+
+        // Global function called directly by onclick="toggleTheme()"
+        function toggleTheme() {
+            var html = document.documentElement;
+            var isDark = html.classList.contains('dark');
+            if (isDark) {
+                html.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+            } else {
+                html.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            }
+            updateThemeIcons();
         }
+
+        // Synchronize Sun/Moon icon visibility with current theme state
+        function updateThemeIcons() {
+            var isDark = document.documentElement.classList.contains('dark');
+            var darkIcons = document.querySelectorAll('.theme-icon-dark');
+            var lightIcons = document.querySelectorAll('.theme-icon-light');
+
+            darkIcons.forEach(function(el) {
+                if (isDark) {
+                    el.classList.add('hidden');
+                } else {
+                    el.classList.remove('hidden');
+                }
+            });
+
+            lightIcons.forEach(function(el) {
+                if (isDark) {
+                    el.classList.remove('hidden');
+                } else {
+                    el.classList.add('hidden');
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', updateThemeIcons);
     </script>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -29,7 +70,7 @@
     
     @* Open Graph (OG) Meta Tags for Social Previews *@
     <meta property="og:title" content="@(ViewBag.OgTitle ?? ViewData["Title"])" />
-    <meta property="og:description" content="@(ViewBag.OgDescription ?? "DevCoreBlog - ASP.NET Core, C#, ve modern web geliştirme hakkında teknik yazılar")" />
+    <meta property="og:description" content="@(ViewBag.OgDescription ?? "DevCoreBlog - Technical articles on ASP.NET Core, C#, and modern web development")" />
     <meta property="og:type" content="@(ViewBag.OgType ?? "website")" />
     <meta property="og:url" content="@(ViewBag.OgUrl ?? Context.Request.Path)" />
     <meta property="og:site_name" content="DevCoreBlog" />
@@ -37,7 +78,7 @@
     @* Twitter Card Meta Tags *@
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:title" content="@(ViewBag.OgTitle ?? ViewData["Title"])" />
-    <meta name="twitter:description" content="@(ViewBag.OgDescription ?? "DevCoreBlog - ASP.NET Core, C#, ve modern web geliştirme hakkında teknik yazılar")" />
+    <meta name="twitter:description" content="@(ViewBag.OgDescription ?? "DevCoreBlog - Technical articles on ASP.NET Core, C#, and modern web development")" />
     
     @* Google Fonts — JetBrains Mono for tech headings/UI, Inter for body text *@
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -56,10 +97,10 @@
                         mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
                     },
                     colors: {
-                        primary: '#4f46e5',      // Flat Indigo accent for badges and active states
-                        background: '#f9fafb',   // Main page background
-                        surface: '#ffffff',      // Card and sidebar panel surface
-                        border: '#1f2937',       // High-contrast sharp borders
+                        primary: {
+                            DEFAULT: '#4f46e5',
+                            hover: '#4338ca',
+                        },
                         accent: {
                             DEFAULT: '#4f46e5',
                             light: '#6366f1',
@@ -89,51 +130,86 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/plugins/show-language/prism-show-language.min.css" rel="stylesheet" />
 </head>
-<body class="flex bg-background min-h-screen text-gray-900 font-sans">
+<body class="bg-[#f9fafb] dark:bg-[#09090b] min-h-screen text-gray-900 dark:text-zinc-100 font-sans transition-colors duration-150 flex flex-col md:flex-row">
 
     @* ============================================================================= *@
-    @* LEFT SIDEBAR — Tech Minimal Fixed Category & Navigation Panel (Faz 2)         *@
+    @* MOBILE TOP BAR — Sticky header visible only on mobile/tablet viewports (<768px)*@
     @* ============================================================================= *@
-    @* Fixed w-64 sidebar with 2px solid border, zero shadows, flat list links.       *@
-    <aside class="w-64 fixed top-0 left-0 h-screen bg-surface border-r-2 border-border flex flex-col justify-between z-40 overflow-y-auto">
+    <header class="md:hidden sticky top-0 z-30 flex items-center justify-between px-4 py-3 bg-white dark:bg-[#121215] border-b-2 border-gray-900 dark:border-zinc-800">
+        @* Mobile Brand Logo *@
+        <a href="/" class="font-mono font-black text-lg tracking-tight text-gray-900 dark:text-white no-underline">
+            <span class="text-primary">DEV</span>CORE<span class="text-xs ml-1 font-mono uppercase bg-gray-900 dark:bg-zinc-700 text-white px-1.5 py-0.5">BLOG</span>
+        </a>
+
+        @* Mobile Hamburger Menu Button *@
+        <button type="button" 
+                id="mobile-menu-btn"
+                aria-label="Open navigation menu" 
+                class="p-1.5 border-2 border-gray-900 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-900 dark:text-zinc-100 hover:bg-gray-900 hover:text-white dark:hover:bg-primary dark:hover:text-white focus:outline-none rounded-none cursor-pointer">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+            </svg>
+        </button>
+    </header>
+
+    @* Mobile Drawer Backdrop Overlay *@
+    <div id="sidebar-backdrop" 
+         class="fixed inset-0 bg-black/60 z-40 hidden md:hidden transition-opacity duration-200" 
+         aria-hidden="true"></div>
+
+    @* ============================================================================= *@
+    @* LEFT SIDEBAR — Responsive Off-Canvas Drawer (Mobile) & Fixed Rail (Desktop)   *@
+    @* ============================================================================= *@
+    <aside id="main-sidebar" 
+           class="w-64 fixed top-0 left-0 h-screen bg-white dark:bg-[#121215] border-r-2 border-gray-900 dark:border-zinc-800 flex flex-col justify-between z-50 md:z-40 overflow-y-auto transform -translate-x-full transition-transform duration-200 ease-in-out md:translate-x-0">
         <div>
-            @* Logo Block — Sharp monospace branding *@
-            <div class="p-4 border-b-2 border-border bg-surface">
-                <a href="/" class="block font-mono font-black text-xl tracking-tight text-gray-900 no-underline hover:text-primary">
-                    <span class="text-primary">DEV</span>CORE<span class="text-xs ml-1 font-mono uppercase bg-border text-white px-1.5 py-0.5">BLOG</span>
+            @* Logo & Mobile Close Header *@
+            <div class="p-4 border-b-2 border-gray-900 dark:border-zinc-800 bg-white dark:bg-[#121215] flex items-center justify-between">
+                <a href="/" class="block font-mono font-black text-xl tracking-tight text-gray-900 dark:text-white no-underline hover:text-primary">
+                    <span class="text-primary">DEV</span>CORE<span class="text-xs ml-1 font-mono uppercase bg-gray-900 dark:bg-zinc-700 text-white px-1.5 py-0.5">BLOG</span>
                 </a>
+
+                @* Close Button for Mobile Drawer *@
+                <button type="button" 
+                        id="mobile-close-btn"
+                        aria-label="Close navigation menu" 
+                        class="md:hidden p-1 text-gray-600 dark:text-zinc-400 hover:text-black dark:hover:text-white border border-gray-900 dark:border-zinc-700 bg-white dark:bg-zinc-800 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
             </div>
 
             @* Navigation Menu Links — Merlin'in Kazanı style list with sharp hover *@
             <nav class="flex flex-col">
-                <a href="/" class="block py-3 px-4 hover:bg-border hover:text-white rounded-none border-b border-gray-200 transition-none font-bold text-sm text-gray-900 no-underline">
-                    Ana Sayfa
+                <a href="/" class="block py-3 px-4 hover:bg-gray-900 hover:text-white dark:hover:bg-primary dark:hover:text-white rounded-none border-b border-gray-200 dark:border-zinc-800 transition-none font-bold text-sm text-gray-900 dark:text-zinc-200 no-underline">
+                    Home
                 </a>
-                <a href="/kategori/haberler" class="block py-3 px-4 hover:bg-border hover:text-white rounded-none border-b border-gray-200 transition-none font-bold text-sm text-gray-900 no-underline">
-                    Haberler
+                <a href="/kategori/haberler" class="block py-3 px-4 hover:bg-gray-900 hover:text-white dark:hover:bg-primary dark:hover:text-white rounded-none border-b border-gray-200 dark:border-zinc-800 transition-none font-bold text-sm text-gray-900 dark:text-zinc-200 no-underline">
+                    News
                 </a>
-                <a href="/kategori/kesfet" class="block py-3 px-4 hover:bg-border hover:text-white rounded-none border-b border-gray-200 transition-none font-bold text-sm text-gray-900 no-underline">
-                    Keşfet
+                <a href="/kategori/kesfet" class="block py-3 px-4 hover:bg-gray-900 hover:text-white dark:hover:bg-primary dark:hover:text-white rounded-none border-b border-gray-200 dark:border-zinc-800 transition-none font-bold text-sm text-gray-900 dark:text-zinc-200 no-underline">
+                    Discover
                 </a>
-                <a href="/kategori/vibe-coding" class="block py-3 px-4 hover:bg-border hover:text-white rounded-none border-b border-gray-200 transition-none font-bold text-sm text-gray-900 no-underline">
+                <a href="/kategori/vibe-coding" class="block py-3 px-4 hover:bg-gray-900 hover:text-white dark:hover:bg-primary dark:hover:text-white rounded-none border-b border-gray-200 dark:border-zinc-800 transition-none font-bold text-sm text-gray-900 dark:text-zinc-200 no-underline">
                     Vibe Coding
                 </a>
-                <a href="/kategori/ai" class="block py-3 px-4 hover:bg-border hover:text-white rounded-none border-b border-gray-200 transition-none font-bold text-sm text-gray-900 no-underline">
+                <a href="/kategori/ai" class="block py-3 px-4 hover:bg-gray-900 hover:text-white dark:hover:bg-primary dark:hover:text-white rounded-none border-b border-gray-200 dark:border-zinc-800 transition-none font-bold text-sm text-gray-900 dark:text-zinc-200 no-underline">
                     AI
                 </a>
-                <a href="/kategori/felsefe" class="block py-3 px-4 hover:bg-border hover:text-white rounded-none border-b border-gray-200 transition-none font-bold text-sm text-gray-900 no-underline">
-                    Felsefe
+                <a href="/kategori/felsefe" class="block py-3 px-4 hover:bg-gray-900 hover:text-white dark:hover:bg-primary dark:hover:text-white rounded-none border-b border-gray-200 dark:border-zinc-800 transition-none font-bold text-sm text-gray-900 dark:text-zinc-200 no-underline">
+                    Philosophy
                 </a>
 
                 @* Dynamic Categories from database (rendered if available) *@
                 @if (DbContext.Categories.Any())
                 {
-                    <div class="px-4 py-2 text-[11px] font-mono font-bold uppercase tracking-wider text-gray-500 bg-gray-50 border-b border-gray-200">
-                        Kategoriler
+                    <div class="px-4 py-2 text-[11px] font-mono font-bold uppercase tracking-wider text-gray-500 dark:text-zinc-400 bg-gray-50 dark:bg-zinc-800/60 border-b border-gray-200 dark:border-zinc-800">
+                        Categories
                     </div>
                     @foreach (var cat in DbContext.Categories.ToList())
                     {
-                        <a href="/kategori/@cat.Slug" class="block py-2.5 px-4 hover:bg-border hover:text-white rounded-none border-b border-gray-100 transition-none text-xs font-semibold text-gray-700 no-underline">
+                        <a href="/kategori/@cat.Slug" class="block py-2.5 px-4 hover:bg-gray-900 hover:text-white dark:hover:bg-primary dark:hover:text-white rounded-none border-b border-gray-100 dark:border-zinc-800 transition-none text-xs font-semibold text-gray-700 dark:text-zinc-300 no-underline">
                             # @cat.Name
                         </a>
                     }
@@ -141,70 +217,90 @@
             </nav>
         </div>
 
-        @* Sidebar Footer — Authentication links & Dark mode toggle *@
-        <div class="p-4 border-t-2 border-border bg-gray-50">
-            <div class="flex items-center justify-between mb-2">
+        @* Sidebar Footer — Authentication links & Dark mode toggle button *@
+        <div class="p-4 border-t-2 border-gray-900 dark:border-zinc-800 bg-gray-50 dark:bg-[#121215] flex flex-col gap-3 transition-colors duration-150">
+            <div class="flex items-center justify-between">
                 <a href="/Account/Login" class="text-xs font-mono font-bold text-primary hover:underline no-underline">
-                    [Giriş Yap]
+                    [Sign In]
                 </a>
-                <button id="theme-toggle" type="button" aria-label="Toggle Dark Mode" class="p-1 text-gray-700 hover:text-primary cursor-pointer bg-transparent border-none">
-                    <svg id="theme-toggle-dark-icon" class="w-4 h-4 hidden" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
-                    </svg>
-                    <svg id="theme-toggle-light-icon" class="w-4 h-4 hidden" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4.22 4.22a1 1 0 011.415 0l.884.884a1 1 0 01-1.414 1.415l-.884-.884a1 1 0 010-1.415zM10 6a4 4 0 100 8 4 4 0 000-8zm-4.22 8.22a1 1 0 01-1.415 0l-.884-.884a1 1 0 011.414-1.415l.884.884a1 1 0 010 1.415zM2 10a1 1 0 011-1h1a1 1 0 110 2H3a1 1 0 01-1-1zm15 0a1 1 0 011-1h1a1 1 0 110 2h-1a1 1 0 01-1-1zM4.22 4.22a1 1 0 010 1.415l-.884.884a1 1 0 01-1.414-1.415l.884-.884a1 1 0 011.415 0zM15.78 15.78a1 1 0 010 1.415l-.884.884a1 1 0 01-1.414-1.415l.884-.884a1 1 0 011.415 0z"></path>
-                    </svg>
-                </button>
+                <span class="text-[10px] font-mono text-gray-500 dark:text-zinc-500">
+                    &copy; @DateTime.Now.Year
+                </span>
             </div>
-            <p class="text-[10px] font-mono text-gray-500 text-center m-0">
-                &copy; @DateTime.Now.Year DevCoreBlog
-            </p>
+
+            @* Theme Toggle Action Button with Direct onclick *@
+            <button type="button" 
+                    id="theme-toggle-btn"
+                    onclick="toggleTheme()" 
+                    aria-label="Toggle dark/light theme" 
+                    class="flex items-center justify-center gap-2 py-2 px-3 w-full border-2 border-gray-900 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-900 dark:text-zinc-100 hover:bg-gray-900 hover:text-white dark:hover:bg-primary dark:hover:text-white font-mono text-xs font-bold cursor-pointer transition-none rounded-none">
+                <svg class="theme-icon-dark w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                </svg>
+                <svg class="theme-icon-light w-4 h-4 hidden" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4.22 4.22a1 1 0 011.415 0l.884.884a1 1 0 01-1.414 1.415l-.884-.884a1 1 0 010-1.415zM10 6a4 4 0 100 8 4 4 0 000-8zm-4.22 8.22a1 1 0 01-1.415 0l-.884-.884a1 1 0 011.414-1.415l.884.884a1 1 0 010 1.415zM2 10a1 1 0 011-1h1a1 1 0 110 2H3a1 1 0 01-1-1zm15 0a1 1 0 011-1h1a1 1 0 110 2h-1a1 1 0 01-1-1zM4.22 4.22a1 1 0 010 1.415l-.884.884a1 1 0 01-1.414-1.415l.884-.884a1 1 0 011.415 0zM15.78 15.78a1 1 0 010 1.415l-.884.884a1 1 0 01-1.414-1.415l.884-.884a1 1 0 011.415 0z"></path>
+                </svg>
+                <span>Toggle Theme</span>
+            </button>
         </div>
     </aside>
 
     @* ============================================================================= *@
-    @* RIGHT MAIN CONTENT AREA (Faz 2 Layout Canvas)                                 *@
+    @* RIGHT MAIN CONTENT AREA — Seamless responsive flow                            *@
     @* ============================================================================= *@
-    @* Contains main content and right sidebar columns with flex and gap             *@
-    <main class="flex-1 ml-64 p-6 lg:p-8 flex gap-8 min-w-0">
+    <main class="flex-1 w-full md:ml-64 p-4 sm:p-6 lg:p-8 flex gap-8 min-w-0">
         @RenderBody()
     </main>
 
-    @* Dark Mode Toggle Logic *@
-    <script>
-        var darkIcon = document.getElementById('theme-toggle-dark-icon');
-        var lightIcon = document.getElementById('theme-toggle-light-icon');
-        var isDark = document.documentElement.classList.contains('dark');
-
-        if (isDark) {
-            if (lightIcon) lightIcon.classList.remove('hidden');
-        } else {
-            if (darkIcon) darkIcon.classList.remove('hidden');
-        }
-
-        var themeToggleBtn = document.getElementById('theme-toggle');
-        if (themeToggleBtn) {
-            themeToggleBtn.addEventListener('click', function() {
-                if (darkIcon) darkIcon.classList.toggle('hidden');
-                if (lightIcon) lightIcon.classList.toggle('hidden');
-
-                var isCurrentlyDark = document.documentElement.classList.contains('dark');
-                if (isCurrentlyDark) {
-                    document.documentElement.classList.remove('dark');
-                    localStorage.setItem('theme', 'light');
-                } else {
-                    document.documentElement.classList.add('dark');
-                    localStorage.setItem('theme', 'dark');
-                }
-            });
-        }
-    </script>
     <script src="~/js/site.js" asp-append-version="true"></script>
 
     @* Prism.js Highlighting Scripts *@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/components/prism-core.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/plugins/autoloader/prism-autoloader.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/plugins/show-language/prism-show-language.min.js"></script>
+
+    @* ============================================================================= *@
+    @* Vanilla JS Mobile Sidebar Drawer Controller                                   *@
+    @* ============================================================================= *@
+    <script>
+        (function() {
+            var menuBtn = document.getElementById('mobile-menu-btn');
+            var closeBtn = document.getElementById('mobile-close-btn');
+            var sidebar = document.getElementById('main-sidebar');
+            var backdrop = document.getElementById('sidebar-backdrop');
+
+            function openSidebar() {
+                if (sidebar) {
+                    sidebar.classList.remove('-translate-x-full');
+                }
+                if (backdrop) {
+                    backdrop.classList.remove('hidden');
+                }
+                document.body.classList.add('overflow-hidden', 'md:overflow-auto');
+            }
+
+            function closeSidebar() {
+                if (sidebar) {
+                    sidebar.classList.add('-translate-x-full');
+                }
+                if (backdrop) {
+                    backdrop.classList.add('hidden');
+                }
+                document.body.classList.remove('overflow-hidden', 'md:overflow-auto');
+            }
+
+            if (menuBtn) menuBtn.addEventListener('click', openSidebar);
+            if (closeBtn) closeBtn.addEventListener('click', closeSidebar);
+            if (backdrop) backdrop.addEventListener('click', closeSidebar);
+
+            // Close mobile drawer when pressing Escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && sidebar && !sidebar.classList.contains('-translate-x-full')) {
+                    closeSidebar();
+                }
+            });
+        })();
+    </script>
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>
