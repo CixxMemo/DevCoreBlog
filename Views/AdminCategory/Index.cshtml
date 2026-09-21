@@ -1,216 +1,125 @@
 @* ============================================================================= *@
-@* AdminCategory/Index.cshtml — Category List View (Light — Notion Style)     *@
+@* AdminCategory/Index.cshtml — Category List View (Tech-Minimal Brutalist)     *@
 @* ============================================================================= *@
-@* Phase 3.2: Wrapped table in a white, rounded card with clean row dividers.  *@
-@* Phase 3.3: Standardized action buttons (Edit, Delete) with soft badges.     *@
+@* Features:                                                                    *@
+@*   1. High-contrast Brutalist table with 2px borders and sharp corners.       *@
+@*   2. Real-time post count per category with direct links to AdminPost filter.*@
+@*   3. Safe delete with cascade protection and TempData error notifications.   *@
 @* ============================================================================= *@
 
-@model List<Category>
+@model List<DevCoreBlog.Core.Entities.Category>
 
 @{
-    ViewData["Title"] = "Kategoriler";
+    ViewData["Title"] = "Categories";
 }
 
-<style>
-    /* Data table container styling */
-    .data-table-container {
-        background-color: var(--admin-surface);
-        border: 1px solid var(--admin-border);
-        border-radius: 8px;
-        overflow: hidden;
-    }
-
-    .data-table-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 16px 24px;
-        border-bottom: 1px solid var(--admin-border);
-    }
+<div class="space-y-6">
     
-    .data-table-title {
-        font-size: 1rem;
-        font-weight: 600;
-        color: var(--admin-text);
-        margin: 0;
-    }
-
-    /* Primary CTA Button */
-    .btn-primary {
-        display: inline-flex;
-        align-items: center;
-        padding: 8px 16px;
-        background-color: var(--admin-accent);
-        color: #ffffff;
-        font-size: 0.8125rem;
-        font-weight: 500;
-        border-radius: 6px;
-        text-decoration: none;
-        transition: opacity 0.1s ease;
-        border: none;
-        cursor: pointer;
-    }
-
-    .btn-primary:hover {
-        opacity: 0.9;
-        color: #ffffff;
-    }
-
-    /* Table styles */
-    .data-table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-
-    .data-table th {
-        font-size: 0.75rem;
-        font-weight: 500;
-        color: var(--admin-secondary);
-        text-align: left;
-        padding: 12px 24px;
-        border-bottom: 1px solid var(--admin-border);
-        background-color: #fafafa;
-    }
-
-    .data-table td {
-        font-size: 0.8125rem;
-        color: var(--admin-text);
-        padding: 16px 24px;
-        border-bottom: 1px solid var(--admin-border);
-        vertical-align: middle;
-    }
-
-    .data-table tr:last-child td {
-        border-bottom: none;
-    }
-
-    .data-table tr:hover {
-        background-color: var(--admin-hover);
-    }
-    
-    .text-muted {
-        color: var(--admin-secondary);
-    }
-
-    /* Standardized action buttons */
-    .action-btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        padding: 6px 12px;
-        font-size: 0.75rem;
-        font-weight: 500;
-        border-radius: 4px;
-        text-decoration: none;
-        transition: all 0.1s ease;
-        border: 1px solid transparent;
-        cursor: pointer;
-        background: transparent;
-    }
-
-    .action-btn-edit {
-        color: var(--admin-text);
-        border-color: var(--admin-border);
-        background-color: var(--admin-surface);
-    }
-    
-    .action-btn-edit:hover {
-        background-color: var(--admin-hover);
-        border-color: #d4d4d0;
-    }
-
-    .action-btn-delete {
-        color: var(--admin-danger);
-        background-color: #fdf2f2;
-    }
-
-    .action-btn-delete:hover {
-        background-color: #fce8e8;
-    }
-    
-    /* Error Alert */
-    .error-alert {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 12px 16px;
-        background-color: #fdf2f2;
-        border: 1px solid #f9dada;
-        color: var(--admin-danger);
-        border-radius: 6px;
-        margin-bottom: 24px;
-        font-size: 0.8125rem;
-        font-weight: 500;
-    }
-</style>
-
-@if (TempData["Error"] != null)
-{
-    <div class="error-alert">
-        <span>@TempData["Error"]</span>
-        <button type="button" onclick="this.parentElement.remove()" 
-                style="background: none; border: none; cursor: pointer; color: var(--admin-danger); opacity: 0.7;">
-            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
-        </button>
-    </div>
-}
-
-<div class="data-table-container">
-    <div class="data-table-header">
-        <h1 class="data-table-title">Kategoriler</h1>
-        <a asp-action="Create" class="btn-primary">
-            + Yeni Kategori
+    @* ========================================================================= *@
+    @* HEADER & PRIMARY ACTION TOOLBAR                                           *@
+    @* ========================================================================= *@
+    <div class="border-2 border-black bg-white p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <span class="font-mono text-xs font-bold text-neutral-500 uppercase tracking-widest leading-tight">
+                // TAXONOMY & TOPIC MANAGEMENT
+            </span>
+            <h1 class="text-2xl md:text-3xl font-black uppercase tracking-tight text-black mt-1">
+                Categories
+            </h1>
+        </div>
+        
+        <a asp-action="Create" 
+           class="border-2 border-black bg-black text-white hover:bg-neutral-800 px-5 py-2.5 font-mono text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-none self-start md:self-auto">
+            <span>+</span>
+            <span>New Category</span>
         </a>
     </div>
 
-    @if (Model.Any())
-    {
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>Ad</th>
-                    <th>Slug</th>
-                    <th>Yazı Sayısı</th>
-                    <th style="text-align: right;">İşlemler</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var item in Model)
-                {
-                    <tr>
-                        <td style="font-weight: 500;">@item.Name</td>
-                        <td class="text-muted" style="font-family: monospace; font-size: 0.75rem;">@item.Slug</td>
-                        <td>
-                            <span style="background-color: var(--admin-hover); color: var(--admin-secondary); padding: 2px 8px; border-radius: 4px; font-size: 0.6875rem; font-weight: 500;">
-                                @item.Posts.Count
-                            </span>
-                        </td>
-                        <td style="text-align: right;">
-                            <div style="display: inline-flex; gap: 8px;">
-                                <a asp-action="Edit" asp-route-id="@item.Id" class="action-btn action-btn-edit">
-                                    Düzenle
-                                </a>
-                                <form asp-action="Delete" asp-route-id="@item.Id" method="post" style="margin: 0;" onsubmit="return confirm('Bu kategoriyi silmek istediğinize emin misiniz?');">
-                                    <button type="submit" class="action-btn action-btn-delete">
-                                        Sil
-                                    </button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    }
-    else
-    {
-        <div style="padding: 64px 20px; text-align: center;">
-            <p style="color: var(--admin-secondary); font-size: 0.875rem; margin-bottom: 16px;">Henüz kategori yok.</p>
-            <a asp-action="Create" class="btn-primary">
-                İlk kategorinizi oluşturun
-            </a>
-        </div>
-    }
+    @* ========================================================================= *@
+    @* CATEGORY DATA TABLE                                                       *@
+    @* ========================================================================= *@
+    <div class="border-2 border-black bg-white overflow-hidden">
+        @if (Model.Any())
+        {
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse font-sans text-xs">
+                    <thead>
+                        <tr class="border-b-2 border-black bg-neutral-100 font-mono uppercase text-[11px] text-black">
+                            <th class="p-3.5">Category Name</th>
+                            <th class="p-3.5">Slug</th>
+                            <th class="p-3.5 text-center">Linked Posts</th>
+                            <th class="p-3.5 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-neutral-200 border-b border-black">
+                        @foreach (var item in Model)
+                        {
+                            var postCount = item.Posts?.Count ?? 0;
+                            
+                            <tr class="hover:bg-neutral-50 transition-none">
+                                @* 1. Category Name *@
+                                <td class="p-3.5 font-bold text-black">
+                                    <a asp-action="Edit" asp-route-id="@item.Id" class="hover:underline text-sm">
+                                        @item.Name
+                                    </a>
+                                </td>
+
+                                @* 2. Slug Preview *@
+                                <td class="p-3.5 font-mono text-neutral-600">
+                                    <span class="border border-neutral-300 bg-neutral-50 px-2 py-0.5 text-[11px]">
+                                        /category/@item.Slug
+                                    </span>
+                                </td>
+
+                                @* 3. Linked Posts Count (Clickable filter link) *@
+                                <td class="p-3.5 text-center whitespace-nowrap">
+                                    <a asp-controller="AdminPost" asp-action="Index" 
+                                       class="border border-black bg-neutral-100 hover:bg-black hover:text-white px-2.5 py-1 font-mono text-xs font-bold inline-flex items-center gap-1.5 transition-none"
+                                       title="View posts in this category">
+                                        <span>📁</span>
+                                        <span>@postCount @(postCount == 1 ? "post" : "posts")</span>
+                                    </a>
+                                </td>
+
+                                @* 4. Actions (Edit & Delete) *@
+                                <td class="p-3.5 text-right whitespace-nowrap">
+                                    <div class="inline-flex items-center gap-2 font-mono text-xs">
+                                        @* Edit button *@
+                                        <a asp-action="Edit" asp-route-id="@item.Id" 
+                                           class="border border-black bg-white hover:bg-black hover:text-white px-2.5 py-1 font-bold inline-block transition-none">
+                                            EDIT
+                                        </a>
+
+                                        @* Delete button with cascade warning *@
+                                        <form asp-action="Delete" asp-route-id="@item.Id" method="post" class="inline m-0 p-0"
+                                              onsubmit="return confirm('Are you sure you want to delete category: \'@item.Name\'?');">
+                                            <button type="submit" 
+                                                    class="border border-rose-700 text-rose-700 bg-white hover:bg-rose-700 hover:text-white px-2.5 py-1 font-bold inline-block transition-none">
+                                                DEL
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="p-3 bg-neutral-50 border-t border-black font-mono text-[10px] text-neutral-500 flex items-center justify-between">
+                <span>TOTAL: @Model.Count CATEGORIES</span>
+                <span>CASCADE PROTECTION ACTIVE</span>
+            </div>
+        }
+        else
+        {
+            <div class="p-12 text-center space-y-4">
+                <p class="font-mono text-xs text-neutral-500">// NO CATEGORIES FOUND IN DATABASE.</p>
+                <a asp-action="Create" 
+                   class="inline-block border-2 border-black bg-black text-white px-6 py-2.5 font-mono text-xs font-bold uppercase tracking-wider">
+                    Create Your First Category →
+                </a>
+            </div>
+        }
+    </div>
 </div>

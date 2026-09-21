@@ -1,219 +1,353 @@
 @* ============================================================================= *@
-@* AdminPost/Index.cshtml — Blog Post List View (Light — Notion Style)        *@
+@* AdminPost/Index.cshtml — High-Productivity Post Management (Tech Minimal)    *@
 @* ============================================================================= *@
-@* Phase 3.1: Wrapped table in a white, rounded card with clean row dividers.  *@
-@* Phase 3.3: Standardized action buttons (Edit, Delete) with soft badges.     *@
+@* This view delivers a developer-first post management table with:             *@
+@*   1. Live Per-Row ViewCount tracking badges.                                 *@
+@*   2. Instant Inline Status Toggle (IsPublished) via AJAX without reload.     *@
+@*   3. Client-Side instant search, category filtering, and status switching.   *@
+@*   4. Direct "View Live" links to public blog URLs.                           *@
 @* ============================================================================= *@
 
-@model List<Post>
+@model List<DevCoreBlog.Core.Entities.Post>
+@using DevCoreBlog.Core.Entities
 
 @{
-    ViewData["Title"] = "Yazılar";
+    ViewData["Title"] = "Posts";
+    var categories = ViewBag.Categories as List<Category> ?? new List<Category>();
+    var totalPostsCount = Model.Count;
 }
 
-<style>
-    /* Data table container styling */
-    .data-table-container {
-        background-color: var(--admin-surface);
-        border: 1px solid var(--admin-border);
-        border-radius: 8px;
-        overflow: hidden;
-    }
-
-    .data-table-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 16px 24px;
-        border-bottom: 1px solid var(--admin-border);
-    }
+<div class="space-y-6">
     
-    .data-table-title {
-        font-size: 1rem;
-        font-weight: 600;
-        color: var(--admin-text);
-        margin: 0;
-    }
-
-    /* Primary CTA Button */
-    .btn-primary {
-        display: inline-flex;
-        align-items: center;
-        padding: 8px 16px;
-        background-color: var(--admin-accent);
-        color: #ffffff;
-        font-size: 0.8125rem;
-        font-weight: 500;
-        border-radius: 6px;
-        text-decoration: none;
-        transition: opacity 0.1s ease;
-        border: none;
-        cursor: pointer;
-    }
-
-    .btn-primary:hover {
-        opacity: 0.9;
-        color: #ffffff;
-    }
-
-    /* Table styles */
-    .data-table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-
-    .data-table th {
-        font-size: 0.75rem;
-        font-weight: 500;
-        color: var(--admin-secondary);
-        text-align: left;
-        padding: 12px 24px;
-        border-bottom: 1px solid var(--admin-border);
-        background-color: #fafafa;
-    }
-
-    .data-table td {
-        font-size: 0.8125rem;
-        color: var(--admin-text);
-        padding: 16px 24px;
-        border-bottom: 1px solid var(--admin-border);
-        vertical-align: middle;
-    }
-
-    .data-table tr:last-child td {
-        border-bottom: none;
-    }
-
-    .data-table tr:hover {
-        background-color: var(--admin-hover);
-    }
-    
-    .text-muted {
-        color: var(--admin-secondary);
-    }
-
-    /* Standardized action buttons */
-    .action-btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        padding: 6px 12px;
-        font-size: 0.75rem;
-        font-weight: 500;
-        border-radius: 4px;
-        text-decoration: none;
-        transition: all 0.1s ease;
-        border: 1px solid transparent;
-        cursor: pointer;
-        background: transparent;
-    }
-
-    .action-btn-edit {
-        color: var(--admin-text);
-        border-color: var(--admin-border);
-        background-color: var(--admin-surface);
-    }
-    
-    .action-btn-edit:hover {
-        background-color: var(--admin-hover);
-        border-color: #d4d4d0;
-    }
-
-    .action-btn-delete {
-        color: var(--admin-danger);
-        background-color: #fdf2f2;
-    }
-
-    .action-btn-delete:hover {
-        background-color: #fce8e8;
-    }
-    
-    /* Status badges */
-    .status-badge {
-        display: inline-flex;
-        align-items: center;
-        padding: 2px 8px;
-        border-radius: 12px;
-        font-size: 0.6875rem;
-        font-weight: 500;
-    }
-
-    .status-active {
-        background-color: #e6f4ea;
-        color: #0d7c3f;
-    }
-
-    .status-inactive {
-        background-color: #f3f3f2;
-        color: var(--admin-secondary);
-    }
-</style>
-
-<div class="data-table-container">
-    <div class="data-table-header">
-        <h1 class="data-table-title">Yazılar</h1>
-        <a asp-action="Create" class="btn-primary">
-            + Yeni Yazı
-        </a>
-    </div>
-
-    @if (Model.Any())
-    {
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>Başlık</th>
-                    <th>Kategori</th>
-                    <th>Durum</th>
-                    <th>Tarih</th>
-                    <th style="text-align: right;">İşlemler</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var item in Model)
-                {
-                    <tr>
-                        <td style="font-weight: 500;">@item.Title</td>
-                        <td>
-                            <span style="background-color: var(--admin-hover); color: var(--admin-secondary); padding: 2px 8px; border-radius: 4px; font-size: 0.6875rem; font-weight: 500;">
-                                @item.Category.Name
-                            </span>
-                        </td>
-                        <td>
-                            @if (item.IsPublished)
-                            {
-                                <span class="status-badge status-active">Yayında</span>
-                            }
-                            else
-                            {
-                                <span class="status-badge status-inactive">Taslak</span>
-                            }
-                        </td>
-                        <td class="text-muted">@item.CreatedDate.ToString("dd MMM yyyy")</td>
-                        <td style="text-align: right;">
-                            <div style="display: inline-flex; gap: 8px;">
-                                <a asp-action="Edit" asp-route-id="@item.Id" class="action-btn action-btn-edit">
-                                    Düzenle
-                                </a>
-                                <form asp-action="Delete" asp-route-id="@item.Id" method="post" style="margin: 0;" onsubmit="return confirm('Bu yazıyı silmek istediğinize emin misiniz?');">
-                                    <button type="submit" class="action-btn action-btn-delete">
-                                        Sil
-                                    </button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    }
-    else
-    {
-        <div style="padding: 64px 20px; text-align: center;">
-            <p style="color: var(--admin-secondary); font-size: 0.875rem; margin-bottom: 16px;">Henüz yazı yok.</p>
-            <a asp-action="Create" class="btn-primary">
-                İlk yazınızı oluşturun
+    @* ========================================================================= *@
+    @* HEADER & CONTROL TOOLBAR — Search, Category, Status Filter & Create CTA   *@
+    @* ========================================================================= *@
+    <div class="border-2 border-black bg-white p-6 space-y-4">
+        
+        @* Title Row *@
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+                <span class="font-mono text-xs font-bold text-neutral-500 uppercase tracking-widest leading-tight">
+                    // CONTENT INVENTORY & STATUS CONTROL
+                </span>
+                <h1 class="text-2xl md:text-3xl font-black uppercase tracking-tight text-black mt-1">
+                    Posts
+                </h1>
+            </div>
+            
+            @* Primary CTA Button *@
+            <a asp-action="Create" 
+               class="border-2 border-black bg-black text-white hover:bg-neutral-800 px-5 py-2.5 font-mono text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-none self-start md:self-auto">
+                <span>+</span>
+                <span>New Post</span>
             </a>
         </div>
-    }
+
+        @* Filter Toolbar (Instant Search, Category Dropdown, Status Selector) *@
+        <div class="border-t-2 border-black pt-4 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+            
+            @* Left side: Search & Dropdowns *@
+            <div class="flex flex-wrap items-center gap-3">
+                @* Instant Text Search *@
+                <div class="relative w-full sm:w-64">
+                    <input id="post-search" 
+                           type="text" 
+                           placeholder="Search title or category..." 
+                           class="w-full border-2 border-black px-3 py-1.5 font-mono text-xs text-black placeholder-neutral-400 focus:outline-none focus:bg-neutral-50" />
+                </div>
+
+                @* Category Dropdown Filter *@
+                <select id="category-filter" 
+                        class="border-2 border-black px-3 py-1.5 font-mono text-xs bg-white text-black focus:outline-none cursor-pointer">
+                    <option value="">All Categories</option>
+                    @foreach (var cat in categories)
+                    {
+                        <option value="@cat.Name">@cat.Name</option>
+                    }
+                </select>
+
+                @* Status Selector *@
+                <select id="status-filter" 
+                        class="border-2 border-black px-3 py-1.5 font-mono text-xs bg-white text-black focus:outline-none cursor-pointer">
+                    <option value="all">All Statuses</option>
+                    <option value="published">Published Only</option>
+                    <option value="draft">Drafts Only</option>
+                </select>
+            </div>
+
+            @* Right side: Filtered Count Badge *@
+            <div class="font-mono text-xs text-neutral-600 self-end md:self-auto">
+                <span id="filtered-count-badge" class="border border-black bg-neutral-100 px-2.5 py-1 font-bold">
+                    Showing @totalPostsCount of @totalPostsCount posts
+                </span>
+            </div>
+        </div>
+    </div>
+
+    @* ========================================================================= *@
+    @* POST DATA TABLE — Tech Minimal Brutalist List View                        *@
+    @* ========================================================================= *@
+    <div class="border-2 border-black bg-white overflow-hidden">
+        @if (Model.Any())
+        {
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse font-sans text-xs">
+                    <thead>
+                        <tr class="border-b-2 border-black bg-neutral-100 font-mono uppercase text-[11px] text-black">
+                            <th class="p-3.5">Title & Slug</th>
+                            <th class="p-3.5">Category</th>
+                            <th class="p-3.5 text-center">Status</th>
+                            <th class="p-3.5 text-right">Views</th>
+                            <th class="p-3.5">Created Date</th>
+                            <th class="p-3.5 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="posts-table-body" class="divide-y divide-neutral-200 border-b border-black">
+                        @foreach (var post in Model)
+                        {
+                            var statusValue = post.IsPublished ? "published" : "draft";
+                            var categoryName = post.Category?.Name ?? "Uncategorized";
+
+                            <tr class="post-row hover:bg-neutral-50 transition-none"
+                                data-title="@post.Title.ToLower()"
+                                data-category="@categoryName.ToLower()"
+                                data-status="@statusValue"
+                                id="post-row-@post.Id">
+                                
+                                @* 1. Title & Slug Preview *@
+                                <td class="p-3.5 font-bold text-black max-w-xs md:max-w-md">
+                                    <a asp-action="Edit" asp-route-id="@post.Id" class="hover:underline line-clamp-1">
+                                        @post.Title
+                                    </a>
+                                    <span class="font-mono text-[10px] text-neutral-500 block truncate mt-0.5">
+                                        /@post.Slug
+                                    </span>
+                                </td>
+
+                                @* 2. Category Badge *@
+                                <td class="p-3.5 whitespace-nowrap">
+                                    <span class="border border-black bg-neutral-100 px-2 py-0.5 font-mono text-[10px] font-bold uppercase text-black">
+                                        @categoryName
+                                    </span>
+                                </td>
+
+                                @* 3. Instant Inline Status Toggle Badge Button *@
+                                <td class="p-3.5 text-center whitespace-nowrap">
+                                    @if (post.IsPublished)
+                                    {
+                                        <button type="button" 
+                                                onclick="togglePublish(@post.Id, this)" 
+                                                data-post-id="@post.Id"
+                                                class="status-toggle-btn inline-flex items-center gap-1.5 border border-emerald-700 bg-emerald-50 text-emerald-900 font-mono text-[11px] font-bold px-2.5 py-1 uppercase cursor-pointer hover:bg-emerald-100 transition-none"
+                                                title="Click to switch status to Draft">
+                                            <span class="w-2 h-2 bg-emerald-600 inline-block"></span>
+                                            <span>Published</span>
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <button type="button" 
+                                                onclick="togglePublish(@post.Id, this)" 
+                                                data-post-id="@post.Id"
+                                                class="status-toggle-btn inline-flex items-center gap-1.5 border border-neutral-400 bg-neutral-100 text-neutral-700 font-mono text-[11px] font-bold px-2.5 py-1 uppercase cursor-pointer hover:bg-neutral-200 transition-none"
+                                                title="Click to switch status to Published">
+                                            <span class="w-2 h-2 bg-neutral-400 inline-block"></span>
+                                            <span>Draft</span>
+                                        </button>
+                                    }
+                                </td>
+
+                                @* 4. Dedicated ViewCount Badge *@
+                                <td class="p-3.5 text-right whitespace-nowrap">
+                                    <span class="font-mono font-bold text-xs bg-neutral-100 border border-black px-2 py-1">
+                                        👁️ @post.ViewCount.ToString("N0")
+                                    </span>
+                                </td>
+
+                                @* 5. Formatted Creation Date *@
+                                <td class="p-3.5 font-mono text-[11px] text-neutral-600 whitespace-nowrap">
+                                    @post.CreatedDate.ToString("dd MMM yyyy")
+                                </td>
+
+                                @* 6. Quick Actions (Edit, Live Link, Delete) *@
+                                <td class="p-3.5 text-right whitespace-nowrap">
+                                    <div class="inline-flex items-center gap-2 font-mono text-xs">
+                                        @* Edit button *@
+                                        <a asp-action="Edit" asp-route-id="@post.Id"
+                                           class="border border-black bg-white hover:bg-black hover:text-white px-2.5 py-1 font-bold inline-block transition-none">
+                                            EDIT
+                                        </a>
+
+                                        @* View Live button *@
+                                        <a href="/post/@post.Slug" target="_blank"
+                                           class="live-link-btn border border-black bg-neutral-100 hover:bg-black hover:text-white px-2.5 py-1 font-bold inline-block transition-none"
+                                           title="Open article in public view">
+                                            LIVE ↗
+                                        </a>
+
+                                        @* Delete form *@
+                                        <form asp-action="Delete" asp-route-id="@post.Id" method="post" class="inline m-0 p-0"
+                                              onsubmit="return confirm('Are you sure you want to permanently delete: \'@post.Title\'?');">
+                                            <button type="submit" 
+                                                    class="border border-rose-700 text-rose-700 bg-white hover:bg-rose-700 hover:text-white px-2.5 py-1 font-bold inline-block transition-none">
+                                                DEL
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            @* Empty Filter Results Message *@
+            <div id="no-matching-posts" class="hidden p-8 text-center font-mono text-xs text-neutral-500">
+                // NO POSTS MATCHED YOUR SEARCH OR FILTER CRITERIA.
+            </div>
+        }
+        else
+        {
+            @* Zero Posts in Database State *@
+            <div class="p-12 text-center space-y-4">
+                <p class="font-mono text-xs text-neutral-500">// NO ARTICLES HAVE BEEN CREATED YET.</p>
+                <a asp-action="Create" 
+                   class="inline-block border-2 border-black bg-black text-white px-6 py-2.5 font-mono text-xs font-bold uppercase tracking-wider">
+                    Create Your First Post →
+                </a>
+            </div>
+        }
+    </div>
 </div>
+
+@* ============================================================================= *@
+@* CLIENT-SIDE ENGINE — Instant Search, Filter & AJAX Publish Toggle              *@
+@* ============================================================================= *@
+@section Scripts {
+    <script>
+        // =========================================================================
+        // Instant Inline Status Toggle (AJAX POST)
+        // Switches post IsPublished status seamlessly without a page reload.
+        // =========================================================================
+        function togglePublish(postId, buttonElement) {
+            if (!buttonElement || !postId) return;
+
+            // Set button to syncing state
+            const originalHtml = buttonElement.innerHTML;
+            buttonElement.disabled = true;
+            buttonElement.innerHTML = `<span class="font-mono text-[10px]">SYNCING...</span>`;
+
+            fetch(`/AdminPost/TogglePublish/${postId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('Network response was not ok');
+                return response.json();
+            })
+            .then(data => {
+                buttonElement.disabled = false;
+                if (data.success) {
+                    const row = document.getElementById(`post-row-${postId}`);
+                    
+                    if (data.isPublished) {
+                        // Updated to Published state
+                        buttonElement.className = 'status-toggle-btn inline-flex items-center gap-1.5 border border-emerald-700 bg-emerald-50 text-emerald-900 font-mono text-[11px] font-bold px-2.5 py-1 uppercase cursor-pointer hover:bg-emerald-100 transition-none';
+                        buttonElement.title = 'Click to switch status to Draft';
+                        buttonElement.innerHTML = `<span class="w-2 h-2 bg-emerald-600 inline-block"></span><span>Published</span>`;
+                        if (row) row.setAttribute('data-status', 'published');
+                    } else {
+                        // Updated to Draft state
+                        buttonElement.className = 'status-toggle-btn inline-flex items-center gap-1.5 border border-neutral-400 bg-neutral-100 text-neutral-700 font-mono text-[11px] font-bold px-2.5 py-1 uppercase cursor-pointer hover:bg-neutral-200 transition-none';
+                        buttonElement.title = 'Click to switch status to Published';
+                        buttonElement.innerHTML = `<span class="w-2 h-2 bg-neutral-400 inline-block"></span><span>Draft</span>`;
+                        if (row) row.setAttribute('data-status', 'draft');
+                    }
+
+                    // Re-apply filter rules so row updates visibility if a filter is active
+                    applyFilters();
+
+                    // Display non-blocking feedback toast
+                    if (window.showToast) {
+                        window.showToast(data.message, 'success');
+                    }
+                } else {
+                    buttonElement.innerHTML = originalHtml;
+                    if (window.showToast) {
+                        window.showToast(data.message || 'Status update failed.', 'error');
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Toggle error:', error);
+                buttonElement.disabled = false;
+                buttonElement.innerHTML = originalHtml;
+                if (window.showToast) {
+                    window.showToast('Failed to update status. Please try again.', 'error');
+                }
+            });
+        }
+
+        // =========================================================================
+        // Client-Side Search & Filter Engine
+        // Evaluates search queries, category selections, and status filters instantly.
+        // =========================================================================
+        const searchInput = document.getElementById('post-search');
+        const categoryFilter = document.getElementById('category-filter');
+        const statusFilter = document.getElementById('status-filter');
+        const rows = document.querySelectorAll('.post-row');
+        const countBadge = document.getElementById('filtered-count-badge');
+        const noMatchingBox = document.getElementById('no-matching-posts');
+        const totalCount = @totalPostsCount;
+
+        function applyFilters() {
+            if (!rows.length) return;
+
+            const query = (searchInput?.value || '').toLowerCase().trim();
+            const selectedCategory = (categoryFilter?.value || '').toLowerCase().trim();
+            const selectedStatus = (statusFilter?.value || 'all').toLowerCase();
+
+            let visibleCount = 0;
+
+            rows.forEach(row => {
+                const title = row.getAttribute('data-title') || '';
+                const category = row.getAttribute('data-category') || '';
+                const status = row.getAttribute('data-status') || '';
+
+                // Matching conditions
+                const matchesQuery = !query || title.includes(query) || category.includes(query);
+                const matchesCategory = !selectedCategory || category === selectedCategory;
+                const matchesStatus = (selectedStatus === 'all') || (status === selectedStatus);
+
+                if (matchesQuery && matchesCategory && matchesStatus) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            // Update badge text
+            if (countBadge) {
+                countBadge.textContent = `Showing ${visibleCount} of ${totalCount} posts`;
+            }
+
+            // Show or hide "No matching posts" banner
+            if (noMatchingBox) {
+                if (visibleCount === 0 && totalCount > 0) {
+                    noMatchingBox.classList.remove('hidden');
+                } else {
+                    noMatchingBox.classList.add('hidden');
+                }
+            }
+        }
+
+        // Attach event listeners
+        if (searchInput) searchInput.addEventListener('input', applyFilters);
+        if (categoryFilter) categoryFilter.addEventListener('change', applyFilters);
+        if (statusFilter) statusFilter.addEventListener('change', applyFilters);
+    </script>
+}

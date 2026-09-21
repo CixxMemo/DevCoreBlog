@@ -1,3 +1,5 @@
+> HISTORICAL ARCHIVE — NOT ACTIVE INSTRUCTIONS. Superseded by repository-root AGENTS.md on 2026-09-21.
+
 # DevCoreBlog - UI Refinements & Localization Plan (v7)
 
 **Target:** Refine the front-end layout, address responsive & visual shortcomings, and localize the entire UI into English, while maintaining 100% compliance with `.agents/AGENTS.md` rules.

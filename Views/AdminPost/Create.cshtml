@@ -1,341 +1,494 @@
 @* ============================================================================= *@
-@* AdminPost/Create.cshtml — New Blog Post Form (Light — Notion Style)           *@
+@* AdminPost/Create.cshtml — New Post Editor (Tech-Minimal Brutalist)            *@
 @* ============================================================================= *@
-@* Phase 4.1: Split layout 3fr (writing) / 1fr (settings).                       *@
-@* Phase 4.2: Toast UI Editor in Light mode, textarea hidden.                    *@
-@* Phase 4.3: Seamless Title and TUI Editor overrides (no borders).              *@
-@* Phase 4.4: Right column styled with light gray background, publish CTA.       *@
-@* Phase 4.5: imageBlobHook active for editor.                                   *@
+@* Features:                                                                    *@
+@*   1. Drag-and-Drop & Clipboard Paste image/GIF upload directly to Cloudinary.*@
+@*   2. Rich Media & Responsive YouTube Video Embed toolbar button.             *@
+@*   3. Live Google SERP (Search Engine Results Page) Snippet Preview.          *@
+@*   4. LocalStorage Auto-Save & Recovery (restores draft / scratchpad note).    *@
+@*   5. Live Word Count & Reading Time estimation bar.                          *@
 @* ============================================================================= *@
 
-@model Post
+@model DevCoreBlog.Core.Entities.Post
 
 @{
-    ViewData["Title"] = "Yeni Yazı";
+    ViewData["Title"] = "New Post";
 }
 
-<style>
-    /* Phase 4.3: Seamless Title Input */
-    .editor-title-input {
-        width: 100%;
-        font-size: 2.5rem;
-        font-weight: 700;
-        color: var(--admin-text);
-        background: transparent;
-        border: none;
-        outline: none;
-        padding: 0;
-        margin-bottom: 24px;
-        font-family: var(--admin-font);
-    }
-    .editor-title-input::placeholder {
-        color: #d4d4d0;
-    }
-
-    /* Phase 4.3: Seamless TUI Editor overrides */
-    .toastui-editor-defaultUI {
-        border: none !important; /* Remove outer border */
-        font-family: var(--admin-font) !important;
-    }
-    .toastui-editor-defaultUI .toastui-editor-toolbar {
-        background-color: var(--admin-surface) !important;
-        border-bottom: 1px solid var(--admin-border) !important;
-    }
-    .toastui-editor-mode-switch {
-        background-color: transparent !important;
-        border-top: none !important;
-    }
-
-    /* Phase 4.4: Right Column Styles */
-    .settings-panel {
-        background-color: #f9f9f9;
-        border-radius: 8px;
-        padding: 24px;
-        border: 1px solid var(--admin-border);
-    }
-    .settings-section-title {
-        font-size: 0.75rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        color: var(--admin-secondary);
-        margin-bottom: 16px;
-        padding-bottom: 8px;
-        border-bottom: 1px solid var(--admin-border);
-    }
-    
-    .settings-label {
-        display: block;
-        font-size: 0.8125rem;
-        font-weight: 500;
-        color: var(--admin-text);
-        margin-bottom: 6px;
-    }
-    
-    .settings-input, .settings-select, .settings-textarea {
-        width: 100%;
-        background-color: var(--admin-surface);
-        border: 1px solid var(--admin-border);
-        color: var(--admin-text);
-        font-size: 0.875rem;
-        border-radius: 6px;
-        padding: 8px 12px;
-        transition: border-color 0.1s ease;
-        outline: none;
-        font-family: var(--admin-font);
-    }
-    .settings-input:focus, .settings-select:focus, .settings-textarea:focus {
-        border-color: var(--admin-accent);
-    }
-
-    /* Submit button */
-    .btn-publish {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 100%;
-        padding: 10px 16px;
-        background-color: var(--admin-accent);
-        color: #fff;
-        font-size: 0.875rem;
-        font-weight: 500;
-        border-radius: 6px;
-        border: none;
-        cursor: pointer;
-        transition: opacity 0.1s;
-        margin-bottom: 24px;
-    }
-    .btn-publish:hover {
-        opacity: 0.9;
-    }
-
-    .btn-cancel {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 100%;
-        padding: 8px 16px;
-        background-color: transparent;
-        color: var(--admin-secondary);
-        font-size: 0.875rem;
-        font-weight: 500;
-        border-radius: 6px;
-        border: 1px solid var(--admin-border);
-        cursor: pointer;
-        text-decoration: none;
-        margin-top: 12px;
-    }
-    .btn-cancel:hover {
-        background-color: var(--admin-hover);
-        color: var(--admin-text);
-    }
-    
-    /* Image upload area in settings */
-    .image-upload-box {
-        border: 1px dashed var(--admin-border);
-        background-color: var(--admin-surface);
-        border-radius: 6px;
-        padding: 16px;
-        text-align: center;
-    }
-    .image-upload-box:hover {
-        border-color: var(--admin-accent);
-    }
-
-    /* Responsive grid layout */
-    .post-editor-grid {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 32px;
-        align-items: start;
-    }
-    @@media (min-width: 1024px) {
-        .post-editor-grid {
-            grid-template-columns: 3fr 1fr;
-        }
-    }
-</style>
-
 <form asp-action="Create" method="post" id="postForm" enctype="multipart/form-data">
-    <div class="post-editor-grid">
+    @* Validation Summary *@
+    <div asp-validation-summary="ModelOnly" class="border-2 border-rose-600 bg-rose-50 p-4 font-mono text-xs font-bold text-rose-700 mb-6"></div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
         
         @* ===================================================================== *@
-        @* LEFT COLUMN: Title & Editor                                           *@
+        @* LEFT 3 COLUMNS: Title, Toolbar, Markdown Editor & Metrics             *@
         @* ===================================================================== *@
-        <div>
-            <div asp-validation-summary="ModelOnly" style="color: var(--admin-danger); font-size: 0.875rem; margin-bottom: 16px;"></div>
+        <div class="lg:col-span-3 space-y-4">
             
-            <input asp-for="Title" class="editor-title-input" placeholder="Yazı başlığını giriniz..." autocomplete="off" />
-            <span asp-validation-for="Title" style="color: var(--admin-danger); font-size: 0.75rem;"></span>
-
-            @* Toast UI Editor container *@
-            <div id="editor"></div>
-            <textarea asp-for="Content" id="Content" style="display: none;"></textarea>
-            <span asp-validation-for="Content" style="color: var(--admin-danger); font-size: 0.75rem;"></span>
-        </div>
-
-        @* ===================================================================== *@
-        @* RIGHT COLUMN: Settings Panel                                          *@
-        @* ===================================================================== *@
-        <div class="settings-panel">
-            <button type="submit" class="btn-publish">Yayınla / Kaydet</button>
-            
-            <div class="settings-section-title">Yazı Ayarları</div>
-
-            <div style="margin-bottom: 20px;">
-                <label asp-for="CategoryId" class="settings-label">Kategori</label>
-                <select asp-for="CategoryId" asp-items="ViewBag.CategoryId" class="settings-select">
-                    <option value="">Seçiniz...</option>
-                </select>
-                <span asp-validation-for="CategoryId" style="color: var(--admin-danger); font-size: 0.75rem;"></span>
-            </div>
-
-            <div style="margin-bottom: 20px;">
-                <label asp-for="PublishDate" class="settings-label">Yayınlanma Tarihi</label>
-                <input asp-for="PublishDate" type="datetime-local" class="settings-input" />
-                <span asp-validation-for="PublishDate" style="color: var(--admin-danger); font-size: 0.75rem;"></span>
-            </div>
-
-            <div style="margin-bottom: 20px;">
-                <label asp-for="Summary" class="settings-label">Özet</label>
-                <textarea asp-for="Summary" rows="4" class="settings-textarea" placeholder="Yazının kısa özetini giriniz..."></textarea>
-                <span asp-validation-for="Summary" style="color: var(--admin-danger); font-size: 0.75rem;"></span>
-            </div>
-
-            <div style="margin-bottom: 20px;">
-                <label asp-for="Excerpt" class="settings-label">Kısa Alıntı (Excerpt)</label>
-                <textarea asp-for="Excerpt" rows="3" class="settings-textarea" placeholder="Yazıdan kısa bir alıntı..."></textarea>
-                <span asp-validation-for="Excerpt" style="color: var(--admin-danger); font-size: 0.75rem;"></span>
-            </div>
-
-            <div style="margin-bottom: 20px;">
-                <label class="settings-label">Kapak Görseli</label>
-                <input type="file" name="thumbnailFile" class="settings-input" accept="image/*" />
-                <input type="hidden" asp-for="ThumbnailUrl" />
-            </div>
-
-            <div style="margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
-                <input asp-for="IsPublished" style="width: 16px; height: 16px; accent-color: var(--admin-accent); cursor: pointer;" />
-                <label asp-for="IsPublished" class="settings-label" style="margin: 0; cursor: pointer;">Yayınlandı Mı?</label>
-            </div>
-
-            <div style="margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
-                <input asp-for="IsActive" style="width: 16px; height: 16px; accent-color: var(--admin-accent); cursor: pointer;" />
-                <label asp-for="IsActive" class="settings-label" style="margin: 0; cursor: pointer;">Aktif (IsActive)</label>
-            </div>
-
-            <div class="settings-section-title" style="margin-top: 32px;">Harici Görsel Yükle</div>
-            <div class="image-upload-box">
-                <input type="file" id="imageUpload" accept="image/*" style="font-size: 0.75rem; width: 100%; color: var(--admin-secondary);" />
-                <button type="button" id="btnUpload" class="btn-cancel" style="display: none; margin-top: 12px; width: 100%;">Yükle</button>
-                <div id="uploadResult" style="display: none; margin-top: 12px;">
-                    <input type="text" id="markdownCode" readonly class="settings-input" style="font-family: monospace; font-size: 0.75rem; margin-bottom: 8px;" />
-                    <button type="button" id="btnCopy" class="btn-cancel" style="margin-top: 0; padding: 4px 8px;">Kopyala</button>
+            @* LocalStorage Draft Recovery Banner *@
+            <div id="draft-recovery-banner" class="hidden border-2 border-black bg-amber-50 p-4 font-mono text-xs font-bold text-amber-900 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 bg-amber-500 inline-block flex-shrink-0"></span>
+                    <span>Unsaved draft found (<span id="draft-timestamp">recently</span>).</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button type="button" id="btn-restore-draft" class="border border-black bg-black text-white hover:bg-neutral-800 px-3 py-1 font-mono text-xs font-bold uppercase transition-none">
+                        Restore
+                    </button>
+                    <button type="button" id="btn-discard-draft" class="border border-black bg-white text-black hover:bg-neutral-100 px-3 py-1 font-mono text-xs font-bold uppercase transition-none">
+                        Discard
+                    </button>
                 </div>
             </div>
 
-            <a asp-action="Index" class="btn-cancel">İptal</a>
+            @* Title Input Box *@
+            <div class="border-2 border-black bg-white p-4">
+                <label class="block font-mono text-[10px] font-bold text-neutral-500 uppercase tracking-widest mb-1">// ARTICLE TITLE</label>
+                <input asp-for="Title" 
+                       id="post-title-input" 
+                       class="w-full font-sans font-black text-xl md:text-2xl text-black placeholder-neutral-400 focus:outline-none bg-transparent" 
+                       placeholder="Enter article title here..." 
+                       autocomplete="off" />
+                <span asp-validation-for="Title" class="font-mono text-xs text-rose-600 block mt-1"></span>
+            </div>
+
+            @* Custom Brutalist Action Toolbar *@
+            <div class="border-2 border-black bg-neutral-100 p-2 flex flex-wrap items-center gap-2">
+                <span class="font-mono text-[10px] font-bold text-neutral-500 uppercase px-2">// MEDIA & TOOLS:</span>
+                
+                @* Upload Image Button *@
+                <button type="button" 
+                        id="btn-toolbar-image"
+                        class="border border-black bg-white hover:bg-black hover:text-white px-2.5 py-1 font-mono text-xs font-bold flex items-center gap-1.5 transition-none">
+                    <span>🖼️</span>
+                    <span>Upload Image/GIF</span>
+                </button>
+                <input type="file" id="editor-image-picker" accept="image/*" class="hidden" />
+
+                @* Embed Video Button *@
+                <button type="button" 
+                        id="btn-toolbar-video"
+                        class="border border-black bg-white hover:bg-black hover:text-white px-2.5 py-1 font-mono text-xs font-bold flex items-center gap-1.5 transition-none">
+                    <span>🎥</span>
+                    <span>Embed Video</span>
+                </button>
+
+                <div class="ml-auto font-mono text-[10px] text-neutral-500 hidden sm:block">
+                    TIP: Paste images directly (Ctrl+V) or Drag & Drop
+                </div>
+            </div>
+
+            @* Editor Dropzone Wrapper *@
+            <div id="editor-dropzone" class="border-2 border-black bg-white relative">
+                @* Drag-over visual overlay *@
+                <div id="dropzone-overlay" class="hidden absolute inset-0 bg-black bg-opacity-75 z-20 flex flex-col items-center justify-center text-white font-mono text-sm font-bold pointer-events-none">
+                    <span class="text-3xl mb-2">📥</span>
+                    <span>DROP IMAGE / GIF TO UPLOAD TO CLOUDINARY</span>
+                </div>
+
+                @* Toast UI Editor Mount Point *@
+                <div id="editor"></div>
+                <textarea asp-for="Content" id="Content" class="hidden"></textarea>
+            </div>
+            <span asp-validation-for="Content" class="font-mono text-xs text-rose-600 block"></span>
+
+            @* Live Metrics & Word Counter Bar *@
+            <div class="border-2 border-black bg-white p-3 flex flex-wrap items-center justify-between gap-4 font-mono text-xs">
+                <div class="flex items-center gap-4 text-neutral-700">
+                    <span class="font-bold"><strong id="metric-word-count" class="text-black">0</strong> words</span>
+                    <span>•</span>
+                    <span><strong id="metric-reading-time" class="text-black">~0 min</strong> read</span>
+                    <span>•</span>
+                    <span><strong id="metric-char-count" class="text-black">0</strong> chars</span>
+                </div>
+                <div class="flex items-center gap-2 text-[10px] text-neutral-500 uppercase">
+                    <span id="autosave-status" class="bg-neutral-100 border border-black px-2 py-0.5 font-bold text-neutral-700">
+                        AUTOSAVE READY
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        @* ===================================================================== *@
+        @* RIGHT 1 COLUMN: Publishing CTA, Settings & SERP Preview              *@
+        @* ===================================================================== *@
+        <div class="space-y-6">
+            
+            @* Primary Save / Publish Button *@
+            <div class="border-2 border-black bg-white p-4 space-y-3">
+                <button type="submit" 
+                        class="w-full border-2 border-black bg-black text-white hover:bg-neutral-800 p-3 font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-none">
+                    <span>⚡</span>
+                    <span>Publish / Save Post</span>
+                </button>
+                
+                <a asp-action="Index" 
+                   class="block w-full text-center border-2 border-black bg-neutral-100 hover:bg-black hover:text-white p-2 font-mono text-xs font-bold uppercase transition-none">
+                    Cancel & Return
+                </a>
+            </div>
+
+            @* Live Google SERP (Search Engine Result Page) Preview Card *@
+            <div class="border-2 border-black bg-white p-4 space-y-2">
+                <div class="font-mono text-[10px] font-bold text-neutral-500 uppercase tracking-wider">// GOOGLE SERP PREVIEW</div>
+                
+                <div class="border border-neutral-300 p-3 bg-neutral-50 space-y-1 font-sans">
+                    @* Breadcrumb / URL *@
+                    <div class="text-[11px] text-emerald-800 font-mono truncate flex items-center gap-1">
+                        <span>devcoreblog.com</span>
+                        <span>›</span>
+                        <span>post</span>
+                        <span>›</span>
+                        <span id="serp-slug-preview">your-slug</span>
+                    </div>
+                    
+                    @* Title *@
+                    <div id="serp-title-preview" class="text-sm font-semibold text-blue-800 line-clamp-1 hover:underline cursor-pointer">
+                        Article Title Preview
+                    </div>
+                    
+                    @* Meta Description Snippet *@
+                    <div id="serp-summary-preview" class="text-xs text-neutral-600 line-clamp-2 leading-relaxed">
+                        Summary and meta description will appear here as the Google snippet...
+                    </div>
+                </div>
+            </div>
+
+            @* Metadata & Post Configuration Panel *@
+            <div class="border-2 border-black bg-white p-4 space-y-4">
+                <div class="font-mono text-[10px] font-bold text-neutral-500 uppercase tracking-wider border-b-2 border-black pb-2">
+                    // POST METADATA & CONFIG
+                </div>
+
+                @* Category Selection *@
+                <div>
+                    <label asp-for="CategoryId" class="block font-mono text-xs font-bold uppercase text-black mb-1">Category</label>
+                    <select asp-for="CategoryId" asp-items="ViewBag.CategoryId" class="w-full border-2 border-black p-2 font-mono text-xs bg-white text-black focus:outline-none">
+                        <option value="">Select Category...</option>
+                    </select>
+                    <span asp-validation-for="CategoryId" class="font-mono text-xs text-rose-600 block mt-1"></span>
+                </div>
+
+                @* Publish Date *@
+                <div>
+                    <label asp-for="PublishDate" class="block font-mono text-xs font-bold uppercase text-black mb-1">Publish Date</label>
+                    <input asp-for="PublishDate" type="datetime-local" class="w-full border-2 border-black p-2 font-mono text-xs bg-white text-black focus:outline-none" />
+                    <span asp-validation-for="PublishDate" class="font-mono text-xs text-rose-600 block mt-1"></span>
+                </div>
+
+                @* Summary (Meta Description for SEO) *@
+                <div>
+                    <label asp-for="Summary" class="block font-mono text-xs font-bold uppercase text-black mb-1">Summary (Meta Description)</label>
+                    <textarea asp-for="Summary" id="post-summary-input" rows="3" class="w-full border-2 border-black p-2 font-mono text-xs text-black focus:outline-none" placeholder="Brief summary for SERP cards..."></textarea>
+                    <span asp-validation-for="Summary" class="font-mono text-xs text-rose-600 block mt-1"></span>
+                </div>
+
+                @* Excerpt *@
+                <div>
+                    <label asp-for="Excerpt" class="block font-mono text-xs font-bold uppercase text-black mb-1">Short Excerpt</label>
+                    <textarea asp-for="Excerpt" rows="2" class="w-full border-2 border-black p-2 font-mono text-xs text-black focus:outline-none" placeholder="Short excerpt for feed cards..."></textarea>
+                    <span asp-validation-for="Excerpt" class="font-mono text-xs text-rose-600 block mt-1"></span>
+                </div>
+
+                @* Cover Image Upload *@
+                <div>
+                    <label class="block font-mono text-xs font-bold uppercase text-black mb-1">Cover Image</label>
+                    <input type="file" name="thumbnailFile" class="w-full border-2 border-black p-1.5 font-mono text-xs bg-neutral-50 text-black focus:outline-none" accept="image/*" />
+                    <input type="hidden" asp-for="ThumbnailUrl" />
+                </div>
+
+                @* Status Flags *@
+                <div class="border-t border-black pt-3 space-y-2 font-mono text-xs">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input asp-for="IsPublished" class="w-4 h-4 border-2 border-black accent-black rounded-none" />
+                        <span class="font-bold">Publish Live (IsPublished)</span>
+                    </label>
+                    
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input asp-for="IsActive" class="w-4 h-4 border-2 border-black accent-black rounded-none" checked />
+                        <span class="font-bold">Active in System (IsActive)</span>
+                    </label>
+                </div>
+            </div>
         </div>
     </div>
 </form>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // Remove 'dark' theme from editor initialization (Phase 4.2)
+            const STORAGE_KEY = 'devcore_editor_draft_create';
+            const SCRATCH_TRANSFER_KEY = 'devcore_editor_scratch_transfer';
+            
+            const titleInput = document.getElementById('post-title-input');
+            const summaryInput = document.getElementById('post-summary-input');
+            const contentHidden = document.getElementById('Content');
+            const categorySelect = document.getElementById('CategoryId');
+            const postForm = document.getElementById('postForm');
+            
+            // SERP Preview elements
+            const serpTitle = document.getElementById('serp-title-preview');
+            const serpSlug = document.getElementById('serp-slug-preview');
+            const serpSummary = document.getElementById('serp-summary-preview');
+
+            // Metrics bar
+            const wordCountEl = document.getElementById('metric-word-count');
+            const readingTimeEl = document.getElementById('metric-reading-time');
+            const charCountEl = document.getElementById('metric-char-count');
+            const autosaveStatusEl = document.getElementById('autosave-status');
+
+            // Recovery banner
+            const recoveryBanner = document.getElementById('draft-recovery-banner');
+            const draftTimestampEl = document.getElementById('draft-timestamp');
+            const btnRestoreDraft = document.getElementById('btn-restore-draft');
+            const btnDiscardDraft = document.getElementById('btn-discard-draft');
+
+            // Initialize Toast UI Editor
             const editorElement = document.querySelector('#editor');
             let editor;
+
             if (editorElement) {
                 editor = new toastui.Editor({
                     el: editorElement,
-                    height: '600px', // Standard height for writing
+                    height: '600px',
                     initialEditType: 'markdown',
                     previewStyle: 'vertical',
-                    initialValue: document.getElementById('Content').value,
-                    // Note: 'theme: dark' is intentionally removed here
-                    // Phase 4.5: Image Blob Hook (Handles image pasting/dropping directly in editor)
+                    initialValue: contentHidden.value || '',
                     hooks: {
+                        // Hook for editor image uploading
                         addImageBlobHook: async (blob, callback) => {
-                            const formData = new FormData();
-                            formData.append('file', blob);
-                            try {
-                                const response = await fetch('/AdminPost/UploadImage', {
-                                    method: 'POST',
-                                    body: formData
-                                });
-                                if (response.ok) {
-                                    const data = await response.json();
-                                    callback(data.url, blob.name || 'Görsel');
-                                } else {
-                                    alert('Görsel yüklenemedi.');
-                                }
-                            } catch (err) {
-                                console.error(err);
-                                alert('Görsel yüklenirken bir hata oluştu.');
+                            await uploadFileAndInsert(blob, callback);
+                        }
+                    }
+                });
+
+                // Update hidden content before form submit
+                postForm.addEventListener('submit', function () {
+                    contentHidden.value = editor.getMarkdown();
+                    // Clear autosave draft after submission
+                    localStorage.removeItem(STORAGE_KEY);
+                });
+            }
+
+            // =====================================================================
+            // Upload to Cloudinary helper function
+            // =====================================================================
+            async function uploadFileAndInsert(file, callback = null) {
+                if (!file) return;
+
+                if (window.showToast) window.showToast('Uploading to Cloudinary...', 'info');
+
+                const formData = new FormData();
+                formData.append('file', file);
+
+                try {
+                    const response = await fetch('/AdminPost/UploadEditorImage', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const data = await response.json();
+                    if (data.success && data.url) {
+                        if (callback) {
+                            callback(data.url, file.name || 'Image');
+                        } else if (editor) {
+                            const markdown = `\n![${file.name || 'Image'}](${data.url})\n`;
+                            editor.insertText(markdown);
+                        }
+                        if (window.showToast) window.showToast('Image uploaded and inserted.', 'success');
+                    } else {
+                        if (window.showToast) window.showToast(data.message || 'Image upload failed.', 'error');
+                    }
+                } catch (err) {
+                    console.error('Upload error:', err);
+                    if (window.showToast) window.showToast('Error uploading image to server.', 'error');
+                }
+            }
+
+            // =====================================================================
+            // Custom Toolbar Actions: Image & Video Embed
+            // =====================================================================
+            const imagePicker = document.getElementById('editor-image-picker');
+            const btnToolbarImage = document.getElementById('btn-toolbar-image');
+            const btnToolbarVideo = document.getElementById('btn-toolbar-video');
+
+            if (btnToolbarImage && imagePicker) {
+                btnToolbarImage.addEventListener('click', () => imagePicker.click());
+                imagePicker.addEventListener('change', async function () {
+                    if (this.files && this.files[0]) {
+                        await uploadFileAndInsert(this.files[0]);
+                        this.value = '';
+                    }
+                });
+            }
+
+            if (btnToolbarVideo) {
+                btnToolbarVideo.addEventListener('click', function () {
+                    const videoUrl = prompt('Enter YouTube Video URL (e.g., https://www.youtube.com/watch?v=...):');
+                    if (videoUrl && videoUrl.trim()) {
+                        const tag = `\n[video](${videoUrl.trim()})\n`;
+                        if (editor) {
+                            editor.insertText(tag);
+                            if (window.showToast) window.showToast('Video embed tag inserted.', 'success');
+                        }
+                    }
+                });
+            }
+
+            // =====================================================================
+            // Drag-and-Drop & Clipboard Paste Handlers
+            // =====================================================================
+            const dropzoneWrapper = document.getElementById('editor-dropzone');
+            const dropzoneOverlay = document.getElementById('dropzone-overlay');
+
+            if (dropzoneWrapper && dropzoneOverlay) {
+                ['dragenter', 'dragover'].forEach(eventName => {
+                    dropzoneWrapper.addEventListener(eventName, (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        dropzoneOverlay.classList.remove('hidden');
+                    });
+                });
+
+                ['dragleave', 'drop'].forEach(eventName => {
+                    dropzoneWrapper.addEventListener(eventName, (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        dropzoneOverlay.classList.add('hidden');
+                    });
+                });
+
+                dropzoneWrapper.addEventListener('drop', async (e) => {
+                    if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                        const file = e.dataTransfer.files[0];
+                        if (file.type.startsWith('image/')) {
+                            await uploadFileAndInsert(file);
+                        }
+                    }
+                });
+            }
+
+            // Global paste listener for image data
+            window.addEventListener('paste', async function (e) {
+                if (e.clipboardData && e.clipboardData.items) {
+                    for (let i = 0; i < e.clipboardData.items.length; i++) {
+                        const item = e.clipboardData.items[i];
+                        if (item.type.indexOf('image') !== -1) {
+                            const blob = item.getAsFile();
+                            if (blob) {
+                                e.preventDefault();
+                                await uploadFileAndInsert(blob);
+                                break;
                             }
                         }
                     }
-                });
+                }
+            });
 
-                document.getElementById('postForm').addEventListener('submit', function() {
-                    document.getElementById('Content').value = editor.getMarkdown();
-                });
+            // =====================================================================
+            // Live SERP, Slug & Metrics Calculation Engine
+            // =====================================================================
+            function generateSlug(text) {
+                return (text || '')
+                    .toLowerCase()
+                    .replace(/[^a-z0-9\s-]/g, '')
+                    .trim()
+                    .replace(/\s+/g, '-');
             }
 
-            // Old image upload handlers... (keep them functional for manual uploading)
-            const imageUpload = document.getElementById('imageUpload');
-            const btnUpload = document.getElementById('btnUpload');
-            const uploadResult = document.getElementById('uploadResult');
-            const markdownCode = document.getElementById('markdownCode');
-            const btnCopy = document.getElementById('btnCopy');
+            function updatePreviewsAndMetrics() {
+                const title = titleInput?.value || '';
+                const summary = summaryInput?.value || '';
+                const content = editor ? editor.getMarkdown() : '';
 
-            if (imageUpload && btnUpload) {
-                imageUpload.addEventListener('change', function() {
-                    if (this.files && this.files.length > 0) {
-                        btnUpload.style.display = 'block';
-                    } else {
-                        btnUpload.style.display = 'none';
-                        uploadResult.style.display = 'none';
-                    }
-                });
+                // SERP preview update
+                if (serpTitle) serpTitle.textContent = title || 'Article Title Preview';
+                if (serpSlug) serpSlug.textContent = generateSlug(title) || 'your-slug';
+                if (serpSummary) serpSummary.textContent = summary || 'Summary and meta description will appear here as the Google snippet...';
 
-                btnUpload.addEventListener('click', async function() {
-                    if (!imageUpload.files || imageUpload.files.length === 0) return;
-                    
-                    const file = imageUpload.files[0];
-                    const formData = new FormData();
-                    formData.append('file', file);
-                    
-                    try {
-                        const response = await fetch('/AdminPost/UploadImage', {
-                            method: 'POST',
-                            body: formData
+                // Metrics update
+                const words = content.trim() ? content.trim().split(/\s+/).length : 0;
+                const readingMins = Math.ceil(words / 200);
+                const chars = content.length;
+
+                if (wordCountEl) wordCountEl.textContent = words.toLocaleString();
+                if (readingTimeEl) readingTimeEl.textContent = `~${readingMins} min`;
+                if (charCountEl) charCountEl.textContent = chars.toLocaleString();
+            }
+
+            if (titleInput) titleInput.addEventListener('input', updatePreviewsAndMetrics);
+            if (summaryInput) summaryInput.addEventListener('input', updatePreviewsAndMetrics);
+            if (editor) editor.on('change', updatePreviewsAndMetrics);
+
+            // =====================================================================
+            // LocalStorage Auto-Save & Recovery Pipeline
+            // =====================================================================
+            // 1. Check for transfer from Dashboard Scratchpad
+            const scratchNote = localStorage.getItem(SCRATCH_TRANSFER_KEY);
+            if (scratchNote) {
+                if (editor) editor.setMarkdown(scratchNote);
+                localStorage.removeItem(SCRATCH_TRANSFER_KEY);
+                if (window.showToast) window.showToast('Note restored from Scratchpad.', 'success');
+            }
+
+            // 2. Check for saved draft in localStorage
+            const savedDraftRaw = localStorage.getItem(STORAGE_KEY);
+            if (savedDraftRaw && !scratchNote) {
+                try {
+                    const draft = JSON.parse(savedDraftRaw);
+                    if (draft && (draft.title || draft.content)) {
+                        draftTimestampEl.textContent = draft.savedAt ? new Date(draft.savedAt).toLocaleTimeString() : 'earlier';
+                        recoveryBanner.classList.remove('hidden');
+
+                        btnRestoreDraft.addEventListener('click', function () {
+                            if (draft.title) titleInput.value = draft.title;
+                            if (draft.summary) summaryInput.value = draft.summary;
+                            if (draft.categoryId && categorySelect) categorySelect.value = draft.categoryId;
+                            if (draft.content && editor) editor.setMarkdown(draft.content);
+                            recoveryBanner.classList.add('hidden');
+                            updatePreviewsAndMetrics();
+                            if (window.showToast) window.showToast('Draft restored successfully.', 'success');
                         });
 
-                        if (response.ok) {
-                            const data = await response.json();
-                            markdownCode.value = `![Görsel](${data.url})`;
-                            uploadResult.style.display = 'block';
-                        } else {
-                            alert('Görsel yüklenemedi.');
-                        }
-                    } catch (err) {
-                        console.error(err);
-                        alert('Görsel yüklenirken bir hata oluştu.');
+                        btnDiscardDraft.addEventListener('click', function () {
+                            localStorage.removeItem(STORAGE_KEY);
+                            recoveryBanner.classList.add('hidden');
+                            if (window.showToast) window.showToast('Draft discarded.', 'info');
+                        });
                     }
-                });
-
-                btnCopy.addEventListener('click', function() {
-                    markdownCode.select();
-                    document.execCommand('copy');
-                    const originalText = btnCopy.innerText;
-                    btnCopy.innerText = 'Kopyalandı!';
-                    setTimeout(() => {
-                        btnCopy.innerText = originalText;
-                    }, 2000);
-                });
+                } catch (e) {
+                    console.error('Failed to parse draft:', e);
+                }
             }
+
+            // 3. Periodic Auto-Save interval (every 3 seconds)
+            setInterval(function () {
+                const title = titleInput?.value || '';
+                const content = editor ? editor.getMarkdown() : '';
+                const summary = summaryInput?.value || '';
+                const categoryId = categorySelect?.value || '';
+
+                if (title.trim() || content.trim()) {
+                    const draftPayload = {
+                        title: title,
+                        summary: summary,
+                        categoryId: categoryId,
+                        content: content,
+                        savedAt: new Date().toISOString()
+                    };
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(draftPayload));
+                    if (autosaveStatusEl) {
+                        autosaveStatusEl.textContent = 'DRAFT SAVED';
+                        autosaveStatusEl.className = 'bg-emerald-100 border border-emerald-600 px-2 py-0.5 font-bold text-emerald-900';
+                    }
+                }
+            }, 3000);
+
+            // Initial calculation
+            updatePreviewsAndMetrics();
         });
     </script>
 }

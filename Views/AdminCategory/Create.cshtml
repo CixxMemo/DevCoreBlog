@@ -1,118 +1,134 @@
 @* ============================================================================= *@
-@* AdminCategory/Create.cshtml — New Category Form View (Light — Notion Style) *@
+@* AdminCategory/Create.cshtml — New Category Form (Tech-Minimal Brutalist)      *@
 @* ============================================================================= *@
-@* Phase 5.1: Clean, centered, white card layout. Minimalist inputs.             *@
+@* Features:                                                                    *@
+@*   1. Real-time English slug generation and live URL preview.                 *@
+@*   2. Cleanliness validation (instant visual feedback for valid slug).        *@
+@*   3. Tech-Minimal brutalist form structure with 2px borders.                 *@
 @* ============================================================================= *@
 
-@model Category
+@model DevCoreBlog.Core.Entities.Category
 
 @{
-    ViewData["Title"] = "Yeni Kategori";
+    ViewData["Title"] = "New Category";
 }
 
-<style>
-    .form-card {
-        max-width: 500px;
-        margin: 40px auto;
-        background-color: var(--admin-surface);
-        border: 1px solid var(--admin-border);
-        border-radius: 8px;
-        padding: 32px;
-    }
+<div class="max-w-xl mx-auto space-y-6">
     
-    .form-title {
-        font-size: 1.25rem;
-        font-weight: 600;
-        color: var(--admin-text);
-        margin-bottom: 24px;
-        padding-bottom: 16px;
-        border-bottom: 1px solid var(--admin-border);
-    }
-    
-    .form-label {
-        display: block;
-        font-size: 0.8125rem;
-        font-weight: 500;
-        color: var(--admin-text);
-        margin-bottom: 6px;
-    }
-    
-    .form-input {
-        width: 100%;
-        background-color: var(--admin-surface);
-        border: 1px solid var(--admin-border);
-        color: var(--admin-text);
-        font-size: 0.875rem;
-        border-radius: 6px;
-        padding: 10px 12px;
-        transition: border-color 0.1s ease;
-        outline: none;
-        font-family: var(--admin-font);
-        margin-bottom: 4px;
-    }
-    .form-input:focus {
-        border-color: var(--admin-accent);
-    }
-    
-    .form-actions {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        margin-top: 32px;
-    }
-    
-    .btn-submit {
-        padding: 8px 20px;
-        background-color: var(--admin-accent);
-        color: #fff;
-        font-size: 0.875rem;
-        font-weight: 500;
-        border-radius: 6px;
-        border: none;
-        cursor: pointer;
-        transition: opacity 0.1s;
-    }
-    .btn-submit:hover {
-        opacity: 0.9;
-    }
-    
-    .btn-cancel {
-        padding: 8px 16px;
-        background-color: transparent;
-        color: var(--admin-secondary);
-        font-size: 0.875rem;
-        font-weight: 500;
-        border-radius: 6px;
-        border: 1px solid var(--admin-border);
-        cursor: pointer;
-        text-decoration: none;
-        transition: all 0.1s;
-    }
-    .btn-cancel:hover {
-        background-color: var(--admin-hover);
-        color: var(--admin-text);
-    }
-</style>
-
-<div class="form-card">
-    <h1 class="form-title">Yeni Kategori</h1>
-
-    <form asp-action="Create" method="post">
-        <div asp-validation-summary="ModelOnly" style="color: var(--admin-danger); font-size: 0.875rem; margin-bottom: 16px;"></div>
+    @* Card Wrapper *@
+    <div class="border-2 border-black bg-white p-6 md:p-8 space-y-6">
         
-        <div>
-            <label asp-for="Name" class="form-label">Kategori Adı</label>
-            <input asp-for="Name" class="form-input" placeholder="Kategori adını giriniz..." autocomplete="off" />
-            <span asp-validation-for="Name" style="color: var(--admin-danger); font-size: 0.75rem;"></span>
+        @* Header *@
+        <div class="border-b-2 border-black pb-4">
+            <span class="font-mono text-[10px] font-bold text-neutral-500 uppercase tracking-widest">// TAXONOMY CREATION</span>
+            <h1 class="text-2xl font-black uppercase tracking-tight text-black mt-1">
+                New Category
+            </h1>
         </div>
 
-        <div class="form-actions">
-            <button type="submit" class="btn-submit">Kaydet</button>
-            <a asp-action="Index" class="btn-cancel">İptal</a>
-        </div>
-    </form>
+        <form asp-action="Create" method="post" class="space-y-5">
+            @* Validation Summary *@
+            <div asp-validation-summary="ModelOnly" class="border-2 border-rose-600 bg-rose-50 p-3 font-mono text-xs font-bold text-rose-700"></div>
+
+            @* Category Name Input *@
+            <div>
+                <label asp-for="Name" class="block font-mono text-xs font-bold uppercase text-black mb-1.5">
+                    Category Name
+                </label>
+                <input asp-for="Name" 
+                       id="category-name-input"
+                       class="w-full border-2 border-black p-3 font-mono text-sm text-black placeholder-neutral-400 focus:outline-none focus:bg-neutral-50" 
+                       placeholder="e.g., Artificial Intelligence, Vibe Coding..." 
+                       autocomplete="off" />
+                <span asp-validation-for="Name" class="font-mono text-xs text-rose-600 block mt-1"></span>
+            </div>
+
+            @* Real-Time Slug Preview Box *@
+            <div class="border-2 border-black bg-neutral-50 p-3 space-y-1 font-mono text-xs">
+                <div class="text-[10px] font-bold text-neutral-500 uppercase flex items-center justify-between">
+                    <span>// LIVE SLUG PREVIEW:</span>
+                    <span id="slug-clean-badge" class="bg-emerald-100 border border-emerald-600 text-emerald-900 px-1.5 py-0.2 font-bold text-[9px] uppercase">
+                        VALID
+                    </span>
+                </div>
+                <div class="font-bold text-black flex items-center gap-1 truncate">
+                    <span class="text-neutral-500">/category/</span>
+                    <span id="slug-preview" class="text-black bg-yellow-100 px-1">your-slug</span>
+                </div>
+            </div>
+
+            @* Action Buttons *@
+            <div class="border-t-2 border-black pt-5 flex items-center gap-3">
+                <button type="submit" 
+                        class="border-2 border-black bg-black text-white hover:bg-neutral-800 px-6 py-2.5 font-mono text-xs font-bold uppercase tracking-wider transition-none">
+                    Save Category
+                </button>
+                <a asp-action="Index" 
+                   class="border-2 border-black bg-white hover:bg-neutral-100 text-black px-6 py-2.5 font-mono text-xs font-bold uppercase tracking-wider transition-none">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
 </div>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        // =========================================================================
+        // Real-Time English Slug Generator & Cleanliness Validator
+        // Converts Turkish / special characters into clean URL-friendly English slugs.
+        // =========================================================================
+        document.addEventListener('DOMContentLoaded', function () {
+            const nameInput = document.getElementById('category-name-input');
+            const slugPreview = document.getElementById('slug-preview');
+            const cleanBadge = document.getElementById('slug-clean-badge');
+
+            function slugify(text) {
+                const trMap = {
+                    'ç': 'c', 'Ç': 'c',
+                    'ğ': 'g', 'Ğ': 'g',
+                    'ı': 'i', 'İ': 'i',
+                    'ö': 'o', 'Ö': 'o',
+                    'ş': 's', 'Ş': 's',
+                    'ü': 'u', 'Ü': 'u'
+                };
+
+                let str = text || '';
+                // Replace Turkish characters
+                str = str.replace(/[çÇğĞıİöÖşŞüÜ]/g, match => trMap[match] || match);
+
+                return str
+                    .toLowerCase()
+                    .replace(/[^a-z0-9\s-]/g, '')
+                    .trim()
+                    .replace(/\s+/g, '-');
+            }
+
+            function updateSlug() {
+                const rawName = nameInput?.value || '';
+                const generated = slugify(rawName);
+
+                if (slugPreview) {
+                    slugPreview.textContent = generated || 'your-slug';
+                }
+
+                if (cleanBadge) {
+                    if (generated.length > 0) {
+                        cleanBadge.textContent = 'CLEAN';
+                        cleanBadge.className = 'bg-emerald-100 border border-emerald-600 text-emerald-900 px-1.5 py-0.2 font-bold text-[9px] uppercase';
+                    } else {
+                        cleanBadge.textContent = 'EMPTY';
+                        cleanBadge.className = 'bg-neutral-200 border border-neutral-400 text-neutral-700 px-1.5 py-0.2 font-bold text-[9px] uppercase';
+                    }
+                }
+            }
+
+            if (nameInput) {
+                nameInput.addEventListener('input', updateSlug);
+                updateSlug();
+            }
+        });
+    </script>
 }

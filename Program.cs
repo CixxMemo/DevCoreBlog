@@ -20,6 +20,11 @@ using DevCoreBlog.Services;
 using DevCoreBlog.Services.Interfaces;
 // Import Middlewares
 using DevCoreBlog.Middlewares;
+// Import validated application configuration models
+using DevCoreBlog.Configuration;
+// Import Rate Limiting namespaces for endpoint protection
+using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.RateLimiting;
 
 // Create the application builder, which loads configuration from appsettings.json,
 // environment variables, and command-line arguments
@@ -47,6 +52,26 @@ if (string.IsNullOrEmpty(connectionString))
 // This tells EF Core to use PostgreSQL (via Npgsql) as the database provider.
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString));
+
+// Load the single-admin credentials once and validate them when the host starts.
+// Validation messages identify only the missing key and never include its value.
+var adminUsername = Environment.GetEnvironmentVariable("ADMIN_USERNAME");
+var adminPassword = Environment.GetEnvironmentVariable("ADMIN_PASSWORD");
+
+builder.Services
+    .AddOptions<AdminCredentialsOptions>()
+    .Configure(options =>
+    {
+        options.Username = adminUsername;
+        options.Password = adminPassword;
+    })
+    .Validate(
+        options => !string.IsNullOrWhiteSpace(options.Username),
+        "ADMIN_USERNAME is required and cannot be empty or whitespace.")
+    .Validate(
+        options => !string.IsNullOrWhiteSpace(options.Password),
+        "ADMIN_PASSWORD is required and cannot be empty or whitespace.")
+    .ValidateOnStart();
 
 // ---------------------------------------------------------------------------
 // REPOSITORY LAYER REGISTRATION (Data Access)
@@ -76,6 +101,58 @@ builder.Services.AddOutputCache();
 
 // Register Memory Caching services for data layer
 builder.Services.AddMemoryCache();
+
+// ---------------------------------------------------------------------------
+// RATE LIMITING REGISTRATION (DDoS & Webhook Brute-Force Protection)
+// ---------------------------------------------------------------------------
+builder.Services.AddRateLimiter(options =>
+{
+    // Webhook Limiter: Max 5 requests per minute per IP for inbound webhook writes
+    options.AddPolicy("WebhookLimiter", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "anonymous-webhook",
+            factory: partition => new FixedWindowRateLimiterOptions
+            {
+                AutoReplenishment = true,
+                PermitLimit = 5,
+                QueueLimit = 0,
+                Window = TimeSpan.FromMinutes(1)
+            }));
+
+    // Portfolio Limiter: Max 30 requests per minute for public read endpoint
+    options.AddPolicy("PortfolioLimiter", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "anonymous-portfolio",
+            factory: partition => new FixedWindowRateLimiterOptions
+            {
+                AutoReplenishment = true,
+                PermitLimit = 30,
+                QueueLimit = 0,
+                Window = TimeSpan.FromMinutes(1)
+            }));
+
+    // Reject excess requests with standard HTTP 429 Too Many Requests
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+});
+
+// ---------------------------------------------------------------------------
+// CORS POLICY REGISTRATION (React Portfolio Showcase Integration)
+// ---------------------------------------------------------------------------
+var rawCorsOrigins = Environment.GetEnvironmentVariable("PORTFOLIO_CORS_ORIGIN")
+    ?? "http://localhost:3000,http://localhost:5173,https://mehmetcan.dev";
+
+var allowedOrigins = rawCorsOrigins
+    .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("PortfolioPolicy", policy =>
+    {
+        policy.WithOrigins(allowedOrigins)
+              .WithMethods("GET", "OPTIONS")
+              .WithHeaders("Content-Type", "Accept", "X-Requested-With");
+    });
+});
 
 // ---------------------------------------------------------------------------
 // COOKIE AUTHENTICATION REGISTRATION
@@ -122,6 +199,12 @@ app.UseHttpsRedirection();
 // Enable URL-based routing — this must come before endpoint mapping
 app.UseRouting();
 
+// Enable CORS middleware (positioned between UseRouting and Auth/Endpoints)
+app.UseCors();
+
+// Enable Rate Limiter middleware
+app.UseRateLimiter();
+
 // Enable output caching
 app.UseOutputCache();
 
@@ -138,19 +221,25 @@ app.MapStaticAssets();
 // ---------------------------------------------------------------------------
 // CUSTOM PUBLIC ROUTES (slug-based URLs for visitors)
 // ---------------------------------------------------------------------------
-// These routes must be registered BEFORE the default route so they take priority.
-// They map friendly slug-based URLs to the Home controller's Detail and Category actions.
-// Note: .WithStaticAssets() is intentionally NOT chained here — only the default route uses it.
+// English and localized route mappings for blog post and category detail pages.
 
-// Route for individual blog post pages: /yazi/{slug}
-// Maps to HomeController.Detail(string slug) action
+// Route for individual blog post pages: /post/{slug} and /yazi/{slug}
+app.MapControllerRoute(
+    name: "post-en",
+    pattern: "post/{slug}",
+    defaults: new { controller = "Home", action = "Detail" });
+
 app.MapControllerRoute(
     name: "post",
     pattern: "yazi/{slug}",
     defaults: new { controller = "Home", action = "Detail" });
 
-// Route for category listing pages: /kategori/{slug}
-// Maps to HomeController.Category(string slug) action
+// Route for category listing pages: /category/{slug} and /kategori/{slug}
+app.MapControllerRoute(
+    name: "category-en",
+    pattern: "category/{slug}",
+    defaults: new { controller = "Home", action = "Category" });
+
 app.MapControllerRoute(
     name: "category",
     pattern: "kategori/{slug}",

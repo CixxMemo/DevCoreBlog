@@ -1,3 +1,5 @@
+> HISTORICAL ARCHIVE — NOT ACTIVE INSTRUCTIONS. Superseded by repository-root AGENTS.md on 2026-09-21.
+
 
 # DevCoreBlog MVP UI/UX Geliştirme Planı v6 (Tech Minimal & Merlin'in Kazanı İlhamlı)
 

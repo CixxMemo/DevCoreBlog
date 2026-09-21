@@ -64,10 +64,40 @@ public class AdminPostController : Controller
     // including their related Category for display in the table.
     public async Task<IActionResult> Index()
     {
+        // Fetch all categories for the client-side filter dropdown
+        ViewBag.Categories = await _categoryService.GetAllCategoriesAsync();
+
         // Delegate to service layer — business logic is in PostService
         var posts = await _postService.GetAllPostsAsync();
         return View(posts);
     }
+
+    // -------------------------------------------------------------------------
+    // TOGGLE PUBLISH — Instant inline status toggle without page reload
+    // -------------------------------------------------------------------------
+    // POST: /AdminPost/TogglePublish/5
+    // Toggles the IsPublished boolean flag on the post and returns JSON.
+    [HttpPost]
+    public async Task<IActionResult> TogglePublish(int id)
+    {
+        var post = await _postService.GetPostByIdAsync(id);
+        if (post == null)
+        {
+            return NotFound(new { success = false, message = "Post not found." });
+        }
+
+        // Toggle publication state
+        post.IsPublished = !post.IsPublished;
+        await _postService.UpdatePostAsync(post);
+
+        return Json(new
+        {
+            success = true,
+            isPublished = post.IsPublished,
+            message = post.IsPublished ? $"'{post.Title}' is now Published." : $"'{post.Title}' moved to Drafts."
+        });
+    }
+
 
     // -------------------------------------------------------------------------
     // CREATE — Show the "New Post" form
@@ -229,7 +259,37 @@ public class AdminPostController : Controller
     }
 
     // -------------------------------------------------------------------------
-    // UPLOAD — Image upload for markdown content
+    // UPLOAD EDITOR IMAGE — Drag-and-drop & clipboard image/GIF upload to Cloudinary
+    // -------------------------------------------------------------------------
+    // POST: /AdminPost/UploadEditorImage
+    // Uploads editor images asynchronously to Cloudinary and returns the hosted URL.
+    [HttpPost]
+    public async Task<IActionResult> UploadEditorImage(IFormFile file)
+    {
+        if (file == null || file.Length == 0)
+        {
+            return BadRequest(new { success = false, message = "No image file provided." });
+        }
+
+        var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
+        var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+        if (!allowedExtensions.Contains(extension))
+        {
+            return BadRequest(new { success = false, message = "Invalid file format. Allowed: JPG, PNG, GIF, WEBP." });
+        }
+
+        // Upload to Cloudinary via IImageService
+        var url = await _imageService.UploadImageAsync(file);
+        if (string.IsNullOrEmpty(url))
+        {
+            return StatusCode(500, new { success = false, message = "Cloudinary upload failed." });
+        }
+
+        return Ok(new { success = true, url = url });
+    }
+
+    // -------------------------------------------------------------------------
+    // UPLOAD — Fallback local image upload for legacy markdown compatibility
     // -------------------------------------------------------------------------
     // POST: /AdminPost/UploadImage
     [HttpPost]
@@ -247,21 +307,14 @@ public class AdminPostController : Controller
             return BadRequest("Geçersiz dosya türü.");
         }
 
-        var fileName = Guid.NewGuid().ToString() + extension;
-        var uploadsFolder = Path.Combine(_env.WebRootPath, "uploads");
-        
-        if (!Directory.Exists(uploadsFolder))
+        // Forward to Cloudinary for consistent cloud hosting
+        var url = await _imageService.UploadImageAsync(file);
+        if (!string.IsNullOrEmpty(url))
         {
-            Directory.CreateDirectory(uploadsFolder);
+            return Ok(new { url });
         }
 
-        var filePath = Path.Combine(uploadsFolder, fileName);
-        using (var stream = new FileStream(filePath, FileMode.Create))
-        {
-            await file.CopyToAsync(stream);
-        }
-
-        var url = $"/uploads/{fileName}";
-        return Ok(new { url });
+        return StatusCode(500, "Cloudinary upload failed.");
     }
 }
+

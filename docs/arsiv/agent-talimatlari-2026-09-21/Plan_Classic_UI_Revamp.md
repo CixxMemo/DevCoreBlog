@@ -1,3 +1,5 @@
+> HISTORICAL ARCHIVE — NOT ACTIVE INSTRUCTIONS. Superseded by repository-root AGENTS.md on 2026-09-21.
+
 # DevCoreBlog - Klasik MVP UI/UX Geliştirme ve Uygulama Planı
 
 Bu belge, sitenin mevcut "vibe coding/terminal" tasarımından vazgeçilip, daha klasik, temiz ve "Tech Minimal" MVP tasarımına geçiş için oluşturulmuş **Doğrudan Yapay Zeka Komut Listesidir (Checklist)**.

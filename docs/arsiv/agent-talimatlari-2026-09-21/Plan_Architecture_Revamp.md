@@ -1,3 +1,5 @@
+> HISTORICAL ARCHIVE — NOT ACTIVE INSTRUCTIONS. Superseded by repository-root AGENTS.md on 2026-09-21.
+
 # DevCoreBlog Mimari ve Performans Revizyon Planı
 
 **AI Ajanı İçin Kritik Kurallar (MANDATORY RULES):**

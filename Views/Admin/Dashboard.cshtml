@@ -1,303 +1,403 @@
 @* ============================================================================= *@
-@* Admin/Dashboard.cshtml — Admin Dashboard (Light — Notion Style)              *@
+@* Admin/Dashboard.cshtml — Actionable Command Dashboard (Tech Minimal Brutalist)*@
 @* ============================================================================= *@
-@* Phase 2.1: Responsive CSS Grid layout for the dashboard.                     *@
-@* Phase 2.2: Quick Stat Cards — Posts, Categories, Total Views.                *@
-@* Phase 2.3: Recent Posts list + Quick Actions panel.                           *@
-@*                                                                               *@
-@* Data from AdminController via ViewBag:                                        *@
-@*   - ViewBag.PostCount      (int)                                              *@
-@*   - ViewBag.CategoryCount  (int)                                              *@
-@*   - ViewBag.TotalViews     (int)                                              *@
-@*   - ViewBag.RecentPosts    (List<Post> — last 5, with Category included)      *@
+@* This dashboard is the central operations hub for DevCoreBlog administrators.  *@
+@* Features:                                                                    *@
+@*   1. Metric & Analytics Tiles (Total Posts, Published, Drafts, Views, Cats)  *@
+@*   2. Top 5 Most Read Articles Widget (Ranked with ViewCount & Quick Actions)  *@
+@*   3. Scratchpad (Persistent idea capture saving to localStorage)             *@
+@*   4. System & Integration Health Status Panel                                *@
 @* ============================================================================= *@
 
 @using DevCoreBlog.Core.Entities
 
 @{
-    ViewData["Title"] = "Dashboard";
+    ViewData["Title"] = "Command Dashboard";
 
-    // Cast RecentPosts to a typed list so we can iterate cleanly in Razor
-    var recentPosts = ViewBag.RecentPosts as List<Post> ?? new List<Post>();
+    // Safely cast ViewBag data with fallbacks
+    var totalPosts = (int)(ViewBag.TotalPosts ?? 0);
+    var publishedPosts = (int)(ViewBag.PublishedPosts ?? 0);
+    var draftPosts = (int)(ViewBag.DraftPosts ?? 0);
+    var totalViews = (int)(ViewBag.TotalViews ?? 0);
+    var categoryCount = (int)(ViewBag.CategoryCount ?? 0);
+    var topPosts = ViewBag.TopPosts as List<Post> ?? new List<Post>();
+    var environmentName = (string)(ViewBag.EnvironmentName ?? "Production");
+    var isDbConnected = (bool)(ViewBag.IsDatabaseConnected ?? true);
 }
 
-@* ---- Dashboard inline styles ---- *@
-<style>
-    /* Stat card — white surface, subtle border, clean padding */
-    .stat-card {
-        background-color: var(--admin-surface);
-        border: 1px solid var(--admin-border);
-        border-radius: 8px;
-        padding: 20px 24px;
-    }
-
-    .stat-card .stat-label {
-        font-size: 0.8125rem;
-        font-weight: 500;
-        color: var(--admin-secondary);
-        margin-bottom: 4px;
-    }
-
-    .stat-card .stat-value {
-        font-size: 2rem;
-        font-weight: 700;
-        color: var(--admin-text);
-        line-height: 1.2;
-    }
-
-    .stat-card .stat-footer {
-        font-size: 0.75rem;
-        color: var(--admin-secondary);
-        margin-top: 8px;
-    }
-
-    /* Dashboard card container — white surface with border */
-    .dashboard-card {
-        background-color: var(--admin-surface);
-        border: 1px solid var(--admin-border);
-        border-radius: 8px;
-        overflow: hidden;
-    }
-
-    .dashboard-card-header {
-        padding: 16px 20px;
-        border-bottom: 1px solid var(--admin-border);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-    }
-
-    .dashboard-card-header h2 {
-        font-size: 0.875rem;
-        font-weight: 600;
-        color: var(--admin-text);
-        margin: 0;
-    }
-
-    .dashboard-card-body {
-        padding: 0;
-    }
-
-    /* Recent posts table — clean, minimal rows */
-    .recent-posts-table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-
-    .recent-posts-table th {
-        font-size: 0.75rem;
-        font-weight: 500;
-        color: var(--admin-secondary);
-        text-align: left;
-        padding: 8px 20px;
-        border-bottom: 1px solid var(--admin-border);
-        text-transform: uppercase;
-        letter-spacing: 0.03em;
-    }
-
-    .recent-posts-table td {
-        font-size: 0.8125rem;
-        color: var(--admin-text);
-        padding: 10px 20px;
-        border-bottom: 1px solid var(--admin-border);
-    }
-
-    .recent-posts-table tr:last-child td {
-        border-bottom: none;
-    }
-
-    .recent-posts-table .post-title {
-        font-weight: 500;
-    }
-
-    .recent-posts-table .post-category {
-        display: inline-block;
-        font-size: 0.6875rem;
-        font-weight: 500;
-        padding: 2px 8px;
-        border-radius: 4px;
-        background-color: var(--admin-hover);
-        color: var(--admin-secondary);
-    }
-
-    .recent-posts-table .post-date,
-    .recent-posts-table .post-views {
-        color: var(--admin-secondary);
-        font-size: 0.8125rem;
-    }
-
-    /* Quick action button — Notion style */
-    .quick-action-btn {
-        display: flex;
-        align-items: center;
-        width: 100%;
-        padding: 12px 16px;
-        font-size: 0.875rem;
-        font-weight: 500;
-        color: var(--admin-text);
-        background-color: var(--admin-surface);
-        border: 1px solid var(--admin-border);
-        border-radius: 6px;
-        text-decoration: none;
-        transition: background-color 0.1s ease, border-color 0.1s ease;
-    }
-
-    .quick-action-btn:hover {
-        background-color: var(--admin-hover);
-        border-color: var(--admin-active);
-    }
-
-    .quick-action-btn .action-icon {
-        width: 32px;
-        height: 32px;
-        border-radius: 6px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-right: 12px;
-        flex-shrink: 0;
-    }
-
-    .quick-action-btn .action-icon.blue {
-        background-color: #e8f0fe;
-        color: var(--admin-accent);
-    }
-
-    .quick-action-btn .action-icon.green {
-        background-color: #e6f4ea;
-        color: #0d7c3f;
-    }
-
-    .quick-action-btn .action-desc {
-        font-size: 0.75rem;
-        color: var(--admin-secondary);
-        font-weight: 400;
-    }
-</style>
-
-@* ============================================================================= *@
-@* STAT CARDS — 3-column responsive grid (Phase 2.2)                             *@
-@* ============================================================================= *@
-<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px;">
-    @* Total Posts *@
-    <div class="stat-card">
-        <div class="stat-label">Toplam Yazı</div>
-        <div class="stat-value">@ViewBag.PostCount</div>
-        <div class="stat-footer">Yayınlanan blog yazıları</div>
+<div class="space-y-8">
+    
+    @* ========================================================================= *@
+    @* DASHBOARD HEADER — Welcome Banner & Quick Action Buttons                  *@
+    @* ========================================================================= *@
+    <div class="border-2 border-black bg-white p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <div class="font-mono text-xs font-bold text-neutral-500 uppercase tracking-widest leading-tight">
+                // SYSTEM OVERVIEW & METRICS
+            </div>
+            <h1 class="text-2xl md:text-3xl font-black uppercase tracking-tight text-black mt-1">
+                Command Dashboard
+            </h1>
+        </div>
+        
+        @* Action Buttons *@
+        <div class="flex flex-wrap items-center gap-3">
+            <a asp-controller="AdminPost" asp-action="Create" 
+               class="border-2 border-black bg-black text-white hover:bg-neutral-800 px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-none">
+                <span>+</span>
+                <span>New Post</span>
+            </a>
+            <a asp-controller="AdminCategory" asp-action="Create" 
+               class="border-2 border-black bg-white text-black hover:bg-black hover:text-white px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-none">
+                <span>+</span>
+                <span>New Category</span>
+            </a>
+        </div>
     </div>
 
-    @* Total Categories *@
-    <div class="stat-card">
-        <div class="stat-label">Toplam Kategori</div>
-        <div class="stat-value">@ViewBag.CategoryCount</div>
-        <div class="stat-footer">Aktif kategoriler</div>
+    @* ========================================================================= *@
+    @* SECTION 1: METRIC & ANALYTICS TILES (5 Brutalist Stat Cards)              *@
+    @* ========================================================================= *@
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        
+        @* Card 1: Total Posts *@
+        <div class="border-2 border-black bg-white p-5 flex flex-col justify-between">
+            <div class="font-mono text-[11px] font-bold text-neutral-500 uppercase tracking-wider">
+                Total Posts
+            </div>
+            <div class="text-3xl md:text-4xl font-black text-black my-2">
+                @totalPosts
+            </div>
+            <div class="font-mono text-[10px] text-neutral-600 border-t border-neutral-200 pt-2 flex items-center justify-between">
+                <span>ALL TIME</span>
+                <a asp-controller="AdminPost" asp-action="Index" class="underline hover:text-black font-bold">VIEW →</a>
+            </div>
+        </div>
+
+        @* Card 2: Published Articles *@
+        <div class="border-2 border-black bg-white p-5 flex flex-col justify-between">
+            <div class="font-mono text-[11px] font-bold text-neutral-500 uppercase tracking-wider flex items-center gap-1.5">
+                <span class="w-2 h-2 bg-emerald-500 inline-block"></span>
+                <span>Published</span>
+            </div>
+            <div class="text-3xl md:text-4xl font-black text-black my-2">
+                @publishedPosts
+            </div>
+            <div class="font-mono text-[10px] text-neutral-600 border-t border-neutral-200 pt-2">
+                LIVE ON BLOG
+            </div>
+        </div>
+
+        @* Card 3: Drafts in Progress *@
+        <div class="border-2 border-black bg-white p-5 flex flex-col justify-between">
+            <div class="font-mono text-[11px] font-bold text-neutral-500 uppercase tracking-wider flex items-center gap-1.5">
+                <span class="w-2 h-2 bg-amber-500 inline-block"></span>
+                <span>Drafts</span>
+            </div>
+            <div class="text-3xl md:text-4xl font-black text-black my-2">
+                @draftPosts
+            </div>
+            <div class="font-mono text-[10px] text-neutral-600 border-t border-neutral-200 pt-2">
+                UNPUBLISHED
+            </div>
+        </div>
+
+        @* Card 4: Total Cumulative Views *@
+        <div class="border-2 border-black bg-white p-5 flex flex-col justify-between">
+            <div class="font-mono text-[11px] font-bold text-neutral-500 uppercase tracking-wider">
+                Total Views
+            </div>
+            <div class="text-3xl md:text-4xl font-black text-black my-2">
+                @totalViews.ToString("N0")
+            </div>
+            <div class="font-mono text-[10px] text-neutral-600 border-t border-neutral-200 pt-2">
+                ARTICLE READS
+            </div>
+        </div>
+
+        @* Card 5: Active Categories *@
+        <div class="border-2 border-black bg-white p-5 flex flex-col justify-between col-span-2 md:col-span-1">
+            <div class="font-mono text-[11px] font-bold text-neutral-500 uppercase tracking-wider">
+                Categories
+            </div>
+            <div class="text-3xl md:text-4xl font-black text-black my-2">
+                @categoryCount
+            </div>
+            <div class="font-mono text-[10px] text-neutral-600 border-t border-neutral-200 pt-2 flex items-center justify-between">
+                <span>ACTIVE TOPICS</span>
+                <a asp-controller="AdminCategory" asp-action="Index" class="underline hover:text-black font-bold">VIEW →</a>
+            </div>
+        </div>
     </div>
 
-    @* Total Views *@
-    <div class="stat-card">
-        <div class="stat-label">Toplam Görüntülenme</div>
-        <div class="stat-value">@ViewBag.TotalViews</div>
-        <div class="stat-footer">Tüm yazıların toplam görüntülenme sayısı</div>
+    @* ========================================================================= *@
+    @* SECTION 2: TOP 5 READ ARTICLES & SCRATCHPAD (2-Column Grid)               *@
+    @* ========================================================================= *@
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        @* ---- Left 2 Columns: Top 5 Most Read Articles Widget ---- *@
+        <div class="lg:col-span-2 border-2 border-black bg-white flex flex-col justify-between">
+            <div>
+                @* Card Header *@
+                <div class="border-b-2 border-black p-4 bg-neutral-50 flex items-center justify-between">
+                    <div>
+                        <span class="font-mono text-[10px] font-bold text-neutral-500 uppercase tracking-wider">// ANALYTICS RANKING</span>
+                        <h2 class="text-base font-black uppercase tracking-tight text-black">
+                            Top 5 Most Read Articles
+                        </h2>
+                    </div>
+                    <a asp-controller="AdminPost" asp-action="Index" 
+                       class="font-mono text-xs font-bold text-neutral-700 hover:text-black uppercase underline">
+                        All Posts →
+                    </a>
+                </div>
+
+                @* Table of Top Posts *@
+                @if (topPosts.Any())
+                {
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse font-sans text-xs">
+                            <thead>
+                                <tr class="border-b-2 border-black bg-white font-mono uppercase text-[11px] text-neutral-600">
+                                    <th class="p-3 w-12 text-center">#</th>
+                                    <th class="p-3">Title</th>
+                                    <th class="p-3">Category</th>
+                                    <th class="p-3 text-right">Views</th>
+                                    <th class="p-3 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y border-b border-black">
+                                @for (int i = 0; i < topPosts.Count; i++)
+                                {
+                                    var post = topPosts[i];
+                                    var rankNumber = (i + 1).ToString("D2");
+                                    <tr class="hover:bg-neutral-50 transition-none">
+                                        @* Rank Number *@
+                                        <td class="p-3 text-center font-mono font-bold text-neutral-500">
+                                            #@rankNumber
+                                        </td>
+                                        
+                                        @* Title & Slug Preview *@
+                                        <td class="p-3 font-semibold text-black">
+                                            <a asp-controller="AdminPost" asp-action="Edit" asp-route-id="@post.Id" 
+                                               class="hover:underline line-clamp-1">
+                                                @post.Title
+                                            </a>
+                                            <span class="font-mono text-[10px] text-neutral-400 block truncate">
+                                                /@post.Slug
+                                            </span>
+                                        </td>
+
+                                        @* Category Badge *@
+                                        <td class="p-3 whitespace-nowrap">
+                                            <span class="border border-black bg-neutral-100 px-2 py-0.5 font-mono text-[10px] font-bold uppercase">
+                                                @(post.Category?.Name ?? "Uncategorized")
+                                            </span>
+                                        </td>
+
+                                        @* View Counter *@
+                                        <td class="p-3 text-right whitespace-nowrap">
+                                            <span class="font-mono font-bold text-xs bg-neutral-100 border border-black px-2 py-0.5">
+                                                👁️ @post.ViewCount.ToString("N0")
+                                            </span>
+                                        </td>
+
+                                        @* Quick Action Links *@
+                                        <td class="p-3 text-right whitespace-nowrap space-x-2 font-mono text-xs">
+                                            <a asp-controller="AdminPost" asp-action="Edit" asp-route-id="@post.Id"
+                                               class="border border-black bg-white hover:bg-black hover:text-white px-2 py-1 font-bold inline-block">
+                                                EDIT
+                                            </a>
+                                            <a href="/post/@post.Slug" target="_blank"
+                                               class="border border-black bg-neutral-100 hover:bg-black hover:text-white px-2 py-1 font-bold inline-block">
+                                                LIVE ↗
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="p-8 text-center font-mono text-xs text-neutral-500">
+                        // NO POST DATA AVAILABLE YET.
+                    </div>
+                }
+            </div>
+            
+            <div class="p-3 bg-neutral-50 border-t border-black font-mono text-[10px] text-neutral-500 flex items-center justify-between">
+                <span>SORTED BY: VIEWCOUNT DESC</span>
+                <span>REAL-TIME DATABASE METRIC</span>
+            </div>
+        </div>
+
+        @* ---- Right Column: Scratchpad (Fast Draft & Idea Capture) ---- *@
+        <div class="border-2 border-black bg-white flex flex-col justify-between">
+            <div>
+                @* Scratchpad Header *@
+                <div class="border-b-2 border-black p-4 bg-neutral-50 flex items-center justify-between">
+                    <div>
+                        <span class="font-mono text-[10px] font-bold text-neutral-500 uppercase tracking-wider">// FAST IDEA CAPTURE</span>
+                        <h2 class="text-base font-black uppercase tracking-tight text-black">
+                            Scratchpad
+                        </h2>
+                    </div>
+                    <span id="scratchpad-status" class="font-mono text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-300 px-1.5 py-0.5">
+                        SAVED
+                    </span>
+                </div>
+
+                @* Scratchpad Textarea Body *@
+                <div class="p-4 space-y-3">
+                    <p class="font-mono text-[11px] text-neutral-600">
+                        Type thoughts or outline articles. Automatically persists to browser storage.
+                    </p>
+
+                    <textarea id="dashboard-scratchpad" 
+                              rows="7"
+                              placeholder="Write notes, article outlines, or snippets here..."
+                              class="w-full border-2 border-black p-3 font-mono text-xs focus:outline-none focus:bg-neutral-50 resize-y"></textarea>
+
+                    <div class="flex items-center justify-between font-mono text-[10px] text-neutral-500">
+                        <span id="scratchpad-char-count">0 characters</span>
+                        <button type="button" id="scratchpad-clear-btn" class="hover:text-rose-700 underline font-bold uppercase">
+                            Clear Note
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            @* Scratchpad Actions *@
+            <div class="p-4 border-t-2 border-black bg-neutral-50">
+                <button type="button" 
+                        id="scratchpad-create-draft-btn"
+                        class="w-full border-2 border-black bg-black text-white hover:bg-neutral-800 p-2.5 font-mono text-xs font-bold uppercase tracking-wider transition-none flex items-center justify-center gap-2">
+                    <span>⚡</span>
+                    <span>Create Draft from Note</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    @* ========================================================================= *@
+    @* SECTION 3: SYSTEM & INTEGRATION HEALTH STATUS                             *@
+    @* ========================================================================= *@
+    <div class="border-2 border-black bg-white p-5">
+        <div class="font-mono text-[10px] font-bold text-neutral-500 uppercase tracking-widest leading-tight mb-3">
+            // INFRASTRUCTURE & INTEGRATION HEALTH
+        </div>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            
+            @* DB Health *@
+            <div class="border border-black bg-neutral-50 p-3 font-mono text-xs flex items-center justify-between">
+                <span class="text-neutral-600 font-bold uppercase">Database:</span>
+                <span class="flex items-center gap-1.5 font-bold @(isDbConnected ? "text-emerald-700" : "text-rose-700")">
+                    <span class="w-2 h-2 @(isDbConnected ? "bg-emerald-500" : "bg-rose-500") inline-block"></span>
+                    @(isDbConnected ? "Connected (PostgreSQL)" : "Disconnected")
+                </span>
+            </div>
+
+            @* Media CDN *@
+            <div class="border border-black bg-neutral-50 p-3 font-mono text-xs flex items-center justify-between">
+                <span class="text-neutral-600 font-bold uppercase">Media CDN:</span>
+                <span class="flex items-center gap-1.5 font-bold text-emerald-700">
+                    <span class="w-2 h-2 bg-emerald-500 inline-block"></span>
+                    Cloudinary (Active)
+                </span>
+            </div>
+
+            @* Environment *@
+            <div class="border border-black bg-neutral-50 p-3 font-mono text-xs flex items-center justify-between">
+                <span class="text-neutral-600 font-bold uppercase">Environment:</span>
+                <span class="font-bold text-black uppercase">
+                    @environmentName
+                </span>
+            </div>
+
+            @* Webhook Pipeline *@
+            <div class="border border-black bg-neutral-50 p-3 font-mono text-xs flex items-center justify-between">
+                <span class="text-neutral-600 font-bold uppercase">Webhook Hub:</span>
+                <a asp-controller="Admin" asp-action="Automations" class="flex items-center gap-1.5 font-bold text-black hover:underline">
+                    <span class="w-2 h-2 bg-emerald-500 inline-block"></span>
+                    Ready (Rate Limited) →
+                </a>
+            </div>
+        </div>
     </div>
 </div>
 
 @* ============================================================================= *@
-@* RECENT POSTS + QUICK ACTIONS — 2-column layout (Phase 2.3)                   *@
+@* SCRATCHPAD CLIENT LOGIC (Vanilla JS with LocalStorage)                         *@
 @* ============================================================================= *@
-<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 16px;">
-    @* ---- Recent Posts Card ---- *@
-    <div class="dashboard-card">
-        <div class="dashboard-card-header">
-            <h2>Son Yazılar</h2>
-            <a asp-controller="AdminPost" asp-action="Index"
-               style="font-size: 0.8125rem; color: var(--admin-accent); text-decoration: none; font-weight: 500;">
-                Tümünü Gör →
-            </a>
-        </div>
-        <div class="dashboard-card-body">
-            @if (recentPosts.Any())
-            {
-                <table class="recent-posts-table">
-                    <thead>
-                        <tr>
-                            <th>Başlık</th>
-                            <th>Kategori</th>
-                            <th>Tarih</th>
-                            <th style="text-align: right;">Görüntülenme</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var post in recentPosts)
-                        {
-                            <tr>
-                                <td class="post-title">
-                                    <a asp-controller="AdminPost" asp-action="Edit" asp-route-id="@post.Id"
-                                       style="color: var(--admin-text); text-decoration: none;">
-                                        @post.Title
-                                    </a>
-                                </td>
-                                <td><span class="post-category">@post.Category.Name</span></td>
-                                <td class="post-date">@post.CreatedDate.ToString("dd MMM yyyy")</td>
-                                <td class="post-views" style="text-align: right;">@post.ViewCount</td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
+@section Scripts {
+    <script>
+        // =========================================================================
+        // Scratchpad Auto-Persistence & Draft Creation Logic
+        // Saves user notes directly to browser localStorage on every input event.
+        // =========================================================================
+        document.addEventListener('DOMContentLoaded', function () {
+            const STORAGE_KEY = 'devcore_admin_scratchpad';
+            const textarea = document.getElementById('dashboard-scratchpad');
+            const statusBadge = document.getElementById('scratchpad-status');
+            const charCount = document.getElementById('scratchpad-char-count');
+            const clearBtn = document.getElementById('scratchpad-clear-btn');
+            const createDraftBtn = document.getElementById('scratchpad-create-draft-btn');
+
+            if (!textarea) return;
+
+            // Load persisted note from localStorage
+            const savedNote = localStorage.getItem(STORAGE_KEY);
+            if (savedNote) {
+                textarea.value = savedNote;
+                updateMetrics();
             }
-            else
-            {
-                <div style="padding: 40px 20px; text-align: center; color: var(--admin-secondary); font-size: 0.875rem;">
-                    Henüz yazı bulunmuyor. İlk yazınızı oluşturun!
-                </div>
+
+            // Save on keystroke with instant visual feedback
+            textarea.addEventListener('input', function () {
+                localStorage.setItem(STORAGE_KEY, textarea.value);
+                statusBadge.textContent = 'SAVED';
+                statusBadge.className = 'font-mono text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-300 px-1.5 py-0.5';
+                updateMetrics();
+            });
+
+            function updateMetrics() {
+                const len = textarea.value.length;
+                charCount.textContent = `${len} character${len !== 1 ? 's' : ''}`;
             }
-        </div>
-    </div>
 
-    @* ---- Quick Actions Card ---- *@
-    <div class="dashboard-card">
-        <div class="dashboard-card-header">
-            <h2>Hızlı İşlemler</h2>
-        </div>
-        <div style="padding: 16px; display: flex; flex-direction: column; gap: 8px;">
-            @* New Post button *@
-            <a asp-controller="AdminPost" asp-action="Create" class="quick-action-btn">
-                <div class="action-icon blue">
-                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                    </svg>
-                </div>
-                <div>
-                    <div>Yeni Yazı</div>
-                    <div class="action-desc">Yeni bir blog yazısı oluştur</div>
-                </div>
-            </a>
+            // Clear button handler
+            clearBtn.addEventListener('click', function () {
+                if (textarea.value.trim() && confirm('Clear scratchpad note?')) {
+                    textarea.value = '';
+                    localStorage.removeItem(STORAGE_KEY);
+                    updateMetrics();
+                    if (window.showToast) window.showToast('Scratchpad cleared.', 'info');
+                }
+            });
 
-            @* New Category button *@
-            <a asp-controller="AdminCategory" asp-action="Create" class="quick-action-btn">
-                <div class="action-icon green">
-                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
-                    </svg>
-                </div>
-                <div>
-                    <div>Yeni Kategori</div>
-                    <div class="action-desc">Yeni bir kategori ekle</div>
-                </div>
-            </a>
+            // Create Draft from Note handler
+            createDraftBtn.addEventListener('click', function () {
+                const note = textarea.value.trim();
+                if (!note) {
+                    if (window.showToast) window.showToast('Please type a note in the scratchpad first.', 'error');
+                    return;
+                }
 
-            @* View site button *@
-            <a asp-controller="Home" asp-action="Index" target="_blank" class="quick-action-btn">
-                <div class="action-icon" style="background-color: #f3e8ff; color: #7c3aed;">
-                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
-                    </svg>
-                </div>
-                <div>
-                    <div>Siteyi Görüntüle</div>
-                    <div class="action-desc">Blogu yeni sekmede aç</div>
-                </div>
-            </a>
-        </div>
-    </div>
-</div>
+                // Store note in the editor draft cache for /AdminPost/Create to restore
+                localStorage.setItem('devcore_editor_scratch_transfer', note);
+                
+                if (window.showToast) {
+                    window.showToast('Transferring note to post editor...', 'success');
+                }
 
+                // Redirect to post create page
+                setTimeout(() => {
+                    window.location.href = '/AdminPost/Create';
+                }, 400);
+            });
+        });
+    </script>
+}

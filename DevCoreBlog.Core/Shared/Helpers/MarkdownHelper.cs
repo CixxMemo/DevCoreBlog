@@ -29,43 +29,27 @@
 //   - In this blog, only the admin writes content, so it is trusted input.
 // =============================================================================
 
+using System.Text.RegularExpressions;
 using Markdig;
 
 namespace DevCoreBlog.Core.Shared.Helpers;
 
-// Static helper class — no instantiation needed, call MarkdownHelper.ToHtml() directly
+// Static helper class — converts Markdown to HTML and renders responsive video embeds
 public static class MarkdownHelper
 {
-    // -----------------------------------------------------------------------
-    // MARKDOWN PIPELINE (built once, reused forever)
-    // -----------------------------------------------------------------------
     // The pipeline defines which Markdown extensions are active.
-    // 'static readonly' means it is created once when the class is first accessed
-    // and then shared across all requests (thread-safe in Markdig).
-    //
-    // UseAdvancedExtensions() is a shortcut that enables the most popular extensions:
-    //   - GitHub Flavored Markdown (GFM): tables, strikethrough, task lists
-    //   - Auto-links: URLs become clickable automatically
-    //   - Footnotes, abbreviations, definition lists
-    //   - Custom containers, emojis, math (if configured)
-    //   - Code blocks with language class (for Prism.js syntax highlighting)
     private static readonly MarkdownPipeline Pipeline = new MarkdownPipelineBuilder()
         .UseAdvancedExtensions()
         .Build();
 
+    // Regex to match [video](https://www.youtube.com/watch?v=VIDEO_ID) or [video](https://youtu.be/VIDEO_ID)
+    private static readonly Regex YouTubeVideoTagRegex = new(
+        @"\[video\]\((https?:\/\/(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_\-]+)[^\)]*)\)",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
     // -----------------------------------------------------------------------
     // PUBLIC METHOD: Convert Markdown string → HTML string
     // -----------------------------------------------------------------------
-    // Takes raw Markdown text (from the database) and returns rendered HTML.
-    // The returned HTML is safe to render with @Html.Raw() in Razor views.
-    //
-    // Parameters:
-    //   markdown — The raw Markdown text (e.g., "# Hello\n\n```csharp\nvar x = 1;\n```")
-    //
-    // Returns:
-    //   A string of HTML (e.g., "<h1>Hello</h1>\n<pre><code class=\"language-csharp\">...")
-    //
-    // If the input is null or empty, returns an empty string (no exception).
     public static string ToHtml(string markdown)
     {
         // Guard clause: if input is null or whitespace, return empty HTML
@@ -74,9 +58,15 @@ public static class MarkdownHelper
             return string.Empty;
         }
 
+        // Pre-process video embed tags: [video](youtube_url) -> responsive brutalist iframe container
+        string processedMarkdown = YouTubeVideoTagRegex.Replace(markdown, match =>
+        {
+            var videoId = match.Groups[2].Value;
+            return $"\n\n<div class=\"my-6 aspect-video w-full border-2 border-black bg-black overflow-hidden\"><iframe class=\"w-full h-full\" src=\"https://www.youtube.com/embed/{videoId}\" title=\"YouTube video player\" frameborder=\"0\" allow=\"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture\" allowfullscreen></iframe></div>\n\n";
+        });
+
         // Markdig.Markdown.ToHtml() parses the Markdown and outputs HTML.
-        // The pipeline adds language classes to code blocks (e.g., "language-csharp"),
-        // which Prism.js uses to apply syntax highlighting colors.
-        return Markdig.Markdown.ToHtml(markdown, Pipeline);
+        return Markdig.Markdown.ToHtml(processedMarkdown, Pipeline);
     }
 }
+

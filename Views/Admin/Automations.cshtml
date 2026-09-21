@@ -1,0 +1,284 @@
+@* ============================================================================= *@
+@* Admin/Automations.cshtml — Automations & Integration Documentation Hub        *@
+@* ============================================================================= *@
+@* This view serves as the interactive command documentation for:               *@
+@*   1. Inbound Webhook Pipeline (n8n, Make.com, AI agents).                     *@
+@*   2. Public Read-Only Portfolio Showcase API (React portfolio integration).   *@
+@*   3. Live Category ID reference table and copyable cURL / JSON test snippets. *@
+@* ============================================================================= *@
+
+@using DevCoreBlog.Core.Entities
+
+@{
+    ViewData["Title"] = "Automations & API Hub";
+    var categories = ViewBag.Categories as List<Category> ?? new List<Category>();
+    var corsOrigins = (string)(ViewBag.CorsOrigins ?? "http://localhost:3000,https://mehmetcan.dev");
+    var defaultCategoryId = categories.FirstOrDefault()?.Id ?? 1;
+}
+
+<div class="space-y-8">
+    
+    @* ========================================================================= *@
+    @* PAGE HEADER & STATUS PANEL                                                *@
+    @* ========================================================================= *@
+    <div class="border-2 border-black bg-white p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <div class="font-mono text-xs font-bold text-neutral-500 uppercase tracking-widest leading-tight">
+                // EXTERNAL INTEGRATION & AUTOMATION HUB
+            </div>
+            <h1 class="text-2xl md:text-3xl font-black uppercase tracking-tight text-black mt-1">
+                Automations & API
+            </h1>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+            <span class="border-2 border-black bg-emerald-100 text-emerald-900 font-mono text-xs font-bold px-3 py-1 uppercase flex items-center gap-1.5">
+                <span class="w-2 h-2 bg-emerald-600 inline-block"></span>
+                <span>PIPELINE ONLINE</span>
+            </span>
+            <span class="border-2 border-black bg-neutral-100 font-mono text-xs font-bold px-3 py-1 uppercase text-neutral-700">
+                RATE LIMITED
+            </span>
+        </div>
+    </div>
+
+    @* ========================================================================= *@
+    @* SECTION 1: INBOUND WEBHOOK (n8n, Make.com, AI Agents)                    *@
+    @* ========================================================================= *@
+    <div class="border-2 border-black bg-white">
+        
+        @* Card Header *@
+        <div class="border-b-2 border-black p-4 md:p-5 bg-neutral-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div class="flex items-center gap-3">
+                <span class="border-2 border-black bg-black text-white font-mono text-xs font-bold px-2 py-0.5 uppercase">
+                    POST
+                </span>
+                <h2 class="text-lg font-black uppercase tracking-tight text-black">
+                    Inbound Post Webhook Receiver
+                </h2>
+            </div>
+            <span class="font-mono text-xs text-neutral-600">
+                Max 5 requests/min • Fail-Safe Draft Mode
+            </span>
+        </div>
+
+        @* Card Body *@
+        <div class="p-6 space-y-6">
+            
+            @* Endpoint Details Grid *@
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 font-mono text-xs">
+                <div class="border border-black p-3 bg-neutral-50 space-y-1">
+                    <span class="text-neutral-500 uppercase text-[10px] font-bold block">ENDPOINT ROUTE:</span>
+                    <strong class="text-black text-sm block">/api/webhooks/posts</strong>
+                </div>
+
+                <div class="border border-black p-3 bg-neutral-50 space-y-1">
+                    <span class="text-neutral-500 uppercase text-[10px] font-bold block">REQUIRED AUTH HEADER:</span>
+                    <strong class="text-black text-sm block">X-DevCore-Secret</strong>
+                </div>
+
+                <div class="border border-black p-3 bg-neutral-50 space-y-1">
+                    <span class="text-neutral-500 uppercase text-[10px] font-bold block">SECURITY COMPARISON:</span>
+                    <strong class="text-emerald-700 text-sm block">FixedTimeEquals (Timing-Proof)</strong>
+                </div>
+            </div>
+
+            @* Security & Behavior Bullet Points *@
+            <div class="border-l-4 border-black bg-neutral-50 p-4 font-mono text-xs text-neutral-700 space-y-1">
+                <p><strong>• Fail-Safe Drafting:</strong> Posts created via this endpoint default to <code>"isPublished": false</code> (Draft) unless explicitly flagged <code>true</code>.</p>
+                <p><strong>• Automatic Generation:</strong> Post slug, creation date, and markdown processing are handled automatically by the backend pipeline.</p>
+                <p><strong>• Constant-Time Authentication:</strong> Protects against timing side-channel attacks by comparing secret byte hashes in fixed time.</p>
+            </div>
+
+            @* JSON Payload Template Box *@
+            <div class="space-y-2">
+                <div class="flex items-center justify-between font-mono text-xs">
+                    <span class="font-bold uppercase text-neutral-600">// n8n / Make.com JSON Payload Template:</span>
+                    <button type="button" 
+                            onclick="copySnippet('webhook-payload-snippet', this)"
+                            class="border border-black bg-white hover:bg-black hover:text-white px-2.5 py-1 font-mono text-xs font-bold uppercase transition-none">
+                        Copy JSON
+                    </button>
+                </div>
+                
+                <pre id="webhook-payload-snippet" class="border-2 border-black bg-neutral-900 text-neutral-100 p-4 font-mono text-xs overflow-x-auto selection:bg-neutral-700">{
+  "title": "Autonomous AI Workflows with .NET 10",
+  "content": "## Introduction\n\nAutomated article body written in full Markdown with code blocks and links.\n\n```csharp\npublic void RunWorkflow() => Console.WriteLine(\"Automated\");\n```",
+  "summary": "How autonomous AI agent pipelines publish directly to DevCoreBlog.",
+  "excerpt": "A deep dive into webhook integration pipelines.",
+  "coverImageUrl": "https://res.cloudinary.com/demo/image/upload/sample.jpg",
+  "categoryId": @defaultCategoryId,
+  "isPublished": false
+}</pre>
+            </div>
+
+            @* cURL Terminal Test Snippet *@
+            <div class="space-y-2">
+                <div class="flex items-center justify-between font-mono text-xs">
+                    <span class="font-bold uppercase text-neutral-600">// cURL Terminal Test Command:</span>
+                    <button type="button" 
+                            onclick="copySnippet('curl-snippet', this)"
+                            class="border border-black bg-white hover:bg-black hover:text-white px-2.5 py-1 font-mono text-xs font-bold uppercase transition-none">
+                        Copy cURL
+                    </button>
+                </div>
+
+                <pre id="curl-snippet" class="border-2 border-black bg-neutral-900 text-emerald-400 p-4 font-mono text-xs overflow-x-auto whitespace-pre-wrap selection:bg-neutral-700">curl -X POST "http://localhost:5000/api/webhooks/posts" \
+  -H "Content-Type: application/json" \
+  -H "X-DevCore-Secret: devcore_webhook_secret_key_8f7b2c" \
+  -d '{"title":"Test Post from cURL","content":"# Hello World\nTesting webhook ingestion.","categoryId":@defaultCategoryId,"isPublished":false}'</pre>
+            </div>
+
+            @* Category ID Reference Table *@
+            <div class="space-y-2">
+                <div class="font-mono text-xs font-bold uppercase text-neutral-600">
+                    // Active Category IDs (for payload categoryId field):
+                </div>
+
+                @if (categories.Any())
+                {
+                    <div class="border border-black overflow-x-auto">
+                        <table class="w-full text-left font-mono text-xs">
+                            <thead class="bg-neutral-100 border-b border-black text-[10px] uppercase">
+                                <tr>
+                                    <th class="p-2.5">CategoryId</th>
+                                    <th class="p-2.5">Category Name</th>
+                                    <th class="p-2.5">Slug</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-neutral-200">
+                                @foreach (var cat in categories)
+                                {
+                                    <tr class="hover:bg-neutral-50">
+                                        <td class="p-2.5 font-bold text-black">@cat.Id</td>
+                                        <td class="p-2.5 font-semibold">@cat.Name</td>
+                                        <td class="p-2.5 text-neutral-500">/category/@cat.Slug</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="p-4 border border-black font-mono text-xs text-neutral-500">
+                        No categories found. Create a category first before calling webhooks.
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    @* ========================================================================= *@
+    @* SECTION 2: PORTFOLIO SHOWCASE PUBLIC FEED (React Portfolio Integration)   *@
+    @* ========================================================================= *@
+    <div class="border-2 border-black bg-white">
+        
+        @* Card Header *@
+        <div class="border-b-2 border-black p-4 md:p-5 bg-neutral-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div class="flex items-center gap-3">
+                <span class="border-2 border-black bg-emerald-600 text-white font-mono text-xs font-bold px-2 py-0.5 uppercase">
+                    GET
+                </span>
+                <h2 class="text-lg font-black uppercase tracking-tight text-black">
+                    Portfolio Showcase Feed (Latest 3 Articles)
+                </h2>
+            </div>
+            <span class="font-mono text-xs text-neutral-600">
+                Max 30 requests/min • 300s Output Cache
+            </span>
+        </div>
+
+        @* Card Body *@
+        <div class="p-6 space-y-6">
+            
+            @* Endpoint Details Grid *@
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 font-mono text-xs">
+                <div class="border border-black p-3 bg-neutral-50 space-y-1">
+                    <span class="text-neutral-500 uppercase text-[10px] font-bold block">ENDPOINT ROUTE:</span>
+                    <strong class="text-black text-sm block">/api/public/posts/latest</strong>
+                </div>
+
+                <div class="border border-black p-3 bg-neutral-50 space-y-1">
+                    <span class="text-neutral-500 uppercase text-[10px] font-bold block">CORS ALLOWED ORIGINS:</span>
+                    <strong class="text-black text-xs block truncate" title="@corsOrigins">@corsOrigins</strong>
+                </div>
+
+                <div class="border border-black p-3 bg-neutral-50 space-y-1">
+                    <span class="text-neutral-500 uppercase text-[10px] font-bold block">RETURN PAYLOAD:</span>
+                    <strong class="text-emerald-700 text-sm block">Array of 3 latest published posts</strong>
+                </div>
+            </div>
+
+            @* React Code Snippet Box *@
+            <div class="space-y-2">
+                <div class="flex items-center justify-between font-mono text-xs">
+                    <span class="font-bold uppercase text-neutral-600">// React / Next.js Fetch Integration Example:</span>
+                    <button type="button" 
+                            onclick="copySnippet('react-snippet', this)"
+                            class="border border-black bg-white hover:bg-black hover:text-white px-2.5 py-1 font-mono text-xs font-bold uppercase transition-none">
+                        Copy Code
+                    </button>
+                </div>
+
+                <pre id="react-snippet" class="border-2 border-black bg-neutral-900 text-neutral-100 p-4 font-mono text-xs overflow-x-auto selection:bg-neutral-700">// In your React Portfolio Component:
+async function getLatestArticles() {
+  const res = await fetch("https://devcoreblog.com/api/public/posts/latest", {
+    next: { revalidate: 300 } // Cache for 5 minutes
+  });
+  
+  if (!res.ok) throw new Error("Failed to fetch blog posts");
+  return res.json();
+}
+
+// Response Schema:
+// [
+//   {
+//     "id": 12,
+//     "title": "Vibe Coding: The Future of Automation",
+//     "slug": "vibe-coding-the-future-of-automation",
+//     "summary": "How AI-assisted architectures accelerate freelance delivery.",
+//     "excerpt": "A deep dive into vibe coding.",
+//     "coverImageUrl": "https://res.cloudinary.com/...",
+//     "publishDate": "2026-08-20T00:00:00Z",
+//     "url": "https://devcoreblog.com/post/vibe-coding-the-future-of-automation",
+//     "categoryName": "Vibe Coding"
+//   }
+// ]</pre>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // =========================================================================
+        // Copy Code Snippet to Clipboard Helper
+        // =========================================================================
+        function copySnippet(elementId, buttonElement) {
+            const pre = document.getElementById(elementId);
+            if (!pre) return;
+
+            const text = pre.innerText || pre.textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                const originalText = buttonElement.textContent;
+                buttonElement.textContent = 'COPIED!';
+                buttonElement.classList.add('bg-black', 'text-white');
+                
+                if (window.showToast) {
+                    window.showToast('Snippet copied to clipboard.', 'success');
+                }
+
+                setTimeout(() => {
+                    buttonElement.textContent = originalText;
+                    buttonElement.classList.remove('bg-black', 'text-white');
+                }, 2000);
+            }).catch(err => {
+                console.error('Copy error:', err);
+                if (window.showToast) {
+                    window.showToast('Failed to copy snippet.', 'error');
+                }
+            });
+        }
+    </script>
+}

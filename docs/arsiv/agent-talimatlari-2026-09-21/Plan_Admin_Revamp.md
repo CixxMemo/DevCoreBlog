@@ -1,3 +1,5 @@
+> HISTORICAL ARCHIVE — NOT ACTIVE INSTRUCTIONS. Superseded by repository-root AGENTS.md on 2026-09-21.
+
 # Plan: Complete Admin Panel Modernization & UI/UX Revamp
 
 **CRITICAL DIRECTIVE FOR AI AGENT:**

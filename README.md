@@ -1,88 +1,59 @@
 # DevCoreBlog
 
-**DevCoreBlog** is a high-performance, SEO-friendly, and modern blog infrastructure built with **ASP.NET Core MVC (.NET 10)**. Designed for developers and content creators, this project incorporates enterprise-grade software engineering practices—such as the Repository Pattern, Dependency Injection, and an N-Tier Architecture—providing a reliable and highly scalable foundation.
+ASP.NET Core MVC (.NET 10), PostgreSQL ve Razor/Tailwind kullanan blog projesi. Mevcut kapsam; yazı/kategori yönetimi, Markdown içerik, Cloudinary görselleri, yönetici oturumu, webhook ve portföy beslemesidir.
 
----
+## Agent ile çalışma
 
-## 🏛 Architecture
+**Önce [AGENTS.md](AGENTS.md) dosyasını oku.** Güncel mimari, SOLID, güvenlik, kod kalitesi ve doğrulama kuralları buradadır. .agents/AGENTS.md yalnızca köke yönlendirir; eski planlar aktif değildir.
 
-The project is built upon a strict **N-Tier (Multi-Layered) Architecture**, adhering to S.O.L.I.D. principles to ensure high maintainability and a clear separation of concerns. The solution consists of 4 main layers:
+- [Geliştirme planı](docs/GELISTIRME_PLANI_2026-09-21/README.md)
+- [İlerleme](docs/GELISTIRME_PLANI_2026-09-21/DURUM.md)
+- [Kararlar](docs/GELISTIRME_PLANI_2026-09-21/KARARLAR.md)
+- [Hazır agent mesajları](docs/GELISTIRME_PLANI_2026-09-21/AGENT_PROMPTLARI.md)
+- [19 Eylül inceleme raporu](docs/PROJE_INCELEME_RAPORU_2026-09-19.md)
 
-1. **`DevCoreBlog.Core` (Shared Layer):** 
-   The heart of the application. It contains Domain Entities (which map to database tables) and all service/repository contracts (Interfaces). This is the base layer upon which all other layers depend. It adheres strictly to the Dependency Inversion principle by having **zero dependencies** on external libraries.
+Kullanıcının kod/terminal komutu yazması gerekmez; agent seçilen tek fazı uygular ve doğrular. F00 kural/dokümantasyon yenilemesi tamamlandı; sıradaki faz F01. Uygulama kodundaki güvenlik ve veri bütünlüğü bulguları henüz düzeltilmiş sayılmaz.
 
-2. **`DevCoreBlog.Data` (Data Access Layer):** 
-   Responsible for database operations and data persistence. It houses the Entity Framework Core (PostgreSQL) `DbContext` configurations, database migrations, and the implementation of the **Repository Pattern**. It abstracts raw database operations away from the rest of the application.
+## Teknoloji ve proje haritası
 
-3. **`DevCoreBlog.Services` (Business Logic Layer):** 
-   The operational center where all business rules are enforced. It acts as a bridge between the Web UI and the Data layer, ensuring that Controllers never interact directly with the database. Operations such as Caching, CDN integration, auto-slug generation, and data validation reside entirely in this layer.
+| Alan | Mevcut teknoloji |
+|---|---|
+| Web | C#, ASP.NET Core MVC, net10.0, nullable açık |
+| Veri | EF Core 10 + Npgsql + PostgreSQL |
+| Arayüz | Razor, Tailwind, gerekli JavaScript |
+| Oturum | ASP.NET Core Cookie Authentication |
+| İçerik | Markdig, Toast UI Editor, Prism |
+| Medya/config | CloudinaryDotNet, environment, yerelde DotNetEnv |
 
-4. **`DevCoreBlog` (Web/UI Layer):** 
-   The presentation layer containing Razor Views (`.cshtml`) and HTTP Controllers. It follows the "Thin Controller" pattern by simply receiving HTTP requests and delegating them directly to the `Services` layer. 
-
----
-
-## ✨ Key Features
-
-* 🚀 **Cloudinary CDN Integration:** 
-  Images are hosted on Cloudinary's global Content Delivery Network rather than the local server. This drastically saves server bandwidth, disk space, and ensures lightning-fast image delivery to end-users worldwide.
-  
-* ⚡ **In-Memory Caching:** 
-  The homepage and frequently accessed lists are cached using `.NET IMemoryCache`. This eliminates database fatigue and drops page response times down to milliseconds. A custom **Cache Invalidation** mechanism automatically clears specific caches whenever an admin creates, updates, or deletes a post, guaranteeing that the data is always fresh.
-
-* 🛡️ **Advanced Security Measures:** 
-  * **Anti Over-Posting:** Complete protection against over-posting vulnerabilities is achieved via strict `[Bind]` attributes applied at the Controller level. This ensures that unauthorized fields (like auto-generated slugs) cannot be manipulated by malicious requests.
-  * **CSRF Protection:** All form submissions are protected via `[ValidateAntiForgeryToken]`.
-
-* 🛠️ **Global Exception Handling:** 
-  A comprehensive `ExceptionHandlingMiddleware` eliminates the need for messy `try-catch` blocks across controllers. All runtime errors are caught in a single centralized location, securely logged, and users are gracefully redirected to a standard, user-friendly HTTP 500 Error View.
-
-* 📝 **Tech Minimal UI & Clean Code:** 
-  The frontend is styled using Tailwind CSS with a strict "Tech Minimal" design philosophy (sharp edges, high contrast, clean layouts without excessive shadows or gradients). The C# codebase is heavily commented with junior-friendly explanations, serving as an educational resource as well as a production-ready application.
-
----
-
-## 🛠 Tech Stack
-
-- **Framework:** ASP.NET Core MVC (.NET 10.0)
-- **ORM:** Entity Framework Core 10
-- **Database:** PostgreSQL
-- **Frontend:** Razor Views + Tailwind CSS
-- **Authentication:** Cookie Authentication (`Microsoft.AspNetCore.Authentication.Cookies`)
-
----
-
-## 🚀 Installation & Setup
-
-Follow these steps to set up the development environment locally:
-
-### 1. Configure Environment Variables
-Copy the `.env.example` file located in the root directory and rename it to `.env`. Fill in your PostgreSQL database connection string and your Cloudinary API credentials:
-
-```env
-DB_CONNECTION_STRING=Host=localhost;Database=devcoreblog;Username=postgres;Password=your_password
-CLOUDINARY_CLOUD_NAME=your_cloud_name
-CLOUDINARY_API_KEY=your_api_key
-CLOUDINARY_API_SECRET=your_api_secret
-ADMIN_USERNAME=admin
-ADMIN_PASSWORD=admin
+```text
+AGENTS.md                         Tek güncel ana talimat kaynağı
+.agents/AGENTS.md                 Kök talimatlara yönlendirme
+DevCoreBlog.csproj                Web uygulaması
+Controllers/ Views/ Middlewares/  HTTP ve sunum
+DevCoreBlog.Core/                 Domain ve sözleşmeler
+DevCoreBlog.Data/                 EF ve repository implementasyonları
+DevCoreBlog.Services/             Use case'ler ve servisler
+Migrations/                      Bugün Web'de bulunan migration geçmişi
+wwwroot/                         Statik varlıklar
+docs/                            Aktif plan, karar, kanıt ve tarihsel arşiv
 ```
 
-### 2. Database Migrations
-To apply the required tables to your PostgreSQL database, use the EF Core CLI to run the migrations. Since the data layer is separated, you must specify the startup project and the target project:
+Dört proje korunur. Core'un Markdig bağımlılığı ve Services'ın Data bağımlılığı F24/F26'da giderilecek teknik borçtur. Gerçek paket sürümleri .csproj dosyalarından doğrulanır.
 
-```bash
-dotnet ef database update --project DevCoreBlog.Data --startup-project DevCoreBlog
+## Agent için yerel doğrulama başlangıcı
+
+Önce kurulu .NET SDK'yı ve mevcut değişiklikleri incele. Root'tan derleme komutu:
+
+```sh
+dotnet build DevCoreBlog.csproj
 ```
 
-### 3. Run the Application
-Compile and run the project using the .NET CLI from the root directory:
+Konfigürasyon adları [.env.example](.env.example) dosyasındadır. Gerçek .env ve secret'lar commit/rapora yazılmaz. Testte ayrı PostgreSQL ve sentetik admin/medya verisi kullanılır; production kaynağına bağlanılmaz.
 
-```bash
-dotnet run --project DevCoreBlog
+Migration assembly keşfinde bilinen uyumsuzluk vardır (F10). Eski talimatlardaki yanlış proje yollarıyla database update çalıştırma; önce assembly/tool sürümü ve hedef test DB doğrulanmalıdır. Test şeması hazır olduğunda yerel çalıştırma:
+
+```sh
+dotnet run --project DevCoreBlog.csproj
 ```
 
-Once the application starts, navigate to the URL provided in your terminal (typically `http://localhost:5159`) to view the blog. 
-
----
-*DevCoreBlog — Clean code, modern architecture, uncompromised performance.*
+Bu komutların belgelenmesi çalıştırıldıkları anlamına gelmez. Build/test/tarayıcı kanıtları ilgili faz kaydında tutulur. CSRF, cache, XSS veya SOLID açısından kusursuzluk iddia edilmez; inceleme raporu ve ilerleme çizelgesi güncel durumu ayırır.
