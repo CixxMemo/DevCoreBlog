@@ -272,12 +272,18 @@
 
                     // Display non-blocking feedback toast
                     if (window.showToast) {
-                        window.showToast(data.message, 'success');
+                        const successMessage = typeof data.message === 'string'
+                            ? data.message
+                            : 'Status updated.';
+                        window.showToast(successMessage, 'success');
                     }
                 } else {
                     buttonElement.innerHTML = originalHtml;
                     if (window.showToast) {
-                        window.showToast(data.message || 'Status update failed.', 'error');
+                        const errorMessage = typeof data.message === 'string'
+                            ? data.message
+                            : 'Status update failed.';
+                        window.showToast(errorMessage, 'error');
                     }
                 }
             })

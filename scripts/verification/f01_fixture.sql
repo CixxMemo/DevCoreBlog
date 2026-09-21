@@ -49,7 +49,7 @@ INSERT INTO "Posts" (
     "CreatedDate", "IsActive", "ViewCount", "PublishDate", "Excerpt",
     "IsPublished", "ThumbnailUrl"
 ) VALUES
-    (2001, 'F01 Visible Post', 'f01-visible', 'F01_VISIBLE_MARKER',
+    (2001, 'F03 <img src=x onerror="window.__f03ToastXss=true">', 'f01-visible', 'F01_VISIBLE_MARKER',
      'F01_VISIBLE_MARKER', 1001, CURRENT_TIMESTAMP - interval '10 days', true, 3,
      CURRENT_TIMESTAMP - interval '9 days', 'F01 visible excerpt', true, ''),
     (2002, 'F01 Future Post', 'f01-future-visible-marker', 'F01_FUTURE_VISIBLE_MARKER',
@@ -78,4 +78,3 @@ INSERT INTO "Posts" (
 
 SELECT setval(pg_get_serial_sequence('"Categories"', 'Id'), 1002, true);
 SELECT setval(pg_get_serial_sequence('"Posts"', 'Id'), 2008, true);
-

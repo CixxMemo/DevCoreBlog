@@ -50,6 +50,7 @@ def main() -> int:
     parser.add_argument("--wait-seconds", type=int, default=30)
     parser.add_argument("--expect-vulnerable", action="store_true")
     parser.add_argument("--expect-f02-fixed", action="store_true")
+    parser.add_argument("--expect-f03-fixed", action="store_true")
     args = parser.parse_args()
 
     base_url = args.base_url.rstrip("/")
@@ -193,6 +194,14 @@ def main() -> int:
         "valid_configured_login_succeeds": valid_login_succeeded,
         "valid_logout_clears_session": valid_logout_succeeded,
     }
+    f03_checks = {
+        "admin_layout_avoids_inner_html_toast_sink": (
+            toast_status == 200 and "toast.innerHTML" not in toast_body
+        ),
+        "admin_layout_uses_text_content_for_toast_message": (
+            toast_status == 200 and "messageText.textContent = message" in toast_body
+        ),
+    }
     result = {
         "fixture_visible": True,
         "statuses": {
@@ -208,6 +217,7 @@ def main() -> int:
             "post_logout_admin_final": post_logout_admin_status,
         },
         "f02_checks": f02_checks,
+        "f03_checks": f03_checks,
         "remaining_baseline_findings": remaining_findings,
     }
     print(json.dumps(result, indent=2, sort_keys=True))
@@ -219,11 +229,17 @@ def main() -> int:
         remaining_expected = {
             key: value
             for key, value in remaining_findings.items()
-            if key != "authentication_without_configured_password"
+            if key not in {
+                "authentication_without_configured_password",
+                "admin_layout_contains_inner_html_toast_sink",
+            }
         }
         if not all(f02_checks.values()) or not all(remaining_expected.values()):
             print("F02 or preserved baseline checks did not pass.", file=sys.stderr)
             return 3
+    if args.expect_f03_fixed and not all(f03_checks.values()):
+        print("F03 toast rendering checks did not pass.", file=sys.stderr)
+        return 4
     return 0
 
 

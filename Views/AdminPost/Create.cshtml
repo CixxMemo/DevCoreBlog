@@ -300,7 +300,10 @@
                         }
                         if (window.showToast) window.showToast('Image uploaded and inserted.', 'success');
                     } else {
-                        if (window.showToast) window.showToast(data.message || 'Image upload failed.', 'error');
+                        const uploadError = typeof data.message === 'string'
+                            ? data.message
+                            : 'Image upload failed.';
+                        if (window.showToast) window.showToast(uploadError, 'error');
                     }
                 } catch (err) {
                     console.error('Upload error:', err);

@@ -309,7 +309,7 @@
         // Adheres to the Tech Minimal style: sharp borders, monospace font, no blur.
         // =========================================================================
         window.showToast = function (message, type = 'info') {
-            if (!message) return;
+            if (typeof message !== 'string' || message.length === 0) return;
 
             const container = document.getElementById('admin-toast-container');
             if (!container) return;
@@ -320,7 +320,6 @@
 
             // Determine border accent and type badge based on severity
             let typeBadge = '[INFO]';
-            let borderColor = 'border-black';
 
             if (type === 'success') {
                 typeBadge = '[SUCCESS]';
@@ -332,16 +331,26 @@
                 toast.classList.add('border-l-[6px]', 'border-l-black');
             }
 
-            // Toast HTML structure with message and manual close button
-            toast.innerHTML = `
-                <div class="flex items-center gap-2 min-w-0">
-                    <span class="text-neutral-500 uppercase flex-shrink-0">${typeBadge}</span>
-                    <span class="truncate">${message}</span>
-                </div>
-                <button type="button" class="text-neutral-500 hover:text-black uppercase font-bold text-xs flex-shrink-0 ml-2" onclick="this.parentElement.remove()">
-                    [X]
-                </button>
-            `;
+            const content = document.createElement('div');
+            content.className = 'flex items-center gap-2 min-w-0';
+
+            const badge = document.createElement('span');
+            badge.className = 'text-neutral-500 uppercase flex-shrink-0';
+            badge.textContent = typeBadge;
+
+            const messageText = document.createElement('span');
+            messageText.className = 'truncate';
+            messageText.textContent = message;
+
+            const closeButton = document.createElement('button');
+            closeButton.type = 'button';
+            closeButton.className = 'text-neutral-500 hover:text-black uppercase font-bold text-xs flex-shrink-0 ml-2';
+            closeButton.textContent = '[X]';
+            closeButton.setAttribute('aria-label', 'Dismiss notification');
+            closeButton.addEventListener('click', () => toast.remove());
+
+            content.append(badge, messageText);
+            toast.append(content, closeButton);
 
             // Append toast to the fixed bottom container
             container.appendChild(toast);

@@ -1,11 +1,11 @@
 # İlerleme çizelgesi
 
-**Son kayıt:** 21 Eylül 2026 — F02 eksik yönetici bilgileriyle giriş açığı kapatıldı.  
-**Tamamlanan plan fazı:** 3/58 (F00–F02).
-**Tamamlanan uygulama kodu fazı:** 1.  
-**Aktif faz:** Yok.  
-**Sıradaki faz:** F03 — kullanıcı onayı bekleniyor.  
-**Uygulama kodu:** F02 kapsamında yönetici yapılandırması ve giriş doğrulaması değiştirildi. Daha önceki dirty/untracked değişiklikler korunuyor.
+- **Son kayıt:** 21 Eylül 2026 — F03 yönetici bildirimindeki HTML çalıştırma açığı kapatıldı.
+- **Tamamlanan plan fazı:** 4/58 (F00–F03).
+- **Tamamlanan uygulama kodu fazı:** 2.
+- **Aktif faz:** Yok.
+- **Sıradaki faz:** F04 — kullanıcı onayı bekleniyor.
+- **Uygulama kodu:** F02 yönetici girişi ve F03 güvenli yönetici bildirimi tamamlandı. Daha önceki dirty/untracked değişiklikler korunuyor.
 
 ## Kullanım
 
@@ -23,7 +23,7 @@
 | [x] | F00 | Güncel agent kurallarını ve planı yerleştir | TAMAMLANDI — BELGE | [F00 kanıtı](../uygulama-kayitlari/F00-2026-09-21.md) |
 | [x] | F01 | Tekrarlanabilir başlangıç ve güvenli doğrulama ortamı | TAMAMLANDI — DOĞRULAMA | [F01 kanıtı](../uygulama-kayitlari/F01-2026-09-21.md) |
 | [x] | F02 | Eksik yönetici bilgileriyle girişi kapat | TAMAMLANDI — KOD | [F02 kanıtı](../uygulama-kayitlari/F02-2026-09-21.md) |
-| [ ] | F03 | Yönetici bildirimini düz metin olarak göster | BAŞLAMADI | — |
+| [x] | F03 | Yönetici bildirimini düz metin olarak göster | TAMAMLANDI — KOD | [F03 kanıtı](../uygulama-kayitlari/F03-2026-09-21.md) |
 | [ ] | F04 | Güvenli Markdown ve kontrollü video üretimi | BAŞLAMADI | — |
 | [ ] | F05 | Cookie POST işlemlerinde tutarlı antiforgery | BAŞLAMADI | — |
 | [ ] | F06 | Giriş denemelerini sınırlandır | BAŞLAMADI | — |
@@ -81,11 +81,11 @@
 
 ## Son agent teslimi
 
-- Tamamlanan faz: F02 — eksik yönetici bilgileriyle girişi kapat.
-- Değişen davranış: Eksik/boş yönetici ayarlarında host başlamaz; eksik/boş giriş auth cookie üretmez; doğru giriş ve çıkış çalışır.
-- Çalıştırılan kontroller ve sonuç: Dört proje build 0 uyarı/0 hata; dört güvensiz config reddedildi; beş F02 HTTP/cookie kontrolü geçti; önceki faz dışı bulgular korundu.
-- Doğrulanamayan/engel: F02 için yok. Hash F07, antiforgery F05, rate limit F06 kapsamındadır.
-- Sıradaki tek faz: F03.
-- Kullanıcıdan gereken: F03'ü başlatmak için açık onay.
+- Tamamlanan faz: F03 — yönetici bildirimini düz metin olarak göster.
+- Değişen davranış: Toast mesajı HTML olarak yorumlanmaz; sabit DOM iskeletinde düz metin görünür ve erişilebilir kapatma düğmesi kullanır.
+- Çalıştırılan kontroller ve sonuç: Dört proje build 0 uyarı/0 hata; F02 regresyonları geçti; saldırı başlığı masaüstü ve 390 px gerçek tarayıcıda kod çalıştırmadı; başarı/hata/fare/klavye/konsol kontrolleri geçti.
+- Doğrulanamayan/engel: F03 için yok. Genel mobil admin yerleşimi F34, Markdown XSS F04 kapsamındadır.
+- Sıradaki tek faz: F04.
+- Kullanıcıdan gereken: F04'ü başlatmak için açık onay.
 
 [Ana plan](/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/docs/GELISTIRME_PLANI_2026-09-21/README.md) · [Hazır mesajlar](/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/docs/GELISTIRME_PLANI_2026-09-21/AGENT_PROMPTLARI.md)

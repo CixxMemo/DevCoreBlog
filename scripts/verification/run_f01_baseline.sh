@@ -18,8 +18,14 @@ task_admin_username=f02-admin
 task_admin_password=f02-isolated-valid-password
 task_pg_started=0
 task_app_pid=
+task_cleaned=0
 
 cleanup() {
+    if [ "$task_cleaned" -eq 1 ]; then
+        return
+    fi
+    task_cleaned=1
+
     if [ -n "$task_app_pid" ]; then
         kill "$task_app_pid" 2>/dev/null || true
         wait "$task_app_pid" 2>/dev/null || true
@@ -187,4 +193,15 @@ DEVCORE_TEST_ADMIN_USERNAME="$task_admin_username" \
 DEVCORE_TEST_ADMIN_PASSWORD="$task_admin_password" \
 python3 "$task_source/scripts/verification/f01_http_baseline.py" \
     --base-url "http://127.0.0.1:$task_app_port" \
-    --expect-f02-fixed
+    --expect-f02-fixed \
+    --expect-f03-fixed
+
+if [ "${DEVCORE_F01_HOLD_FOR_BROWSER:-0}" = "1" ]; then
+    printf 'Browser fixture ready at http://127.0.0.1:%s\n' "$task_app_port"
+    printf 'Press Ctrl-C after browser verification to stop and clean the fixture.\n'
+    while kill -0 "$task_app_pid" 2>/dev/null; do
+        sleep 1
+    done
+    printf 'Application stopped before browser verification completed.\n' >&2
+    exit 1
+fi
