@@ -228,6 +228,9 @@
             const contentHidden = document.getElementById('Content');
             const categorySelect = document.getElementById('CategoryId');
             const postForm = document.getElementById('postForm');
+            const antiforgeryToken = postForm?.querySelector(
+                'input[name="__RequestVerificationToken"]'
+            )?.value;
             
             // SERP Preview elements
             const serpTitle = document.getElementById('serp-title-preview');
@@ -279,6 +282,13 @@
             async function uploadFileAndInsert(file, callback = null) {
                 if (!file) return;
 
+                if (!antiforgeryToken) {
+                    if (window.showToast) {
+                        window.showToast('Security token unavailable. Refresh the page and try again.', 'error');
+                    }
+                    return;
+                }
+
                 if (window.showToast) window.showToast('Uploading to Cloudinary...', 'info');
 
                 const formData = new FormData();
@@ -287,10 +297,24 @@
                 try {
                     const response = await fetch('/AdminPost/UploadEditorImage', {
                         method: 'POST',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-TOKEN': antiforgeryToken
+                        },
                         body: formData
                     });
 
-                    const data = await response.json();
+                    const isJson = response.headers.get('content-type')?.includes('application/json');
+                    const data = isJson ? await response.json() : null;
+                    if (!response.ok) {
+                        const message = typeof data?.message === 'string'
+                            ? data.message
+                            : response.status === 400
+                                ? 'Your security token is invalid or expired. Refresh the page and try again.'
+                                : 'Image upload failed.';
+                        throw new Error(message);
+                    }
+
                     if (data.success && data.url) {
                         if (callback) {
                             callback(data.url, file.name || 'Image');
@@ -307,7 +331,12 @@
                     }
                 } catch (err) {
                     console.error('Upload error:', err);
-                    if (window.showToast) window.showToast('Error uploading image to server.', 'error');
+                    if (window.showToast) {
+                        const message = err instanceof Error && err.message
+                            ? err.message
+                            : 'Error uploading image to server.';
+                        window.showToast(message, 'error');
+                    }
                 }
             }
 

@@ -194,7 +194,15 @@ DEVCORE_TEST_ADMIN_PASSWORD="$task_admin_password" \
 python3 "$task_source/scripts/verification/f01_http_baseline.py" \
     --base-url "http://127.0.0.1:$task_app_port" \
     --expect-f02-fixed \
-    --expect-f03-fixed
+    --expect-f03-fixed \
+    --expect-f04-fixed \
+    --expect-f05-fixed
+
+DEVCORE_TEST_ADMIN_USERNAME="$task_admin_username" \
+DEVCORE_TEST_ADMIN_PASSWORD="$task_admin_password" \
+DEVCORE_TEST_WEBHOOK_SECRET=f01-webhook-secret \
+python3 "$task_source/scripts/verification/f05_antiforgery_probe.py" \
+    --base-url "http://127.0.0.1:$task_app_port"
 
 if [ "${DEVCORE_F01_HOLD_FOR_BROWSER:-0}" = "1" ]; then
     printf 'Browser fixture ready at http://127.0.0.1:%s\n' "$task_app_port"

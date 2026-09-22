@@ -17,6 +17,10 @@
     var totalPostsCount = Model.Count;
 }
 
+<div id="antiforgery-token" class="hidden" aria-hidden="true">
+    @Html.AntiForgeryToken()
+</div>
+
 <div class="space-y-6">
     
     @* ========================================================================= *@
@@ -232,6 +236,16 @@
         function togglePublish(postId, buttonElement) {
             if (!buttonElement || !postId) return;
 
+            const antiforgeryToken = document.querySelector(
+                '#antiforgery-token input[name="__RequestVerificationToken"]'
+            )?.value;
+            if (!antiforgeryToken) {
+                if (window.showToast) {
+                    window.showToast('Security token unavailable. Refresh the page and try again.', 'error');
+                }
+                return;
+            }
+
             // Set button to syncing state
             const originalHtml = buttonElement.innerHTML;
             buttonElement.disabled = true;
@@ -241,12 +255,22 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': antiforgeryToken
                 }
             })
-            .then(response => {
-                if (!response.ok) throw new Error('Network response was not ok');
-                return response.json();
+            .then(async response => {
+                const isJson = response.headers.get('content-type')?.includes('application/json');
+                const data = isJson ? await response.json() : null;
+                if (!response.ok) {
+                    const message = typeof data?.message === 'string'
+                        ? data.message
+                        : response.status === 400
+                            ? 'Your security token is invalid or expired. Refresh the page and try again.'
+                            : 'Failed to update status. Please try again.';
+                    throw new Error(message);
+                }
+                return data;
             })
             .then(data => {
                 buttonElement.disabled = false;
@@ -292,7 +316,10 @@
                 buttonElement.disabled = false;
                 buttonElement.innerHTML = originalHtml;
                 if (window.showToast) {
-                    window.showToast('Failed to update status. Please try again.', 'error');
+                    const message = error instanceof Error && error.message
+                        ? error.message
+                        : 'Failed to update status. Please try again.';
+                    window.showToast(message, 'error');
                 }
             });
         }

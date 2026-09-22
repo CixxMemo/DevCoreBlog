@@ -25,6 +25,7 @@ using DevCoreBlog.Configuration;
 // Import Rate Limiting namespaces for endpoint protection
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.AspNetCore.Mvc;
 
 // Create the application builder, which loads configuration from appsettings.json,
 // environment variables, and command-line arguments
@@ -92,9 +93,15 @@ builder.Services.AddScoped<IPostService, PostService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IImageService, ImageService>();
 
-// Register MVC services (controllers + views + tag helpers + model binding).
-// This is required for the app to handle controller-based routes and render Razor views.
-builder.Services.AddControllersWithViews();
+// Validate antiforgery tokens on every unsafe MVC request by default. The inbound
+// secret-auth webhook declares its narrow exception on that action.
+builder.Services.AddControllersWithViews(options =>
+    options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute()));
+
+// AJAX callers send the request token in this header. Standard Razor forms keep
+// using the generated __RequestVerificationToken form field.
+builder.Services.AddAntiforgery(options =>
+    options.HeaderName = "X-CSRF-TOKEN");
 
 // Register Output Caching services
 builder.Services.AddOutputCache();

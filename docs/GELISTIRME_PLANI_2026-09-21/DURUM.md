@@ -1,11 +1,11 @@
 # İlerleme çizelgesi
 
-- **Son kayıt:** 21 Eylül 2026 — F03 yönetici bildirimindeki HTML çalıştırma açığı kapatıldı.
-- **Tamamlanan plan fazı:** 4/58 (F00–F03).
-- **Tamamlanan uygulama kodu fazı:** 2.
+- **Son kayıt:** 22 Eylül 2026 — F05 bütün cookie POST işlemlerinde tutarlı antiforgery korumasıyla tamamlandı.
+- **Tamamlanan plan fazı:** 6/58 (F00–F05).
+- **Tamamlanan uygulama kodu fazı:** 4.
 - **Aktif faz:** Yok.
-- **Sıradaki faz:** F04 — kullanıcı onayı bekleniyor.
-- **Uygulama kodu:** F02 yönetici girişi ve F03 güvenli yönetici bildirimi tamamlandı. Daha önceki dirty/untracked değişiklikler korunuyor.
+- **Sıradaki faz:** F06 — kullanıcı onayı bekleniyor.
+- **Uygulama kodu:** F02–F05 güvenlik fazları tamamlandı; güvenli yönetici girişi, metin toast, Markdown renderer ve antiforgery koruması aktif.
 
 ## Kullanım
 
@@ -24,8 +24,8 @@
 | [x] | F01 | Tekrarlanabilir başlangıç ve güvenli doğrulama ortamı | TAMAMLANDI — DOĞRULAMA | [F01 kanıtı](../uygulama-kayitlari/F01-2026-09-21.md) |
 | [x] | F02 | Eksik yönetici bilgileriyle girişi kapat | TAMAMLANDI — KOD | [F02 kanıtı](../uygulama-kayitlari/F02-2026-09-21.md) |
 | [x] | F03 | Yönetici bildirimini düz metin olarak göster | TAMAMLANDI — KOD | [F03 kanıtı](../uygulama-kayitlari/F03-2026-09-21.md) |
-| [ ] | F04 | Güvenli Markdown ve kontrollü video üretimi | BAŞLAMADI | — |
-| [ ] | F05 | Cookie POST işlemlerinde tutarlı antiforgery | BAŞLAMADI | — |
+| [x] | F04 | Güvenli Markdown ve kontrollü video üretimi | TAMAMLANDI — KOD | [F04 kanıtı](../uygulama-kayitlari/F04-2026-09-22.md) |
+| [x] | F05 | Cookie POST işlemlerinde tutarlı antiforgery | TAMAMLANDI — KOD | [F05 kanıtı](../uygulama-kayitlari/F05-2026-09-22.md) |
 | [ ] | F06 | Giriş denemelerini sınırlandır | BAŞLAMADI | — |
 | [ ] | F07 | Parola doğrulamasını hash'e geçir | BAŞLAMADI | — |
 | [ ] | F08 | Cookie ve oturum yaşam döngüsünü belirle | BAŞLAMADI | — |
@@ -81,11 +81,11 @@
 
 ## Son agent teslimi
 
-- Tamamlanan faz: F03 — yönetici bildirimini düz metin olarak göster.
-- Değişen davranış: Toast mesajı HTML olarak yorumlanmaz; sabit DOM iskeletinde düz metin görünür ve erişilebilir kapatma düğmesi kullanır.
-- Çalıştırılan kontroller ve sonuç: Dört proje build 0 uyarı/0 hata; F02 regresyonları geçti; saldırı başlığı masaüstü ve 390 px gerçek tarayıcıda kod çalıştırmadı; başarı/hata/fare/klavye/konsol kontrolleri geçti.
-- Doğrulanamayan/engel: F03 için yok. Genel mobil admin yerleşimi F34, Markdown XSS F04 kapsamındadır.
-- Sıradaki tek faz: F04.
-- Kullanıcıdan gereken: F04'ü başlatmak için açık onay.
+- Tamamlanan fazlar: F04 güvenli Markdown ve F05 tutarlı antiforgery.
+- Değişen davranış: Raw HTML ve tehlikeli Markdown URL'leri etkisizdir; yalnızca doğrulanmış YouTube URL'si kontrollü iframe üretir. Cookie tabanlı bütün POST uçları geçerli antiforgery token ister; webhook yalnızca kendi secret sözleşmesiyle çalışır.
+- Çalıştırılan kontroller ve sonuç: Dört proje build 0 uyarı/0 hata; birleşik F02–F05 izole PostgreSQL paketi geçti; F04 ve F05 masaüstü/mobil gerçek tarayıcı kontrolleri, klavye ve konsol kontrolleri geçti.
+- Doğrulanamayan/engel: F04/F05 için yok. Migration keşfi F10, genel mobil admin yerleşimi F34 kapsamındadır.
+- Sıradaki tek faz: F06.
+- Kullanıcıdan gereken: F06'yı başlatmak için açık onay.
 
 [Ana plan](/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/docs/GELISTIRME_PLANI_2026-09-21/README.md) · [Hazır mesajlar](/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/docs/GELISTIRME_PLANI_2026-09-21/AGENT_PROMPTLARI.md)

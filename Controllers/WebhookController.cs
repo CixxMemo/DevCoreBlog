@@ -15,6 +15,7 @@ using System.Security.Cryptography;
 using System.Text;
 using DevCoreBlog.Core.Entities;
 using DevCoreBlog.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 
@@ -44,6 +45,8 @@ public class WebhookController : ControllerBase
     // Ingests incoming JSON payload from n8n / Make.com and creates a blog draft.
     // -------------------------------------------------------------------------
     [HttpPost("posts")]
+    [AllowAnonymous]
+    [IgnoreAntiforgeryToken]
     public async Task<IActionResult> IngestPost([FromBody] WebhookPostPayload payload)
     {
         // 1. Validate the secret auth header (X-DevCore-Secret)

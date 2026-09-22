@@ -62,7 +62,36 @@ INSERT INTO "Posts" (
      'F01_INACTIVE_MARKER', 1001, CURRENT_TIMESTAMP, false, 0,
      CURRENT_TIMESTAMP - interval '1 day', 'F01 inactive excerpt', true, ''),
     (2005, 'F01 Markdown XSS', 'f01-markdown-xss', 'F01_MARKDOWN_XSS_MARKER',
-     '<script>window.__f01MarkdownXss=true</script>\n\nF01_MARKDOWN_XSS_MARKER',
+     $f04markdown$# F04_SAFE_HEADING
+
+<script>window.__f01MarkdownXss=true</script>
+<img src=x onerror="window.__f04ImageXss=true">
+<svg onload="window.__f04SvgXss=true"></svg>
+
+[Dangerous JavaScript](javascript:alert('f04'))
+[Dangerous encoded JavaScript](java%73cript:alert('f04'))
+[Dangerous entity JavaScript](jav&#x61;script:alert('f04'))
+[Dangerous VBScript](vbscript:msgbox('f04'))
+![Dangerous SVG image](data:image/svg+xml,%3Csvg%20onload%3Dalert%281%29%3E)
+
+[Generic attribute probe](https://example.com/docs){onclick="window.__f04AttributeXss=true"}
+[Safe HTTPS link](https://example.com/docs)
+[Safe relative link](/post/f01-visible)
+
+[video](https://www.youtube.com/watch?v=dQw4w9WgXcQ)
+[video](https://www.youtube.com.evil.example/watch?v=dQw4w9WgXcQ)
+
+| Feature | Status |
+| --- | --- |
+| F04_TABLE_MARKER | safe |
+
+- F04_LIST_MARKER
+
+```csharp
+Console.WriteLine("F04_CODE_MARKER");
+```
+
+F01_MARKDOWN_XSS_MARKER$f04markdown$,
      1001, CURRENT_TIMESTAMP, true, 0, CURRENT_TIMESTAMP - interval '1 day',
      'F01 markdown excerpt', true, ''),
     (2006, 'İstanbul, IĞDIR ve ğüşiöç', 'f01-turkce-karakterler', 'F01_TURKISH_MARKER',

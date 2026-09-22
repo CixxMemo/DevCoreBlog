@@ -9,6 +9,7 @@
 @{
     ViewData["Title"] = Model.Title;
     ViewData["TerminalPath"] = $"posts/{Model.Slug}";
+    var safePostContent = MarkdownHelper.ToSafeHtml(Model.Content);
 }
 
 <article class="max-w-4xl mx-auto w-full">
@@ -47,7 +48,8 @@
 
     @* Post Content — Markdown Rendered *@
     <div class="markdown-content text-gray-800 dark:text-zinc-200 leading-relaxed text-base">
-        @Html.Raw(MarkdownHelper.ToHtml(Model.Content))
+        @* ToSafeHtml is the single tested boundary that may produce markup for post content. *@
+        @Html.Raw(safePostContent)
     </div>
 
     @* Footer Navigation *@
