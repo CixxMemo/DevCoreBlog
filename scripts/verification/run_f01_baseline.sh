@@ -16,6 +16,7 @@ task_db=devcoreblog_f01_test
 task_pg_user=$(id -un)
 task_admin_username=f02-admin
 task_admin_password=f02-isolated-valid-password
+task_admin_password_hash=
 task_login_permit_limit=${DEVCORE_F06_PERMIT_LIMIT:-4}
 task_login_window_seconds=${DEVCORE_F06_WINDOW_SECONDS:-2}
 task_f06_username_marker=F06_USERNAME_MUST_NOT_BE_LOGGED
@@ -73,7 +74,7 @@ rsync -a \
 
 # Existing restore metadata is copied only into the isolated tree. This avoids
 # changing the user's tracked bin/obj files or downloading packages for F01.
-for task_project in . DevCoreBlog.Core DevCoreBlog.Data DevCoreBlog.Services; do
+for task_project in . DevCoreBlog.Core DevCoreBlog.Data DevCoreBlog.Services tools/DevCoreBlog.PasswordHashTool; do
     if [ -d "$task_repo/$task_project/obj" ]; then
         mkdir -p "$task_source/$task_project/obj"
         rsync -a "$task_repo/$task_project/obj/" "$task_source/$task_project/obj/"
@@ -85,8 +86,35 @@ done
     cd "$task_source"
     dotnet build DevCoreBlog.csproj --no-restore --nologo \
         --disable-build-servers -m:1 -p:NuGetAudit=false -nodeReuse:false
+    dotnet build tools/DevCoreBlog.PasswordHashTool/DevCoreBlog.PasswordHashTool.csproj \
+        --no-restore --nologo --disable-build-servers -m:1 \
+        -p:NuGetAudit=false -nodeReuse:false
 )
 
+(
+    cd "$task_source"
+    dotnet run --no-build \
+        --project tools/DevCoreBlog.PasswordHashTool/DevCoreBlog.PasswordHashTool.csproj \
+        -- --self-test
+    dotnet run --no-build \
+        --project tools/DevCoreBlog.PasswordHashTool/DevCoreBlog.PasswordHashTool.csproj \
+        -- --benchmark
+)
+
+task_admin_password_hash=$(
+    printf '%s\n' "$task_admin_password" | (
+        cd "$task_source"
+        dotnet run --no-build \
+            --project tools/DevCoreBlog.PasswordHashTool/DevCoreBlog.PasswordHashTool.csproj \
+            -- --stdin
+    )
+)
+if [ -z "$task_admin_password_hash" ]; then
+    printf 'F07 failed to generate the isolated admin password hash.\n' >&2
+    exit 1
+fi
+
+DEVCORE_TEST_ADMIN_PASSWORD_HASH="$task_admin_password_hash" \
 python3 "$task_source/scripts/verification/f01_migration_probe.py" \
     --root "$task_source"
 
@@ -100,7 +128,7 @@ psql -h 127.0.0.1 -p "$task_pg_port" -U "$task_pg_user" -d "$task_db" \
 
 expect_admin_config_rejection() {
     task_probe_kind=$1
-    task_expected_key=$2
+    task_expected_message=$2
     task_probe_log="$task_tmp/$task_probe_kind.log"
 
     set -- env -u ADMIN_USERNAME -u ADMIN_PASSWORD -u ADMIN_PASSWORD_HASH \
@@ -114,16 +142,22 @@ expect_admin_config_rejection() {
 
     case "$task_probe_kind" in
         username-missing)
-            set -- "$@" "ADMIN_PASSWORD=$task_admin_password"
+            set -- "$@" "ADMIN_PASSWORD_HASH=$task_admin_password_hash"
             ;;
-        password-missing)
+        hash-missing)
             set -- "$@" "ADMIN_USERNAME=$task_admin_username"
             ;;
         username-whitespace)
-            set -- "$@" "ADMIN_USERNAME=   " "ADMIN_PASSWORD=$task_admin_password"
+            set -- "$@" "ADMIN_USERNAME=   " "ADMIN_PASSWORD_HASH=$task_admin_password_hash"
             ;;
-        password-whitespace)
-            set -- "$@" "ADMIN_USERNAME=$task_admin_username" "ADMIN_PASSWORD=   "
+        hash-whitespace)
+            set -- "$@" "ADMIN_USERNAME=$task_admin_username" "ADMIN_PASSWORD_HASH=   "
+            ;;
+        hash-malformed)
+            set -- "$@" "ADMIN_USERNAME=$task_admin_username" "ADMIN_PASSWORD_HASH=not-a-valid-f07-hash"
+            ;;
+        plaintext-only)
+            set -- "$@" "ADMIN_USERNAME=$task_admin_username" "ADMIN_PASSWORD=$task_admin_password"
             ;;
         *)
             printf 'Unknown admin configuration probe: %s\n' "$task_probe_kind" >&2
@@ -159,7 +193,7 @@ expect_admin_config_rejection() {
         printf '%s configuration exited successfully instead of failing closed.\n' "$task_probe_kind" >&2
         exit 1
     fi
-    if ! grep -F "$task_expected_key is required and cannot be empty or whitespace." "$task_probe_log" >/dev/null; then
+    if ! grep -F "$task_expected_message" "$task_probe_log" >/dev/null; then
         printf '%s did not report the expected secret-free configuration error.\n' "$task_probe_kind" >&2
         exit 1
     fi
@@ -167,22 +201,34 @@ expect_admin_config_rejection() {
         printf '%s exposed the configured test password in its log.\n' "$task_probe_kind" >&2
         exit 1
     fi
+    if grep -F "$task_admin_password_hash" "$task_probe_log" >/dev/null; then
+        printf '%s exposed the configured test password hash in its log.\n' "$task_probe_kind" >&2
+        exit 1
+    fi
 
     printf 'Rejected unsafe admin configuration: %s\n' "$task_probe_kind"
 }
 
-expect_admin_config_rejection username-missing ADMIN_USERNAME
-expect_admin_config_rejection password-missing ADMIN_PASSWORD
-expect_admin_config_rejection username-whitespace ADMIN_USERNAME
-expect_admin_config_rejection password-whitespace ADMIN_PASSWORD
+expect_admin_config_rejection username-missing \
+    'ADMIN_USERNAME is required and cannot be empty or whitespace.'
+expect_admin_config_rejection hash-missing \
+    'ADMIN_PASSWORD_HASH is required and cannot be empty or whitespace.'
+expect_admin_config_rejection username-whitespace \
+    'ADMIN_USERNAME is required and cannot be empty or whitespace.'
+expect_admin_config_rejection hash-whitespace \
+    'ADMIN_PASSWORD_HASH is required and cannot be empty or whitespace.'
+expect_admin_config_rejection hash-malformed \
+    'ADMIN_PASSWORD_HASH is malformed, unsupported, or outside the allowed cost bounds.'
+expect_admin_config_rejection plaintext-only \
+    'ADMIN_PASSWORD_HASH is required and cannot be empty or whitespace.'
 
 (
     cd "$task_source"
-    exec env -u ADMIN_PASSWORD_HASH \
+    exec env -u ADMIN_PASSWORD \
         ASPNETCORE_ENVIRONMENT=Development \
         DB_CONNECTION_STRING="Host=127.0.0.1;Port=$task_pg_port;Database=$task_db;Username=$task_pg_user" \
         ADMIN_USERNAME="$task_admin_username" \
-        ADMIN_PASSWORD="$task_admin_password" \
+        ADMIN_PASSWORD_HASH="$task_admin_password_hash" \
         CLOUDINARY_CLOUD_NAME=f01-cloud \
         CLOUDINARY_API_KEY=f01-key \
         CLOUDINARY_API_SECRET=f01-secret \
@@ -232,6 +278,15 @@ if grep -F "$task_f06_password_marker" "$task_applog" >/dev/null; then
     printf 'F06 application log exposed the submitted password marker.\n' >&2
     exit 1
 fi
+if grep -F "$task_admin_password" "$task_applog" >/dev/null; then
+    printf 'F07 application log exposed the submitted test password.\n' >&2
+    exit 1
+fi
+if grep -F "$task_admin_password_hash" "$task_applog" >/dev/null; then
+    printf 'F07 application log exposed the configured test password hash.\n' >&2
+    exit 1
+fi
+printf 'F07 login uses only the versioned hash configuration without logging secrets.\n'
 if ! grep -F 'Admin sign-in attempt failed from direct connection IP' "$task_applog" >/dev/null; then
     printf 'F06 did not record failed sign-in events.\n' >&2
     exit 1

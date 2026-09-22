@@ -22,7 +22,10 @@ def probe(root: Path, project: str, timeout_seconds: int) -> dict[str, object]:
         "Host=127.0.0.1;Port=55432;Database=devcoreblog_f01_test;Username=f01"
     )
     environment["ADMIN_USERNAME"] = "f01-migration-admin"
-    environment["ADMIN_PASSWORD"] = "f01-migration-password"
+    environment.pop("ADMIN_PASSWORD", None)
+    environment["ADMIN_PASSWORD_HASH"] = os.environ[
+        "DEVCORE_TEST_ADMIN_PASSWORD_HASH"
+    ]
     process = subprocess.Popen(
         command,
         cwd=root,

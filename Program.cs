@@ -18,6 +18,7 @@ using DevCoreBlog.Data.Repositories;
 using DevCoreBlog.Services;
 // Import Service interfaces for dependency injection
 using DevCoreBlog.Services.Interfaces;
+using DevCoreBlog.Services.Security;
 // Import Middlewares
 using DevCoreBlog.Middlewares;
 // Import validated application configuration models
@@ -58,21 +59,25 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 // Load the single-admin credentials once and validate them when the host starts.
 // Validation messages identify only the missing key and never include its value.
 var adminUsername = Environment.GetEnvironmentVariable("ADMIN_USERNAME");
-var adminPassword = Environment.GetEnvironmentVariable("ADMIN_PASSWORD");
+var adminPasswordHash = Environment.GetEnvironmentVariable("ADMIN_PASSWORD_HASH");
 
 builder.Services
     .AddOptions<AdminCredentialsOptions>()
     .Configure(options =>
     {
         options.Username = adminUsername;
-        options.Password = adminPassword;
+        options.PasswordHash = adminPasswordHash;
     })
     .Validate(
         options => !string.IsNullOrWhiteSpace(options.Username),
         "ADMIN_USERNAME is required and cannot be empty or whitespace.")
     .Validate(
-        options => !string.IsNullOrWhiteSpace(options.Password),
-        "ADMIN_PASSWORD is required and cannot be empty or whitespace.")
+        options => !string.IsNullOrWhiteSpace(options.PasswordHash),
+        "ADMIN_PASSWORD_HASH is required and cannot be empty or whitespace.")
+    .Validate(
+        options => string.IsNullOrWhiteSpace(options.PasswordHash) ||
+            Pbkdf2PasswordHasher.IsValidEncodedHash(options.PasswordHash),
+        "ADMIN_PASSWORD_HASH is malformed, unsupported, or outside the allowed cost bounds.")
     .ValidateOnStart();
 
 // ---------------------------------------------------------------------------
@@ -93,6 +98,7 @@ builder.Services.AddScoped<CategoryRepository>();
 builder.Services.AddScoped<IPostService, PostService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IImageService, ImageService>();
+builder.Services.AddSingleton<IAdminPasswordVerifier, Pbkdf2PasswordHasher>();
 
 // Validate antiforgery tokens on every unsafe MVC request by default. The inbound
 // secret-auth webhook declares its narrow exception on that action.

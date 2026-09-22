@@ -1,11 +1,11 @@
 # İlerleme çizelgesi
 
-- **Son kayıt:** 22 Eylül 2026 — F06 login POST için bounded giriş denemesi sınırıyla tamamlandı.
-- **Tamamlanan plan fazı:** 7/58 (F00–F06).
-- **Tamamlanan uygulama kodu fazı:** 5.
+- **Son kayıt:** 22 Eylül 2026 — F07 yönetici parolası sürümlü PBKDF2 hash doğrulamasına geçirildi.
+- **Tamamlanan plan fazı:** 8/58 (F00–F07).
+- **Tamamlanan uygulama kodu fazı:** 6.
 - **Aktif faz:** Yok.
-- **Sıradaki faz:** F07 — kullanıcı onayı bekleniyor.
-- **Uygulama kodu:** F02–F06 güvenlik fazları tamamlandı; güvenli yönetici girişi, metin toast, Markdown renderer, antiforgery ve login rate limit korumaları aktif.
+- **Sıradaki faz:** F08 — kullanıcı onayı bekleniyor.
+- **Uygulama kodu:** F02–F07 güvenlik fazları tamamlandı; yönetici girişi yalnızca sürümlü PBKDF2 hash, antiforgery ve bounded rate limit ile çalışıyor.
 
 ## Kullanım
 
@@ -27,7 +27,7 @@
 | [x] | F04 | Güvenli Markdown ve kontrollü video üretimi | TAMAMLANDI — KOD | [F04 kanıtı](../uygulama-kayitlari/F04-2026-09-22.md) |
 | [x] | F05 | Cookie POST işlemlerinde tutarlı antiforgery | TAMAMLANDI — KOD | [F05 kanıtı](../uygulama-kayitlari/F05-2026-09-22.md) |
 | [x] | F06 | Giriş denemelerini sınırlandır | TAMAMLANDI — KOD | [F06 kanıtı](../uygulama-kayitlari/F06-2026-09-22.md) |
-| [ ] | F07 | Parola doğrulamasını hash'e geçir | BAŞLAMADI | — |
+| [x] | F07 | Parola doğrulamasını hash'e geçir | TAMAMLANDI — KOD | [F07 kanıtı](../uygulama-kayitlari/F07-2026-09-22.md) |
 | [ ] | F08 | Cookie ve oturum yaşam döngüsünü belirle | BAŞLAMADI | — |
 | [ ] | F09 | Bütün görsel yüklemelerine aynı güvenlik politikası | BAŞLAMADI | — |
 | [ ] | F10 | Migration keşfini ve sürüm uyumunu düzelt | BAŞLAMADI | — |
@@ -81,11 +81,11 @@
 
 ## Son agent teslimi
 
-- Tamamlanan faz: F06 giriş denemesi sınırlandırması.
-- Değişen davranış: Login POST, doğrudan bağlantı IP'si başına varsayılan 5 istek/60 saniye sınırına sahiptir. Eşik aşımı `429` ve `Retry-After` döndürür; pencere bitince giriş yeniden açılır. Kullanıcı adı/parola loglanmaz ve sahte forwarded IP limiti aşamaz.
-- Çalıştırılan kontroller ve sonuç: Dört proje build 0 uyarı/0 hata; birleşik F02–F06 izole PostgreSQL paketi geçti; gerçek tarayıcıda English hata/not, Enter ile gönderim ve 655×763 dar görünümde taşmasız yerleşim doğrulandı.
-- Doğrulanamayan/engel: Geniş Chrome oturumu provider request-header policy hatasıyla açılamadı; F06 işlevi için engel yok. Migration keşfi F10, genel mobil admin yerleşimi F34 kapsamındadır.
-- Sıradaki tek faz: F07.
-- Kullanıcıdan gereken: F07'yi başlatmak için açık onay.
+- Tamamlanan faz: F07 yönetici parola hash geçişi.
+- Değişen davranış: Uygulama yalnızca sürümlü `ADMIN_PASSWORD_HASH` kabul eder. PBKDF2-HMAC-SHA256, 600.000 iterasyon, rastgele salt ve sabit zamanlı doğrulama kullanılır; eski plaintext anahtar fallback değildir.
+- Çalıştırılan kontroller ve sonuç: Ana uygulama ve hash aracı 0 uyarı/0 hatayla derlendi; dokuz kriptografik öz test ve birleşik F02–F06 PostgreSQL paketi geçti. Yerel ölçüm yaklaşık 89 ms hash/90 ms doğrulamadır. Yerel `.env` değerler gösterilmeden hash'e geçirildi.
+- Doğrulanamayan/engel: Uzak/production secret değiştirilmedi; deploy öncesi `ADMIN_PASSWORD_HASH` güvenli ortamda ayarlanmalıdır. Migration keşfi F10 kapsamındadır.
+- Sıradaki tek faz: F08.
+- Kullanıcıdan gereken: F08'i başlatmak için açık onay.
 
 [Ana plan](/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/docs/GELISTIRME_PLANI_2026-09-21/README.md) · [Hazır mesajlar](/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/docs/GELISTIRME_PLANI_2026-09-21/AGENT_PROMPTLARI.md)

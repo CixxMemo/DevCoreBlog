@@ -42,6 +42,11 @@
     <Content Remove="DevCoreBlog.Services\**" />
     <EmbeddedResource Remove="DevCoreBlog.Services\**" />
     <None Remove="DevCoreBlog.Services\**" />
+
+    <Compile Remove="tools\**" />
+    <Content Remove="tools\**" />
+    <EmbeddedResource Remove="tools\**" />
+    <None Remove="tools\**" />
   </ItemGroup>
 
 </Project>

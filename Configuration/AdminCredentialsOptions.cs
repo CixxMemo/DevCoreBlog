@@ -7,9 +7,9 @@ public sealed class AdminCredentialsOptions
 {
     public string? Username { get; set; }
 
-    public string? Password { get; set; }
+    public string? PasswordHash { get; set; }
 
     public bool IsConfigured =>
         !string.IsNullOrWhiteSpace(Username) &&
-        !string.IsNullOrWhiteSpace(Password);
+        !string.IsNullOrWhiteSpace(PasswordHash);
 }

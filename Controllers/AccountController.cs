@@ -10,6 +10,7 @@
 using Microsoft.AspNetCore.Mvc;
 // Import the validated admin configuration model
 using DevCoreBlog.Configuration;
+using DevCoreBlog.Services.Interfaces;
 using Microsoft.Extensions.Options;
 // Import authentication-related classes (ClaimsIdentity, SignInAsync, etc.)
 using Microsoft.AspNetCore.Authentication;
@@ -31,6 +32,7 @@ namespace DevCoreBlog.Controllers
     {
         private const string InvalidCredentialsMessage = "Invalid username or password.";
         private readonly AdminCredentialsOptions _adminCredentials;
+        private readonly IAdminPasswordVerifier _passwordVerifier;
         private readonly ILogger<AccountController> _logger;
 
         // ---------------------------------------------------------------------------
@@ -39,9 +41,11 @@ namespace DevCoreBlog.Controllers
         // ASP.NET Core resolves options only after startup validation succeeds.
         public AccountController(
             IOptions<AdminCredentialsOptions> adminCredentials,
+            IAdminPasswordVerifier passwordVerifier,
             ILogger<AccountController> logger)
         {
             _adminCredentials = adminCredentials.Value;
+            _passwordVerifier = passwordVerifier;
             _logger = logger;
         }
 
@@ -109,15 +113,28 @@ namespace DevCoreBlog.Controllers
             [NotNullWhen(true)] string? username,
             [NotNullWhen(true)] string? password)
         {
+            var configuredUsername = _adminCredentials.Username;
+            var configuredPasswordHash = _adminCredentials.PasswordHash;
             if (!_adminCredentials.IsConfigured ||
+                string.IsNullOrWhiteSpace(configuredUsername) ||
+                string.IsNullOrWhiteSpace(configuredPasswordHash) ||
                 string.IsNullOrWhiteSpace(username) ||
                 string.IsNullOrWhiteSpace(password))
             {
                 return false;
             }
 
-            return string.Equals(username, _adminCredentials.Username, StringComparison.Ordinal) &&
-                   string.Equals(password, _adminCredentials.Password, StringComparison.Ordinal);
+            // Calculate the password result independently so a wrong username does not
+            // provide a cheap path that reveals the configured administrator name.
+            var passwordMatches = _passwordVerifier.VerifyPassword(
+                password,
+                configuredPasswordHash);
+            var usernameMatches = string.Equals(
+                username,
+                configuredUsername,
+                StringComparison.Ordinal);
+
+            return usernameMatches && passwordMatches;
         }
 
         // ---------------------------------------------------------------------------
