@@ -1,11 +1,11 @@
 # İlerleme çizelgesi
 
-- **Son kayıt:** 22 Eylül 2026 — F09 bütün görsel yüklemeleri ortak güvenlik politikasına bağlandı.
-- **Tamamlanan plan fazı:** 10/58 (F00–F09).
-- **Tamamlanan uygulama kodu fazı:** 8.
+- **Son kayıt:** 22 Eylül 2026 — F10 migration keşfi ve EF patch sürüm uyumu düzeltildi.
+- **Tamamlanan plan fazı:** 11/58 (F00–F10).
+- **Tamamlanan uygulama kodu fazı:** 9.
 - **Aktif faz:** Yok.
-- **Sıradaki faz:** F10 — kullanıcı onayı bekleniyor.
-- **Uygulama kodu:** F02–F09 güvenlik fazları tamamlandı; yönetici girişi ve oturum güvenliklerinin yanında bütün görsel yüklemeleri ortak boyut, tür, imza ve sağlayıcı decode/piksel politikasından geçiyor.
+- **Sıradaki faz:** F11 — kullanıcı onayı bekleniyor.
+- **Uygulama kodu:** F02–F09 güvenlik fazları tamamlandı. F10 ile beş geçmiş migration Web assembly'sinden keşfediliyor; EF runtime/design/tools patch seviyeleri uyumlu ve boş/eski PostgreSQL yükseltme yolu doğrulandı.
 
 ## Kullanım
 
@@ -30,7 +30,7 @@
 | [x] | F07 | Parola doğrulamasını hash'e geçir | TAMAMLANDI — KOD | [F07 kanıtı](../uygulama-kayitlari/F07-2026-09-22.md) |
 | [x] | F08 | Cookie ve oturum yaşam döngüsünü belirle | TAMAMLANDI — KOD | [F08 kanıtı](../uygulama-kayitlari/F08-2026-09-22.md) |
 | [x] | F09 | Bütün görsel yüklemelerine aynı güvenlik politikası | TAMAMLANDI — KOD | [F09 kanıtı](../uygulama-kayitlari/F09-2026-09-22.md) |
-| [ ] | F10 | Migration keşfini ve sürüm uyumunu düzelt | BAŞLAMADI | — |
+| [x] | F10 | Migration keşfini ve sürüm uyumunu düzelt | TAMAMLANDI — KOD | [F10 kanıtı](../uygulama-kayitlari/F10-2026-09-22.md) |
 | [ ] | F11 | Dosyasız yazı kaydını ve alan hatalarını düzelt | BAŞLAMADI | — |
 | [ ] | F12 | Yazı ve kategori iş kurallarını ortak doğrula | BAŞLAMADI | — |
 | [ ] | F13 | Formların frontend doğrulama bağımlılığını onar | BAŞLAMADI | — |
@@ -81,11 +81,11 @@
 
 ## Son agent teslimi
 
-- Tamamlanan faz: F09 bütün görsel yüklemelerine aynı güvenlik politikası.
-- Değişen davranış: Kapak, editör ve legacy görsel yüklemeleri 8 MB sınırı, JPG/PNG/GIF/WEBP uzantı-MIME-imza eşleşmesi, rastgele depolama adı ve Cloudinary 4096×4096 decode/dönüşüm sınırı kullanır. Hatalı upload yazı kaydını değiştirmez.
-- Çalıştırılan kontroller ve sonuç: Ana uygulama ve F09 aracı 0 uyarı/0 hatayla derlendi; 14 politika/adapter ve 8 HTTP/DB kontrolü ile bütün F02–F08 regresyonları geçti. Gerçek tarayıcıda allowlist/sınır metni ve taşma kontrol edildi.
-- Doğrulanamayan/engel: İzinli Cloudinary test hesabı olmadığı için gerçek sağlayıcıya upload yapılmadı ve fake test dış sağlayıcı kanıtı sayılmadı. F13'te kayıtlı jQuery validation yükleme sırası konsol hatası devam ediyor.
-- Sıradaki tek faz: F10.
-- Kullanıcıdan gereken: F10'u başlatmak için açık onay.
+- Tamamlanan faz: F10 migration keşfi ve sürüm uyumu.
+- Değişen davranış: `ApplicationDbContext` Web'deki beş geçmiş migration'ı açık assembly yapılandırmasıyla buluyor. Microsoft EF runtime/design/tools/CLI `10.0.10` patch seviyesinde uyumlu çalışıyor.
+- Çalıştırılan kontroller ve sonuç: Build 0 uyarı/0 hatayla geçti; beş migration doğru sırada listelendi. İdempotent SQL boş DB'yi kurdu; InitialCreate seviyesindeki iki eski kayıt beşinci migration'a kayıpsız yükseldi ve otomatik yayımlanmadı. Bütün F02–F09 regresyonları geçti.
+- Doğrulanamayan/engel: F10 için geliştirme engeli yoktur. Production DB update yapılmadı; deployment öncesinde gerçek yedek, hedef doğrulaması ve forward-fix planı gerekir.
+- Sıradaki tek faz: F11.
+- Kullanıcıdan gereken: F11'i başlatmak için açık onay.
 
 [Ana plan](/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/docs/GELISTIRME_PLANI_2026-09-21/README.md) · [Hazır mesajlar](/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/docs/GELISTIRME_PLANI_2026-09-21/AGENT_PROMPTLARI.md)

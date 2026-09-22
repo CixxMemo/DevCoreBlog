@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Bound EF migration discovery so a hanging design-time host is visible."""
+"""Verify bounded EF migration discovery for the Web migration assembly."""
 
 from __future__ import annotations
 
@@ -11,10 +11,20 @@ import signal
 import subprocess
 
 
-def probe(root: Path, project: str, timeout_seconds: int) -> dict[str, object]:
+EXPECTED_MIGRATIONS = [
+    "20260801205219_InitialCreate",
+    "20260806075506_RenamePropertiesForBaseEntity",
+    "20260807060210_AddViewCount",
+    "20260807084252_AddPublishDate",
+    "20260820080943_UpdatePostDataStructure",
+]
+
+
+def probe(root: Path, timeout_seconds: int) -> tuple[dict[str, object], bool]:
     command = [
         "dotnet", "ef", "migrations", "list", "--no-connect", "--no-build",
-        "--project", project, "--startup-project", "DevCoreBlog.csproj",
+        "--project", "DevCoreBlog.csproj",
+        "--startup-project", "DevCoreBlog.csproj",
         "--context", "ApplicationDbContext", "--no-color", "--verbose",
     ]
     environment = os.environ.copy()
@@ -26,6 +36,8 @@ def probe(root: Path, project: str, timeout_seconds: int) -> dict[str, object]:
     environment["ADMIN_PASSWORD_HASH"] = os.environ[
         "DEVCORE_TEST_ADMIN_PASSWORD_HASH"
     ]
+    environment["ASPNETCORE_ENVIRONMENT"] = "Development"
+    environment["DOTNET_ENVIRONMENT"] = "Development"
     process = subprocess.Popen(
         command,
         cwd=root,
@@ -47,13 +59,37 @@ def probe(root: Path, project: str, timeout_seconds: int) -> dict[str, object]:
             os.killpg(process.pid, signal.SIGKILL)
             output, _ = process.communicate()
 
-    lines = [line for line in output.splitlines() if line.strip()]
-    return {
-        "project": project,
+    migration_positions = {
+        migration: output.find(migration) for migration in EXPECTED_MIGRATIONS
+    }
+    discovered = [
+        migration
+        for migration, position in sorted(
+            migration_positions.items(),
+            key=lambda item: item[1],
+        )
+        if position >= 0
+    ]
+    version_mismatch = (
+        "tools version" in output.lower()
+        and "older than that of the runtime" in output.lower()
+    )
+    checks = {
+        "command_completed": not timed_out and process.returncode == 0,
+        "five_historical_migrations_discovered_in_order": (
+            discovered == EXPECTED_MIGRATIONS
+        ),
+        "tool_runtime_patch_warning_absent": not version_mismatch,
+        "no_missing_migrations_message": "No migrations were found." not in output,
+    }
+    result = {
+        "project": "DevCoreBlog.csproj",
         "status": "timed_out" if timed_out else "completed",
         "exit_code": None if timed_out else process.returncode,
-        "tail": lines[-8:],
+        "migrations": discovered,
+        "checks": checks,
     }
+    return result, all(checks.values())
 
 
 def main() -> int:
@@ -62,12 +98,9 @@ def main() -> int:
     parser.add_argument("--timeout-seconds", type=int, default=12)
     args = parser.parse_args()
 
-    results = [
-        probe(args.root, "DevCoreBlog.Data/DevCoreBlog.Data.csproj", args.timeout_seconds),
-        probe(args.root, "DevCoreBlog.csproj", args.timeout_seconds),
-    ]
-    print(json.dumps({"migration_discovery": results}, indent=2))
-    return 0
+    result, passed = probe(args.root, args.timeout_seconds)
+    print(json.dumps({"migration_discovery": result}, indent=2))
+    return 0 if passed else 1
 
 
 if __name__ == "__main__":

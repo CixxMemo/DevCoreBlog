@@ -20,6 +20,8 @@ task_tls_key="$task_tmp/localhost.key"
 task_pg_port=${DEVCORE_F01_PG_PORT:-55432}
 task_app_port=${DEVCORE_F01_APP_PORT:-15159}
 task_db=devcoreblog_f01_test
+task_f10_empty_db=devcoreblog_f10_empty_test
+task_f10_legacy_db=devcoreblog_f10_legacy_test
 task_pg_user=$(id -un)
 task_admin_username=f02-admin
 task_admin_password=f02-isolated-valid-password
@@ -147,6 +149,17 @@ pg_ctl -D "$task_pgdata" -l "$task_pglog" \
     -o "-p $task_pg_port -h 127.0.0.1 -k $task_socket" -w start >/dev/null
 task_pg_started=1
 createdb -h 127.0.0.1 -p "$task_pg_port" -U "$task_pg_user" "$task_db"
+createdb -h 127.0.0.1 -p "$task_pg_port" -U "$task_pg_user" "$task_f10_empty_db"
+createdb -h 127.0.0.1 -p "$task_pg_port" -U "$task_pg_user" "$task_f10_legacy_db"
+
+DEVCORE_TEST_ADMIN_PASSWORD_HASH="$task_admin_password_hash" \
+python3 "$task_source/scripts/verification/f10_database_migration_probe.py" \
+    --root "$task_source" \
+    --port "$task_pg_port" \
+    --user "$task_pg_user" \
+    --empty-database "$task_f10_empty_db" \
+    --legacy-database "$task_f10_legacy_db"
+
 psql -h 127.0.0.1 -p "$task_pg_port" -U "$task_pg_user" -d "$task_db" \
     -v ON_ERROR_STOP=1 -f "$task_source/scripts/verification/f01_fixture.sql" >/dev/null
 

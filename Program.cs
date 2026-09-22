@@ -54,10 +54,16 @@ if (string.IsNullOrEmpty(connectionString))
     throw new InvalidOperationException("DB_CONNECTION_STRING was not found in the .env file or environment variables.");
 }
 
+var migrationsAssemblyName = typeof(Program).Assembly.GetName().Name
+    ?? throw new InvalidOperationException(
+        "The Web assembly name is required for Entity Framework migrations.");
+
 // Register the ApplicationDbContext with the DI container.
 // This tells EF Core to use PostgreSQL (via Npgsql) as the database provider.
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(connectionString));
+    options.UseNpgsql(
+        connectionString,
+        npgsqlOptions => npgsqlOptions.MigrationsAssembly(migrationsAssemblyName)));
 
 // Load the single-admin credentials once and validate them when the host starts.
 // Validation messages identify only the missing key and never include its value.
