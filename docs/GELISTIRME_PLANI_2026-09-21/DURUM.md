@@ -1,11 +1,11 @@
 # İlerleme çizelgesi
 
-- **Son kayıt:** 22 Eylül 2026 — F07 yönetici parolası sürümlü PBKDF2 hash doğrulamasına geçirildi.
-- **Tamamlanan plan fazı:** 8/58 (F00–F07).
-- **Tamamlanan uygulama kodu fazı:** 6.
+- **Son kayıt:** 22 Eylül 2026 — F08 yönetici cookie ve oturum yaşam döngüsü güvenceye alındı.
+- **Tamamlanan plan fazı:** 9/58 (F00–F08).
+- **Tamamlanan uygulama kodu fazı:** 7.
 - **Aktif faz:** Yok.
-- **Sıradaki faz:** F08 — kullanıcı onayı bekleniyor.
-- **Uygulama kodu:** F02–F07 güvenlik fazları tamamlandı; yönetici girişi yalnızca sürümlü PBKDF2 hash, antiforgery ve bounded rate limit ile çalışıyor.
+- **Sıradaki faz:** F09 — kullanıcı onayı bekleniyor.
+- **Uygulama kodu:** F02–F08 güvenlik fazları tamamlandı; yönetici girişi sürümlü PBKDF2 hash, antiforgery, bounded rate limit, kesin oturum ömrü ve credential/session sürümü iptaliyle çalışıyor.
 
 ## Kullanım
 
@@ -28,7 +28,7 @@
 | [x] | F05 | Cookie POST işlemlerinde tutarlı antiforgery | TAMAMLANDI — KOD | [F05 kanıtı](../uygulama-kayitlari/F05-2026-09-22.md) |
 | [x] | F06 | Giriş denemelerini sınırlandır | TAMAMLANDI — KOD | [F06 kanıtı](../uygulama-kayitlari/F06-2026-09-22.md) |
 | [x] | F07 | Parola doğrulamasını hash'e geçir | TAMAMLANDI — KOD | [F07 kanıtı](../uygulama-kayitlari/F07-2026-09-22.md) |
-| [ ] | F08 | Cookie ve oturum yaşam döngüsünü belirle | BAŞLAMADI | — |
+| [x] | F08 | Cookie ve oturum yaşam döngüsünü belirle | TAMAMLANDI — KOD | [F08 kanıtı](../uygulama-kayitlari/F08-2026-09-22.md) |
 | [ ] | F09 | Bütün görsel yüklemelerine aynı güvenlik politikası | BAŞLAMADI | — |
 | [ ] | F10 | Migration keşfini ve sürüm uyumunu düzelt | BAŞLAMADI | — |
 | [ ] | F11 | Dosyasız yazı kaydını ve alan hatalarını düzelt | BAŞLAMADI | — |
@@ -81,11 +81,11 @@
 
 ## Son agent teslimi
 
-- Tamamlanan faz: F07 yönetici parola hash geçişi.
-- Değişen davranış: Uygulama yalnızca sürümlü `ADMIN_PASSWORD_HASH` kabul eder. PBKDF2-HMAC-SHA256, 600.000 iterasyon, rastgele salt ve sabit zamanlı doğrulama kullanılır; eski plaintext anahtar fallback değildir.
-- Çalıştırılan kontroller ve sonuç: Ana uygulama ve hash aracı 0 uyarı/0 hatayla derlendi; dokuz kriptografik öz test ve birleşik F02–F06 PostgreSQL paketi geçti. Yerel ölçüm yaklaşık 89 ms hash/90 ms doğrulamadır. Yerel `.env` değerler gösterilmeden hash'e geçirildi.
-- Doğrulanamayan/engel: Uzak/production secret değiştirilmedi; deploy öncesi `ADMIN_PASSWORD_HASH` güvenli ortamda ayarlanmalıdır. Migration keşfi F10 kapsamındadır.
-- Sıradaki tek faz: F08.
-- Kullanıcıdan gereken: F08'i başlatmak için açık onay.
+- Tamamlanan faz: F08 yönetici cookie ve oturum yaşam döngüsü.
+- Değişen davranış: Varsayılan 30 dakikalık yenilenmeyen session cookie Production'da Secure, her ortamda HttpOnly/SameSite=Lax çalışır. Credential veya `ADMIN_SESSION_VERSION` değişince eski ticket reddedilir. Data Protection uygulama kimliği sabittir ve Development dışında kalıcı korumalı key yolu zorunludur.
+- Çalıştırılan kontroller ve sonuç: Ana uygulama 0 uyarı/0 hatayla derlendi; gerçek geçici HTTPS fixture'da cookie bayrakları ve kesin expiry, aynı key ring'le restart, sürüm değişiminde iptal ve bütün F02–F07 regresyonları geçti. Secret'lar loglarda bulunmadı.
+- Doğrulanamayan/engel: F08 için kod engeli yoktur. Production deploy öncesi kalıcı/şifreli, uygulama hesabına özel Data Protection dizini hazırlanmalıdır; platforma özgü key encryption F50 kapsamındadır. Migration keşfi F10 kapsamındadır.
+- Sıradaki tek faz: F09.
+- Kullanıcıdan gereken: F09'u başlatmak için açık onay.
 
 [Ana plan](/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/docs/GELISTIRME_PLANI_2026-09-21/README.md) · [Hazır mesajlar](/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/docs/GELISTIRME_PLANI_2026-09-21/AGENT_PROMPTLARI.md)

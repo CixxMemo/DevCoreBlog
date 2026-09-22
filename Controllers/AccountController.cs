@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 // Import the validated admin configuration model
 using DevCoreBlog.Configuration;
 using DevCoreBlog.Services.Interfaces;
+using DevCoreBlog.Security;
 using Microsoft.Extensions.Options;
 // Import authentication-related classes (ClaimsIdentity, SignInAsync, etc.)
 using Microsoft.AspNetCore.Authentication;
@@ -33,6 +34,9 @@ namespace DevCoreBlog.Controllers
         private const string InvalidCredentialsMessage = "Invalid username or password.";
         private readonly AdminCredentialsOptions _adminCredentials;
         private readonly IAdminPasswordVerifier _passwordVerifier;
+        private readonly AdminSessionPolicy _sessionPolicy;
+        private readonly AdminSessionStamp _sessionStamp;
+        private readonly TimeProvider _timeProvider;
         private readonly ILogger<AccountController> _logger;
 
         // ---------------------------------------------------------------------------
@@ -42,10 +46,16 @@ namespace DevCoreBlog.Controllers
         public AccountController(
             IOptions<AdminCredentialsOptions> adminCredentials,
             IAdminPasswordVerifier passwordVerifier,
+            AdminSessionPolicy sessionPolicy,
+            AdminSessionStamp sessionStamp,
+            TimeProvider timeProvider,
             ILogger<AccountController> logger)
         {
             _adminCredentials = adminCredentials.Value;
             _passwordVerifier = passwordVerifier;
+            _sessionPolicy = sessionPolicy;
+            _sessionStamp = sessionStamp;
+            _timeProvider = timeProvider;
             _logger = logger;
         }
 
@@ -91,13 +101,18 @@ namespace DevCoreBlog.Controllers
 
             var claims = new List<Claim>
             {
-                new(ClaimTypes.Name, username)
+                new(ClaimTypes.Name, username),
+                new(AdminSessionPolicy.VersionClaimType, _sessionStamp.ClaimValue)
             };
             var claimsIdentity = new ClaimsIdentity(
                 claims,
                 CookieAuthenticationDefaults.AuthenticationScheme);
+            var issuedUtc = _timeProvider.GetUtcNow();
             var authProperties = new AuthenticationProperties
             {
+                AllowRefresh = false,
+                ExpiresUtc = issuedUtc.Add(_sessionPolicy.Lifetime),
+                IssuedUtc = issuedUtc,
                 IsPersistent = false
             };
 

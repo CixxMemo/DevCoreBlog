@@ -5,15 +5,25 @@ from __future__ import annotations
 import html
 import http.cookiejar
 import re
+import ssl
 import time
 import urllib.error
 import urllib.parse
 import urllib.request
 
 
-def cookie_opener():
+AUTHENTICATION_COOKIE_NAME = "DevCoreBlog.Admin"
+
+
+def cookie_opener(*, allow_untrusted_https: bool = False):
     cookies = http.cookiejar.CookieJar()
-    opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cookies))
+    handlers = [urllib.request.HTTPCookieProcessor(cookies)]
+    if allow_untrusted_https:
+        context = ssl.create_default_context()
+        context.check_hostname = False
+        context.verify_mode = ssl.CERT_NONE
+        handlers.append(urllib.request.HTTPSHandler(context=context))
+    opener = urllib.request.build_opener(*handlers)
     return opener, cookies
 
 
@@ -67,7 +77,7 @@ def request_with_headers(
 
 
 def has_authentication_cookie(cookies: http.cookiejar.CookieJar) -> bool:
-    return any(cookie.name == ".AspNetCore.Cookies" for cookie in cookies)
+    return any(cookie.name == AUTHENTICATION_COOKIE_NAME for cookie in cookies)
 
 
 def extract_antiforgery_token(body: str) -> str | None:

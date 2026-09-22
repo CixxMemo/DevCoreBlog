@@ -23,10 +23,12 @@ using DevCoreBlog.Services.Security;
 using DevCoreBlog.Middlewares;
 // Import validated application configuration models
 using DevCoreBlog.Configuration;
+using DevCoreBlog.Security;
 // Import Rate Limiting namespaces for endpoint protection
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.DataProtection;
 using System.Globalization;
 
 // Create the application builder, which loads configuration from appsettings.json,
@@ -60,6 +62,27 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 // Validation messages identify only the missing key and never include its value.
 var adminUsername = Environment.GetEnvironmentVariable("ADMIN_USERNAME");
 var adminPasswordHash = Environment.GetEnvironmentVariable("ADMIN_PASSWORD_HASH");
+var adminSessionVersion = Environment.GetEnvironmentVariable("ADMIN_SESSION_VERSION") ?? "1";
+
+if (string.IsNullOrWhiteSpace(adminSessionVersion) || adminSessionVersion.Length > 128)
+{
+    throw new InvalidOperationException(
+        "ADMIN_SESSION_VERSION is required and must contain between 1 and 128 characters.");
+}
+
+var rawAdminSessionLifetime = Environment.GetEnvironmentVariable(
+    "ADMIN_SESSION_LIFETIME_SECONDS");
+if (!int.TryParse(
+        rawAdminSessionLifetime ?? AdminSessionPolicy.DefaultLifetimeSeconds.ToString(
+            CultureInfo.InvariantCulture),
+        NumberStyles.None,
+        CultureInfo.InvariantCulture,
+        out var adminSessionLifetimeSeconds) ||
+    adminSessionLifetimeSeconds is < 1 or > AdminSessionPolicy.MaximumLifetimeSeconds)
+{
+    throw new InvalidOperationException(
+        $"ADMIN_SESSION_LIFETIME_SECONDS must be between 1 and {AdminSessionPolicy.MaximumLifetimeSeconds}.");
+}
 
 builder.Services
     .AddOptions<AdminCredentialsOptions>()
@@ -99,6 +122,53 @@ builder.Services.AddScoped<IPostService, PostService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IImageService, ImageService>();
 builder.Services.AddSingleton<IAdminPasswordVerifier, Pbkdf2PasswordHasher>();
+
+var adminSessionPolicy = new AdminSessionPolicy(
+    TimeSpan.FromSeconds(adminSessionLifetimeSeconds));
+builder.Services.AddSingleton(adminSessionPolicy);
+builder.Services.AddSingleton(new AdminSessionStamp(
+    adminUsername ?? string.Empty,
+    adminPasswordHash ?? string.Empty,
+    adminSessionVersion));
+builder.Services.AddScoped<AdminCookieAuthenticationEvents>();
+builder.Services.AddSingleton(TimeProvider.System);
+
+var dataProtectionBuilder = builder.Services
+    .AddDataProtection()
+    .SetApplicationName(AdminSessionPolicy.ApplicationName);
+var dataProtectionKeysPath = Environment.GetEnvironmentVariable(
+    "DATA_PROTECTION_KEYS_PATH");
+
+if (!string.IsNullOrWhiteSpace(dataProtectionKeysPath))
+{
+    if (!Path.IsPathFullyQualified(dataProtectionKeysPath))
+    {
+        throw new InvalidOperationException(
+            "DATA_PROTECTION_KEYS_PATH must be an absolute path.");
+    }
+
+    var keyDirectory = new DirectoryInfo(dataProtectionKeysPath);
+    if (!keyDirectory.Exists)
+    {
+        throw new InvalidOperationException(
+            "DATA_PROTECTION_KEYS_PATH must point to an existing directory.");
+    }
+
+    if (!builder.Environment.IsDevelopment() &&
+        !OperatingSystem.IsWindows() &&
+        HasSharedUnixPermissions(keyDirectory.FullName))
+    {
+        throw new InvalidOperationException(
+            "DATA_PROTECTION_KEYS_PATH must be accessible only to its owner in production.");
+    }
+
+    dataProtectionBuilder.PersistKeysToFileSystem(keyDirectory);
+}
+else if (!builder.Environment.IsDevelopment())
+{
+    throw new InvalidOperationException(
+        "DATA_PROTECTION_KEYS_PATH is required outside Development.");
+}
 
 // Validate antiforgery tokens on every unsafe MVC request by default. The inbound
 // secret-auth webhook declares its narrow exception on that action.
@@ -244,9 +314,18 @@ builder.Services.AddCors(options =>
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
-        // Redirect unauthenticated users to the login page
+        options.Cookie.Name = AdminSessionPolicy.CookieName;
+        options.Cookie.HttpOnly = true;
+        options.Cookie.IsEssential = true;
+        options.Cookie.Path = "/";
+        options.Cookie.SameSite = SameSiteMode.Lax;
+        options.Cookie.SecurePolicy = builder.Environment.IsDevelopment()
+            ? CookieSecurePolicy.SameAsRequest
+            : CookieSecurePolicy.Always;
+        options.ExpireTimeSpan = adminSessionPolicy.Lifetime;
+        options.SlidingExpiration = false;
+        options.EventsType = typeof(AdminCookieAuthenticationEvents);
         options.LoginPath = "/Account/Login";
-        // Redirect unauthorized (logged-in but not allowed) users to the login page
         options.AccessDeniedPath = "/Account/Login";
     });
 
@@ -341,3 +420,17 @@ app.MapControllerRoute(
 
 // Start listening for HTTP requests
 app.Run();
+
+static bool HasSharedUnixPermissions(string path)
+{
+    var mode = File.GetUnixFileMode(path);
+    const UnixFileMode sharedPermissions =
+        UnixFileMode.GroupRead |
+        UnixFileMode.GroupWrite |
+        UnixFileMode.GroupExecute |
+        UnixFileMode.OtherRead |
+        UnixFileMode.OtherWrite |
+        UnixFileMode.OtherExecute;
+
+    return (mode & sharedPermissions) != 0;
+}
