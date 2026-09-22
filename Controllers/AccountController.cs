@@ -15,6 +15,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Authentication;
 // Import cookie authentication defaults (e.g. "Cookies" scheme name)
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.RateLimiting;
 // Import claims-based identity types (Claim, ClaimTypes, ClaimsIdentity)
 using System.Security.Claims;
 using System.Diagnostics.CodeAnalysis;
@@ -30,14 +31,18 @@ namespace DevCoreBlog.Controllers
     {
         private const string InvalidCredentialsMessage = "Invalid username or password.";
         private readonly AdminCredentialsOptions _adminCredentials;
+        private readonly ILogger<AccountController> _logger;
 
         // ---------------------------------------------------------------------------
         // CONSTRUCTOR — Dependency Injection
         // ---------------------------------------------------------------------------
         // ASP.NET Core resolves options only after startup validation succeeds.
-        public AccountController(IOptions<AdminCredentialsOptions> adminCredentials)
+        public AccountController(
+            IOptions<AdminCredentialsOptions> adminCredentials,
+            ILogger<AccountController> logger)
         {
             _adminCredentials = adminCredentials.Value;
+            _logger = logger;
         }
 
         // ---------------------------------------------------------------------------
@@ -68,10 +73,14 @@ namespace DevCoreBlog.Controllers
         // and redirects to the admin dashboard.
         // If invalid: sets ViewBag.Error to show an error message on the form.
         [HttpPost]
+        [EnableRateLimiting("LoginLimiter")]
         public async Task<IActionResult> Login(string? username, string? password)
         {
             if (!ModelState.IsValid || !CredentialsMatch(username, password))
             {
+                _logger.LogWarning(
+                    "Admin sign-in attempt failed from direct connection IP {RemoteIpAddress}.",
+                    HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown");
                 ViewBag.Error = InvalidCredentialsMessage;
                 return View();
             }

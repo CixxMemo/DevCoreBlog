@@ -25,6 +25,24 @@ def request(
     raw_data: bytes | None = None,
     headers: dict[str, str] | None = None,
 ):
+    status, final_url, body, _ = request_with_headers(
+        opener,
+        url,
+        data=data,
+        raw_data=raw_data,
+        headers=headers,
+    )
+    return status, final_url, body
+
+
+def request_with_headers(
+    opener,
+    url: str,
+    *,
+    data: dict[str, str] | None = None,
+    raw_data: bytes | None = None,
+    headers: dict[str, str] | None = None,
+):
     if data is not None and raw_data is not None:
         raise ValueError("Use form data or raw data, not both.")
 
@@ -33,9 +51,19 @@ def request(
     req = urllib.request.Request(url, data=encoded, headers=headers or {}, method=method)
     try:
         with opener.open(req, timeout=5) as response:
-            return response.status, response.geturl(), response.read().decode("utf-8", "replace")
+            return (
+                response.status,
+                response.geturl(),
+                response.read().decode("utf-8", "replace"),
+                dict(response.headers.items()),
+            )
     except urllib.error.HTTPError as error:
-        return error.code, error.geturl(), error.read().decode("utf-8", "replace")
+        return (
+            error.code,
+            error.geturl(),
+            error.read().decode("utf-8", "replace"),
+            dict(error.headers.items()),
+        )
 
 
 def has_authentication_cookie(cookies: http.cookiejar.CookieJar) -> bool:

@@ -16,6 +16,10 @@ task_db=devcoreblog_f01_test
 task_pg_user=$(id -un)
 task_admin_username=f02-admin
 task_admin_password=f02-isolated-valid-password
+task_login_permit_limit=${DEVCORE_F06_PERMIT_LIMIT:-4}
+task_login_window_seconds=${DEVCORE_F06_WINDOW_SECONDS:-2}
+task_f06_username_marker=F06_USERNAME_MUST_NOT_BE_LOGGED
+task_f06_password_marker=F06_PASSWORD_MUST_NOT_BE_LOGGED
 task_pg_started=0
 task_app_pid=
 task_cleaned=0
@@ -129,7 +133,7 @@ expect_admin_config_rejection() {
 
     (
         cd "$task_source"
-        "$@" dotnet run --no-build --project DevCoreBlog.csproj \
+        exec "$@" dotnet run --no-build --project DevCoreBlog.csproj \
             --urls "http://127.0.0.1:$task_app_port" >"$task_probe_log" 2>&1
     ) &
     task_probe_pid=$!
@@ -174,7 +178,7 @@ expect_admin_config_rejection password-whitespace ADMIN_PASSWORD
 
 (
     cd "$task_source"
-    env -u ADMIN_PASSWORD_HASH \
+    exec env -u ADMIN_PASSWORD_HASH \
         ASPNETCORE_ENVIRONMENT=Development \
         DB_CONNECTION_STRING="Host=127.0.0.1;Port=$task_pg_port;Database=$task_db;Username=$task_pg_user" \
         ADMIN_USERNAME="$task_admin_username" \
@@ -184,6 +188,8 @@ expect_admin_config_rejection password-whitespace ADMIN_PASSWORD
         CLOUDINARY_API_SECRET=f01-secret \
         WEBHOOK_API_SECRET=f01-webhook-secret \
         PORTFOLIO_CORS_ORIGIN=http://127.0.0.1:19999 \
+        Security__LoginRateLimit__PermitLimit="$task_login_permit_limit" \
+        Security__LoginRateLimit__WindowSeconds="$task_login_window_seconds" \
         dotnet run --no-build --project DevCoreBlog.csproj \
             --urls "http://127.0.0.1:$task_app_port" >"$task_applog" 2>&1
 ) &
@@ -198,13 +204,46 @@ python3 "$task_source/scripts/verification/f01_http_baseline.py" \
     --expect-f04-fixed \
     --expect-f05-fixed
 
+# Each phase probe gets a fresh fixed window while sharing the same isolated host.
+sleep $((task_login_window_seconds + 1))
+
 DEVCORE_TEST_ADMIN_USERNAME="$task_admin_username" \
 DEVCORE_TEST_ADMIN_PASSWORD="$task_admin_password" \
 DEVCORE_TEST_WEBHOOK_SECRET=f01-webhook-secret \
 python3 "$task_source/scripts/verification/f05_antiforgery_probe.py" \
     --base-url "http://127.0.0.1:$task_app_port"
 
+sleep $((task_login_window_seconds + 1))
+
+DEVCORE_TEST_ADMIN_USERNAME="$task_admin_username" \
+DEVCORE_TEST_ADMIN_PASSWORD="$task_admin_password" \
+DEVCORE_F06_USERNAME_MARKER="$task_f06_username_marker" \
+DEVCORE_F06_PASSWORD_MARKER="$task_f06_password_marker" \
+python3 "$task_source/scripts/verification/f06_login_rate_limit_probe.py" \
+    --base-url "http://127.0.0.1:$task_app_port" \
+    --permit-limit "$task_login_permit_limit" \
+    --window-seconds "$task_login_window_seconds"
+
+if grep -F "$task_f06_username_marker" "$task_applog" >/dev/null; then
+    printf 'F06 application log exposed the submitted username marker.\n' >&2
+    exit 1
+fi
+if grep -F "$task_f06_password_marker" "$task_applog" >/dev/null; then
+    printf 'F06 application log exposed the submitted password marker.\n' >&2
+    exit 1
+fi
+if ! grep -F 'Admin sign-in attempt failed from direct connection IP' "$task_applog" >/dev/null; then
+    printf 'F06 did not record failed sign-in events.\n' >&2
+    exit 1
+fi
+if ! grep -F 'Admin sign-in rate limit rejected a request from direct connection IP' "$task_applog" >/dev/null; then
+    printf 'F06 did not record rate-limit rejections.\n' >&2
+    exit 1
+fi
+printf 'F06 sign-in logs contain event metadata without submitted credentials.\n'
+
 if [ "${DEVCORE_F01_HOLD_FOR_BROWSER:-0}" = "1" ]; then
+    sleep $((task_login_window_seconds + 1))
     printf 'Browser fixture ready at http://127.0.0.1:%s\n' "$task_app_port"
     printf 'Press Ctrl-C after browser verification to stop and clean the fixture.\n'
     while kill -0 "$task_app_pid" 2>/dev/null; do

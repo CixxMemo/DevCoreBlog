@@ -26,6 +26,7 @@ using DevCoreBlog.Configuration;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Mvc;
+using System.Globalization;
 
 // Create the application builder, which loads configuration from appsettings.json,
 // environment variables, and command-line arguments
@@ -112,8 +113,41 @@ builder.Services.AddMemoryCache();
 // ---------------------------------------------------------------------------
 // RATE LIMITING REGISTRATION (DDoS & Webhook Brute-Force Protection)
 // ---------------------------------------------------------------------------
+var loginRateLimitPermitLimit = builder.Configuration.GetValue(
+    "Security:LoginRateLimit:PermitLimit",
+    5);
+var loginRateLimitWindowSeconds = builder.Configuration.GetValue(
+    "Security:LoginRateLimit:WindowSeconds",
+    60);
+
+if (loginRateLimitPermitLimit is < 1 or > 20)
+{
+    throw new InvalidOperationException(
+        "Security:LoginRateLimit:PermitLimit must be between 1 and 20.");
+}
+
+if (loginRateLimitWindowSeconds is < 1 or > 300)
+{
+    throw new InvalidOperationException(
+        "Security:LoginRateLimit:WindowSeconds must be between 1 and 300.");
+}
+
 builder.Services.AddRateLimiter(options =>
 {
+    // Login Limiter: keep the partition key tied to the direct connection IP.
+    // Forwarded headers are intentionally ignored until trusted proxy handling
+    // is introduced in a later phase. The fallback is a single bounded bucket.
+    options.AddPolicy("LoginLimiter", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown-login-client",
+            factory: partition => new FixedWindowRateLimiterOptions
+            {
+                AutoReplenishment = true,
+                PermitLimit = loginRateLimitPermitLimit,
+                QueueLimit = 0,
+                Window = TimeSpan.FromSeconds(loginRateLimitWindowSeconds)
+            }));
+
     // Webhook Limiter: Max 5 requests per minute per IP for inbound webhook writes
     options.AddPolicy("WebhookLimiter", httpContext =>
         RateLimitPartition.GetFixedWindowLimiter(
@@ -140,6 +174,40 @@ builder.Services.AddRateLimiter(options =>
 
     // Reject excess requests with standard HTTP 429 Too Many Requests
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.OnRejected = async (context, cancellationToken) =>
+    {
+        var retryAfterSeconds = loginRateLimitWindowSeconds;
+        if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
+        {
+            retryAfterSeconds = Math.Max(
+                1,
+                (int)Math.Ceiling(retryAfter.TotalSeconds));
+        }
+
+        context.HttpContext.Response.Headers["Retry-After"] =
+            retryAfterSeconds.ToString(CultureInfo.InvariantCulture);
+
+        var request = context.HttpContext.Request;
+        var isLoginPost = HttpMethods.IsPost(request.Method) &&
+            string.Equals(request.Path.Value, "/Account/Login", StringComparison.OrdinalIgnoreCase);
+
+        if (!isLoginPost)
+        {
+            return;
+        }
+
+        var logger = context.HttpContext.RequestServices
+            .GetRequiredService<ILoggerFactory>()
+            .CreateLogger("DevCoreBlog.Security.LoginRateLimit");
+        logger.LogWarning(
+            "Admin sign-in rate limit rejected a request from direct connection IP {RemoteIpAddress}.",
+            context.HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown");
+
+        context.HttpContext.Response.ContentType = "text/plain; charset=utf-8";
+        await context.HttpContext.Response.WriteAsync(
+            $"Too many sign-in attempts. Try again in {retryAfterSeconds} seconds.",
+            cancellationToken);
+    };
 });
 
 // ---------------------------------------------------------------------------

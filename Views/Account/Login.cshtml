@@ -29,6 +29,10 @@
             </div>
         }
 
+        <p class="mb-6 text-xs font-mono text-gray-600 dark:text-zinc-400" role="note">
+            Repeated sign-in attempts are temporarily limited. If blocked, wait for the time shown and try again.
+        </p>
+
         @* Login form — POSTs to Account/Login with username and password *@
         <form asp-controller="Account" asp-action="Login" method="post">
             @* Username field *@

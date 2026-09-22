@@ -1,11 +1,11 @@
 # İlerleme çizelgesi
 
-- **Son kayıt:** 22 Eylül 2026 — F05 bütün cookie POST işlemlerinde tutarlı antiforgery korumasıyla tamamlandı.
-- **Tamamlanan plan fazı:** 6/58 (F00–F05).
-- **Tamamlanan uygulama kodu fazı:** 4.
+- **Son kayıt:** 22 Eylül 2026 — F06 login POST için bounded giriş denemesi sınırıyla tamamlandı.
+- **Tamamlanan plan fazı:** 7/58 (F00–F06).
+- **Tamamlanan uygulama kodu fazı:** 5.
 - **Aktif faz:** Yok.
-- **Sıradaki faz:** F06 — kullanıcı onayı bekleniyor.
-- **Uygulama kodu:** F02–F05 güvenlik fazları tamamlandı; güvenli yönetici girişi, metin toast, Markdown renderer ve antiforgery koruması aktif.
+- **Sıradaki faz:** F07 — kullanıcı onayı bekleniyor.
+- **Uygulama kodu:** F02–F06 güvenlik fazları tamamlandı; güvenli yönetici girişi, metin toast, Markdown renderer, antiforgery ve login rate limit korumaları aktif.
 
 ## Kullanım
 
@@ -26,7 +26,7 @@
 | [x] | F03 | Yönetici bildirimini düz metin olarak göster | TAMAMLANDI — KOD | [F03 kanıtı](../uygulama-kayitlari/F03-2026-09-21.md) |
 | [x] | F04 | Güvenli Markdown ve kontrollü video üretimi | TAMAMLANDI — KOD | [F04 kanıtı](../uygulama-kayitlari/F04-2026-09-22.md) |
 | [x] | F05 | Cookie POST işlemlerinde tutarlı antiforgery | TAMAMLANDI — KOD | [F05 kanıtı](../uygulama-kayitlari/F05-2026-09-22.md) |
-| [ ] | F06 | Giriş denemelerini sınırlandır | BAŞLAMADI | — |
+| [x] | F06 | Giriş denemelerini sınırlandır | TAMAMLANDI — KOD | [F06 kanıtı](../uygulama-kayitlari/F06-2026-09-22.md) |
 | [ ] | F07 | Parola doğrulamasını hash'e geçir | BAŞLAMADI | — |
 | [ ] | F08 | Cookie ve oturum yaşam döngüsünü belirle | BAŞLAMADI | — |
 | [ ] | F09 | Bütün görsel yüklemelerine aynı güvenlik politikası | BAŞLAMADI | — |
@@ -81,11 +81,11 @@
 
 ## Son agent teslimi
 
-- Tamamlanan fazlar: F04 güvenli Markdown ve F05 tutarlı antiforgery.
-- Değişen davranış: Raw HTML ve tehlikeli Markdown URL'leri etkisizdir; yalnızca doğrulanmış YouTube URL'si kontrollü iframe üretir. Cookie tabanlı bütün POST uçları geçerli antiforgery token ister; webhook yalnızca kendi secret sözleşmesiyle çalışır.
-- Çalıştırılan kontroller ve sonuç: Dört proje build 0 uyarı/0 hata; birleşik F02–F05 izole PostgreSQL paketi geçti; F04 ve F05 masaüstü/mobil gerçek tarayıcı kontrolleri, klavye ve konsol kontrolleri geçti.
-- Doğrulanamayan/engel: F04/F05 için yok. Migration keşfi F10, genel mobil admin yerleşimi F34 kapsamındadır.
-- Sıradaki tek faz: F06.
-- Kullanıcıdan gereken: F06'yı başlatmak için açık onay.
+- Tamamlanan faz: F06 giriş denemesi sınırlandırması.
+- Değişen davranış: Login POST, doğrudan bağlantı IP'si başına varsayılan 5 istek/60 saniye sınırına sahiptir. Eşik aşımı `429` ve `Retry-After` döndürür; pencere bitince giriş yeniden açılır. Kullanıcı adı/parola loglanmaz ve sahte forwarded IP limiti aşamaz.
+- Çalıştırılan kontroller ve sonuç: Dört proje build 0 uyarı/0 hata; birleşik F02–F06 izole PostgreSQL paketi geçti; gerçek tarayıcıda English hata/not, Enter ile gönderim ve 655×763 dar görünümde taşmasız yerleşim doğrulandı.
+- Doğrulanamayan/engel: Geniş Chrome oturumu provider request-header policy hatasıyla açılamadı; F06 işlevi için engel yok. Migration keşfi F10, genel mobil admin yerleşimi F34 kapsamındadır.
+- Sıradaki tek faz: F07.
+- Kullanıcıdan gereken: F07'yi başlatmak için açık onay.
 
 [Ana plan](/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/docs/GELISTIRME_PLANI_2026-09-21/README.md) · [Hazır mesajlar](/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/docs/GELISTIRME_PLANI_2026-09-21/AGENT_PROMPTLARI.md)
