@@ -1,11 +1,11 @@
 # İlerleme çizelgesi
 
-- **Son kayıt:** 22 Eylül 2026 — F08 yönetici cookie ve oturum yaşam döngüsü güvenceye alındı.
-- **Tamamlanan plan fazı:** 9/58 (F00–F08).
-- **Tamamlanan uygulama kodu fazı:** 7.
+- **Son kayıt:** 22 Eylül 2026 — F09 bütün görsel yüklemeleri ortak güvenlik politikasına bağlandı.
+- **Tamamlanan plan fazı:** 10/58 (F00–F09).
+- **Tamamlanan uygulama kodu fazı:** 8.
 - **Aktif faz:** Yok.
-- **Sıradaki faz:** F09 — kullanıcı onayı bekleniyor.
-- **Uygulama kodu:** F02–F08 güvenlik fazları tamamlandı; yönetici girişi sürümlü PBKDF2 hash, antiforgery, bounded rate limit, kesin oturum ömrü ve credential/session sürümü iptaliyle çalışıyor.
+- **Sıradaki faz:** F10 — kullanıcı onayı bekleniyor.
+- **Uygulama kodu:** F02–F09 güvenlik fazları tamamlandı; yönetici girişi ve oturum güvenliklerinin yanında bütün görsel yüklemeleri ortak boyut, tür, imza ve sağlayıcı decode/piksel politikasından geçiyor.
 
 ## Kullanım
 
@@ -29,7 +29,7 @@
 | [x] | F06 | Giriş denemelerini sınırlandır | TAMAMLANDI — KOD | [F06 kanıtı](../uygulama-kayitlari/F06-2026-09-22.md) |
 | [x] | F07 | Parola doğrulamasını hash'e geçir | TAMAMLANDI — KOD | [F07 kanıtı](../uygulama-kayitlari/F07-2026-09-22.md) |
 | [x] | F08 | Cookie ve oturum yaşam döngüsünü belirle | TAMAMLANDI — KOD | [F08 kanıtı](../uygulama-kayitlari/F08-2026-09-22.md) |
-| [ ] | F09 | Bütün görsel yüklemelerine aynı güvenlik politikası | BAŞLAMADI | — |
+| [x] | F09 | Bütün görsel yüklemelerine aynı güvenlik politikası | TAMAMLANDI — KOD | [F09 kanıtı](../uygulama-kayitlari/F09-2026-09-22.md) |
 | [ ] | F10 | Migration keşfini ve sürüm uyumunu düzelt | BAŞLAMADI | — |
 | [ ] | F11 | Dosyasız yazı kaydını ve alan hatalarını düzelt | BAŞLAMADI | — |
 | [ ] | F12 | Yazı ve kategori iş kurallarını ortak doğrula | BAŞLAMADI | — |
@@ -81,11 +81,11 @@
 
 ## Son agent teslimi
 
-- Tamamlanan faz: F08 yönetici cookie ve oturum yaşam döngüsü.
-- Değişen davranış: Varsayılan 30 dakikalık yenilenmeyen session cookie Production'da Secure, her ortamda HttpOnly/SameSite=Lax çalışır. Credential veya `ADMIN_SESSION_VERSION` değişince eski ticket reddedilir. Data Protection uygulama kimliği sabittir ve Development dışında kalıcı korumalı key yolu zorunludur.
-- Çalıştırılan kontroller ve sonuç: Ana uygulama 0 uyarı/0 hatayla derlendi; gerçek geçici HTTPS fixture'da cookie bayrakları ve kesin expiry, aynı key ring'le restart, sürüm değişiminde iptal ve bütün F02–F07 regresyonları geçti. Secret'lar loglarda bulunmadı.
-- Doğrulanamayan/engel: F08 için kod engeli yoktur. Production deploy öncesi kalıcı/şifreli, uygulama hesabına özel Data Protection dizini hazırlanmalıdır; platforma özgü key encryption F50 kapsamındadır. Migration keşfi F10 kapsamındadır.
-- Sıradaki tek faz: F09.
-- Kullanıcıdan gereken: F09'u başlatmak için açık onay.
+- Tamamlanan faz: F09 bütün görsel yüklemelerine aynı güvenlik politikası.
+- Değişen davranış: Kapak, editör ve legacy görsel yüklemeleri 8 MB sınırı, JPG/PNG/GIF/WEBP uzantı-MIME-imza eşleşmesi, rastgele depolama adı ve Cloudinary 4096×4096 decode/dönüşüm sınırı kullanır. Hatalı upload yazı kaydını değiştirmez.
+- Çalıştırılan kontroller ve sonuç: Ana uygulama ve F09 aracı 0 uyarı/0 hatayla derlendi; 14 politika/adapter ve 8 HTTP/DB kontrolü ile bütün F02–F08 regresyonları geçti. Gerçek tarayıcıda allowlist/sınır metni ve taşma kontrol edildi.
+- Doğrulanamayan/engel: İzinli Cloudinary test hesabı olmadığı için gerçek sağlayıcıya upload yapılmadı ve fake test dış sağlayıcı kanıtı sayılmadı. F13'te kayıtlı jQuery validation yükleme sırası konsol hatası devam ediyor.
+- Sıradaki tek faz: F10.
+- Kullanıcıdan gereken: F10'u başlatmak için açık onay.
 
 [Ana plan](/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/docs/GELISTIRME_PLANI_2026-09-21/README.md) · [Hazır mesajlar](/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/docs/GELISTIRME_PLANI_2026-09-21/AGENT_PROMPTLARI.md)

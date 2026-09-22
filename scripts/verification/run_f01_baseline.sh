@@ -92,7 +92,8 @@ rsync -a \
 
 # Existing restore metadata is copied only into the isolated tree. This avoids
 # changing the user's tracked bin/obj files or downloading packages for F01.
-for task_project in . DevCoreBlog.Core DevCoreBlog.Data DevCoreBlog.Services tools/DevCoreBlog.PasswordHashTool; do
+for task_project in . DevCoreBlog.Core DevCoreBlog.Data DevCoreBlog.Services \
+    tools/DevCoreBlog.PasswordHashTool tools/DevCoreBlog.ImageUploadPolicyTool; do
     if [ -d "$task_repo/$task_project/obj" ]; then
         mkdir -p "$task_source/$task_project/obj"
         rsync -a "$task_repo/$task_project/obj/" "$task_source/$task_project/obj/"
@@ -107,6 +108,9 @@ done
     dotnet build tools/DevCoreBlog.PasswordHashTool/DevCoreBlog.PasswordHashTool.csproj \
         --no-restore --nologo --disable-build-servers -m:1 \
         -p:NuGetAudit=false -nodeReuse:false
+    dotnet build tools/DevCoreBlog.ImageUploadPolicyTool/DevCoreBlog.ImageUploadPolicyTool.csproj \
+        --no-restore --nologo --disable-build-servers -m:1 \
+        -p:NuGetAudit=false -nodeReuse:false
 )
 
 (
@@ -117,6 +121,8 @@ done
     dotnet run --no-build \
         --project tools/DevCoreBlog.PasswordHashTool/DevCoreBlog.PasswordHashTool.csproj \
         -- --benchmark
+    dotnet run --no-build \
+        --project tools/DevCoreBlog.ImageUploadPolicyTool/DevCoreBlog.ImageUploadPolicyTool.csproj
 )
 
 task_admin_password_hash=$(
@@ -414,6 +420,13 @@ if ! grep -F 'Admin sign-in rate limit rejected a request from direct connection
     exit 1
 fi
 printf 'F06 sign-in logs contain event metadata without submitted credentials.\n'
+
+sleep $((task_login_window_seconds + 1))
+
+DEVCORE_TEST_ADMIN_USERNAME="$task_admin_username" \
+DEVCORE_TEST_ADMIN_PASSWORD="$task_admin_password" \
+python3 "$task_source/scripts/verification/f09_image_upload_probe.py" \
+    --base-url "http://127.0.0.1:$task_app_port"
 
 sleep $((task_login_window_seconds + 1))
 

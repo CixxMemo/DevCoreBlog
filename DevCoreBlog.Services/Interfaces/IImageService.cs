@@ -1,8 +1,11 @@
 using Microsoft.AspNetCore.Http;
+using DevCoreBlog.Services.Images;
 
 namespace DevCoreBlog.Services.Interfaces;
 
 public interface IImageService
 {
-    Task<string> UploadImageAsync(IFormFile file);
+    Task<ImageUploadOutcome> UploadImageAsync(
+        IFormFile? file,
+        CancellationToken cancellationToken = default);
 }

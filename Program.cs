@@ -19,6 +19,7 @@ using DevCoreBlog.Services;
 // Import Service interfaces for dependency injection
 using DevCoreBlog.Services.Interfaces;
 using DevCoreBlog.Services.Security;
+using DevCoreBlog.Services.Images;
 // Import Middlewares
 using DevCoreBlog.Middlewares;
 // Import validated application configuration models
@@ -121,6 +122,9 @@ builder.Services.AddScoped<CategoryRepository>();
 builder.Services.AddScoped<IPostService, PostService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IImageService, ImageService>();
+builder.Services.AddSingleton<ImageUploadPolicy>();
+builder.Services.AddSingleton<CloudinaryImageUploadRequestFactory>();
+builder.Services.AddScoped<IImageStorage, CloudinaryImageStorage>();
 builder.Services.AddSingleton<IAdminPasswordVerifier, Pbkdf2PasswordHasher>();
 
 var adminSessionPolicy = new AdminSessionPolicy(

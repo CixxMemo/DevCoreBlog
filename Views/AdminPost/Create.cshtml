@@ -64,7 +64,7 @@
                     <span>🖼️</span>
                     <span>Upload Image/GIF</span>
                 </button>
-                <input type="file" id="editor-image-picker" accept="image/*" class="hidden" />
+                <input type="file" id="editor-image-picker" accept=".jpg,.jpeg,.png,.gif,.webp" class="hidden" />
 
                 @* Embed Video Button *@
                 <button type="button" 
@@ -193,8 +193,10 @@
 
                 @* Cover Image Upload *@
                 <div>
-                    <label class="block font-mono text-xs font-bold uppercase text-black mb-1">Cover Image</label>
-                    <input type="file" name="thumbnailFile" class="w-full border-2 border-black p-1.5 font-mono text-xs bg-neutral-50 text-black focus:outline-none" accept="image/*" />
+                    <label for="thumbnailFile" class="block font-mono text-xs font-bold uppercase text-black mb-1">Cover Image</label>
+                    <input type="file" id="thumbnailFile" name="thumbnailFile" class="w-full border-2 border-black p-1.5 font-mono text-xs bg-neutral-50 text-black focus:outline-none" accept=".jpg,.jpeg,.png,.gif,.webp" />
+                    @Html.ValidationMessage("thumbnailFile", null, new { @class = "font-mono text-xs text-rose-600 block mt-1" })
+                    <p class="font-mono text-[10px] text-neutral-500 mt-1">JPG, PNG, GIF or WEBP · max 8 MB · stored at up to 4096×4096.</p>
                     <input type="hidden" asp-for="ThumbnailUrl" />
                 </div>
 
@@ -289,7 +291,7 @@
                     return;
                 }
 
-                if (window.showToast) window.showToast('Uploading to Cloudinary...', 'info');
+                if (window.showToast) window.showToast('Uploading image...', 'info');
 
                 const formData = new FormData();
                 formData.append('file', file);
