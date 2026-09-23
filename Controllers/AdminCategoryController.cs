@@ -136,14 +136,12 @@ public class AdminCategoryController : Controller
 
         if (ModelState.IsValid)
         {
-            var category = new Category
-            {
-                Id = input.Id,
-                Name = input.Name
-            };
-            // Delegate to service layer — business logic (slug regeneration)
-            // is handled in CategoryService.UpdateCategoryAsync()
-            var result = await _categoryService.UpdateCategoryAsync(category);
+            // The service loads the tracked row and changes only editable fields.
+            // A null result means the category disappeared before this POST.
+            var result = await _categoryService.UpdateCategoryAsync(id, input.Name);
+            if (result is null)
+                return NotFound();
+
             ModelState.AddContentErrors(result);
             if (result.IsValid)
             {

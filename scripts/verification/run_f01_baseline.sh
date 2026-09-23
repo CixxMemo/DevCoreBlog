@@ -496,6 +496,16 @@ sleep $((task_login_window_seconds + 1))
 
 DEVCORE_TEST_ADMIN_USERNAME="$task_admin_username" \
 DEVCORE_TEST_ADMIN_PASSWORD="$task_admin_password" \
+python3 "$task_source/scripts/verification/f14_category_edit_probe.py" \
+    --base-url "http://127.0.0.1:$task_app_port" \
+    --database-port "$task_pg_port" \
+    --database-user "$task_pg_user" \
+    --database-name "$task_db"
+
+sleep $((task_login_window_seconds + 1))
+
+DEVCORE_TEST_ADMIN_USERNAME="$task_admin_username" \
+DEVCORE_TEST_ADMIN_PASSWORD="$task_admin_password" \
 python3 "$task_source/scripts/verification/f08_session_probe.py" \
     --mode issue \
     --base-url "http://127.0.0.1:$task_app_port" \

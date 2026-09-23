@@ -110,25 +110,33 @@ public class CategoryService : ICategoryService
         return ContentValidationResult.Success();
     }
 
-    // Update an existing category (handles slug regeneration)
-    // Business rule: Slug is regenerated in case the Name was changed
-    public async Task<ContentValidationResult> UpdateCategoryAsync(Category category)
+    // Update an existing category without replacing server-owned state.
+    // Business rule: Slug is regenerated in case the Name was changed.
+    public async Task<ContentValidationResult?> UpdateCategoryAsync(
+        int id,
+        string name)
     {
-        CategoryContentRules.Normalize(category);
-        var validationResult = CategoryContentRules.Validate(category);
+        var existingCategory = await _categoryRepository.GetByIdAsync(id);
+        if (existingCategory is null)
+        {
+            return null;
+        }
+
+        // Validate a detached candidate before changing the tracked entity. This
+        // keeps CreatedDate, IsActive and every other server-owned field intact.
+        var editableCategory = new Category { Name = name };
+        CategoryContentRules.Normalize(editableCategory);
+        var validationResult = CategoryContentRules.Validate(editableCategory);
         if (!validationResult.IsValid)
         {
             return validationResult;
         }
 
-        // BUSINESS RULE: Regenerate slug in case the name was changed
-        // This ensures the slug always matches the current name
-        category.Slug = SlugGenerator.Generate(category.Name);
+        existingCategory.Name = editableCategory.Name;
+        existingCategory.Slug = SlugGenerator.Generate(editableCategory.Name);
 
-        // Update the category in the database via repository
-        await _categoryRepository.UpdateAsync(category);
-
-        // Commit the transaction to the database
+        // GetByIdAsync returns a tracked row, so SaveChanges writes only changed
+        // properties instead of marking every column as modified.
         await _categoryRepository.SaveChangesAsync();
         return ContentValidationResult.Success();
     }

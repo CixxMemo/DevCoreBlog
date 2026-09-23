@@ -50,8 +50,8 @@ public interface ICategoryService
     // Create a new category (handles slug generation)
     Task<ContentValidationResult> CreateCategoryAsync(Category category);
 
-    // Update an existing category (handles slug regeneration)
-    Task<ContentValidationResult> UpdateCategoryAsync(Category category);
+    // Updates only editable category fields; null means the requested row was not found.
+    Task<ContentValidationResult?> UpdateCategoryAsync(int id, string name);
 
     // Delete a category by its Id (returns false if category has posts)
     Task<bool> DeleteCategoryAsync(int id);

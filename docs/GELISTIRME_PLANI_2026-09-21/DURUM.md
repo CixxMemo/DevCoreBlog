@@ -1,11 +1,11 @@
 # İlerleme çizelgesi
 
-- **Son kayıt:** 23 Eylül 2026 — F13 frontend validation asset zinciri ve Markdown fallback'i onarıldı.
-- **Tamamlanan plan fazı:** 14/58 (F00–F13).
-- **Tamamlanan uygulama kodu fazı:** 12.
+- **Son kayıt:** 23 Eylül 2026 — F14 kategori editinde CreatedDate ve pasiflik korunur hale getirildi.
+- **Tamamlanan plan fazı:** 15/58 (F00–F14).
+- **Tamamlanan uygulama kodu fazı:** 13.
 - **Aktif faz:** Yok.
-- **Sıradaki faz:** F14 — kullanıcı onayı bekleniyor.
-- **Uygulama kodu:** F02–F09 güvenlik fazları tamamlandı. F10 migration zincirini doğruladı. F11 kapaksız kayıt ve görünür hataları düzeltti. F12 ortak içerik kurallarını zorunlu kıldı. F13 yerel validation asset'lerini doğru sıraya aldı ve Markdown textarea'yı JavaScript'siz çalışan fallback yaptı.
+- **Sıradaki faz:** F15 — kullanıcı onayı bekleniyor.
+- **Uygulama kodu:** F02–F09 güvenlik fazları tamamlandı. F10 migration zincirini doğruladı. F11–F13 form/içerik güvenliğini tamamladı. F14 kategori update'ini mevcut takipli satırda yalnız izinli alanları değiştirecek hale getirdi.
 
 ## Kullanım
 
@@ -34,7 +34,7 @@
 | [x] | F11 | Dosyasız yazı kaydını ve alan hatalarını düzelt | TAMAMLANDI — KOD | [F11 kanıtı](../uygulama-kayitlari/F11-2026-09-23.md) |
 | [x] | F12 | Yazı ve kategori iş kurallarını ortak doğrula | TAMAMLANDI — KOD | [F12 kanıtı](../uygulama-kayitlari/F12-2026-09-23.md) |
 | [x] | F13 | Formların frontend doğrulama bağımlılığını onar | TAMAMLANDI — KOD | [F13 kanıtı](../uygulama-kayitlari/F13-2026-09-23.md) |
-| [ ] | F14 | Kategori düzenlemesinde korunan alanları sakla | BAŞLAMADI | — |
+| [x] | F14 | Kategori düzenlemesinde korunan alanları sakla | TAMAMLANDI — KOD | [F14 kanıtı](../uygulama-kayitlari/F14-2026-09-23.md) |
 | [ ] | F15 | Kategori silme kuralını veritabanında güvenceye al | BAŞLAMADI | — |
 | [ ] | F16 | Yayın zamanını açık saat dilimiyle işle | BAŞLAMADI | — |
 | [ ] | F17 | Tek yayın görünürlüğü kuralını uygula | BAŞLAMADI | — |
@@ -81,11 +81,11 @@
 
 ## Son agent teslimi
 
-- Tamamlanan faz: F13 frontend validation bağımlılık zinciri ve Markdown fallback'i.
-- Değişen davranış: Post/Category form sayfaları yerel jQuery → Validation → Unobtrusive sırasını birer kez yükler. Toast UI başarıyla başlamazsa Markdown textarea görünür ve düzenlenebilir kalır; başlarsa Content değeri doğrulama için sürekli eşlenir.
-- Çalıştırılan kontroller ve sonuç: Build 0 uyarı/0 hatayla geçti. F13 probe'u 6/6 geçti; JavaScript'siz gerçek kayıt oluşturuldu. F02–F09 ve F11–F12 regresyonları geçti. Masaüstü ve 390×844 tarayıcıda klavye doğrulaması çalıştı ve console error görülmedi.
-- Doğrulanamayan/engel: Yerel restore graph EF runtime 10.0.11 çözerken `dotnet-ef`/Design/Tools 10.0.10 olduğu için tam runner migration keşfinde bekliyor; F10 bugün yeniden doğrulanmadı. Tailwind/Prism uyarıları F35, sabit admin sidebar darlığı F34 kapsamındadır.
-- Sıradaki tek faz: F14.
-- Kullanıcıdan gereken: F14'ü başlatmak için açık onay.
+- Tamamlanan faz: F14 kategori düzenlemesinde korunan alanlar.
+- Değişen davranış: Kategori update servisi mevcut satırı yükleyip yalnız doğrulanmış Name ve üretilen Slug alanlarını değiştiriyor. CreatedDate, IsActive ve istemcinin gönderdiği beklenmeyen alanlar korunuyor; olmayan ID 404 dönüyor.
+- Çalıştırılan kontroller ve sonuç: Build 0 uyarı/0 hatayla geçti. F14 DB/HTTP probe'u 6/6 geçti; pasiflik ve tarih korundu, over-posting etkisiz kaldı, GET/POST 404 doğrulandı. F02–F09 ve F11–F13 regresyonları geçti. Masaüstü ve 390×844 tarayıcı kaydı/konsolu temizdi.
+- Doğrulanamayan/engel: Yerel EF runtime 10.0.11 ile `dotnet-ef`/Design/Tools 10.0.10 farkı nedeniyle F10 bugün yeniden doğrulanmadı. F14 için migration gerekmedi.
+- Sıradaki tek faz: F15.
+- Kullanıcıdan gereken: F15'i başlatmak için açık onay.
 
 [Ana plan](/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/docs/GELISTIRME_PLANI_2026-09-21/README.md) · [Hazır mesajlar](/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/docs/GELISTIRME_PLANI_2026-09-21/AGENT_PROMPTLARI.md)
