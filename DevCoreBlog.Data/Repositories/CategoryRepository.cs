@@ -22,6 +22,8 @@ using DevCoreBlog.Core.Entities;
 using DevCoreBlog.Core.Interfaces;
 using DevCoreBlog.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Npgsql;
 
 namespace DevCoreBlog.Data.Repositories;
 
@@ -29,9 +31,15 @@ namespace DevCoreBlog.Data.Repositories;
 // T is replaced with Category, so all methods work with Category entities
 public class CategoryRepository : GenericRepository<Category>, IActiveCategoryLookup
 {
+    private const string PostsCategoryForeignKey = "FK_Posts_Categories_CategoryId";
+    private readonly ILogger<CategoryRepository> _logger;
+
     // Constructor passes the ApplicationDbContext to the base class
-    public CategoryRepository(ApplicationDbContext context) : base(context)
+    public CategoryRepository(
+        ApplicationDbContext context,
+        ILogger<CategoryRepository> logger) : base(context)
     {
+        _logger = logger;
     }
 
     // -------------------------------------------------------------------------
@@ -69,6 +77,36 @@ public class CategoryRepository : GenericRepository<Category>, IActiveCategoryLo
         // Check if any post belongs to this category
         return await _context.Posts
             .AnyAsync(p => p.CategoryId == categoryId);
+    }
+
+    /// <summary>
+    /// Deletes an empty category and converts only the known posts/category
+    /// foreign-key race into a business-rule result.
+    /// </summary>
+    public async Task<bool> TryDeleteEmptyCategoryAsync(
+        Category category,
+        CancellationToken cancellationToken = default)
+    {
+        _context.Categories.Remove(category);
+
+        try
+        {
+            await _context.SaveChangesAsync(cancellationToken);
+            return true;
+        }
+        catch (DbUpdateException exception) when (
+            exception.InnerException is PostgresException
+            {
+                SqlState: PostgresErrorCodes.ForeignKeyViolation,
+                ConstraintName: PostsCategoryForeignKey
+            })
+        {
+            _context.Entry(category).State = EntityState.Unchanged;
+            _logger.LogWarning(
+                "Category deletion was blocked because posts reference category {CategoryId}.",
+                category.Id);
+            return false;
+        }
     }
 
     public Task<bool> IsActiveCategoryAsync(

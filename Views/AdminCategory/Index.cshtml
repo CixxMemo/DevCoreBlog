@@ -4,7 +4,7 @@
 @* Features:                                                                    *@
 @*   1. High-contrast Brutalist table with 2px borders and sharp corners.       *@
 @*   2. Real-time post count per category with direct links to AdminPost filter.*@
-@*   3. Safe delete with cascade protection and TempData error notifications.   *@
+@*   3. Safe delete with relationship protection and TempData notifications.    *@
 @* ============================================================================= *@
 
 @model List<DevCoreBlog.Core.Entities.Category>
@@ -90,7 +90,7 @@
                                             EDIT
                                         </a>
 
-                                        @* Delete button with cascade warning *@
+                                        @* Delete button with relationship warning *@
                                         <form asp-action="Delete" asp-route-id="@item.Id" method="post" class="inline m-0 p-0"
                                               onsubmit="return confirm('Are you sure you want to delete category: \'@item.Name\'?');">
                                             <button type="submit" 
@@ -108,7 +108,7 @@
             
             <div class="p-3 bg-neutral-50 border-t border-black font-mono text-[10px] text-neutral-500 flex items-center justify-between">
                 <span>TOTAL: @Model.Count CATEGORIES</span>
-                <span>CASCADE PROTECTION ACTIVE</span>
+                <span>DELETE PROTECTION ACTIVE</span>
             </div>
         }
         else

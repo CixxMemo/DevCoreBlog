@@ -31,4 +31,17 @@ public class ApplicationDbContext : DbContext
 
     // Represents the "Categories" table — use _context.Categories to query/manage categories
     public DbSet<Category> Categories { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+
+        // The database must reject category deletion while posts still reference it.
+        // This also closes the race between the service's early check and DELETE.
+        modelBuilder.Entity<Post>()
+            .HasOne(post => post.Category)
+            .WithMany(category => category.Posts)
+            .HasForeignKey(post => post.CategoryId)
+            .OnDelete(DeleteBehavior.Restrict);
+    }
 }

@@ -17,6 +17,7 @@ EXPECTED_MIGRATIONS = [
     "20260807060210_AddViewCount",
     "20260807084252_AddPublishDate",
     "20260820080943_UpdatePostDataStructure",
+    "20260923192150_RestrictCategoryDeletion",
 ]
 
 
@@ -145,6 +146,7 @@ def main() -> int:
 
     root = args.root.resolve()
     sql_path = root / ".f10-empty-schema.sql"
+    f15_delta_path = root / ".f15-category-delete-rule.sql"
     empty_connection = connection_string(
         args.host,
         args.port,
@@ -172,6 +174,21 @@ def main() -> int:
             ],
         )
         generated_sql = sql_path.read_text(encoding="utf-8")
+        ef_command(
+            root,
+            empty_connection,
+            password_hash,
+            [
+                "migrations",
+                "script",
+                EXPECTED_MIGRATIONS[-2],
+                EXPECTED_MIGRATIONS[-1],
+                "--output",
+                str(f15_delta_path),
+            ],
+        )
+        f15_delta_sql = f15_delta_path.read_text(encoding="utf-8")
+        normalized_f15_delta_sql = f15_delta_sql.upper()
         psql(
             root,
             args.host,
@@ -200,6 +217,12 @@ def main() -> int:
                             FROM information_schema.columns
                             WHERE table_schema = 'public'
                               AND table_name = 'Posts'
+                        ),
+                        'category_delete_rule', (
+                            SELECT delete_rule
+                            FROM information_schema.referential_constraints
+                            WHERE constraint_schema = 'public'
+                              AND constraint_name = 'FK_Posts_Categories_CategoryId'
                         ),
                         'post_count', (SELECT COUNT(*) FROM "Posts")
                     );
@@ -272,23 +295,56 @@ def main() -> int:
             """,
         )
         legacy_rows = [line.split("|") for line in legacy_rows_output.splitlines()]
+        legacy_delete_rule = psql(
+            root,
+            args.host,
+            args.port,
+            args.user,
+            args.legacy_database,
+            sql="""
+                SELECT delete_rule
+                FROM information_schema.referential_constraints
+                WHERE constraint_schema = 'public'
+                  AND constraint_name = 'FK_Posts_Categories_CategoryId';
+            """,
+        )
 
         checks = {
-            "sql_contains_all_five_migrations": all(
+            "sql_contains_all_migrations": all(
                 migration in generated_sql for migration in EXPECTED_MIGRATIONS
             ),
             "forward_sql_contains_no_drop_table": (
                 "DROP TABLE" not in generated_sql.upper()
             ),
             "empty_database_reaches_latest_schema": (
-                empty_report["migration_count"] == 5
+                empty_report["migration_count"] == len(EXPECTED_MIGRATIONS)
                 and empty_report["category_table_exists"] is True
                 and empty_report["post_table_exists"] is True
                 and empty_report["post_column_count"] == 13
+                and empty_report["category_delete_rule"] == "RESTRICT"
                 and empty_report["post_count"] == 0
             ),
-            "legacy_database_applies_all_five_migrations": (
-                legacy_history_count == 5
+            "legacy_database_applies_all_migrations": (
+                legacy_history_count == len(EXPECTED_MIGRATIONS)
+                and legacy_delete_rule == "RESTRICT"
+            ),
+            "f15_delta_changes_only_the_category_foreign_key": (
+                normalized_f15_delta_sql.count('ALTER TABLE "POSTS"') == 2
+                and 'DROP CONSTRAINT "FK_POSTS_CATEGORIES_CATEGORYID"'
+                    in normalized_f15_delta_sql
+                and 'ADD CONSTRAINT "FK_POSTS_CATEGORIES_CATEGORYID"'
+                    in normalized_f15_delta_sql
+                and "ON DELETE RESTRICT" in normalized_f15_delta_sql
+                and all(
+                    forbidden not in normalized_f15_delta_sql
+                    for forbidden in (
+                        "DROP TABLE",
+                        "DROP COLUMN",
+                        "ALTER COLUMN",
+                        "CREATE TABLE",
+                        "UPDATE \"",
+                    )
+                )
             ),
             "legacy_rows_are_preserved_without_auto_publish": legacy_rows == [
                 ["F10 Legacy Published", "t", "f", "0", "", ""],
@@ -300,6 +356,7 @@ def main() -> int:
             "empty_database": empty_report,
             "legacy_database": {
                 "migration_count": legacy_history_count,
+                "category_delete_rule": legacy_delete_rule,
                 "rows": [
                     {
                         "title": row[0],
@@ -325,6 +382,7 @@ def main() -> int:
         return 1
     finally:
         sql_path.unlink(missing_ok=True)
+        f15_delta_path.unlink(missing_ok=True)
 
 
 if __name__ == "__main__":

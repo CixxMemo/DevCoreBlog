@@ -16,7 +16,7 @@
 //   - Repository handles data access (CRUD operations on the database)
 //   - Service handles business logic (rules, validations, transformations)
 //   - Example: Slug generation is a business rule → belongs in Service
-//   - Example: Cascade protection (check if category has posts) → belongs in Service
+//   - Example: Relationship protection (check if category has posts) → belongs in Service
 // =============================================================================
 
 using DevCoreBlog.Core.Entities;
@@ -56,6 +56,6 @@ public interface ICategoryService
     // Delete a category by its Id (returns false if category has posts)
     Task<bool> DeleteCategoryAsync(int id);
 
-    // Check if a category has any posts (for cascade protection)
+    // Check if a category has any posts (for relationship protection)
     Task<bool> CategoryHasPostsAsync(int categoryId);
 }

@@ -4,6 +4,7 @@ using DevCoreBlog.Data;
 using DevCoreBlog.Data.Repositories;
 using DevCoreBlog.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Caching.Memory;
 
 var connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING");
@@ -18,7 +19,9 @@ var options = new DbContextOptionsBuilder<ApplicationDbContext>()
     .Options;
 await using var context = new ApplicationDbContext(options);
 var postRepository = new PostRepository(context);
-var categoryRepository = new CategoryRepository(context);
+var categoryRepository = new CategoryRepository(
+    context,
+    NullLogger<CategoryRepository>.Instance);
 using var cache = new MemoryCache(new MemoryCacheOptions());
 var postService = new PostService(postRepository, cache, categoryRepository);
 var categoryService = new CategoryService(categoryRepository);

@@ -17,6 +17,7 @@ EXPECTED_MIGRATIONS = [
     "20260807060210_AddViewCount",
     "20260807084252_AddPublishDate",
     "20260820080943_UpdatePostDataStructure",
+    "20260923192150_RestrictCategoryDeletion",
 ]
 
 
@@ -76,7 +77,7 @@ def probe(root: Path, timeout_seconds: int) -> tuple[dict[str, object], bool]:
     )
     checks = {
         "command_completed": not timed_out and process.returncode == 0,
-        "five_historical_migrations_discovered_in_order": (
+        "all_migrations_discovered_in_order": (
             discovered == EXPECTED_MIGRATIONS
         ),
         "tool_runtime_patch_warning_absent": not version_mismatch,

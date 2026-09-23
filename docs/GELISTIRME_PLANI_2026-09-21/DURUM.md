@@ -1,11 +1,11 @@
 # İlerleme çizelgesi
 
-- **Son kayıt:** 23 Eylül 2026 — F14 kategori editinde CreatedDate ve pasiflik korunur hale getirildi.
-- **Tamamlanan plan fazı:** 15/58 (F00–F14).
-- **Tamamlanan uygulama kodu fazı:** 13.
+- **Son kayıt:** 23 Eylül 2026 — F15 kategori silme kuralı DB seviyesinde RESTRICT ile güvenceye alındı.
+- **Tamamlanan plan fazı:** 16/58 (F00–F15).
+- **Tamamlanan uygulama kodu fazı:** 14.
 - **Aktif faz:** Yok.
-- **Sıradaki faz:** F15 — kullanıcı onayı bekleniyor.
-- **Uygulama kodu:** F02–F09 güvenlik fazları tamamlandı. F10 migration zincirini doğruladı. F11–F13 form/içerik güvenliğini tamamladı. F14 kategori update'ini mevcut takipli satırda yalnız izinli alanları değiştirecek hale getirdi.
+- **Sıradaki faz:** F16 — kullanıcı onayı bekleniyor.
+- **Uygulama kodu:** F02–F09 güvenlik fazları tamamlandı. F10 migration zincirini doğruladı. F11–F13 form/içerik güvenliğini tamamladı. F14 kategori update'ini güvenli alanlara daralttı. F15 kategori silmesini DB constraint'i ve yarış yönetimiyle veri kaybına karşı korudu.
 
 ## Kullanım
 
@@ -35,7 +35,7 @@
 | [x] | F12 | Yazı ve kategori iş kurallarını ortak doğrula | TAMAMLANDI — KOD | [F12 kanıtı](../uygulama-kayitlari/F12-2026-09-23.md) |
 | [x] | F13 | Formların frontend doğrulama bağımlılığını onar | TAMAMLANDI — KOD | [F13 kanıtı](../uygulama-kayitlari/F13-2026-09-23.md) |
 | [x] | F14 | Kategori düzenlemesinde korunan alanları sakla | TAMAMLANDI — KOD | [F14 kanıtı](../uygulama-kayitlari/F14-2026-09-23.md) |
-| [ ] | F15 | Kategori silme kuralını veritabanında güvenceye al | BAŞLAMADI | — |
+| [x] | F15 | Kategori silme kuralını veritabanında güvenceye al | TAMAMLANDI — KOD | [F15 kanıtı](../uygulama-kayitlari/F15-2026-09-23.md) |
 | [ ] | F16 | Yayın zamanını açık saat dilimiyle işle | BAŞLAMADI | — |
 | [ ] | F17 | Tek yayın görünürlüğü kuralını uygula | BAŞLAMADI | — |
 | [ ] | F18 | Yayın kuralına uyan cache politikası | BAŞLAMADI | — |
@@ -81,11 +81,11 @@
 
 ## Son agent teslimi
 
-- Tamamlanan faz: F14 kategori düzenlemesinde korunan alanlar.
-- Değişen davranış: Kategori update servisi mevcut satırı yükleyip yalnız doğrulanmış Name ve üretilen Slug alanlarını değiştiriyor. CreatedDate, IsActive ve istemcinin gönderdiği beklenmeyen alanlar korunuyor; olmayan ID 404 dönüyor.
-- Çalıştırılan kontroller ve sonuç: Build 0 uyarı/0 hatayla geçti. F14 DB/HTTP probe'u 6/6 geçti; pasiflik ve tarih korundu, over-posting etkisiz kaldı, GET/POST 404 doğrulandı. F02–F09 ve F11–F13 regresyonları geçti. Masaüstü ve 390×844 tarayıcı kaydı/konsolu temizdi.
-- Doğrulanamayan/engel: Yerel EF runtime 10.0.11 ile `dotnet-ef`/Design/Tools 10.0.10 farkı nedeniyle F10 bugün yeniden doğrulanmadı. F14 için migration gerekmedi.
-- Sıradaki tek faz: F15.
-- Kullanıcıdan gereken: F15'i başlatmak için açık onay.
+- Tamamlanan faz: F15 kategori silme kuralı.
+- Değişen davranış: Post–Category FK artık `ON DELETE RESTRICT`; boş kategori silinir, bağlı yazısı olan kategori hem erken kontrolde hem eşzamanlı yarışta engellenir. Bilinen FK ihlali kullanıcıya İngilizce hata olarak döner ve veri korunur.
+- Çalıştırılan kontroller ve sonuç: Yerel/izole build 0 uyarı/0 hatayla geçti. Altı migration keşfedildi; boş ve eski PostgreSQL DB `RESTRICT` kuralına kayıpsız ulaştı. F15 boş/dolu/eşzamanlı testlerinin 4/4'ü ve F02–F14 regresyonları geçti. Masaüstü ve 390×844 tarayıcıda yeni console error görülmedi.
+- Doğrulanamayan/engel: F15 için engel yoktur. Mevcut mobil admin daralması F34, Tailwind CDN/Prism uyarıları F35 kapsamındadır.
+- Sıradaki tek faz: F16.
+- Kullanıcıdan gereken: F16'yı başlatmak için açık onay.
 
 [Ana plan](/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/docs/GELISTIRME_PLANI_2026-09-21/README.md) · [Hazır mesajlar](/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/docs/GELISTIRME_PLANI_2026-09-21/AGENT_PROMPTLARI.md)

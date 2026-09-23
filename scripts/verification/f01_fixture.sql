@@ -35,7 +35,7 @@ CREATE TABLE "Posts" (
     "IsPublished" boolean NOT NULL,
     "ThumbnailUrl" text NOT NULL,
     CONSTRAINT "FK_Posts_Categories_CategoryId"
-        FOREIGN KEY ("CategoryId") REFERENCES "Categories" ("Id") ON DELETE CASCADE
+        FOREIGN KEY ("CategoryId") REFERENCES "Categories" ("Id") ON DELETE RESTRICT
 );
 
 CREATE INDEX "IX_Posts_CategoryId" ON "Posts" ("CategoryId");

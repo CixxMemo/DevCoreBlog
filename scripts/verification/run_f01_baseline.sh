@@ -506,6 +506,24 @@ sleep $((task_login_window_seconds + 1))
 
 DEVCORE_TEST_ADMIN_USERNAME="$task_admin_username" \
 DEVCORE_TEST_ADMIN_PASSWORD="$task_admin_password" \
+python3 "$task_source/scripts/verification/f15_category_delete_probe.py" \
+    --base-url "http://127.0.0.1:$task_app_port" \
+    --database-port "$task_pg_port" \
+    --database-user "$task_pg_user" \
+    --database-name "$task_db"
+
+if ! grep -F \
+    'Category deletion was blocked because posts reference category 9016.' \
+    "$task_applog" >/dev/null; then
+    printf 'F15 did not exercise the concurrent foreign-key rejection path.\n' >&2
+    exit 1
+fi
+printf 'F15 concurrent foreign-key rejection was handled without data loss.\n'
+
+sleep $((task_login_window_seconds + 1))
+
+DEVCORE_TEST_ADMIN_USERNAME="$task_admin_username" \
+DEVCORE_TEST_ADMIN_PASSWORD="$task_admin_password" \
 python3 "$task_source/scripts/verification/f08_session_probe.py" \
     --mode issue \
     --base-url "http://127.0.0.1:$task_app_port" \

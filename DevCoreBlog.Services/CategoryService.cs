@@ -25,7 +25,7 @@
 // Business Rules in CategoryService:
 //   - Slug is auto-generated from Name (using SlugGenerator)
 //   - Slug is regenerated on update (in case Name changed)
-//   - Categories with posts cannot be deleted (cascade protection)
+//   - Categories with posts cannot be deleted (relationship protection)
 // =============================================================================
 
 using DevCoreBlog.Core.Entities;
@@ -142,11 +142,11 @@ public class CategoryService : ICategoryService
     }
 
     // Delete a category by its Id (returns false if category has posts)
-    // Business rule: Categories with posts cannot be deleted (cascade protection)
+    // Business rule: Categories with posts cannot be deleted.
     public async Task<bool> DeleteCategoryAsync(int id)
     {
-        // BUSINESS RULE: Check if category has any posts (cascade protection)
-        // If posts exist, deletion is blocked to prevent cascade data loss
+        // BUSINESS RULE: Check if category has any posts (relationship protection).
+        // If posts exist, deletion is blocked before reaching the database.
         var hasPosts = await CategoryHasPostsAsync(id);
         if (hasPosts)
         {
@@ -157,18 +157,18 @@ public class CategoryService : ICategoryService
         // Get the category by Id from repository
         var category = await _categoryRepository.GetByIdAsync(id);
 
-        // If category exists, delete it
+        // If the category exists, the database remains the final authority. A
+        // post may be inserted after the early check and before this delete.
         if (category != null)
         {
-            await _categoryRepository.DeleteAsync(category);
-            await _categoryRepository.SaveChangesAsync();
+            return await _categoryRepository.TryDeleteEmptyCategoryAsync(category);
         }
 
         // Return true to indicate deletion was successful
         return true;
     }
 
-    // Check if a category has any posts (for cascade protection)
+    // Check if a category has any posts (for relationship protection)
     public async Task<bool> CategoryHasPostsAsync(int categoryId)
     {
         // Delegate to repository — no additional business logic needed
