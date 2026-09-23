@@ -6,13 +6,13 @@ from __future__ import annotations
 import argparse
 import json
 import os
-import secrets
 import sys
 
 from http_probe_support import (
     cookie_opener,
     extract_antiforgery_token,
     has_authentication_cookie,
+    post_file,
     request,
     submit_login,
     wait_until_ready,
@@ -20,73 +20,6 @@ from http_probe_support import (
 
 
 MAXIMUM_FILE_BYTES = 8 * 1024 * 1024
-
-
-def multipart_payload(
-    fields: dict[str, str],
-    *,
-    file_field: str,
-    file_name: str,
-    content_type: str,
-    content: bytes,
-) -> tuple[bytes, str]:
-    boundary = f"----DevCoreBlogF09{secrets.token_hex(12)}"
-    chunks: list[bytes] = []
-    for name, value in fields.items():
-        chunks.extend(
-            [
-                f"--{boundary}\r\n".encode(),
-                f'Content-Disposition: form-data; name="{name}"\r\n\r\n'.encode(),
-                value.encode(),
-                b"\r\n",
-            ]
-        )
-
-    chunks.extend(
-        [
-            f"--{boundary}\r\n".encode(),
-            (
-                f'Content-Disposition: form-data; name="{file_field}"; '
-                f'filename="{file_name}"\r\n'
-            ).encode(),
-            f"Content-Type: {content_type}\r\n\r\n".encode(),
-            content,
-            b"\r\n",
-            f"--{boundary}--\r\n".encode(),
-        ]
-    )
-    return b"".join(chunks), f"multipart/form-data; boundary={boundary}"
-
-
-def post_file(
-    opener,
-    url: str,
-    token: str,
-    *,
-    file_field: str,
-    file_name: str,
-    content_type: str,
-    content: bytes,
-    fields: dict[str, str] | None = None,
-):
-    form_fields = dict(fields or {})
-    form_fields["__RequestVerificationToken"] = token
-    body, multipart_content_type = multipart_payload(
-        form_fields,
-        file_field=file_field,
-        file_name=file_name,
-        content_type=content_type,
-        content=content,
-    )
-    return request(
-        opener,
-        url,
-        raw_data=body,
-        headers={
-            "Content-Type": multipart_content_type,
-            "X-CSRF-TOKEN": token,
-        },
-    )
 
 
 def json_message(body: str) -> str:

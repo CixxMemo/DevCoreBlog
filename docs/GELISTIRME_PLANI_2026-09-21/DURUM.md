@@ -1,11 +1,11 @@
 # İlerleme çizelgesi
 
-- **Son kayıt:** 22 Eylül 2026 — F10 migration keşfi ve EF patch sürüm uyumu düzeltildi.
-- **Tamamlanan plan fazı:** 11/58 (F00–F10).
-- **Tamamlanan uygulama kodu fazı:** 9.
+- **Son kayıt:** 23 Eylül 2026 — F11 kapaksız yazı kaydı, sunucu tarafında kapak koruması ve görünür alan hataları tamamlandı.
+- **Tamamlanan plan fazı:** 12/58 (F00–F11).
+- **Tamamlanan uygulama kodu fazı:** 10.
 - **Aktif faz:** Yok.
-- **Sıradaki faz:** F11 — kullanıcı onayı bekleniyor.
-- **Uygulama kodu:** F02–F09 güvenlik fazları tamamlandı. F10 ile beş geçmiş migration Web assembly'sinden keşfediliyor; EF runtime/design/tools patch seviyeleri uyumlu ve boş/eski PostgreSQL yükseltme yolu doğrulandı.
+- **Sıradaki faz:** F12 — kullanıcı onayı bekleniyor.
+- **Uygulama kodu:** F02–F09 güvenlik fazları tamamlandı. F10 migration zincirini doğruladı. F11 ile kapaksız Create/Edit çalışıyor, mevcut kapak istemciye güvenmeden korunuyor ve başarısız form girişleri görünür hatalarla birlikte kalıyor.
 
 ## Kullanım
 
@@ -31,7 +31,7 @@
 | [x] | F08 | Cookie ve oturum yaşam döngüsünü belirle | TAMAMLANDI — KOD | [F08 kanıtı](../uygulama-kayitlari/F08-2026-09-22.md) |
 | [x] | F09 | Bütün görsel yüklemelerine aynı güvenlik politikası | TAMAMLANDI — KOD | [F09 kanıtı](../uygulama-kayitlari/F09-2026-09-22.md) |
 | [x] | F10 | Migration keşfini ve sürüm uyumunu düzelt | TAMAMLANDI — KOD | [F10 kanıtı](../uygulama-kayitlari/F10-2026-09-22.md) |
-| [ ] | F11 | Dosyasız yazı kaydını ve alan hatalarını düzelt | BAŞLAMADI | — |
+| [x] | F11 | Dosyasız yazı kaydını ve alan hatalarını düzelt | TAMAMLANDI — KOD | [F11 kanıtı](../uygulama-kayitlari/F11-2026-09-23.md) |
 | [ ] | F12 | Yazı ve kategori iş kurallarını ortak doğrula | BAŞLAMADI | — |
 | [ ] | F13 | Formların frontend doğrulama bağımlılığını onar | BAŞLAMADI | — |
 | [ ] | F14 | Kategori düzenlemesinde korunan alanları sakla | BAŞLAMADI | — |
@@ -81,11 +81,11 @@
 
 ## Son agent teslimi
 
-- Tamamlanan faz: F10 migration keşfi ve sürüm uyumu.
-- Değişen davranış: `ApplicationDbContext` Web'deki beş geçmiş migration'ı açık assembly yapılandırmasıyla buluyor. Microsoft EF runtime/design/tools/CLI `10.0.10` patch seviyesinde uyumlu çalışıyor.
-- Çalıştırılan kontroller ve sonuç: Build 0 uyarı/0 hatayla geçti; beş migration doğru sırada listelendi. İdempotent SQL boş DB'yi kurdu; InitialCreate seviyesindeki iki eski kayıt beşinci migration'a kayıpsız yükseldi ve otomatik yayımlanmadı. Bütün F02–F09 regresyonları geçti.
-- Doğrulanamayan/engel: F10 için geliştirme engeli yoktur. Production DB update yapılmadı; deployment öncesinde gerçek yedek, hedef doğrulaması ve forward-fix planı gerekir.
-- Sıradaki tek faz: F11.
-- Kullanıcıdan gereken: F11'i başlatmak için açık onay.
+- Tamamlanan faz: F11 dosyasız yazı kaydı ve alan hataları.
+- Değişen davranış: Kapaksız Create başarılıdır. Edit'te dosya seçilmezse mevcut kapak DB kaydından korunur; istemcinin gönderdiği `ThumbnailUrl` kabul edilmez. Validation ve yükleme hataları genel özet/alan yanında görünür, girilen değerler kaybolmaz.
+- Çalıştırılan kontroller ve sonuç: Build 0 uyarı/0 hatayla geçti. İzole PostgreSQL/HTTP probe'unda altı F11 kontrolü ve F02–F10 regresyonları geçti. Masaüstünde boş hata kutusu kaldırıldı; klavye ile hata akışı ve 390 px mobil görünüm doğrulandı.
+- Doğrulanamayan/engel: F11 için engel yoktur. Mevcut jQuery konsol hatası F13, sabit admin sidebar'ın dar mobil içeriği F34 kapsamındadır.
+- Sıradaki tek faz: F12.
+- Kullanıcıdan gereken: F12'yi başlatmak için açık onay.
 
 [Ana plan](/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/docs/GELISTIRME_PLANI_2026-09-21/README.md) · [Hazır mesajlar](/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/docs/GELISTIRME_PLANI_2026-09-21/AGENT_PROMPTLARI.md)

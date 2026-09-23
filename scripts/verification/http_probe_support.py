@@ -5,6 +5,7 @@ from __future__ import annotations
 import html
 import http.cookiejar
 import re
+import secrets
 import ssl
 import time
 import urllib.error
@@ -74,6 +75,75 @@ def request_with_headers(
             error.read().decode("utf-8", "replace"),
             dict(error.headers.items()),
         )
+
+
+def multipart_payload(
+    fields: dict[str, str],
+    *,
+    file_field: str,
+    file_name: str,
+    content_type: str,
+    content: bytes,
+) -> tuple[bytes, str]:
+    """Build a small multipart body for upload probes without external packages."""
+    boundary = f"----DevCoreBlogProbe{secrets.token_hex(12)}"
+    chunks: list[bytes] = []
+    for name, value in fields.items():
+        chunks.extend(
+            [
+                f"--{boundary}\r\n".encode(),
+                f'Content-Disposition: form-data; name="{name}"\r\n\r\n'.encode(),
+                value.encode(),
+                b"\r\n",
+            ]
+        )
+
+    chunks.extend(
+        [
+            f"--{boundary}\r\n".encode(),
+            (
+                f'Content-Disposition: form-data; name="{file_field}"; '
+                f'filename="{file_name}"\r\n'
+            ).encode(),
+            f"Content-Type: {content_type}\r\n\r\n".encode(),
+            content,
+            b"\r\n",
+            f"--{boundary}--\r\n".encode(),
+        ]
+    )
+    return b"".join(chunks), f"multipart/form-data; boundary={boundary}"
+
+
+def post_file(
+    opener,
+    url: str,
+    token: str,
+    *,
+    file_field: str,
+    file_name: str,
+    content_type: str,
+    content: bytes,
+    fields: dict[str, str] | None = None,
+):
+    """Submit a multipart form with the antiforgery token in both supported locations."""
+    form_fields = dict(fields or {})
+    form_fields["__RequestVerificationToken"] = token
+    body, multipart_content_type = multipart_payload(
+        form_fields,
+        file_field=file_field,
+        file_name=file_name,
+        content_type=content_type,
+        content=content,
+    )
+    return request(
+        opener,
+        url,
+        raw_data=body,
+        headers={
+            "Content-Type": multipart_content_type,
+            "X-CSRF-TOKEN": token,
+        },
+    )
 
 
 def has_authentication_cookie(cookies: http.cookiejar.CookieJar) -> bool:

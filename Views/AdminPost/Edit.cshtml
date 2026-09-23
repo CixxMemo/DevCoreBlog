@@ -19,8 +19,10 @@
     @* Hidden Id for entity matching *@
     <input type="hidden" asp-for="Id" />
 
-    @* Validation Summary *@
-    <div asp-validation-summary="ModelOnly" class="border-2 border-rose-600 bg-rose-50 p-4 font-mono text-xs font-bold text-rose-700 mb-6"></div>
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div asp-validation-summary="All" class="border-2 border-rose-600 bg-rose-50 p-4 font-mono text-xs font-bold text-rose-700 mb-6"></div>
+    }
 
     <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
         
@@ -191,7 +193,6 @@
                     <input type="file" id="thumbnailFile" name="thumbnailFile" class="w-full border-2 border-black p-1.5 font-mono text-xs bg-neutral-50 text-black focus:outline-none" accept=".jpg,.jpeg,.png,.gif,.webp" />
                     @Html.ValidationMessage("thumbnailFile", null, new { @class = "font-mono text-xs text-rose-600 block mt-1" })
                     <p class="font-mono text-[10px] text-neutral-500 mt-1">JPG, PNG, GIF or WEBP · max 8 MB · stored at up to 4096×4096.</p>
-                    <input type="hidden" asp-for="ThumbnailUrl" />
                 </div>
 
                 @* Status Flags *@

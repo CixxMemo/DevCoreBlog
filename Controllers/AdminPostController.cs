@@ -124,7 +124,7 @@ public class AdminPostController : Controller
     [RequestSizeLimit(ImageUploadPolicy.MaximumRequestBytes)]
     [RequestFormLimits(MultipartBodyLengthLimit = ImageUploadPolicy.MaximumRequestBytes)]
     public async Task<IActionResult> Create(
-        [Bind("Title,Content,CategoryId,ThumbnailUrl,Summary,Excerpt,IsPublished,IsActive,PublishDate")] Post post,
+        [Bind("Title,Content,CategoryId,Summary,Excerpt,IsPublished,IsActive,PublishDate")] Post post,
         IFormFile? thumbnailFile,
         CancellationToken cancellationToken)
     {
@@ -191,13 +191,21 @@ public class AdminPostController : Controller
     [RequestFormLimits(MultipartBodyLengthLimit = ImageUploadPolicy.MaximumRequestBytes)]
     public async Task<IActionResult> Edit(
         int id,
-        [Bind("Id,Title,Content,CategoryId,ThumbnailUrl,Summary,Excerpt,IsPublished,IsActive,PublishDate")] Post post,
+        [Bind("Id,Title,Content,CategoryId,Summary,Excerpt,IsPublished,IsActive,PublishDate")] Post post,
         IFormFile? thumbnailFile,
         CancellationToken cancellationToken)
     {
         // Safety check: URL Id must match the form's hidden Id field
         if (id != post.Id)
             return NotFound();
+
+        // The stored cover is server-owned state. Preserve it unless a valid
+        // replacement upload succeeds; never trust a client-posted URL.
+        var existingPost = await _postService.GetPostByIdAsync(id);
+        if (existingPost is null)
+            return NotFound();
+
+        post.ThumbnailUrl = existingPost.ThumbnailUrl;
 
         // Remove auto-generated and navigation fields from validation
         ModelState.Remove("Slug");
