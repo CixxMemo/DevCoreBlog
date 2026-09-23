@@ -31,6 +31,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.DataProtection;
 using System.Globalization;
+using DevCoreBlog.Core.Interfaces;
 
 // Create the application builder, which loads configuration from appsettings.json,
 // environment variables, and command-line arguments
@@ -118,6 +119,8 @@ builder.Services
 // the same DbContext instance within that request.
 builder.Services.AddScoped<PostRepository>();
 builder.Services.AddScoped<CategoryRepository>();
+builder.Services.AddScoped<IActiveCategoryLookup>(serviceProvider =>
+    serviceProvider.GetRequiredService<CategoryRepository>());
 
 // ---------------------------------------------------------------------------
 // SERVICE LAYER REGISTRATION (Business Logic)

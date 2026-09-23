@@ -29,7 +29,9 @@
 // =============================================================================
 
 using DevCoreBlog.Core.Entities;
+using DevCoreBlog.Core.Interfaces;
 using DevCoreBlog.Core.Shared.Helpers;
+using DevCoreBlog.Core.Validation;
 using DevCoreBlog.Data.Repositories;
 using DevCoreBlog.Services.Interfaces;
 using Microsoft.Extensions.Caching.Memory;
@@ -49,14 +51,19 @@ public class PostService : IPostService
     // Private readonly field to hold the injected PostRepository
     private readonly PostRepository _postRepository;
     private readonly IMemoryCache _cache;
+    private readonly IActiveCategoryLookup _activeCategoryLookup;
 
     // Constructor receives PostRepository via dependency injection
     // The DI container (configured in Program.cs) provides the instance
-    public PostService(PostRepository postRepository, IMemoryCache cache)
+    public PostService(
+        PostRepository postRepository,
+        IMemoryCache cache,
+        IActiveCategoryLookup activeCategoryLookup)
     {
         // Store the injected repository for use in all service methods
         _postRepository = postRepository;
         _cache = cache;
+        _activeCategoryLookup = activeCategoryLookup;
     }
 
     private void InvalidateCache()
@@ -199,8 +206,37 @@ public class PostService : IPostService
     //   1. Slug is auto-generated from Title (using SlugGenerator)
     //   2. CreatedDate is set to DateTime.UtcNow
     //   3. IsActive defaults to true (from BaseEntity)
-    public async Task CreatePostAsync(Post post)
+    public async Task<ContentValidationResult> ValidatePostAsync(
+        Post post,
+        CancellationToken cancellationToken = default)
     {
+        PostContentRules.Normalize(post);
+        var result = PostContentRules.Validate(post);
+        var errors = result.Errors.ToList();
+
+        if (post.CategoryId > 0 &&
+            !await _activeCategoryLookup.IsActiveCategoryAsync(
+                post.CategoryId,
+                cancellationToken))
+        {
+            errors.Add(new(
+                nameof(Post.CategoryId),
+                "Select an active category."));
+        }
+
+        return ContentValidationResult.FromErrors(errors);
+    }
+
+    public async Task<ContentValidationResult> CreatePostAsync(
+        Post post,
+        CancellationToken cancellationToken = default)
+    {
+        var validationResult = await ValidatePostAsync(post, cancellationToken);
+        if (!validationResult.IsValid)
+        {
+            return validationResult;
+        }
+
         // BUSINESS RULE: Auto-generate URL-friendly slug from the post title
         // Example: "ASP.NET Core ile Blog Yazma" → "asp-net-core-ile-blog-yazma"
         post.Slug = SlugGenerator.Generate(post.Title);
@@ -227,16 +263,30 @@ public class PostService : IPostService
         
         // Clear cache
         InvalidateCache();
+        return ContentValidationResult.Success();
     }
 
     // Update an existing post (handles slug regeneration)
     // Business rule: Slug is regenerated in case the Title was changed
-    public async Task UpdatePostAsync(Post post)
+    public async Task<ContentValidationResult> UpdatePostAsync(
+        Post post,
+        CancellationToken cancellationToken = default)
     {
+        var validationResult = await ValidatePostAsync(post, cancellationToken);
+        if (!validationResult.IsValid)
+        {
+            return validationResult;
+        }
+
         // Get the existing post from database to avoid overwriting CreatedDate/ViewCount
         var existingPost = await _postRepository.GetByIdAsync(post.Id);
         if (existingPost == null)
-            return;
+        {
+            return ContentValidationResult.FromErrors(
+            [
+                new(nameof(Post.Id), "Post not found.")
+            ]);
+        }
 
         // BUSINESS RULE: Regenerate slug in case the title was changed
         // This ensures the slug always matches the current title
@@ -268,6 +318,7 @@ public class PostService : IPostService
         
         // Clear cache
         InvalidateCache();
+        return ContentValidationResult.Success();
     }
 
     // Delete a post by its Id

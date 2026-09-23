@@ -95,7 +95,8 @@ rsync -a \
 # Existing restore metadata is copied only into the isolated tree. This avoids
 # changing the user's tracked bin/obj files or downloading packages for F01.
 for task_project in . DevCoreBlog.Core DevCoreBlog.Data DevCoreBlog.Services \
-    tools/DevCoreBlog.PasswordHashTool tools/DevCoreBlog.ImageUploadPolicyTool; do
+    tools/DevCoreBlog.PasswordHashTool tools/DevCoreBlog.ImageUploadPolicyTool \
+    tools/DevCoreBlog.ContentRulesTool; do
     if [ -d "$task_repo/$task_project/obj" ]; then
         mkdir -p "$task_source/$task_project/obj"
         rsync -a "$task_repo/$task_project/obj/" "$task_source/$task_project/obj/"
@@ -111,6 +112,9 @@ done
         --no-restore --nologo --disable-build-servers -m:1 \
         -p:NuGetAudit=false -nodeReuse:false
     dotnet build tools/DevCoreBlog.ImageUploadPolicyTool/DevCoreBlog.ImageUploadPolicyTool.csproj \
+        --no-restore --nologo --disable-build-servers -m:1 \
+        -p:NuGetAudit=false -nodeReuse:false
+    dotnet build tools/DevCoreBlog.ContentRulesTool/DevCoreBlog.ContentRulesTool.csproj \
         --no-restore --nologo --disable-build-servers -m:1 \
         -p:NuGetAudit=false -nodeReuse:false
 )
@@ -162,6 +166,10 @@ python3 "$task_source/scripts/verification/f10_database_migration_probe.py" \
 
 psql -h 127.0.0.1 -p "$task_pg_port" -U "$task_pg_user" -d "$task_db" \
     -v ON_ERROR_STOP=1 -f "$task_source/scripts/verification/f01_fixture.sql" >/dev/null
+
+DB_CONNECTION_STRING="Host=127.0.0.1;Port=$task_pg_port;Database=$task_db;Username=$task_pg_user" \
+dotnet run --no-build \
+    --project "$task_source/tools/DevCoreBlog.ContentRulesTool/DevCoreBlog.ContentRulesTool.csproj"
 
 start_app() {
     task_environment=$1
@@ -447,6 +455,35 @@ DEVCORE_TEST_ADMIN_USERNAME="$task_admin_username" \
 DEVCORE_TEST_ADMIN_PASSWORD="$task_admin_password" \
 python3 "$task_source/scripts/verification/f11_optional_thumbnail_probe.py" \
     --base-url "http://127.0.0.1:$task_app_port"
+
+sleep $((task_login_window_seconds + 1))
+
+DEVCORE_TEST_ADMIN_USERNAME="$task_admin_username" \
+DEVCORE_TEST_ADMIN_PASSWORD="$task_admin_password" \
+DEVCORE_TEST_WEBHOOK_SECRET=f01-webhook-secret \
+python3 "$task_source/scripts/verification/f12_content_validation_probe.py" \
+    --base-url "http://127.0.0.1:$task_app_port"
+
+psql -h 127.0.0.1 -p "$task_pg_port" -U "$task_pg_user" -d "$task_db" \
+    -v ON_ERROR_STOP=1 <<'SQL'
+DO $$
+DECLARE
+    saved_post "Posts"%ROWTYPE;
+BEGIN
+    SELECT * INTO STRICT saved_post
+    FROM "Posts"
+    WHERE "Title" = 'F12 Overpost System Fields';
+
+    IF saved_post."Slug" <> 'f12-overpost-system-fields'
+       OR saved_post."ThumbnailUrl" <> ''
+       OR saved_post."ViewCount" <> 0
+       OR saved_post."CreatedDate" < CURRENT_TIMESTAMP - interval '5 minutes' THEN
+        RAISE EXCEPTION 'F12 system-field over-posting changed server-owned data';
+    END IF;
+END
+$$;
+SQL
+printf 'F12 database over-posting verification passed.\n'
 
 sleep $((task_login_window_seconds + 1))
 

@@ -20,6 +20,7 @@
 // =============================================================================
 
 using DevCoreBlog.Core.Entities;
+using DevCoreBlog.Core.Validation;
 
 namespace DevCoreBlog.Services.Interfaces;
 
@@ -47,10 +48,10 @@ public interface ICategoryService
     // -------------------------------------------------------------------------
 
     // Create a new category (handles slug generation)
-    Task CreateCategoryAsync(Category category);
+    Task<ContentValidationResult> CreateCategoryAsync(Category category);
 
     // Update an existing category (handles slug regeneration)
-    Task UpdateCategoryAsync(Category category);
+    Task<ContentValidationResult> UpdateCategoryAsync(Category category);
 
     // Delete a category by its Id (returns false if category has posts)
     Task<bool> DeleteCategoryAsync(int id);

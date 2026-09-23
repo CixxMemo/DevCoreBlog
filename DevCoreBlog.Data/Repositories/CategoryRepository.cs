@@ -19,6 +19,7 @@
 // =============================================================================
 
 using DevCoreBlog.Core.Entities;
+using DevCoreBlog.Core.Interfaces;
 using DevCoreBlog.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -26,7 +27,7 @@ namespace DevCoreBlog.Data.Repositories;
 
 // CategoryRepository extends GenericRepository<Category>
 // T is replaced with Category, so all methods work with Category entities
-public class CategoryRepository : GenericRepository<Category>
+public class CategoryRepository : GenericRepository<Category>, IActiveCategoryLookup
 {
     // Constructor passes the ApplicationDbContext to the base class
     public CategoryRepository(ApplicationDbContext context) : base(context)
@@ -68,6 +69,17 @@ public class CategoryRepository : GenericRepository<Category>
         // Check if any post belongs to this category
         return await _context.Posts
             .AnyAsync(p => p.CategoryId == categoryId);
+    }
+
+    public Task<bool> IsActiveCategoryAsync(
+        int categoryId,
+        CancellationToken cancellationToken = default)
+    {
+        return _context.Categories
+            .AsNoTracking()
+            .AnyAsync(
+                category => category.Id == categoryId && category.IsActive,
+                cancellationToken);
     }
 
     // -------------------------------------------------------------------------

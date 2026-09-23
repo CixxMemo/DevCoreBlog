@@ -27,16 +27,13 @@ namespace DevCoreBlog.Controllers;
 public class WebhookController : ControllerBase
 {
     private readonly IPostService _postService;
-    private readonly ICategoryService _categoryService;
     private readonly IConfiguration _configuration;
 
     public WebhookController(
-        IPostService postService, 
-        ICategoryService categoryService, 
+        IPostService postService,
         IConfiguration configuration)
     {
         _postService = postService;
-        _categoryService = categoryService;
         _configuration = configuration;
     }
 
@@ -47,7 +44,9 @@ public class WebhookController : ControllerBase
     [HttpPost("posts")]
     [AllowAnonymous]
     [IgnoreAntiforgeryToken]
-    public async Task<IActionResult> IngestPost([FromBody] WebhookPostPayload payload)
+    public async Task<IActionResult> IngestPost(
+        [FromBody] WebhookPostPayload? payload,
+        CancellationToken cancellationToken)
     {
         // 1. Validate the secret auth header (X-DevCore-Secret)
         if (!Request.Headers.TryGetValue("X-DevCore-Secret", out var providedSecretHeader) || 
@@ -81,28 +80,6 @@ public class WebhookController : ControllerBase
             return BadRequest(new { success = false, message = "Empty JSON payload." });
         }
 
-        if (string.IsNullOrWhiteSpace(payload.Title))
-        {
-            return BadRequest(new { success = false, message = "Field 'Title' is required." });
-        }
-
-        if (string.IsNullOrWhiteSpace(payload.Content))
-        {
-            return BadRequest(new { success = false, message = "Field 'Content' is required." });
-        }
-
-        if (payload.CategoryId <= 0)
-        {
-            return BadRequest(new { success = false, message = "Valid 'CategoryId' is required." });
-        }
-
-        // Verify category exists in database
-        var category = await _categoryService.GetCategoryByIdAsync(payload.CategoryId);
-        if (category == null)
-        {
-            return BadRequest(new { success = false, message = $"Category with Id {payload.CategoryId} does not exist." });
-        }
-
         // 5. Map payload to Domain Entity with Fail-Safe Draft mode
         var post = new Post
         {
@@ -119,7 +96,26 @@ public class WebhookController : ControllerBase
         };
 
         // 6. Save via PostService (handles automatic slug generation and date tagging)
-        await _postService.CreatePostAsync(post);
+        var validationResult = await _postService.CreatePostAsync(
+            post,
+            cancellationToken);
+        if (!validationResult.IsValid)
+        {
+            var errors = validationResult.Errors.Select(error => new
+            {
+                field = error.Field == nameof(Post.ThumbnailUrl)
+                    ? nameof(WebhookPostPayload.CoverImageUrl)
+                    : error.Field,
+                message = error.Message
+            });
+
+            return BadRequest(new
+            {
+                success = false,
+                message = "Payload validation failed.",
+                errors
+            });
+        }
 
         // 7. Return structured JSON response
         return Ok(new

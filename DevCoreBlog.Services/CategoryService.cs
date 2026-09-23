@@ -30,6 +30,7 @@
 
 using DevCoreBlog.Core.Entities;
 using DevCoreBlog.Core.Shared.Helpers;
+using DevCoreBlog.Core.Validation;
 using DevCoreBlog.Data.Repositories;
 using DevCoreBlog.Services.Interfaces;
 
@@ -88,8 +89,15 @@ public class CategoryService : ICategoryService
 
     // Create a new category (handles slug generation)
     // Business rule: Slug is auto-generated from Name (using SlugGenerator)
-    public async Task CreateCategoryAsync(Category category)
+    public async Task<ContentValidationResult> CreateCategoryAsync(Category category)
     {
+        CategoryContentRules.Normalize(category);
+        var validationResult = CategoryContentRules.Validate(category);
+        if (!validationResult.IsValid)
+        {
+            return validationResult;
+        }
+
         // BUSINESS RULE: Auto-generate URL-friendly slug from the category name
         // Example: "C# Dersleri" → "c-sharp-dersleri"
         category.Slug = SlugGenerator.Generate(category.Name);
@@ -99,12 +107,20 @@ public class CategoryService : ICategoryService
 
         // Commit the transaction to the database
         await _categoryRepository.SaveChangesAsync();
+        return ContentValidationResult.Success();
     }
 
     // Update an existing category (handles slug regeneration)
     // Business rule: Slug is regenerated in case the Name was changed
-    public async Task UpdateCategoryAsync(Category category)
+    public async Task<ContentValidationResult> UpdateCategoryAsync(Category category)
     {
+        CategoryContentRules.Normalize(category);
+        var validationResult = CategoryContentRules.Validate(category);
+        if (!validationResult.IsValid)
+        {
+            return validationResult;
+        }
+
         // BUSINESS RULE: Regenerate slug in case the name was changed
         // This ensures the slug always matches the current name
         category.Slug = SlugGenerator.Generate(category.Name);
@@ -114,6 +130,7 @@ public class CategoryService : ICategoryService
 
         // Commit the transaction to the database
         await _categoryRepository.SaveChangesAsync();
+        return ContentValidationResult.Success();
     }
 
     // Delete a category by its Id (returns false if category has posts)

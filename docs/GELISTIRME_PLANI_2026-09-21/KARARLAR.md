@@ -1,6 +1,6 @@
 # Güncel mimari ve çalışma kararları
 
-**Güncelleme:** 21 Eylül 2026 — AGENTS.md v2.
+**Güncelleme:** 23 Eylül 2026 — F12 içerik sınırları.
 
 Kullanıcı eski kuralların yenilenmesini, SOLID/temiz kod/güvenlik sınırlarının güçlendirilmesini, eski planların kaldırılabilmesini ve yeni geliştirme planının buna uyarlanmasını açıkça istedi. Aşağıdaki teknik seçimler bu yetki kapsamında mevcut ürün yapısını koruyarak yapıldı. Kullanıcının ayrıca eski A/B seçeneklerinden birini seçtiği iddia edilmiyor; o karar ağacı yeni kurallarla kaldırıldı.
 
@@ -59,6 +59,26 @@ Eski mutlak DTO yasağı kaldırıldı. Form input DTO'su veya typed ViewModel i
 Her entity için DTO ailesi, ayrı transfer projesi, gereksiz mapper zinciri ve AutoMapper eklenmez. DTO varlığı tek başına güvenlik sağlamaz; server authorization ve ortak iş kuralları zorunludur.
 
 **Durum:** KARAR VERİLDİ; ilgili fazlar güncellendi.
+
+## D07 — Yazı ve kategori giriş sınırları
+
+F12 ile bütün yazma yollarında aşağıdaki sunucu tarafı iş kuralları geçerlidir:
+
+| Alan | Kural |
+|---|---|
+| Yazı başlığı | Boş/yalnızca boşluk olamaz; en çok 200 karakter |
+| Yazı içeriği | Boş/yalnızca boşluk olamaz; en çok 200.000 karakter |
+| Özet | İsteğe bağlı; en çok 500 karakter; boşluk değeri boş string'e çevrilir |
+| Kısa alıntı | İsteğe bağlı; en çok 1.000 karakter; boşluk değeri boş string'e çevrilir |
+| Kapak URL'si | İsteğe bağlı; en çok 2.048 karakter; doluysa host içeren mutlak HTTPS URL |
+| Yazı kategorisi | Var olan ve aktif kategori |
+| Kategori adı | Boş/yalnızca boşluk olamaz; en çok 100 karakter |
+
+Bu sınırlar Core'daki ortak kurallardan servis, MVC ve webhook'a uygulanır. Form annotation'ları yalnızca erken kullanıcı geri bildirimi sağlar; servis doğrulamasının yerini almaz. Slug, CreatedDate, ViewCount ve kapak URL'si form binding'inden alınmaz. Mevcut kayıtlar otomatik kesilmez veya dönüştürülmez.
+
+İzole F01 veri envanterinde 500 karakteri aşan bir sentetik özet ve pasif kategoriye bağlı bir sentetik yazı bulundu. Kayıtlar korunur; yeniden yazılmak istenirse güncel kuralları sağlamaları gerekir. Gerçek production verisi F12 sırasında okunmadı veya değiştirilmedi.
+
+**Durum:** UYGULANDI — F12.
 
 ## Gerektiğinde alınacak gerçek ürün/ortam bilgileri
 

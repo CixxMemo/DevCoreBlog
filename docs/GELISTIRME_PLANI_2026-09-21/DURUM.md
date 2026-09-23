@@ -1,11 +1,11 @@
 # İlerleme çizelgesi
 
-- **Son kayıt:** 23 Eylül 2026 — F11 kapaksız yazı kaydı, sunucu tarafında kapak koruması ve görünür alan hataları tamamlandı.
-- **Tamamlanan plan fazı:** 12/58 (F00–F11).
-- **Tamamlanan uygulama kodu fazı:** 10.
+- **Son kayıt:** 23 Eylül 2026 — F12 yazı/kategori kuralları servis, MVC ve webhook için ortaklaştırıldı.
+- **Tamamlanan plan fazı:** 13/58 (F00–F12).
+- **Tamamlanan uygulama kodu fazı:** 11.
 - **Aktif faz:** Yok.
-- **Sıradaki faz:** F12 — kullanıcı onayı bekleniyor.
-- **Uygulama kodu:** F02–F09 güvenlik fazları tamamlandı. F10 migration zincirini doğruladı. F11 ile kapaksız Create/Edit çalışıyor, mevcut kapak istemciye güvenmeden korunuyor ve başarısız form girişleri görünür hatalarla birlikte kalıyor.
+- **Sıradaki faz:** F13 — kullanıcı onayı bekleniyor.
+- **Uygulama kodu:** F02–F09 güvenlik fazları tamamlandı. F10 migration zincirini doğruladı. F11 kapaksız kayıt ve görünür hataları düzeltti. F12 başlık/içerik/özet/kategori/HTTPS URL sınırlarını servis katmanında zorunlu kıldı; form ve webhook aynı kuralları kullanıyor.
 
 ## Kullanım
 
@@ -32,7 +32,7 @@
 | [x] | F09 | Bütün görsel yüklemelerine aynı güvenlik politikası | TAMAMLANDI — KOD | [F09 kanıtı](../uygulama-kayitlari/F09-2026-09-22.md) |
 | [x] | F10 | Migration keşfini ve sürüm uyumunu düzelt | TAMAMLANDI — KOD | [F10 kanıtı](../uygulama-kayitlari/F10-2026-09-22.md) |
 | [x] | F11 | Dosyasız yazı kaydını ve alan hatalarını düzelt | TAMAMLANDI — KOD | [F11 kanıtı](../uygulama-kayitlari/F11-2026-09-23.md) |
-| [ ] | F12 | Yazı ve kategori iş kurallarını ortak doğrula | BAŞLAMADI | — |
+| [x] | F12 | Yazı ve kategori iş kurallarını ortak doğrula | TAMAMLANDI — KOD | [F12 kanıtı](../uygulama-kayitlari/F12-2026-09-23.md) |
 | [ ] | F13 | Formların frontend doğrulama bağımlılığını onar | BAŞLAMADI | — |
 | [ ] | F14 | Kategori düzenlemesinde korunan alanları sakla | BAŞLAMADI | — |
 | [ ] | F15 | Kategori silme kuralını veritabanında güvenceye al | BAŞLAMADI | — |
@@ -81,11 +81,11 @@
 
 ## Son agent teslimi
 
-- Tamamlanan faz: F11 dosyasız yazı kaydı ve alan hataları.
-- Değişen davranış: Kapaksız Create başarılıdır. Edit'te dosya seçilmezse mevcut kapak DB kaydından korunur; istemcinin gönderdiği `ThumbnailUrl` kabul edilmez. Validation ve yükleme hataları genel özet/alan yanında görünür, girilen değerler kaybolmaz.
-- Çalıştırılan kontroller ve sonuç: Build 0 uyarı/0 hatayla geçti. İzole PostgreSQL/HTTP probe'unda altı F11 kontrolü ve F02–F10 regresyonları geçti. Masaüstünde boş hata kutusu kaldırıldı; klavye ile hata akışı ve 390 px mobil görünüm doğrulandı.
-- Doğrulanamayan/engel: F11 için engel yoktur. Mevcut jQuery konsol hatası F13, sabit admin sidebar'ın dar mobil içeriği F34 kapsamındadır.
-- Sıradaki tek faz: F12.
-- Kullanıcıdan gereken: F12'yi başlatmak için açık onay.
+- Tamamlanan faz: F12 yazı ve kategori iş kurallarını ortak doğrulama.
+- Değişen davranış: Başlık/içerik/ad boşluğu, metin uzunlukları, aktif kategori ve mutlak HTTPS kapak kuralı artık servis katmanında zorunlu. MVC dar input modelleri kullanıyor; webhook aynı servis sonucunu alan bazlı 400 cevabına çeviriyor. Summary/Excerpt boşlukları boş string'e normalleştiriliyor.
+- Çalıştırılan kontroller ve sonuç: Build 0 uyarı/0 hatayla geçti. İzole PostgreSQL'de doğrudan servis bypass denemeleri reddedildi; aynı bozuk özet MVC ve webhook'ta reddedildi; over-posting DB'de etkisiz kaldı ve F02–F11 regresyonları geçti. Masaüstü ve 390 px tarayıcı kontrolünde sınırlar, aktif kategori listesi ve taşma doğrulandı.
+- Doğrulanamayan/engel: Gerçek production verisi incelenmedi. Sentetik fixture'da bir uzun özet ve pasif kategori bağlantısı raporlandı, değiştirilmedi. Mevcut jQuery konsol hatası F13, sabit admin sidebar darlığı F34 kapsamındadır.
+- Sıradaki tek faz: F13.
+- Kullanıcıdan gereken: F13'ü başlatmak için açık onay.
 
 [Ana plan](/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/docs/GELISTIRME_PLANI_2026-09-21/README.md) · [Hazır mesajlar](/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/docs/GELISTIRME_PLANI_2026-09-21/AGENT_PROMPTLARI.md)

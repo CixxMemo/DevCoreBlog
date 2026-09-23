@@ -20,6 +20,7 @@
 // =============================================================================
 
 using DevCoreBlog.Core.Entities;
+using DevCoreBlog.Core.Validation;
 
 namespace DevCoreBlog.Services.Interfaces;
 
@@ -65,11 +66,20 @@ public interface IPostService
     // Get a single post by its Id (for admin edit form)
     Task<Post?> GetPostByIdAsync(int id);
 
-    // Create a new post (handles slug generation and date setting)
-    Task CreatePostAsync(Post post);
+    // Validate a post before side effects such as media upload.
+    Task<ContentValidationResult> ValidatePostAsync(
+        Post post,
+        CancellationToken cancellationToken = default);
 
-    // Update an existing post (handles slug regeneration)
-    Task UpdatePostAsync(Post post);
+    // Create a new post (handles validation, slug generation and date setting)
+    Task<ContentValidationResult> CreatePostAsync(
+        Post post,
+        CancellationToken cancellationToken = default);
+
+    // Update an existing post (handles validation and slug regeneration)
+    Task<ContentValidationResult> UpdatePostAsync(
+        Post post,
+        CancellationToken cancellationToken = default);
 
     // Delete a post by its Id
     Task DeletePostAsync(int id);
