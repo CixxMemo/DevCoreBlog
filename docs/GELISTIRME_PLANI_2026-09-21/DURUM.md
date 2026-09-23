@@ -1,11 +1,11 @@
 # İlerleme çizelgesi
 
-- **Son kayıt:** 23 Eylül 2026 — F12 yazı/kategori kuralları servis, MVC ve webhook için ortaklaştırıldı.
-- **Tamamlanan plan fazı:** 13/58 (F00–F12).
-- **Tamamlanan uygulama kodu fazı:** 11.
+- **Son kayıt:** 23 Eylül 2026 — F13 frontend validation asset zinciri ve Markdown fallback'i onarıldı.
+- **Tamamlanan plan fazı:** 14/58 (F00–F13).
+- **Tamamlanan uygulama kodu fazı:** 12.
 - **Aktif faz:** Yok.
-- **Sıradaki faz:** F13 — kullanıcı onayı bekleniyor.
-- **Uygulama kodu:** F02–F09 güvenlik fazları tamamlandı. F10 migration zincirini doğruladı. F11 kapaksız kayıt ve görünür hataları düzeltti. F12 başlık/içerik/özet/kategori/HTTPS URL sınırlarını servis katmanında zorunlu kıldı; form ve webhook aynı kuralları kullanıyor.
+- **Sıradaki faz:** F14 — kullanıcı onayı bekleniyor.
+- **Uygulama kodu:** F02–F09 güvenlik fazları tamamlandı. F10 migration zincirini doğruladı. F11 kapaksız kayıt ve görünür hataları düzeltti. F12 ortak içerik kurallarını zorunlu kıldı. F13 yerel validation asset'lerini doğru sıraya aldı ve Markdown textarea'yı JavaScript'siz çalışan fallback yaptı.
 
 ## Kullanım
 
@@ -33,7 +33,7 @@
 | [x] | F10 | Migration keşfini ve sürüm uyumunu düzelt | TAMAMLANDI — KOD | [F10 kanıtı](../uygulama-kayitlari/F10-2026-09-22.md) |
 | [x] | F11 | Dosyasız yazı kaydını ve alan hatalarını düzelt | TAMAMLANDI — KOD | [F11 kanıtı](../uygulama-kayitlari/F11-2026-09-23.md) |
 | [x] | F12 | Yazı ve kategori iş kurallarını ortak doğrula | TAMAMLANDI — KOD | [F12 kanıtı](../uygulama-kayitlari/F12-2026-09-23.md) |
-| [ ] | F13 | Formların frontend doğrulama bağımlılığını onar | BAŞLAMADI | — |
+| [x] | F13 | Formların frontend doğrulama bağımlılığını onar | TAMAMLANDI — KOD | [F13 kanıtı](../uygulama-kayitlari/F13-2026-09-23.md) |
 | [ ] | F14 | Kategori düzenlemesinde korunan alanları sakla | BAŞLAMADI | — |
 | [ ] | F15 | Kategori silme kuralını veritabanında güvenceye al | BAŞLAMADI | — |
 | [ ] | F16 | Yayın zamanını açık saat dilimiyle işle | BAŞLAMADI | — |
@@ -81,11 +81,11 @@
 
 ## Son agent teslimi
 
-- Tamamlanan faz: F12 yazı ve kategori iş kurallarını ortak doğrulama.
-- Değişen davranış: Başlık/içerik/ad boşluğu, metin uzunlukları, aktif kategori ve mutlak HTTPS kapak kuralı artık servis katmanında zorunlu. MVC dar input modelleri kullanıyor; webhook aynı servis sonucunu alan bazlı 400 cevabına çeviriyor. Summary/Excerpt boşlukları boş string'e normalleştiriliyor.
-- Çalıştırılan kontroller ve sonuç: Build 0 uyarı/0 hatayla geçti. İzole PostgreSQL'de doğrudan servis bypass denemeleri reddedildi; aynı bozuk özet MVC ve webhook'ta reddedildi; over-posting DB'de etkisiz kaldı ve F02–F11 regresyonları geçti. Masaüstü ve 390 px tarayıcı kontrolünde sınırlar, aktif kategori listesi ve taşma doğrulandı.
-- Doğrulanamayan/engel: Gerçek production verisi incelenmedi. Sentetik fixture'da bir uzun özet ve pasif kategori bağlantısı raporlandı, değiştirilmedi. Mevcut jQuery konsol hatası F13, sabit admin sidebar darlığı F34 kapsamındadır.
-- Sıradaki tek faz: F13.
-- Kullanıcıdan gereken: F13'ü başlatmak için açık onay.
+- Tamamlanan faz: F13 frontend validation bağımlılık zinciri ve Markdown fallback'i.
+- Değişen davranış: Post/Category form sayfaları yerel jQuery → Validation → Unobtrusive sırasını birer kez yükler. Toast UI başarıyla başlamazsa Markdown textarea görünür ve düzenlenebilir kalır; başlarsa Content değeri doğrulama için sürekli eşlenir.
+- Çalıştırılan kontroller ve sonuç: Build 0 uyarı/0 hatayla geçti. F13 probe'u 6/6 geçti; JavaScript'siz gerçek kayıt oluşturuldu. F02–F09 ve F11–F12 regresyonları geçti. Masaüstü ve 390×844 tarayıcıda klavye doğrulaması çalıştı ve console error görülmedi.
+- Doğrulanamayan/engel: Yerel restore graph EF runtime 10.0.11 çözerken `dotnet-ef`/Design/Tools 10.0.10 olduğu için tam runner migration keşfinde bekliyor; F10 bugün yeniden doğrulanmadı. Tailwind/Prism uyarıları F35, sabit admin sidebar darlığı F34 kapsamındadır.
+- Sıradaki tek faz: F14.
+- Kullanıcıdan gereken: F14'ü başlatmak için açık onay.
 
 [Ana plan](/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/docs/GELISTIRME_PLANI_2026-09-21/README.md) · [Hazır mesajlar](/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/docs/GELISTIRME_PLANI_2026-09-21/AGENT_PROMPTLARI.md)

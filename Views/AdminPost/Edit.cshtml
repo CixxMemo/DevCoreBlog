@@ -76,9 +76,18 @@
                     <span>DROP IMAGE / GIF TO UPLOAD TO CLOUDINARY</span>
                 </div>
 
-                @* Toast UI Editor Mount Point *@
-                <div id="editor"></div>
-                <textarea asp-for="Content" id="Content" class="hidden"></textarea>
+                @* The textarea is the working baseline; Toast UI hides it only after a successful start. *@
+                <div id="editor" hidden></div>
+                <div id="content-fallback">
+                    <label asp-for="Content" class="block font-mono text-xs font-bold uppercase text-black p-3 pb-0">
+                        Markdown Content
+                    </label>
+                    <textarea asp-for="Content"
+                              id="Content"
+                              rows="24"
+                              data-validate-hidden="true"
+                              class="w-full min-h-[32rem] bg-white p-4 font-mono text-sm text-black focus:outline-none"></textarea>
+                </div>
             </div>
             <span asp-validation-for="Content" class="font-mono text-xs text-rose-600 block"></span>
 
@@ -214,6 +223,7 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script src="~/js/admin-post-editor.js" asp-append-version="true"></script>
     
     <script>
         document.addEventListener('DOMContentLoaded', function () {
@@ -237,22 +247,24 @@
 
             // Initialize Toast UI Editor
             const editorElement = document.querySelector('#editor');
-            let editor;
-
-            if (editorElement) {
-                editor = new toastui.Editor({
-                    el: editorElement,
+            const contentFallback = document.getElementById('content-fallback');
+            const editor = window.DevCoreBlogPostEditor?.create({
+                editorElement: editorElement,
+                contentField: contentHidden,
+                fallbackElement: contentFallback,
+                editorOptions: {
                     height: '600px',
                     initialEditType: 'markdown',
                     previewStyle: 'vertical',
-                    initialValue: contentHidden.value || '',
                     hooks: {
                         addImageBlobHook: async (blob, callback) => {
                             await uploadFileAndInsert(blob, callback);
                         }
                     }
-                });
+                }
+            });
 
+            if (editor) {
                 postForm.addEventListener('submit', function () {
                     contentHidden.value = editor.getMarkdown();
                 });

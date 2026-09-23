@@ -1,15 +1,19 @@
 ﻿@* ============================================================================= *@
-@* _ValidationScriptsPartial.cshtml — jQuery Validation Scripts Partial *@
+@* _ValidationScriptsPartial.cshtml — Local jQuery Validation Dependency Chain *@
 @* ============================================================================= *@
-@* This partial view includes the jQuery Validation and Unobtrusive Validation *@
-@* scripts. It is rendered in the @section Scripts of forms that need client-side *@
-@* validation (e.g. Create.cshtml, Edit.cshtml). *@
+@* Keep the local dependency order explicit: jQuery 3.7.1, Validation 1.21.0, *@
+@* then Unobtrusive Validation 4.0.0. Render this partial once on form pages. *@
 @* *@
 @* Usage: @{await Html.RenderPartialAsync("_ValidationScriptsPartial");} *@
 @* ============================================================================= *@
 
-@* jQuery Validation — core validation library (checks required, min/max, pattern, etc.) *@
-<script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
-@* jQuery Unobtrusive Validation — bridges ASP.NET Core's data annotations *@
-@* (like [Required], [StringLength]) to jQuery Validation rules automatically *@
-<script src="~/lib/jquery-validation-unobtrusive/dist/jquery.validate.unobtrusive.min.js"></script>
+<script src="~/lib/jquery/dist/jquery.min.js" asp-append-version="true"></script>
+<script src="~/lib/jquery-validation/dist/jquery.validate.min.js" asp-append-version="true"></script>
+<script src="~/lib/jquery-validation-unobtrusive/dist/jquery.validate.unobtrusive.min.js" asp-append-version="true"></script>
+<script>
+    // Toast UI progressively enhances the marked textarea. Keep that hidden
+    // field in client validation after the rich editor becomes available.
+    window.jQuery.validator.setDefaults({
+        ignore: ':hidden:not([data-validate-hidden="true"])'
+    });
+</script>
