@@ -1,0 +1,14 @@
+@model IEnumerable<Category>
+
+@if (Model.Any())
+{
+    <div class="px-4 py-2 text-[11px] font-mono font-bold uppercase tracking-wider text-gray-500 dark:text-zinc-400 bg-gray-50 dark:bg-zinc-800/60 border-b border-gray-200 dark:border-zinc-800">
+        Categories
+    </div>
+    @foreach (var category in Model)
+    {
+        <a href="/kategori/@category.Slug" class="block py-2.5 px-4 hover:bg-gray-900 hover:text-white dark:hover:bg-primary dark:hover:text-white rounded-none border-b border-gray-100 dark:border-zinc-800 transition-none text-xs font-semibold text-gray-700 dark:text-zinc-300 no-underline">
+            # @category.Name
+        </a>
+    }
+}

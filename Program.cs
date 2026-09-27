@@ -216,11 +216,6 @@ builder.Services.AddControllersWithViews(options =>
 builder.Services.AddAntiforgery(options =>
     options.HeaderName = "X-CSRF-TOKEN");
 
-// Register Output Caching services
-builder.Services.AddOutputCache();
-
-// Register Memory Caching services for data layer
-builder.Services.AddMemoryCache();
 
 // ---------------------------------------------------------------------------
 // RATE LIMITING REGISTRATION (DDoS & Webhook Brute-Force Protection)
@@ -400,9 +395,6 @@ app.UseCors();
 
 // Enable Rate Limiter middleware
 app.UseRateLimiter();
-
-// Enable output caching
-app.UseOutputCache();
 
 // Enable cookie authentication middleware — MUST come before UseAuthorization.
 // This reads the auth cookie on each request and sets HttpContext.User.

@@ -36,17 +36,12 @@ public class PublicFeedController : ControllerBase
     // Returns the 3 most recently published blog posts for external showcases.
     // -------------------------------------------------------------------------
     [HttpGet("posts/latest")]
-    [ResponseCache(Duration = 300, Location = ResponseCacheLocation.Any)] // Cache for 5 minutes
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public async Task<IActionResult> GetLatestPosts()
     {
-        // 1. Fetch all posts from the service layer
-        var allPosts = await _postService.GetAllPostsAsync();
-
-        // 2. Filter for active and published posts, order by PublishDate descending, take top 3
-        var latestPosts = allPosts
-            .Where(p => p.IsActive && p.IsPublished)
-            .OrderByDescending(p => p.PublishDate)
-            .Take(3)
+        // The service applies the shared visibility rule and database-side limit.
+        var posts = await _postService.GetLatestPublicPostsAsync();
+        var latestPosts = posts
             .Select(p => new
             {
                 id = p.Id,
@@ -62,7 +57,7 @@ public class PublicFeedController : ControllerBase
             })
             .ToList();
 
-        // 3. Return JSON array directly
+        // Return the preserved JSON shape.
         return Ok(latestPosts);
     }
 }

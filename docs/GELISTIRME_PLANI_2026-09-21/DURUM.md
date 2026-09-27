@@ -1,11 +1,11 @@
 # İlerleme çizelgesi
 
-- **Son kayıt:** 27 Eylül 2026 — F16 yayın saati açık site saat diliminden UTC'ye çevrildi.
-- **Tamamlanan plan fazı:** 17/58 (F00–F16).
-- **Tamamlanan uygulama kodu fazı:** 15.
+- **Son kayıt:** 27 Eylül 2026 — F17 public yayın görünürlüğü tek UTC/SQL kuralına bağlandı.
+- **Tamamlanan plan fazı:** 18/58 (F00–F17).
+- **Tamamlanan uygulama kodu fazı:** 16.
 - **Aktif faz:** Yok.
-- **Sıradaki faz:** F17 — kullanıcı onayı bekleniyor.
-- **Uygulama kodu:** F02–F09 güvenlik fazları tamamlandı. F10 migration zincirini doğruladı. F11–F13 form/içerik güvenliğini tamamladı. F14 kategori update'ini güvenli alanlara daralttı. F15 kategori silmesini DB constraint'i ve yarış yönetimiyle veri kaybına karşı korudu. F16 yayın zamanını açık saat dilimiyle UTC'ye bağladı.
+- **Sıradaki faz:** F18 — kullanıcı onayı bekleniyor.
+- **Uygulama kodu:** F02–F09 güvenlik fazları tamamlandı. F10 migration zincirini doğruladı. F11–F13 form/içerik güvenliğini tamamladı. F14 kategori update'ini güvenli alanlara daralttı. F15 kategori silmesini DB constraint'i ve yarış yönetimiyle veri kaybına karşı korudu. F16 yayın zamanını açık saat dilimiyle UTC'ye bağladı. F17 public görünürlüğü tek kurala bağladı ve cache'i geçici kapattı.
 
 ## Kullanım
 
@@ -37,7 +37,7 @@
 | [x] | F14 | Kategori düzenlemesinde korunan alanları sakla | TAMAMLANDI — KOD | [F14 kanıtı](../uygulama-kayitlari/F14-2026-09-23.md) |
 | [x] | F15 | Kategori silme kuralını veritabanında güvenceye al | TAMAMLANDI — KOD | [F15 kanıtı](../uygulama-kayitlari/F15-2026-09-23.md) |
 | [x] | F16 | Yayın zamanını açık saat dilimiyle işle | TAMAMLANDI — KOD | [F16 kanıtı](../uygulama-kayitlari/F16-2026-09-27.md) |
-| [ ] | F17 | Tek yayın görünürlüğü kuralını uygula | BAŞLAMADI | — |
+| [x] | F17 | Tek yayın görünürlüğü kuralını uygula | TAMAMLANDI — KOD | [F17 kanıtı](../uygulama-kayitlari/F17-2026-09-27.md) |
 | [ ] | F18 | Yayın kuralına uyan cache politikası | BAŞLAMADI | — |
 | [ ] | F19 | Düzenlemede kalıcı slug'ı koru | BAŞLAMADI | — |
 | [ ] | F20 | Slug benzersizliği ve çakışma göçü | BAŞLAMADI | — |
@@ -81,11 +81,11 @@
 
 ## Son agent teslimi
 
-- Tamamlanan faz: F16 yayın saat dilimi.
-- Değişen davranış: `SITE_TIME_ZONE` (varsayılan `Europe/Istanbul`) ile form saati UTC'ye çevrilir ve editte geri gösterilir. Geçersiz/çift anlamlı saat reddedilir; tarih değiştirilmediyse mevcut UTC anının saniye altı kısmı korunur.
-- Çalıştırılan kontroller ve sonuç: Yerel/izole build 0 uyarı/0 hatayla geçti. Eski kodda saat kayması yeniden üretildi. İzole PostgreSQL/HTTP ile iki farklı sunucu TZ, Create→Edit, mevcut UTC veri ve DST hata kontrolleri; F11/F12 regresyonları; masaüstü/mobil tarayıcı ve console error kontrolü geçti.
-- Doğrulanamayan/engel: Tam F01 koşusu F16'ya gelmeden yerel EF restore metadatası 10.0.11/CLI 10.0.10 uyumsuzluğunda durdu; ayrı F16 kabul koşusu geçti. Gerçek dağıtım saat dilimi F01 kaydında yok; plan varsayımı kullanıldı. Mevcut mobil admin daralması F34 kapsamındadır.
-- Sıradaki tek faz: F17.
-- Kullanıcıdan gereken: F17'yi başlatmak için açık onay.
+- Tamamlanan faz: F17 tek yayın görünürlüğü.
+- Değişen davranış: Public yazı yalnız aktif + yayınlı + zamanı gelmiş + aktif kategorideyse görünür. Ana sayfa, kategori, arama, detay, ilişkili yazı, sitemap, menü ve portföy feed'i bu sınırı izler. Public cache F18'e kadar kapalı; yönetici gizli kayıtları görür.
+- Çalıştırılan kontroller ve sonuç: Build 0 uyarı/0 hata. Eski kodda sızıntı yeniden üretildi. Sentetik PostgreSQL ve sabit `TimeProvider` ile görünürlük/sınır anı; HTTP yüzeyleri, cache başlıkları, F11/F12 regresyonları; masaüstü/mobil tarayıcı, klavye ve konsol kontrolü geçti. [Ayrıntılı kanıt](../uygulama-kayitlari/F17-2026-09-27.md).
+- Doğrulanamayan/engel: Üretim verisi incelenmedi; pasif kategoriye bağlı kayıt sayısı yalnız sentetik fikstürde 1. Önceki tam F01 koşusunun EF restore metadatası engeli ayrı duruyor. Yönetici dashboard'unun “live” metriği gelecek içerikleri de sayabiliyor; public bağlantı 404 dönüyor.
+- Sıradaki tek faz: F18.
+- Kullanıcıdan gereken: F18'i başlatmak için açık onay.
 
 [Ana plan](/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/docs/GELISTIRME_PLANI_2026-09-21/README.md) · [Hazır mesajlar](/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/docs/GELISTIRME_PLANI_2026-09-21/AGENT_PROMPTLARI.md)

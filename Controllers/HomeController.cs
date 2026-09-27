@@ -24,12 +24,11 @@ using DevCoreBlog.Models;
 using DevCoreBlog.Services.Interfaces;
 // Import the Post entity (used in Search action return type)
 using DevCoreBlog.Core.Entities;
-// Import Output Caching for performance
-using Microsoft.AspNetCore.OutputCaching;
 
 namespace DevCoreBlog.Controllers;
 
 // Inherit from Controller for access to View(), HttpContext, etc.
+[ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
 public class HomeController : Controller
 {
     // ---------------------------------------------------------------------------
@@ -57,7 +56,6 @@ public class HomeController : Controller
     // Displays the public home page with a list of published blog posts.
     // Only published posts are shown, ordered by creation date (newest first).
     // Each post includes its related Category for display in the view.
-    [OutputCache(Duration = 60)]
     public async Task<IActionResult> Index(int page = 1)
     {
         int pageSize = 9;
@@ -83,7 +81,6 @@ public class HomeController : Controller
     //
     // Side Effect: Increments the ViewCount by 1 every time this action is called.
     // This provides a simple analytics metric for post popularity.
-    [OutputCache(Duration = 60)]
     public async Task<IActionResult> Detail(string slug)
     {
         // Step 1: Get the post by slug from service layer
@@ -105,10 +102,14 @@ public class HomeController : Controller
             return NotFound();
         }
 
+        // Preserve the visible view count without replacing the filtered content snapshot.
+        post.ViewCount = updatedPost.ViewCount;
+
         // Step 3: Calculate reading time based on word count
         // Average reading speed: 200 words per minute (standard for technical content)
         // Formula: ReadingTime = WordCount / 200 (rounded up to nearest minute)
-        var wordCount = updatedPost.Content.Split(
+        // Render the public-filtered snapshot, not the administrative row reloaded for the counter.
+        var wordCount = post.Content.Split(
             new[] { ' ', '\t', '\n', '\r' },
             StringSplitOptions.RemoveEmptyEntries
         ).Length;
@@ -122,32 +123,31 @@ public class HomeController : Controller
         ViewBag.ReadingTime = readingTimeMinutes;
         
         // Fetch related posts and pass to ViewBag
-        ViewBag.RelatedPosts = await _postService.GetRelatedPostsAsync(updatedPost.Id, updatedPost.CategoryId);
+        ViewBag.RelatedPosts = await _postService.GetRelatedPostsAsync(post.Id, post.CategoryId);
 
         // Step 5: Set Open Graph (OG) meta tags for social media sharing
         // These values are used by _Layout.cshtml to generate <meta property="og:..."> tags
         // When someone shares this post on Facebook/Twitter/LinkedIn, these values appear
-        ViewBag.OgTitle = updatedPost.Title;
-        ViewBag.OgDescription = updatedPost.Summary;
+        ViewBag.OgTitle = post.Title;
+        ViewBag.OgDescription = post.Summary;
         ViewBag.OgType = "article";
-        ViewBag.OgUrl = $"/yazi/{updatedPost.Slug}";
+        ViewBag.OgUrl = $"/yazi/{post.Slug}";
 
         // Pass the post to the Detail view
         ViewData["HideSidebar"] = true;
         ViewData["HideSearch"] = true;
         
-        return View(updatedPost);
+        return View(post);
     }
 
     // GET: /kategori/{slug}
     // Displays all published posts in a specific category (identified by slug).
     // If the category doesn't exist, returns 404.
     // The category name is passed via ViewBag for display in the view.
-    [OutputCache(Duration = 60)]
     public async Task<IActionResult> Category(string slug, int page = 1)
     {
         // First, get the category by slug from service layer
-        var category = await _categoryService.GetCategoryBySlugAsync(slug);
+        var category = await _categoryService.GetActiveCategoryBySlugAsync(slug);
 
         // If category not found, return 404 Not Found
         if (category == null)
@@ -225,7 +225,7 @@ public class HomeController : Controller
     [HttpGet("api/categories")]
     public async Task<IActionResult> ApiCategories()
     {
-        var categories = await _categoryService.GetAllCategoriesAsync();
+        var categories = await _categoryService.GetActiveCategoriesAsync();
         var result = categories.Select(c => new { slug = c.Slug, name = c.Name });
         return Json(result);
     }

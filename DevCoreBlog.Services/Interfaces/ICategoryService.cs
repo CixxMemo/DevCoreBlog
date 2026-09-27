@@ -34,6 +34,10 @@ public interface ICategoryService
     // Get all categories (without posts)
     Task<IEnumerable<Category>> GetAllCategoriesAsync();
 
+    // Public category reads exclude inactive rows; admin reads remain unrestricted.
+    Task<IEnumerable<Category>> GetActiveCategoriesAsync();
+    Task<Category?> GetActiveCategoryBySlugAsync(string slug);
+
     // Get all categories with their posts (for admin listing with post counts)
     Task<IEnumerable<Category>> GetAllCategoriesWithPostsAsync();
 

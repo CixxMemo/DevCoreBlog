@@ -62,6 +62,12 @@ public class CategoryService : ICategoryService
         return await _categoryRepository.GetAllAsync();
     }
 
+    public Task<IEnumerable<Category>> GetActiveCategoriesAsync() =>
+        _categoryRepository.GetActiveCategoriesAsync();
+
+    public Task<Category?> GetActiveCategoryBySlugAsync(string slug) =>
+        _categoryRepository.GetActiveCategoryBySlugAsync(slug);
+
     // Get all categories with their posts (for admin listing with post counts)
     public async Task<IEnumerable<Category>> GetAllCategoriesWithPostsAsync()
     {

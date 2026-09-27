@@ -35,15 +35,8 @@ using DevCoreBlog.Core.Validation;
 using DevCoreBlog.Data.Repositories;
 using DevCoreBlog.Services.Interfaces;
 using DevCoreBlog.Services.Publishing;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Primitives;
 
 namespace DevCoreBlog.Services;
-
-internal static class PostCacheTokens
-{
-    public static CancellationTokenSource TokenSource = new CancellationTokenSource();
-}
 
 // Service class for Post-related business logic
 // Implements IPostService interface
@@ -51,7 +44,6 @@ public class PostService : IPostService
 {
     // Private readonly field to hold the injected PostRepository
     private readonly PostRepository _postRepository;
-    private readonly IMemoryCache _cache;
     private readonly IActiveCategoryLookup _activeCategoryLookup;
     private readonly PublicationTimeZone _publicationTimeZone;
     private readonly TimeProvider _timeProvider;
@@ -60,24 +52,15 @@ public class PostService : IPostService
     // The DI container (configured in Program.cs) provides the instance
     public PostService(
         PostRepository postRepository,
-        IMemoryCache cache,
         IActiveCategoryLookup activeCategoryLookup,
         PublicationTimeZone publicationTimeZone,
         TimeProvider timeProvider)
     {
         // Store the injected repository for use in all service methods
         _postRepository = postRepository;
-        _cache = cache;
         _activeCategoryLookup = activeCategoryLookup;
         _publicationTimeZone = publicationTimeZone;
         _timeProvider = timeProvider;
-    }
-
-    private void InvalidateCache()
-    {
-        PostCacheTokens.TokenSource.Cancel();
-        PostCacheTokens.TokenSource.Dispose();
-        PostCacheTokens.TokenSource = new CancellationTokenSource();
     }
 
     // -------------------------------------------------------------------------
@@ -85,27 +68,28 @@ public class PostService : IPostService
     // -------------------------------------------------------------------------
 
     // Get all published posts with their Category (ordered by newest first)
-    // Business rule: Only return posts where IsActive = true
+    // Capture one UTC instant for each public query.
     public async Task<IEnumerable<Post>> GetPublishedPostsAsync()
     {
         // Delegate to repository — no additional business logic needed
-        return await _postRepository.GetPublishedPostsAsync();
+        return await _postRepository.GetPublishedPostsAsync(_timeProvider.GetUtcNow().UtcDateTime);
     }
 
     // Get a single post by its slug (only if published)
-    // Business rule: Only return posts where IsActive = true
+    // The repository applies the shared public visibility rule at the current UTC instant.
     public async Task<Post?> GetPostBySlugAsync(string slug)
     {
         // Delegate to repository — no additional business logic needed
-        return await _postRepository.GetPostBySlugAsync(slug);
+        return await _postRepository.GetPostBySlugAsync(slug, _timeProvider.GetUtcNow().UtcDateTime);
     }
 
     // Get all posts in a category (by category slug, only published posts)
-    // Business rule: Only return posts where IsActive = true
+    // The repository applies the shared public visibility rule at the current UTC instant.
     public async Task<IEnumerable<Post>> GetPostsByCategorySlugAsync(string categorySlug)
     {
         // Delegate to repository — no additional business logic needed
-        return await _postRepository.GetPostsByCategorySlugAsync(categorySlug);
+        return await _postRepository.GetPostsByCategorySlugAsync(
+            categorySlug, _timeProvider.GetUtcNow().UtcDateTime);
     }
 
     // Search posts by title or content (only published posts)
@@ -113,43 +97,32 @@ public class PostService : IPostService
     public async Task<IEnumerable<Post>> SearchPostsAsync(string query)
     {
         // Delegate to repository — no additional business logic needed
-        return await _postRepository.SearchPostsAsync(query);
+        return await _postRepository.SearchPostsAsync(query, _timeProvider.GetUtcNow().UtcDateTime);
     }
 
-    // Get published posts with pagination (Cached)
+    // Keep public data uncached until F18 defines safe invalidation and expiry.
     public async Task<(IEnumerable<Post> Posts, int TotalCount)> GetPublishedPostsPagedAsync(int page, int pageSize)
     {
-        string cacheKey = $"PublishedPosts_Page_{page}_Size_{pageSize}";
-        
-        if (!_cache.TryGetValue(cacheKey, out (IEnumerable<Post> Posts, int TotalCount) cachedResult))
-        {
-            cachedResult = await _postRepository.GetPublishedPostsPagedAsync(page, pageSize);
-            
-            var cacheOptions = new MemoryCacheEntryOptions
-            {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10)
-            };
-            
-            // Add cancellation token to clear cache when a post is modified
-            cacheOptions.AddExpirationToken(new CancellationChangeToken(PostCacheTokens.TokenSource.Token));
-            
-            _cache.Set(cacheKey, cachedResult, cacheOptions);
-        }
-        
-        return cachedResult;
+        return await _postRepository.GetPublishedPostsPagedAsync(
+            page, pageSize, _timeProvider.GetUtcNow().UtcDateTime);
     }
 
     // Get published posts by category with pagination
     public async Task<(IEnumerable<Post> Posts, int TotalCount)> GetPostsByCategorySlugPagedAsync(string categorySlug, int page, int pageSize)
     {
-        return await _postRepository.GetPostsByCategorySlugPagedAsync(categorySlug, page, pageSize);
+        return await _postRepository.GetPostsByCategorySlugPagedAsync(
+            categorySlug, page, pageSize, _timeProvider.GetUtcNow().UtcDateTime);
     }
 
     // Get related posts in the same category (excluding the current post)
     public async Task<IEnumerable<Post>> GetRelatedPostsAsync(int currentPostId, int categoryId)
     {
-        return await _postRepository.GetRelatedPostsAsync(currentPostId, categoryId);
+        return await _postRepository.GetRelatedPostsAsync(
+            currentPostId, categoryId, _timeProvider.GetUtcNow().UtcDateTime);
     }
+
+    public Task<IEnumerable<Post>> GetLatestPublicPostsAsync() =>
+        _postRepository.GetLatestPublicPostsAsync(_timeProvider.GetUtcNow().UtcDateTime);
 
     // -------------------------------------------------------------------------
     // VIEW COUNT — Increment when Detail page is visited
@@ -269,8 +242,6 @@ public class PostService : IPostService
         // Commit the transaction to the database
         await _postRepository.SaveChangesAsync();
         
-        // Clear cache
-        InvalidateCache();
         return ContentValidationResult.Success();
     }
 
@@ -316,8 +287,6 @@ public class PostService : IPostService
         // Commit the transaction to the database
         await _postRepository.SaveChangesAsync();
         
-        // Clear cache
-        InvalidateCache();
         return ContentValidationResult.Success();
     }
 
@@ -333,8 +302,6 @@ public class PostService : IPostService
             await _postRepository.DeleteAsync(post);
             await _postRepository.SaveChangesAsync();
             
-            // Clear cache
-            InvalidateCache();
         }
     }
 }

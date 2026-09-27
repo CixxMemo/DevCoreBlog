@@ -185,7 +185,7 @@
                 </h2>
             </div>
             <span class="font-mono text-xs text-neutral-600">
-                Max 30 requests/min • 300s Output Cache
+                Max 30 requests/min • Fresh data on every request
             </span>
         </div>
 
@@ -224,7 +224,7 @@
                 <pre id="react-snippet" class="border-2 border-black bg-neutral-900 text-neutral-100 p-4 font-mono text-xs overflow-x-auto selection:bg-neutral-700">// In your React Portfolio Component:
 async function getLatestArticles() {
   const res = await fetch("https://devcoreblog.com/api/public/posts/latest", {
-    next: { revalidate: 300 } // Cache for 5 minutes
+    cache: 'no-store' // Recheck publication visibility on each request
   });
   
   if (!res.ok) throw new Error("Failed to fetch blog posts");

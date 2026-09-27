@@ -52,6 +52,9 @@ public interface IPostService
     // Get related posts in the same category (excluding the current post)
     Task<IEnumerable<Post>> GetRelatedPostsAsync(int currentPostId, int categoryId);
 
+    // Return at most three visible posts in publication order for the portfolio feed.
+    Task<IEnumerable<Post>> GetLatestPublicPostsAsync();
+
     // Increment the view count of a post by 1 (called when Detail page is visited)
     // Returns the updated Post with the new ViewCount value
     Task<Post?> IncrementViewCountAsync(int id);

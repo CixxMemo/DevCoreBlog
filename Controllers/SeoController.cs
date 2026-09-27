@@ -5,6 +5,7 @@ using System.Xml;
 
 namespace DevCoreBlog.Controllers;
 
+[ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
 public class SeoController : Controller
 {
     private readonly IPostService _postService;
@@ -41,7 +42,7 @@ public class SeoController : Controller
             xml.WriteEndElement();
 
             // 2. Categories
-            var categories = await _categoryService.GetAllCategoriesAsync();
+            var categories = await _categoryService.GetActiveCategoriesAsync();
             foreach (var category in categories)
             {
                 xml.WriteStartElement("url");

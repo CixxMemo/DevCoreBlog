@@ -6,7 +6,6 @@ using DevCoreBlog.Services;
 using DevCoreBlog.Services.Publishing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Caching.Memory;
 
 var connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING");
 if (string.IsNullOrWhiteSpace(connectionString))
@@ -18,15 +17,18 @@ if (string.IsNullOrWhiteSpace(connectionString))
 var options = new DbContextOptionsBuilder<ApplicationDbContext>()
     .UseNpgsql(connectionString)
     .Options;
+if (args.Contains("--visibility"))
+{
+    return await VisibilityProbe.RunAsync(options);
+}
+
 await using var context = new ApplicationDbContext(options);
 var postRepository = new PostRepository(context);
 var categoryRepository = new CategoryRepository(
     context,
     NullLogger<CategoryRepository>.Instance);
-using var cache = new MemoryCache(new MemoryCacheOptions());
 var postService = new PostService(
     postRepository,
-    cache,
     categoryRepository,
     new PublicationTimeZone(TimeZoneInfo.FindSystemTimeZoneById("Europe/Istanbul")),
     TimeProvider.System);

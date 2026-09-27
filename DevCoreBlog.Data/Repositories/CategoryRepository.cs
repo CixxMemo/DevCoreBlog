@@ -53,6 +53,17 @@ public class CategoryRepository : GenericRepository<Category>, IActiveCategoryLo
             .FirstOrDefaultAsync(c => c.Slug == slug);
     }
 
+    // Public navigation must never expose an inactive category.
+    public Task<Category?> GetActiveCategoryBySlugAsync(string slug) =>
+        _context.Categories.AsNoTracking()
+            .FirstOrDefaultAsync(category => category.Slug == slug && category.IsActive);
+
+    public async Task<IEnumerable<Category>> GetActiveCategoriesAsync() =>
+        await _context.Categories.AsNoTracking()
+            .Where(category => category.IsActive)
+            .OrderBy(category => category.Name)
+            .ToListAsync();
+
     // -------------------------------------------------------------------------
     // GetAllCategoriesWithPostsAsync — Get all categories with their posts
     // -------------------------------------------------------------------------
