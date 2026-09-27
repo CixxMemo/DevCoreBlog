@@ -146,7 +146,7 @@ Bu bölüm bir çalıştırma emri değildir. Her seferinde yalnızca **bir faz 
 **Agent'ın uygulayacağı sıra:**
 
 1. EF Core'un desteklenen atomik sütun güncellemesini kullan; yalnızca ViewCount değişsin.
-2. Okunma tanımını dürüstçe yaz: tekil kişi değil uygun public detay isteği. Admin görüntülemelerini hariç tut; HEAD isteği sayaç artırmasın. Bot filtrelemesini kesin analitik diye sunma.
+2. Okunma tanımını dürüstçe yaz: yalnızca anonim public detay GET isteği sayılır, tekil kişi değil. Admin görüntülemelerini hariç tut; HEAD isteği sayaç artırmasın. Bot filtrelemesini kesin analitik diye sunma.
 3. F18 uyarınca detay output cache'i kapalı kalır; yeni tracking API'si açma. İlgisiz tüm entity update çağrısını bu akıştan çıkar.
 
 **Kabul ve kanıt:** N eşzamanlı uygun GET sayacı N artırır; içerik/yayın alanı değişmez; HEAD/admin saymaz; silinen kayıt 404. Kod değiştiyse derleme sıfır hatayla tamamlanmalı; ilgili eski kontroller korunmalı.

@@ -30,6 +30,12 @@ cleanup() {
 }
 trap cleanup EXIT INT TERM
 
+if [ "${DEVCORE_F19_PROBE:-0}" = 1 ] &&
+   [ "${DEVCORE_F21_PROBE:-0}" = 1 ]; then
+    printf 'Run F19 and F21 probes separately to stay within the fixture login limit.\n' >&2
+    exit 2
+fi
+
 for task_command in dotnet rsync initdb pg_ctl createdb psql python3; do
     command -v "$task_command" >/dev/null 2>&1 || {
         printf 'Missing required command: %s\n' "$task_command" >&2
@@ -149,6 +155,14 @@ if [ "${DEVCORE_F19_PROBE:-0}" = 1 ]; then
         --base-url "http://127.0.0.1:$task_app_port" \
         --database-port "$task_pg_port" --database-user "$task_pg_user" \
         --database-name "$task_db"
+fi
+
+if [ "${DEVCORE_F21_PROBE:-0}" = 1 ]; then
+    DEVCORE_TEST_ADMIN_USERNAME=f17-admin \
+    DEVCORE_TEST_ADMIN_PASSWORD="$task_admin_password" \
+    python3 "$task_source/scripts/verification/f21_view_count_probe.py" \
+        --base-url "http://127.0.0.1:$task_app_port" \
+        --pg-port "$task_pg_port" --pg-user "$task_pg_user"
 fi
 
 if [ "${1:-current}" = current ] && [ "${DEVCORE_F17_HOLD_FOR_BROWSER:-0}" != 1 ]; then

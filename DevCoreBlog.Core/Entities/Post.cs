@@ -48,9 +48,9 @@ public class Post : BaseEntity
     // -----------------------------------------------------------------------
     // VIEW COUNT — Tracks how many times this post has been viewed
     // -----------------------------------------------------------------------
-    // Every time a visitor opens the Detail page, this counter increments by 1.
-    // Default value is 0 (new posts start with zero views).
-    // This is a simple analytics metric — no user tracking or cookies involved.
+    // Counts eligible anonymous public detail GET requests, not unique people.
+    // HEAD and authenticated admin requests do not count; bots may still count.
+    // Default value is 0 and no visitor identity is stored.
     public int ViewCount { get; set; } = 0;
 
     // -----------------------------------------------------------------------

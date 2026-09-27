@@ -1,11 +1,11 @@
 # İlerleme çizelgesi
 
-- **Son kayıt:** 27 Eylül 2026 — F20 slug benzersizliği ve çakışma göçü sentetik PostgreSQL'de doğrulandı.
-- **Tamamlanan plan fazı:** 21/58 (F00–F20).
-- **Tamamlanan uygulama kodu fazı:** 19.
+- **Son kayıt:** 27 Eylül 2026 — F21 atomik okunma sayacı sentetik PostgreSQL'de doğrulandı.
+- **Tamamlanan plan fazı:** 22/58 (F00–F21).
+- **Tamamlanan uygulama kodu fazı:** 20.
 - **Aktif faz:** Yok.
-- **Sıradaki faz:** F21 — kullanıcı onayı bekleniyor.
-- **Uygulama kodu:** F02–F09 güvenlik fazları tamamlandı. F10 migration zincirini doğruladı. F11–F13 form/içerik güvenliğini tamamladı. F14 kategori update'ini güvenli alanlara daralttı. F15 kategori silmesini DB constraint'i ve yarış yönetimiyle veri kaybına karşı korudu. F16 yayın zamanını açık saat dilimiyle UTC'ye bağladı. F17 public görünürlüğü tek kurala bağladı. F18 tek süreçli liste cache'ini yayın sınırı ve mutation invalidation'ıyla doğruladı. F19 düzenlemede kayıtlı slug'ı korudu. F20 benzersiz slug indekslerini ve geçmiş çakışma göçünü ekledi.
+- **Sıradaki faz:** F22 — kullanıcı onayı bekleniyor.
+- **Uygulama kodu:** F02–F09 güvenlik fazları tamamlandı. F10 migration zincirini doğruladı. F11–F13 form/içerik güvenliğini tamamladı. F14 kategori update'ini güvenli alanlara daralttı. F15 kategori silmesini DB constraint'i ve yarış yönetimiyle veri kaybına karşı korudu. F16 yayın zamanını açık saat dilimiyle UTC'ye bağladı. F17 public görünürlüğü tek kurala bağladı. F18 tek süreçli liste cache'ini yayın sınırı ve mutation invalidation'ıyla doğruladı. F19 düzenlemede kayıtlı slug'ı korudu. F20 benzersiz slug indekslerini ve geçmiş çakışma göçünü ekledi. F21 yalnızca uygun public GET'leri atomik sayıyor.
 
 ## Kullanım
 
@@ -41,7 +41,7 @@
 | [x] | F18 | Yayın kuralına uyan cache politikası | TAMAMLANDI — KOD | [F18 kanıtı](../uygulama-kayitlari/F18-2026-09-27.md) |
 | [x] | F19 | Düzenlemede kalıcı slug'ı koru | TAMAMLANDI — KOD | [F19 kanıtı](../uygulama-kayitlari/F19-2026-09-27.md) |
 | [x] | F20 | Slug benzersizliği ve çakışma göçü | TAMAMLANDI — KOD | [F20 kanıtı](../uygulama-kayitlari/F20-2026-09-27.md) |
-| [ ] | F21 | Okunma sayacını atomik artır | BAŞLAMADI | — |
+| [x] | F21 | Okunma sayacını atomik artır | TAMAMLANDI — KOD | [F21 kanıtı](../uygulama-kayitlari/F21-2026-09-27.md) |
 | [ ] | F22 | Eşzamanlı editlerde veri kaybını önle | BAŞLAMADI | — |
 | [ ] | F23 | Hata sayfaları ve HTTP durumlarını düzelt | BAŞLAMADI | — |
 | [ ] | F24 | Repository bağımlılıklarını sözleşmeye taşı | BAŞLAMADI | — |
@@ -81,11 +81,11 @@
 
 ## Son agent teslimi
 
-- Tamamlanan faz: F20 slug benzersizliği ve çakışma göçü.
-- Değişen davranış: Yeni yazı/kategori aynı adla da farklı numaralı slug alıyor; benzersiz indeks yarışı engelliyor. Migration eski URL sahibini koruyup çakışan/boş slug'ları veri kaybı olmadan ayırıyor.
-- Çalıştırılan kontroller ve sonuç: Build 0 uyarı/0 hata. Boş ve F15 şemalı iki sentetik PostgreSQL veritabanı F20'ye yükseldi; F20 11/11 ve F11/F12/F14/F17/F19 ilgili regresyonları geçti. [Ayrıntılı kanıt](../uygulama-kayitlari/F20-2026-09-27.md).
-- Doğrulanamayan/engel: Gerçek veri envanteri, sahiplik incelemesi, yedek ve production migration yapılmadı. EF CLI/runtime patch uyarısı sürüyor.
-- Sıradaki tek faz: F21.
-- Kullanıcıdan gereken: F21'i başlatmak için açık onay.
+- Tamamlanan faz: F21 okunma sayacını atomik artır.
+- Değişen davranış: Yalnızca anonim public detay GET'i sayaç artırır; HEAD ve yönetici sayılmaz. DB yalnız `ViewCount` sütununu yazar; sayaç tekil kişi değildir.
+- Çalıştırılan kontroller ve sonuç: Build 0 uyarı/0 hata. Sentetik PostgreSQL/HTTP'de F21 6/6; 24 paralel GET 24 artış, içerik/yayın yazımı 0. Ayrı koşularda F18 cache, F19/F14 ve F11/F12/F17 regresyonları geçti. [Ayrıntılı kanıt](../uygulama-kayitlari/F21-2026-09-27.md).
+- Doğrulanamayan/engel: Production trafik/veri testi yapılmadı; bot veya tekil ziyaretçi ayrımı yok. F22 edit çakışması ayrı duruyor.
+- Sıradaki tek faz: F22.
+- Kullanıcıdan gereken: F22'yi başlatmak için açık onay.
 
 [Ana plan](/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/docs/GELISTIRME_PLANI_2026-09-21/README.md) · [Hazır mesajlar](/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/docs/GELISTIRME_PLANI_2026-09-21/AGENT_PROMPTLARI.md)

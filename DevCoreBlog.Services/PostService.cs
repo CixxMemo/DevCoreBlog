@@ -133,44 +133,19 @@ public class PostService : IPostService, IPublicationSchedule
     public Task<IEnumerable<Post>> GetLatestPublicPostsAsync() =>
         _postRepository.GetLatestPublicPostsAsync(_timeProvider.GetUtcNow().UtcDateTime);
 
-    // -------------------------------------------------------------------------
-    // VIEW COUNT — Increment when Detail page is visited
-    // -------------------------------------------------------------------------
-    // This method increments the ViewCount property of a post by 1.
-    // It is called by HomeController.Detail() every time a visitor opens a post.
-    //
-    // Why in the Service layer?
-    //   - The Service layer coordinates between Controller and Repository.
-    //   - The Controller shouldn't directly modify database entities.
-    //   - The Service encapsulates the "get → increment → save" logic.
-    //
-    // Returns the updated Post (with new ViewCount) so the Controller can use it.
-    // Returns null if the post doesn't exist.
-    public async Task<Post?> IncrementViewCountAsync(int id)
+    // Public detail GETs increment one database column without saving a stale post.
+    public async Task<int?> IncrementViewCountAsync(
+        int id, CancellationToken cancellationToken = default)
     {
-        // Step 1: Get the post from the database by its Id
-        var post = await _postRepository.GetByIdAsync(id);
-
-        // If post doesn't exist, return null (Controller will handle 404)
-        if (post == null)
+        var currentCount = await _postRepository.IncrementVisibleViewCountAsync(
+            id, _timeProvider.GetUtcNow().UtcDateTime, cancellationToken);
+        if (currentCount is not null)
         {
-            return null;
+            // Public lists display the count; invalidate after a successful write.
+            await _publicListCache.InvalidateAsync(cancellationToken);
         }
 
-        // Step 2: Increment the ViewCount by 1
-        post.ViewCount++;
-
-        // Step 3: Update the post in the database
-        await _postRepository.UpdateAsync(post);
-
-        // Step 4: Commit the transaction to the database
-        await _postRepository.SaveChangesAsync();
-
-        // The visible list also displays this count; keep it current after a detail hit.
-        await _publicListCache.InvalidateAsync();
-
-        // Return the updated post (with new ViewCount)
-        return post;
+        return currentCount;
     }
 
     // -------------------------------------------------------------------------

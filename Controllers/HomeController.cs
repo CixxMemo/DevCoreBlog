@@ -81,10 +81,10 @@ public class HomeController : Controller
     // Only published posts are accessible; unpublished or non-existent posts return 404.
     // The post's Category is eager-loaded for display in the view.
     //
-    // Side Effect: Increments the ViewCount by 1 every time this action is called.
-    // This provides a simple analytics metric for post popularity.
+    // Anonymous public GETs count page requests, not unique people.
     [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
-    public async Task<IActionResult> Detail(string slug)
+    public async Task<IActionResult> Detail(
+        string slug, CancellationToken cancellationToken)
     {
         // Step 1: Get the post by slug from service layer
         var post = await _postService.GetPostBySlugAsync(slug);
@@ -95,18 +95,23 @@ public class HomeController : Controller
             return NotFound();
         }
 
-        // Step 2: Increment the view count (tracks how many times this post was viewed)
-        // The service handles the "get → increment → save" logic
-        var updatedPost = await _postService.IncrementViewCountAsync(post.Id);
-
-        // If increment failed (post deleted between get and increment), return 404
-        if (updatedPost == null)
+        var viewCount = post.ViewCount;
+        if (HttpMethods.IsGet(Request.Method) &&
+            User.Identity?.IsAuthenticated != true)
         {
-            return NotFound();
+            var updatedCount = await _postService.IncrementViewCountAsync(
+                post.Id, cancellationToken);
+            if (updatedCount is null)
+            {
+                // The row may have been deleted or hidden after the public lookup.
+                return NotFound();
+            }
+
+            viewCount = updatedCount.Value;
         }
 
         // Preserve the visible view count without replacing the filtered content snapshot.
-        post.ViewCount = updatedPost.ViewCount;
+        post.ViewCount = viewCount;
 
         // Step 3: Calculate reading time based on word count
         // Average reading speed: 200 words per minute (standard for technical content)
@@ -122,7 +127,7 @@ public class HomeController : Controller
 
         // Step 4: Pass data to the view via ViewBag
         // ViewBag is a dynamic container for passing extra data from Controller to View
-        ViewBag.ViewCount = updatedPost.ViewCount;
+        ViewBag.ViewCount = viewCount;
         ViewBag.ReadingTime = readingTimeMinutes;
         
         // Fetch related posts and pass to ViewBag

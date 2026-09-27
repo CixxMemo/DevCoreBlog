@@ -55,9 +55,9 @@ public interface IPostService
     // Return at most three visible posts in publication order for the portfolio feed.
     Task<IEnumerable<Post>> GetLatestPublicPostsAsync();
 
-    // Increment the view count of a post by 1 (called when Detail page is visited)
-    // Returns the updated Post with the new ViewCount value
-    Task<Post?> IncrementViewCountAsync(int id);
+    // Atomically count an eligible public detail GET; null means no visible row.
+    Task<int?> IncrementViewCountAsync(
+        int id, CancellationToken cancellationToken = default);
 
     // -------------------------------------------------------------------------
     // ADMIN METHODS (for admin panel CRUD operations)

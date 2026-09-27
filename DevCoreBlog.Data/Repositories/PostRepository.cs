@@ -48,6 +48,32 @@ public class PostRepository : GenericRepository<Post>
     private IQueryable<Post> PublicPosts(DateTime utcNow) =>
         _context.Posts.AsNoTracking().Where(VisibleAt(utcNow));
 
+    /// <summary>
+    /// Increments only the counter for a still-visible post; a detached scalar
+    /// read returns the current value without saving a stale entity graph.
+    /// </summary>
+    public async Task<int?> IncrementVisibleViewCountAsync(
+        int id, DateTime utcNow, CancellationToken cancellationToken = default)
+    {
+        var changed = await _context.Posts
+            .Where(VisibleAt(utcNow))
+            .Where(post => post.Id == id)
+            .ExecuteUpdateAsync(
+                setters => setters.SetProperty(
+                    post => post.ViewCount,
+                    post => post.ViewCount + 1),
+                cancellationToken);
+        if (changed == 0)
+        {
+            return null;
+        }
+
+        return await PublicPosts(utcNow)
+            .Where(post => post.Id == id)
+            .Select(post => (int?)post.ViewCount)
+            .SingleOrDefaultAsync(cancellationToken);
+    }
+
     // The next eligible publication bounds the lifetime of cached public lists.
     public Task<DateTime?> GetNextScheduledPublicationAsync(
         DateTime utcNow, CancellationToken cancellationToken = default) =>

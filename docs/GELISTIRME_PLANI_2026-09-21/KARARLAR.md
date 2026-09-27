@@ -1,6 +1,6 @@
 # Güncel mimari ve çalışma kararları
 
-**Güncelleme:** 27 Eylül 2026 — F20 kalıcı URL sahipliği.
+**Güncelleme:** 27 Eylül 2026 — F21 okunma sayacı tanımı.
 
 Kullanıcı eski kuralların yenilenmesini, SOLID/temiz kod/güvenlik sınırlarının güçlendirilmesini, eski planların kaldırılabilmesini ve yeni geliştirme planının buna uyarlanmasını açıkça istedi. Aşağıdaki teknik seçimler bu yetki kapsamında mevcut ürün yapısını koruyarak yapıldı. Kullanıcının ayrıca eski A/B seçeneklerinden birini seçtiği iddia edilmiyor; o karar ağacı yeni kurallarla kaldırıldı.
 
@@ -87,6 +87,12 @@ F20 göçünde aynı boş olmayan slug'ı paylaşan yazı veya kategorilerden en
 Gerçek veritabanında göç çalıştırılmadan önce [salt okunur envanter](../../scripts/verification/f20_slug_inventory.sql) incelenir. Önerilen ID sahibi gerçek ürün beklentisine uymuyorsa somut kayıt tablosuyla kullanıcı kararı alınır; production göçü otomatik çalıştırılmaz.
 
 **Durum:** F20 kodu ve sentetik PostgreSQL göçüyle doğrulandı; gerçek veri envanteri/deploy ayrı operasyonel adımdır.
+
+## D09 — Okunma sayacı istek sayısıdır
+
+F21'de sayaç yalnızca anonim public yazı detayına gelen uygun GET isteğinde bir artar. HEAD ve oturum açmış yönetici ziyareti sayılmaz. Sayaç tekil ziyaretçi veya güvenilir insan/bot ayrımı değildir; kişi takibi ve yeni analitik API eklenmez. Güncelleme yalnızca `ViewCount` sütununu atomik değiştirir, detay çıktısı cache'lenmez.
+
+**Durum:** F21 kodu ve sentetik PostgreSQL/HTTP eşzamanlılık kontrolüyle doğrulandı.
 
 ## Gerektiğinde alınacak gerçek ürün/ortam bilgileri
 
