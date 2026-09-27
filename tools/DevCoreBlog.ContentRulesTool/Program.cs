@@ -3,6 +3,7 @@ using DevCoreBlog.Core.Validation;
 using DevCoreBlog.Data;
 using DevCoreBlog.Data.Repositories;
 using DevCoreBlog.Services;
+using DevCoreBlog.Services.Publishing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Caching.Memory;
@@ -23,7 +24,12 @@ var categoryRepository = new CategoryRepository(
     context,
     NullLogger<CategoryRepository>.Instance);
 using var cache = new MemoryCache(new MemoryCacheOptions());
-var postService = new PostService(postRepository, cache, categoryRepository);
+var postService = new PostService(
+    postRepository,
+    cache,
+    categoryRepository,
+    new PublicationTimeZone(TimeZoneInfo.FindSystemTimeZoneById("Europe/Istanbul")),
+    TimeProvider.System);
 var categoryService = new CategoryService(categoryRepository);
 
 var conflicts = new Dictionary<string, int>

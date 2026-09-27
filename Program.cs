@@ -20,6 +20,7 @@ using DevCoreBlog.Services;
 using DevCoreBlog.Services.Interfaces;
 using DevCoreBlog.Services.Security;
 using DevCoreBlog.Services.Images;
+using DevCoreBlog.Services.Publishing;
 // Import Middlewares
 using DevCoreBlog.Middlewares;
 // Import validated application configuration models
@@ -145,6 +146,28 @@ builder.Services.AddSingleton(new AdminSessionStamp(
     adminSessionVersion));
 builder.Services.AddScoped<AdminCookieAuthenticationEvents>();
 builder.Services.AddSingleton(TimeProvider.System);
+
+// Publication dates use one explicit site clock regardless of the host TZ.
+var siteTimeZoneId = Environment.GetEnvironmentVariable("SITE_TIME_ZONE")
+    ?? "Europe/Istanbul";
+if (string.IsNullOrWhiteSpace(siteTimeZoneId))
+{
+    throw new InvalidOperationException("SITE_TIME_ZONE must name a valid time zone.");
+}
+
+TimeZoneInfo siteTimeZone;
+try
+{
+    siteTimeZone = TimeZoneInfo.FindSystemTimeZoneById(siteTimeZoneId);
+}
+catch (Exception exception) when (exception is TimeZoneNotFoundException or InvalidTimeZoneException)
+{
+    throw new InvalidOperationException(
+        "SITE_TIME_ZONE must name a time zone installed on this host.",
+        exception);
+}
+
+builder.Services.AddSingleton(new PublicationTimeZone(siteTimeZone));
 
 var dataProtectionBuilder = builder.Services
     .AddDataProtection()

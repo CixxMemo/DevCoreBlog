@@ -20,6 +20,7 @@
 // Import the Service interfaces for business logic
 using DevCoreBlog.Services.Interfaces;
 using DevCoreBlog.Services.Images;
+using DevCoreBlog.Services.Publishing;
 // Import the Post entity
 using DevCoreBlog.Core.Entities;
 // Import MVC attributes and base classes
@@ -45,16 +46,22 @@ public class AdminPostController : Controller
     private readonly IPostService _postService;
     private readonly ICategoryService _categoryService;
     private readonly IImageService _imageService;
+    private readonly PublicationTimeZone _publicationTimeZone;
+    private readonly TimeProvider _timeProvider;
 
     // Constructor receives services from the DI container
     public AdminPostController(
         IPostService postService,
         ICategoryService categoryService,
-        IImageService imageService)
+        IImageService imageService,
+        PublicationTimeZone publicationTimeZone,
+        TimeProvider timeProvider)
     {
         _postService = postService;
         _categoryService = categoryService;
         _imageService = imageService;
+        _publicationTimeZone = publicationTimeZone;
+        _timeProvider = timeProvider;
     }
 
     // -------------------------------------------------------------------------
@@ -121,7 +128,12 @@ public class AdminPostController : Controller
         // Get all categories from service layer for the dropdown
         await PopulateCategorySelectAsync();
         
-        return View(new PostFormInput());
+        return View(new PostFormInput
+        {
+            PublishDate = _publicationTimeZone.ToSiteTime(
+                _timeProvider.GetUtcNow().UtcDateTime),
+            SiteTimeZoneId = _publicationTimeZone.Id
+        });
     }
 
     // -------------------------------------------------------------------------
@@ -169,6 +181,7 @@ public class AdminPostController : Controller
         }
 
         // If validation failed, re-populate the dropdown and re-show the form
+        input.SiteTimeZoneId = _publicationTimeZone.Id;
         await PopulateCategorySelectAsync(input.CategoryId);
         return View(input);
     }
@@ -217,6 +230,17 @@ public class AdminPostController : Controller
             return NotFound();
 
         var post = MapToPost(input, existingPost.ThumbnailUrl);
+        // The browser edits seconds; retain the stored subsecond instant when
+        // the displayed date was left unchanged.
+        var displayedDate = _publicationTimeZone.ToSiteTime(existingPost.PublishDate);
+        var displayedSecond = new DateTime(
+            displayedDate.Ticks - displayedDate.Ticks % TimeSpan.TicksPerSecond,
+            DateTimeKind.Unspecified);
+        if (input.PublishDate == displayedSecond)
+        {
+            post.PublishDate = existingPost.PublishDate;
+        }
+
         input.Slug = existingPost.Slug;
         input.ThumbnailUrl = existingPost.ThumbnailUrl;
 
@@ -249,6 +273,7 @@ public class AdminPostController : Controller
 
         // If validation failed, re-populate the dropdown and re-show the form
         input.ThumbnailUrl = post.ThumbnailUrl;
+        input.SiteTimeZoneId = _publicationTimeZone.Id;
         await PopulateCategorySelectAsync(input.CategoryId);
         return View(input);
     }
@@ -369,12 +394,8 @@ public class AdminPostController : Controller
         };
     }
 
-    private static PostFormInput MapToInput(Post post)
+    private PostFormInput MapToInput(Post post)
     {
-        var publishDate = post.PublishDate.Kind == DateTimeKind.Utc
-            ? post.PublishDate.ToLocalTime()
-            : post.PublishDate;
-
         return new PostFormInput
         {
             Id = post.Id,
@@ -385,7 +406,8 @@ public class AdminPostController : Controller
             Excerpt = post.Excerpt,
             IsPublished = post.IsPublished,
             IsActive = post.IsActive,
-            PublishDate = publishDate,
+            PublishDate = _publicationTimeZone.ToSiteTime(post.PublishDate),
+            SiteTimeZoneId = _publicationTimeZone.Id,
             Slug = post.Slug,
             ThumbnailUrl = post.ThumbnailUrl
         };

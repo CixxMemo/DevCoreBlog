@@ -28,6 +28,8 @@ task_admin_password=f02-isolated-valid-password
 task_admin_password_hash=
 task_login_permit_limit=${DEVCORE_F06_PERMIT_LIMIT:-4}
 task_login_window_seconds=${DEVCORE_F06_WINDOW_SECONDS:-2}
+task_server_timezone=UTC
+task_site_time_zone=Europe/Istanbul
 task_f06_username_marker=F06_USERNAME_MUST_NOT_BE_LOGGED
 task_f06_password_marker=F06_PASSWORD_MUST_NOT_BE_LOGGED
 task_pg_started=0
@@ -199,6 +201,8 @@ start_app() {
             CLOUDINARY_API_SECRET=f01-secret \
             WEBHOOK_API_SECRET=f01-webhook-secret \
             PORTFOLIO_CORS_ORIGIN=http://127.0.0.1:19999 \
+            TZ="$task_server_timezone" \
+            SITE_TIME_ZONE="$task_site_time_zone" \
             Security__LoginRateLimit__PermitLimit="$task_login_permit_limit" \
             Security__LoginRateLimit__WindowSeconds="$task_login_window_seconds"
 
@@ -520,6 +524,49 @@ if ! grep -F \
 fi
 printf 'F15 concurrent foreign-key rejection was handled without data loss.\n'
 
+sleep $((task_login_window_seconds + 1))
+
+DEVCORE_TEST_ADMIN_USERNAME="$task_admin_username" \
+DEVCORE_TEST_ADMIN_PASSWORD="$task_admin_password" \
+python3 "$task_source/scripts/verification/f16_publication_time_probe.py" \
+    --mode roundtrip \
+    --marker F16_TIME_ROUNDTRIP_UTC \
+    --base-url "http://127.0.0.1:$task_app_port" \
+    --database-port "$task_pg_port" \
+    --database-user "$task_pg_user" \
+    --database-name "$task_db"
+
+stop_app
+task_server_timezone=Asia/Tokyo
+start_app Development 1 1800 http "$task_tmp/application-tokyo.log"
+
+DEVCORE_TEST_ADMIN_USERNAME="$task_admin_username" \
+DEVCORE_TEST_ADMIN_PASSWORD="$task_admin_password" \
+python3 "$task_source/scripts/verification/f16_publication_time_probe.py" \
+    --mode roundtrip \
+    --marker F16_TIME_ROUNDTRIP_TOKYO \
+    --base-url "http://127.0.0.1:$task_app_port" \
+    --database-port "$task_pg_port" \
+    --database-user "$task_pg_user" \
+    --database-name "$task_db"
+
+stop_app
+task_server_timezone=UTC
+task_site_time_zone=America/New_York
+start_app Development 1 1800 http "$task_tmp/application-new-york.log"
+
+DEVCORE_TEST_ADMIN_USERNAME="$task_admin_username" \
+DEVCORE_TEST_ADMIN_PASSWORD="$task_admin_password" \
+python3 "$task_source/scripts/verification/f16_publication_time_probe.py" \
+    --mode dst \
+    --base-url "http://127.0.0.1:$task_app_port" \
+    --database-port "$task_pg_port" \
+    --database-user "$task_pg_user" \
+    --database-name "$task_db"
+
+stop_app
+task_site_time_zone=Europe/Istanbul
+start_app Development 1 1800 http "$task_tmp/application-f16-restored.log"
 sleep $((task_login_window_seconds + 1))
 
 DEVCORE_TEST_ADMIN_USERNAME="$task_admin_username" \

@@ -40,7 +40,10 @@ public sealed class PostFormInput
 
     public bool IsActive { get; set; } = true;
 
-    public DateTime PublishDate { get; set; } = DateTime.Now;
+    public DateTime PublishDate { get; set; }
+
+    [BindNever]
+    public string SiteTimeZoneId { get; set; } = string.Empty;
 
     [BindNever]
     public string Slug { get; set; } = string.Empty;

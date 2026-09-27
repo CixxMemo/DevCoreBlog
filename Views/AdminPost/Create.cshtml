@@ -183,8 +183,8 @@
 
                 @* Publish Date *@
                 <div>
-                    <label asp-for="PublishDate" class="block font-mono text-xs font-bold uppercase text-black mb-1">Publish Date</label>
-                    <input asp-for="PublishDate" type="datetime-local" class="w-full border-2 border-black p-2 font-mono text-xs bg-white text-black focus:outline-none" />
+                    <label asp-for="PublishDate" class="block font-mono text-xs font-bold uppercase text-black mb-1">Publish Date (@Model.SiteTimeZoneId)</label>
+                    <input asp-for="PublishDate" asp-format="{0:yyyy-MM-ddTHH:mm:ss}" type="datetime-local" step="1" class="w-full border-2 border-black p-2 font-mono text-xs bg-white text-black focus:outline-none" />
                     <span asp-validation-for="PublishDate" class="font-mono text-xs text-rose-600 block mt-1"></span>
                 </div>
 

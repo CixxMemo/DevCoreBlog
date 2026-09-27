@@ -24,7 +24,7 @@
 //
 // Business Rules in PostService:
 //   - Slug is auto-generated from Title (using SlugGenerator)
-//   - CreatedDate is set to DateTime.UtcNow on creation
+//   - CreatedDate is set from TimeProvider in UTC on creation
 //   - Slug is regenerated on update (in case Title changed)
 // =============================================================================
 
@@ -34,6 +34,7 @@ using DevCoreBlog.Core.Shared.Helpers;
 using DevCoreBlog.Core.Validation;
 using DevCoreBlog.Data.Repositories;
 using DevCoreBlog.Services.Interfaces;
+using DevCoreBlog.Services.Publishing;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Primitives;
 
@@ -52,18 +53,24 @@ public class PostService : IPostService
     private readonly PostRepository _postRepository;
     private readonly IMemoryCache _cache;
     private readonly IActiveCategoryLookup _activeCategoryLookup;
+    private readonly PublicationTimeZone _publicationTimeZone;
+    private readonly TimeProvider _timeProvider;
 
     // Constructor receives PostRepository via dependency injection
     // The DI container (configured in Program.cs) provides the instance
     public PostService(
         PostRepository postRepository,
         IMemoryCache cache,
-        IActiveCategoryLookup activeCategoryLookup)
+        IActiveCategoryLookup activeCategoryLookup,
+        PublicationTimeZone publicationTimeZone,
+        TimeProvider timeProvider)
     {
         // Store the injected repository for use in all service methods
         _postRepository = postRepository;
         _cache = cache;
         _activeCategoryLookup = activeCategoryLookup;
+        _publicationTimeZone = publicationTimeZone;
+        _timeProvider = timeProvider;
     }
 
     private void InvalidateCache()
@@ -214,6 +221,17 @@ public class PostService : IPostService
         var result = PostContentRules.Validate(post);
         var errors = result.Errors.ToList();
 
+        // Normalize the shared service input before uploads or persistence.
+        if (_publicationTimeZone.TryConvertToUtc(
+                post.PublishDate, out var publishDateUtc, out var dateError))
+        {
+            post.PublishDate = publishDateUtc;
+        }
+        else
+        {
+            errors.Add(new(nameof(Post.PublishDate), dateError ?? "Publish date is invalid."));
+        }
+
         if (post.CategoryId > 0 &&
             !await _activeCategoryLookup.IsActiveCategoryAsync(
                 post.CategoryId,
@@ -243,17 +261,7 @@ public class PostService : IPostService
 
         // BUSINESS RULE: Set creation time to UTC (required for PostgreSQL timestamp with time zone)
         // This ensures consistent timestamps across different time zones
-        post.CreatedDate = DateTime.UtcNow;
-
-        // BUSINESS RULE: Ensure PublishDate is in UTC (form bindings are usually Unspecified Local time)
-        if (post.PublishDate.Kind == DateTimeKind.Unspecified)
-        {
-            post.PublishDate = DateTime.SpecifyKind(post.PublishDate, DateTimeKind.Local).ToUniversalTime();
-        }
-        else
-        {
-            post.PublishDate = post.PublishDate.ToUniversalTime();
-        }
+        post.CreatedDate = _timeProvider.GetUtcNow().UtcDateTime;
 
         // Add the post to the database via repository
         await _postRepository.AddAsync(post);
@@ -300,15 +308,7 @@ public class PostService : IPostService
         existingPost.CategoryId = post.CategoryId;
         existingPost.IsActive = post.IsActive;
 
-        // Ensure PublishDate is in UTC
-        if (post.PublishDate.Kind == DateTimeKind.Unspecified)
-        {
-            existingPost.PublishDate = DateTime.SpecifyKind(post.PublishDate, DateTimeKind.Local).ToUniversalTime();
-        }
-        else
-        {
-            existingPost.PublishDate = post.PublishDate.ToUniversalTime();
-        }
+        existingPost.PublishDate = post.PublishDate;
 
         // Update the post in the database via repository
         await _postRepository.UpdateAsync(existingPost);
