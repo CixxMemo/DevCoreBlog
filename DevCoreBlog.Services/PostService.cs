@@ -40,13 +40,14 @@ namespace DevCoreBlog.Services;
 
 // Service class for Post-related business logic
 // Implements IPostService interface
-public class PostService : IPostService
+public class PostService : IPostService, IPublicationSchedule
 {
     // Private readonly field to hold the injected PostRepository
     private readonly PostRepository _postRepository;
     private readonly IActiveCategoryLookup _activeCategoryLookup;
     private readonly PublicationTimeZone _publicationTimeZone;
     private readonly TimeProvider _timeProvider;
+    private readonly PublicListCacheInvalidator _publicListCache;
 
     // Constructor receives PostRepository via dependency injection
     // The DI container (configured in Program.cs) provides the instance
@@ -54,14 +55,21 @@ public class PostService : IPostService
         PostRepository postRepository,
         IActiveCategoryLookup activeCategoryLookup,
         PublicationTimeZone publicationTimeZone,
-        TimeProvider timeProvider)
+        TimeProvider timeProvider,
+        PublicListCacheInvalidator publicListCache)
     {
         // Store the injected repository for use in all service methods
         _postRepository = postRepository;
         _activeCategoryLookup = activeCategoryLookup;
         _publicationTimeZone = publicationTimeZone;
         _timeProvider = timeProvider;
+        _publicListCache = publicListCache;
     }
+
+    // Cache policy needs only this boundary; visitor controllers use IPostService.
+    public Task<DateTime?> GetNextScheduledPublicationAsync(
+        DateTime utcNow, CancellationToken cancellationToken = default) =>
+        _postRepository.GetNextScheduledPublicationAsync(utcNow, cancellationToken);
 
     // -------------------------------------------------------------------------
     // PUBLIC METHODS (for visitor-facing pages)
@@ -157,6 +165,9 @@ public class PostService : IPostService
         // Step 4: Commit the transaction to the database
         await _postRepository.SaveChangesAsync();
 
+        // The visible list also displays this count; keep it current after a detail hit.
+        await _publicListCache.InvalidateAsync();
+
         // Return the updated post (with new ViewCount)
         return post;
     }
@@ -241,7 +252,8 @@ public class PostService : IPostService
 
         // Commit the transaction to the database
         await _postRepository.SaveChangesAsync();
-        
+        await _publicListCache.InvalidateAsync(cancellationToken);
+
         return ContentValidationResult.Success();
     }
 
@@ -286,7 +298,8 @@ public class PostService : IPostService
 
         // Commit the transaction to the database
         await _postRepository.SaveChangesAsync();
-        
+        await _publicListCache.InvalidateAsync(cancellationToken);
+
         return ContentValidationResult.Success();
     }
 
@@ -301,7 +314,8 @@ public class PostService : IPostService
         {
             await _postRepository.DeleteAsync(post);
             await _postRepository.SaveChangesAsync();
-            
+            await _publicListCache.InvalidateAsync();
+
         }
     }
 }

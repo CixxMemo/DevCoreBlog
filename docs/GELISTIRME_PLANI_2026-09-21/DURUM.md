@@ -1,11 +1,11 @@
 # İlerleme çizelgesi
 
-- **Son kayıt:** 27 Eylül 2026 — F17 public yayın görünürlüğü tek UTC/SQL kuralına bağlandı.
-- **Tamamlanan plan fazı:** 18/58 (F00–F17).
-- **Tamamlanan uygulama kodu fazı:** 16.
+- **Son kayıt:** 27 Eylül 2026 — F18 yayın kuralına bağlı tek süreç cache politikası doğrulandı.
+- **Tamamlanan plan fazı:** 19/58 (F00–F18).
+- **Tamamlanan uygulama kodu fazı:** 17.
 - **Aktif faz:** Yok.
-- **Sıradaki faz:** F18 — kullanıcı onayı bekleniyor.
-- **Uygulama kodu:** F02–F09 güvenlik fazları tamamlandı. F10 migration zincirini doğruladı. F11–F13 form/içerik güvenliğini tamamladı. F14 kategori update'ini güvenli alanlara daralttı. F15 kategori silmesini DB constraint'i ve yarış yönetimiyle veri kaybına karşı korudu. F16 yayın zamanını açık saat dilimiyle UTC'ye bağladı. F17 public görünürlüğü tek kurala bağladı ve cache'i geçici kapattı.
+- **Sıradaki faz:** F19 — kullanıcı onayı bekleniyor.
+- **Uygulama kodu:** F02–F09 güvenlik fazları tamamlandı. F10 migration zincirini doğruladı. F11–F13 form/içerik güvenliğini tamamladı. F14 kategori update'ini güvenli alanlara daralttı. F15 kategori silmesini DB constraint'i ve yarış yönetimiyle veri kaybına karşı korudu. F16 yayın zamanını açık saat dilimiyle UTC'ye bağladı. F17 public görünürlüğü tek kurala bağladı. F18 tek süreçli liste cache'ini yayın sınırı ve mutation invalidation'ıyla doğruladı.
 
 ## Kullanım
 
@@ -38,7 +38,7 @@
 | [x] | F15 | Kategori silme kuralını veritabanında güvenceye al | TAMAMLANDI — KOD | [F15 kanıtı](../uygulama-kayitlari/F15-2026-09-23.md) |
 | [x] | F16 | Yayın zamanını açık saat dilimiyle işle | TAMAMLANDI — KOD | [F16 kanıtı](../uygulama-kayitlari/F16-2026-09-27.md) |
 | [x] | F17 | Tek yayın görünürlüğü kuralını uygula | TAMAMLANDI — KOD | [F17 kanıtı](../uygulama-kayitlari/F17-2026-09-27.md) |
-| [ ] | F18 | Yayın kuralına uyan cache politikası | BAŞLAMADI | — |
+| [x] | F18 | Yayın kuralına uyan cache politikası | TAMAMLANDI — KOD | [F18 kanıtı](../uygulama-kayitlari/F18-2026-09-27.md) |
 | [ ] | F19 | Düzenlemede kalıcı slug'ı koru | BAŞLAMADI | — |
 | [ ] | F20 | Slug benzersizliği ve çakışma göçü | BAŞLAMADI | — |
 | [ ] | F21 | Okunma sayacını atomik artır | BAŞLAMADI | — |
@@ -81,11 +81,11 @@
 
 ## Son agent teslimi
 
-- Tamamlanan faz: F17 tek yayın görünürlüğü.
-- Değişen davranış: Public yazı yalnız aktif + yayınlı + zamanı gelmiş + aktif kategorideyse görünür. Ana sayfa, kategori, arama, detay, ilişkili yazı, sitemap, menü ve portföy feed'i bu sınırı izler. Public cache F18'e kadar kapalı; yönetici gizli kayıtları görür.
-- Çalıştırılan kontroller ve sonuç: Build 0 uyarı/0 hata. Eski kodda sızıntı yeniden üretildi. Sentetik PostgreSQL ve sabit `TimeProvider` ile görünürlük/sınır anı; HTTP yüzeyleri, cache başlıkları, F11/F12 regresyonları; masaüstü/mobil tarayıcı, klavye ve konsol kontrolü geçti. [Ayrıntılı kanıt](../uygulama-kayitlari/F17-2026-09-27.md).
-- Doğrulanamayan/engel: Üretim verisi incelenmedi; pasif kategoriye bağlı kayıt sayısı yalnız sentetik fikstürde 1. Önceki tam F01 koşusunun EF restore metadatası engeli ayrı duruyor. Yönetici dashboard'unun “live” metriği gelecek içerikleri de sayabiliyor; public bağlantı 404 dönüyor.
-- Sıradaki tek faz: F18.
-- Kullanıcıdan gereken: F18'i başlatmak için açık onay.
+- Tamamlanan faz: F18 yayın kuralına uyan cache politikası.
+- Değişen davranış: Anonim ana sayfa ve kategori HTML'i tek süreçte en çok 60 saniye, planlı yayın anına kadar cache'lenir. Yazı/kategori değişikliği ve sayaç artışı listeyi geçersizleştirir. Detay ve portföy feed'i cache dışında; istemci yanıtları `no-store`.
+- Çalıştırılan kontroller ve sonuç: Build 0 uyarı/0 hata. Sentetik PostgreSQL/HTTP'de ısınmış cache, yayından kaldırma, planlı yayın, kategori değişikliği ve paralel istekler geçti; F11/F12/F17 regresyonları korundu. Mobil boyutlu tarayıcıda ana sayfa/kategori açıldı. [Ayrıntılı kanıt](../uygulama-kayitlari/F18-2026-09-27.md).
+- Doğrulanamayan/engel: Çok uygulama örneği ve doğrudan DB yazısı için ortak invalidation yok; böyle ortamda cache kapalı kalmalı. Gerçek üretim verisi/trafiği, masaüstü/klavye/konsol yeniden sınanmadı. Önceki tam F01 koşusunun EF restore metadata engeli ayrı duruyor.
+- Sıradaki tek faz: F19.
+- Kullanıcıdan gereken: F19'u başlatmak için açık onay.
 
 [Ana plan](/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/docs/GELISTIRME_PLANI_2026-09-21/README.md) · [Hazır mesajlar](/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/docs/GELISTIRME_PLANI_2026-09-21/AGENT_PROMPTLARI.md)

@@ -17,6 +17,14 @@ public class PostRepository : GenericRepository<Post>
     private IQueryable<Post> PublicPosts(DateTime utcNow) =>
         _context.Posts.AsNoTracking().Where(VisibleAt(utcNow));
 
+    // The next eligible publication bounds the lifetime of cached public lists.
+    public Task<DateTime?> GetNextScheduledPublicationAsync(
+        DateTime utcNow, CancellationToken cancellationToken = default) =>
+        _context.Posts.AsNoTracking()
+            .Where(post => post.IsActive && post.IsPublished &&
+                post.Category.IsActive && post.PublishDate > utcNow)
+            .MinAsync(post => (DateTime?)post.PublishDate, cancellationToken);
+
     public async Task<IEnumerable<Post>> GetPublishedPostsAsync(DateTime utcNow) =>
         await PublicPosts(utcNow)
             .Include(post => post.Category)

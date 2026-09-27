@@ -33,6 +33,7 @@ using DevCoreBlog.Core.Shared.Helpers;
 using DevCoreBlog.Core.Validation;
 using DevCoreBlog.Data.Repositories;
 using DevCoreBlog.Services.Interfaces;
+using DevCoreBlog.Services.Publishing;
 
 namespace DevCoreBlog.Services;
 
@@ -42,13 +43,17 @@ public class CategoryService : ICategoryService
 {
     // Private readonly field to hold the injected CategoryRepository
     private readonly CategoryRepository _categoryRepository;
+    private readonly PublicListCacheInvalidator _publicListCache;
 
     // Constructor receives CategoryRepository via dependency injection
     // The DI container (configured in Program.cs) provides the instance
-    public CategoryService(CategoryRepository categoryRepository)
+    public CategoryService(
+        CategoryRepository categoryRepository,
+        PublicListCacheInvalidator publicListCache)
     {
         // Store the injected repository for use in all service methods
         _categoryRepository = categoryRepository;
+        _publicListCache = publicListCache;
     }
 
     // -------------------------------------------------------------------------
@@ -113,6 +118,7 @@ public class CategoryService : ICategoryService
 
         // Commit the transaction to the database
         await _categoryRepository.SaveChangesAsync();
+        await _publicListCache.InvalidateAsync();
         return ContentValidationResult.Success();
     }
 
@@ -144,6 +150,7 @@ public class CategoryService : ICategoryService
         // GetByIdAsync returns a tracked row, so SaveChanges writes only changed
         // properties instead of marking every column as modified.
         await _categoryRepository.SaveChangesAsync();
+        await _publicListCache.InvalidateAsync();
         return ContentValidationResult.Success();
     }
 
@@ -167,7 +174,12 @@ public class CategoryService : ICategoryService
         // post may be inserted after the early check and before this delete.
         if (category != null)
         {
-            return await _categoryRepository.TryDeleteEmptyCategoryAsync(category);
+            var deleted = await _categoryRepository.TryDeleteEmptyCategoryAsync(category);
+            if (deleted)
+            {
+                await _publicListCache.InvalidateAsync();
+            }
+            return deleted;
         }
 
         // Return true to indicate deletion was successful

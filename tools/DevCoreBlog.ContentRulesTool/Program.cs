@@ -5,6 +5,8 @@ using DevCoreBlog.Data.Repositories;
 using DevCoreBlog.Services;
 using DevCoreBlog.Services.Publishing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.OutputCaching;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 
 var connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING");
@@ -27,12 +29,20 @@ var postRepository = new PostRepository(context);
 var categoryRepository = new CategoryRepository(
     context,
     NullLogger<CategoryRepository>.Instance);
+using var cacheServices = new ServiceCollection()
+    .AddOptions()
+    .AddLogging()
+    .AddOutputCache()
+    .BuildServiceProvider();
+var publicListCache = new PublicListCacheInvalidator(
+    cacheServices.GetRequiredService<IOutputCacheStore>());
 var postService = new PostService(
     postRepository,
     categoryRepository,
     new PublicationTimeZone(TimeZoneInfo.FindSystemTimeZoneById("Europe/Istanbul")),
-    TimeProvider.System);
-var categoryService = new CategoryService(categoryRepository);
+    TimeProvider.System,
+    publicListCache);
+var categoryService = new CategoryService(categoryRepository, publicListCache);
 
 var conflicts = new Dictionary<string, int>
 {

@@ -129,6 +129,14 @@ DEVCORE_TEST_ADMIN_PASSWORD="$task_admin_password" \
 python3 "$task_source/scripts/verification/f17_visibility_probe.py" \
     --base-url "http://127.0.0.1:$task_app_port"
 
+if [ "${DEVCORE_F18_PROBE:-0}" = 1 ]; then
+    DEVCORE_TEST_ADMIN_USERNAME=f17-admin \
+    DEVCORE_TEST_ADMIN_PASSWORD="$task_admin_password" \
+    python3 "$task_source/scripts/verification/f18_cache_probe.py" \
+        --base-url "http://127.0.0.1:$task_app_port" \
+        --pg-port "$task_pg_port" --pg-user "$task_pg_user"
+fi
+
 if [ "${1:-current}" = current ] && [ "${DEVCORE_F17_HOLD_FOR_BROWSER:-0}" != 1 ]; then
     DEVCORE_TEST_ADMIN_USERNAME=f17-admin \
     DEVCORE_TEST_ADMIN_PASSWORD="$task_admin_password" \

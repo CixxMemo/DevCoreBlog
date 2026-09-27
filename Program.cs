@@ -33,6 +33,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.DataProtection;
 using System.Globalization;
 using DevCoreBlog.Core.Interfaces;
+using DevCoreBlog.Caching;
 
 // Create the application builder, which loads configuration from appsettings.json,
 // environment variables, and command-line arguments
@@ -129,7 +130,11 @@ builder.Services.AddScoped<IActiveCategoryLookup>(serviceProvider =>
 // Register services with Scoped lifetime (one instance per HTTP request).
 // Services depend on repositories, which are also scoped.
 // Controllers will depend on service interfaces (IPostService, ICategoryService).
-builder.Services.AddScoped<IPostService, PostService>();
+builder.Services.AddScoped<PostService>();
+builder.Services.AddScoped<IPostService>(serviceProvider =>
+    serviceProvider.GetRequiredService<PostService>());
+builder.Services.AddScoped<IPublicationSchedule>(serviceProvider =>
+    serviceProvider.GetRequiredService<PostService>());
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IImageService, ImageService>();
 builder.Services.AddSingleton<ImageUploadPolicy>();
@@ -146,6 +151,11 @@ builder.Services.AddSingleton(new AdminSessionStamp(
     adminSessionVersion));
 builder.Services.AddScoped<AdminCookieAuthenticationEvents>();
 builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddSingleton<PublicListCacheInvalidator>();
+builder.Services.AddOutputCache(options =>
+    options.AddPolicy("PublicLists", policy =>
+        policy.AddPolicy<PublicListCachePolicy>()
+            .Tag(PublicListCacheInvalidator.Tag)));
 
 // Publication dates use one explicit site clock regardless of the host TZ.
 var siteTimeZoneId = Environment.GetEnvironmentVariable("SITE_TIME_ZONE")
@@ -402,6 +412,9 @@ app.UseAuthentication();
 
 // Enable authorization checks (e.g. [Authorize] attribute on controllers)
 app.UseAuthorization();
+
+// Evaluate authenticated state before serving anonymous public HTML from cache.
+app.UseOutputCache();
 
 // Serve static files (CSS, JS, images) from the wwwroot folder
 app.MapStaticAssets();

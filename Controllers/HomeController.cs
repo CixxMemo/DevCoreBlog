@@ -24,11 +24,11 @@ using DevCoreBlog.Models;
 using DevCoreBlog.Services.Interfaces;
 // Import the Post entity (used in Search action return type)
 using DevCoreBlog.Core.Entities;
+using Microsoft.AspNetCore.OutputCaching;
 
 namespace DevCoreBlog.Controllers;
 
 // Inherit from Controller for access to View(), HttpContext, etc.
-[ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
 public class HomeController : Controller
 {
     // ---------------------------------------------------------------------------
@@ -56,8 +56,10 @@ public class HomeController : Controller
     // Displays the public home page with a list of published blog posts.
     // Only published posts are shown, ordered by creation date (newest first).
     // Each post includes its related Category for display in the view.
+    [OutputCache(PolicyName = "PublicLists")]
     public async Task<IActionResult> Index(int page = 1)
     {
+        Response.Headers.CacheControl = "no-store";
         int pageSize = 9;
         var result = await _postService.GetPublishedPostsPagedAsync(page, pageSize);
 
@@ -81,6 +83,7 @@ public class HomeController : Controller
     //
     // Side Effect: Increments the ViewCount by 1 every time this action is called.
     // This provides a simple analytics metric for post popularity.
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public async Task<IActionResult> Detail(string slug)
     {
         // Step 1: Get the post by slug from service layer
@@ -144,8 +147,10 @@ public class HomeController : Controller
     // Displays all published posts in a specific category (identified by slug).
     // If the category doesn't exist, returns 404.
     // The category name is passed via ViewBag for display in the view.
+    [OutputCache(PolicyName = "PublicLists")]
     public async Task<IActionResult> Category(string slug, int page = 1)
     {
+        Response.Headers.CacheControl = "no-store";
         // First, get the category by slug from service layer
         var category = await _categoryService.GetActiveCategoryBySlugAsync(slug);
 
@@ -190,6 +195,7 @@ public class HomeController : Controller
     //   5. Repository filters posts where Title OR Content contains the query
     //   6. Results are displayed in Search.cshtml view
     [Route("ara")]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public async Task<IActionResult> Search(string query)
     {
         // Guard clause: if query is empty or whitespace, return empty results
@@ -223,6 +229,7 @@ public class HomeController : Controller
     // GET: /api/categories
     // Lightweight JSON endpoint for the JS terminal 'ls' command to consume.
     [HttpGet("api/categories")]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public async Task<IActionResult> ApiCategories()
     {
         var categories = await _categoryService.GetActiveCategoriesAsync();

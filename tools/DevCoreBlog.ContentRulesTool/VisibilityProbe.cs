@@ -4,6 +4,8 @@ using DevCoreBlog.Data.Repositories;
 using DevCoreBlog.Services;
 using DevCoreBlog.Services.Publishing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.OutputCaching;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 
 internal static class VisibilityProbe
@@ -16,11 +18,19 @@ internal static class VisibilityProbe
         var categoryRepository = new CategoryRepository(
             context, NullLogger<CategoryRepository>.Instance);
         var clock = new FixedTimeProvider(TimeProvider.System.GetUtcNow());
+        using var cacheServices = new ServiceCollection()
+            .AddOptions()
+            .AddLogging()
+            .AddOutputCache()
+            .BuildServiceProvider();
+        var publicListCache = new PublicListCacheInvalidator(
+            cacheServices.GetRequiredService<IOutputCacheStore>());
         var service = new PostService(
             postRepository,
             categoryRepository,
             new PublicationTimeZone(TimeZoneInfo.FindSystemTimeZoneById("Europe/Istanbul")),
-            clock);
+            clock,
+            publicListCache);
 
         var listed = (await service.GetPublishedPostsAsync()).Select(post => post.Id).ToHashSet();
         var paged = await service.GetPublishedPostsPagedAsync(1, 9);
