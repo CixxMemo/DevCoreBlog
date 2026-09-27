@@ -24,7 +24,7 @@
 //
 // Business Rules in CategoryService:
 //   - Slug is auto-generated from Name (using SlugGenerator)
-//   - Slug is regenerated on update (in case Name changed)
+//   - Existing slugs stay stable when a name changes
 //   - Categories with posts cannot be deleted (relationship protection)
 // =============================================================================
 
@@ -123,7 +123,7 @@ public class CategoryService : ICategoryService
     }
 
     // Update an existing category without replacing server-owned state.
-    // Business rule: Slug is regenerated in case the Name was changed.
+    // The name can change without moving the category's public URL.
     public async Task<ContentValidationResult?> UpdateCategoryAsync(
         int id,
         string name)
@@ -145,7 +145,6 @@ public class CategoryService : ICategoryService
         }
 
         existingCategory.Name = editableCategory.Name;
-        existingCategory.Slug = SlugGenerator.Generate(editableCategory.Name);
 
         // GetByIdAsync returns a tracked row, so SaveChanges writes only changed
         // properties instead of marking every column as modified.

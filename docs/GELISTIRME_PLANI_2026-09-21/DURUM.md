@@ -1,11 +1,11 @@
 # İlerleme çizelgesi
 
-- **Son kayıt:** 27 Eylül 2026 — F18 yayın kuralına bağlı tek süreç cache politikası doğrulandı.
-- **Tamamlanan plan fazı:** 19/58 (F00–F18).
-- **Tamamlanan uygulama kodu fazı:** 17.
+- **Son kayıt:** 27 Eylül 2026 — F19 düzenlemede kalıcı slug koruması doğrulandı.
+- **Tamamlanan plan fazı:** 20/58 (F00–F19).
+- **Tamamlanan uygulama kodu fazı:** 18.
 - **Aktif faz:** Yok.
-- **Sıradaki faz:** F19 — kullanıcı onayı bekleniyor.
-- **Uygulama kodu:** F02–F09 güvenlik fazları tamamlandı. F10 migration zincirini doğruladı. F11–F13 form/içerik güvenliğini tamamladı. F14 kategori update'ini güvenli alanlara daralttı. F15 kategori silmesini DB constraint'i ve yarış yönetimiyle veri kaybına karşı korudu. F16 yayın zamanını açık saat dilimiyle UTC'ye bağladı. F17 public görünürlüğü tek kurala bağladı. F18 tek süreçli liste cache'ini yayın sınırı ve mutation invalidation'ıyla doğruladı.
+- **Sıradaki faz:** F20 — kullanıcı onayı bekleniyor.
+- **Uygulama kodu:** F02–F09 güvenlik fazları tamamlandı. F10 migration zincirini doğruladı. F11–F13 form/içerik güvenliğini tamamladı. F14 kategori update'ini güvenli alanlara daralttı. F15 kategori silmesini DB constraint'i ve yarış yönetimiyle veri kaybına karşı korudu. F16 yayın zamanını açık saat dilimiyle UTC'ye bağladı. F17 public görünürlüğü tek kurala bağladı. F18 tek süreçli liste cache'ini yayın sınırı ve mutation invalidation'ıyla doğruladı. F19 düzenlemede kayıtlı slug'ı korudu.
 
 ## Kullanım
 
@@ -39,7 +39,7 @@
 | [x] | F16 | Yayın zamanını açık saat dilimiyle işle | TAMAMLANDI — KOD | [F16 kanıtı](../uygulama-kayitlari/F16-2026-09-27.md) |
 | [x] | F17 | Tek yayın görünürlüğü kuralını uygula | TAMAMLANDI — KOD | [F17 kanıtı](../uygulama-kayitlari/F17-2026-09-27.md) |
 | [x] | F18 | Yayın kuralına uyan cache politikası | TAMAMLANDI — KOD | [F18 kanıtı](../uygulama-kayitlari/F18-2026-09-27.md) |
-| [ ] | F19 | Düzenlemede kalıcı slug'ı koru | BAŞLAMADI | — |
+| [x] | F19 | Düzenlemede kalıcı slug'ı koru | TAMAMLANDI — KOD | [F19 kanıtı](../uygulama-kayitlari/F19-2026-09-27.md) |
 | [ ] | F20 | Slug benzersizliği ve çakışma göçü | BAŞLAMADI | — |
 | [ ] | F21 | Okunma sayacını atomik artır | BAŞLAMADI | — |
 | [ ] | F22 | Eşzamanlı editlerde veri kaybını önle | BAŞLAMADI | — |
@@ -81,11 +81,11 @@
 
 ## Son agent teslimi
 
-- Tamamlanan faz: F18 yayın kuralına uyan cache politikası.
-- Değişen davranış: Anonim ana sayfa ve kategori HTML'i tek süreçte en çok 60 saniye, planlı yayın anına kadar cache'lenir. Yazı/kategori değişikliği ve sayaç artışı listeyi geçersizleştirir. Detay ve portföy feed'i cache dışında; istemci yanıtları `no-store`.
-- Çalıştırılan kontroller ve sonuç: Build 0 uyarı/0 hata. Sentetik PostgreSQL/HTTP'de ısınmış cache, yayından kaldırma, planlı yayın, kategori değişikliği ve paralel istekler geçti; F11/F12/F17 regresyonları korundu. Mobil boyutlu tarayıcıda ana sayfa/kategori açıldı. [Ayrıntılı kanıt](../uygulama-kayitlari/F18-2026-09-27.md).
-- Doğrulanamayan/engel: Çok uygulama örneği ve doğrudan DB yazısı için ortak invalidation yok; böyle ortamda cache kapalı kalmalı. Gerçek üretim verisi/trafiği, masaüstü/klavye/konsol yeniden sınanmadı. Önceki tam F01 koşusunun EF restore metadata engeli ayrı duruyor.
-- Sıradaki tek faz: F19.
-- Kullanıcıdan gereken: F19'u başlatmak için açık onay.
+- Tamamlanan faz: F19 düzenlemede kalıcı slug'ı koru.
+- Değişen davranış: Yazı başlığı, kategori adı ve yayın/aktif durum düzenlemesi kayıtlı URL'yi değiştirmiyor. Düzenleme ekranları kalıcı yolu gösteriyor; yeni içerik için slug üretimi sürüyor.
+- Çalıştırılan kontroller ve sonuç: Build 0 uyarı/0 hata. Sentetik PostgreSQL/HTTP'de F19 7/7, F11 6/6, F12 HTTP 8/8, F14 6/6 ve F17 görünürlük/HTTP kontrolleri geçti. Tarayıcıda mobil/masaüstü, başlık/ad girişi, klavye odağı ve konsol incelendi. [Ayrıntılı kanıt](../uygulama-kayitlari/F19-2026-09-27.md).
+- Doğrulanamayan/engel: F20 slug benzersizliği henüz uygulanmadı. Önceden var olan mobil yönetim yerleşimi 390 px'de taşma gösteriyor; F34 kapsamı. Production verisi/trafiği kullanılmadı.
+- Sıradaki tek faz: F20.
+- Kullanıcıdan gereken: F20'yi başlatmak için açık onay.
 
 [Ana plan](/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/docs/GELISTIRME_PLANI_2026-09-21/README.md) · [Hazır mesajlar](/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/docs/GELISTIRME_PLANI_2026-09-21/AGENT_PROMPTLARI.md)

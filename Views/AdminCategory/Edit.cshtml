@@ -2,9 +2,8 @@
 @* AdminCategory/Edit.cshtml — Edit Category Form (Tech-Minimal Brutalist)        *@
 @* ============================================================================= *@
 @* Features:                                                                    *@
-@*   1. Real-time English slug generation and live URL preview.                 *@
-@*   2. Cleanliness validation (instant visual feedback for valid slug).        *@
-@*   3. Tech-Minimal brutalist form structure with 2px borders.                 *@
+@*   1. Stable public URL shown alongside editable category name.               *@
+@*   2. Tech-Minimal brutalist form structure with 2px borders.                 *@
 @* ============================================================================= *@
 
 @model DevCoreBlog.Models.Admin.CategoryFormInput
@@ -46,16 +45,11 @@
                 <span asp-validation-for="Name" class="font-mono text-xs text-rose-600 block mt-1"></span>
             </div>
 
-            @* Real-Time Slug Preview Box *@
+            @* The stored slug is server-owned and does not change with the name. *@
             <div class="border-2 border-black bg-neutral-50 p-3 space-y-1 font-mono text-xs">
-                <div class="text-[10px] font-bold text-neutral-500 uppercase flex items-center justify-between">
-                    <span>// LIVE SLUG PREVIEW:</span>
-                    <span id="slug-clean-badge" class="bg-emerald-100 border border-emerald-600 text-emerald-900 px-1.5 py-0.2 font-bold text-[9px] uppercase">
-                        CLEAN
-                    </span>
-                </div>
-                <div class="font-bold text-black flex items-center gap-1 truncate">
-                    <span class="text-neutral-500">/category/</span>
+                <div class="text-[10px] font-bold text-neutral-500 uppercase">// Permanent address</div>
+                <div class="font-bold text-black break-all">
+                    <span class="text-neutral-500">/kategori/</span>
                     <span id="slug-preview" class="text-black bg-yellow-100 px-1">@Model.Slug</span>
                 </div>
             </div>
@@ -77,60 +71,4 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-    
-    <script>
-        // =========================================================================
-        // Real-Time English Slug Generator & Cleanliness Validator
-        // Converts Turkish / special characters into clean URL-friendly English slugs.
-        // =========================================================================
-        document.addEventListener('DOMContentLoaded', function () {
-            const nameInput = document.getElementById('category-name-input');
-            const slugPreview = document.getElementById('slug-preview');
-            const cleanBadge = document.getElementById('slug-clean-badge');
-
-            function slugify(text) {
-                const trMap = {
-                    'ç': 'c', 'Ç': 'c',
-                    'ğ': 'g', 'Ğ': 'g',
-                    'ı': 'i', 'İ': 'i',
-                    'ö': 'o', 'Ö': 'o',
-                    'ş': 's', 'Ş': 's',
-                    'ü': 'u', 'Ü': 'u'
-                };
-
-                let str = text || '';
-                str = str.replace(/[çÇğĞıİöÖşŞüÜ]/g, match => trMap[match] || match);
-
-                return str
-                    .toLowerCase()
-                    .replace(/[^a-z0-9\s-]/g, '')
-                    .trim()
-                    .replace(/\s+/g, '-');
-            }
-
-            function updateSlug() {
-                const rawName = nameInput?.value || '';
-                const generated = slugify(rawName);
-
-                if (slugPreview) {
-                    slugPreview.textContent = generated || '@Model.Slug';
-                }
-
-                if (cleanBadge) {
-                    if (generated.length > 0) {
-                        cleanBadge.textContent = 'CLEAN';
-                        cleanBadge.className = 'bg-emerald-100 border border-emerald-600 text-emerald-900 px-1.5 py-0.2 font-bold text-[9px] uppercase';
-                    } else {
-                        cleanBadge.textContent = 'EMPTY';
-                        cleanBadge.className = 'bg-neutral-200 border border-neutral-400 text-neutral-700 px-1.5 py-0.2 font-bold text-[9px] uppercase';
-                    }
-                }
-            }
-
-            if (nameInput) {
-                nameInput.addEventListener('input', updateSlug);
-                updateSlug();
-            }
-        });
-    </script>
 }

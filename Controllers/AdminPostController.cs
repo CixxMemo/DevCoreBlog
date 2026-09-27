@@ -259,8 +259,7 @@ public class AdminPostController : Controller
 
         if (ModelState.IsValid)
         {
-            // Delegate to service layer — business logic (slug regeneration)
-            // is handled in PostService.UpdatePostAsync()
+            // The service preserves the stored slug when editable fields change.
             var updateResult = await _postService.UpdatePostAsync(
                 post,
                 cancellationToken);

@@ -133,11 +133,9 @@
                 
                 <div class="border border-neutral-300 p-3 bg-neutral-50 space-y-1 font-sans">
                     @* Breadcrumb / URL *@
-                    <div class="text-[11px] text-emerald-800 font-mono truncate flex items-center gap-1">
-                        <span>devcoreblog.com</span>
-                        <span>›</span>
-                        <span>post</span>
-                        <span>›</span>
+                    <div class="font-mono text-[10px] text-neutral-600">Permanent address</div>
+                    <div class="text-[11px] text-emerald-800 font-mono break-all">
+                        <span>/post/</span>
                         <span id="serp-slug-preview">@Model.Slug</span>
                     </div>
                     
@@ -237,7 +235,6 @@
             
             // SERP Preview elements
             const serpTitle = document.getElementById('serp-title-preview');
-            const serpSlug = document.getElementById('serp-slug-preview');
             const serpSummary = document.getElementById('serp-summary-preview');
 
             // Metrics bar
@@ -417,14 +414,6 @@
             // =====================================================================
             // Live SERP & Metrics Calculation Engine
             // =====================================================================
-            function generateSlug(text) {
-                return (text || '')
-                    .toLowerCase()
-                    .replace(/[^a-z0-9\s-]/g, '')
-                    .trim()
-                    .replace(/\s+/g, '-');
-            }
-
             function updatePreviewsAndMetrics() {
                 const title = titleInput?.value || '';
                 const summary = summaryInput?.value || '';
@@ -432,7 +421,6 @@
 
                 // SERP preview update
                 if (serpTitle) serpTitle.textContent = title || 'Article Title Preview';
-                if (serpSlug) serpSlug.textContent = generateSlug(title) || '@Model.Slug';
                 if (serpSummary) serpSummary.textContent = summary || 'Summary and meta description will appear here as the Google snippet...';
 
                 // Metrics update

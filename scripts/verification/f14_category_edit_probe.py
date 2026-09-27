@@ -190,7 +190,7 @@ def main() -> int:
         ),
         "unexpected_fields_cannot_overwrite_server_state": (
             after is not None
-            and after.slug == "f14-renamed-inactive-category"
+            and after.slug == before.slug
             and after.slug != "attacker-controlled-category-slug"
             and after.created_date == before.created_date
             and not after.is_active

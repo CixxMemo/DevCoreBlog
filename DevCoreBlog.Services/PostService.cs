@@ -25,7 +25,7 @@
 // Business Rules in PostService:
 //   - Slug is auto-generated from Title (using SlugGenerator)
 //   - CreatedDate is set from TimeProvider in UTC on creation
-//   - Slug is regenerated on update (in case Title changed)
+//   - Existing slugs stay stable when a title changes
 // =============================================================================
 
 using DevCoreBlog.Core.Entities;
@@ -257,8 +257,7 @@ public class PostService : IPostService, IPublicationSchedule
         return ContentValidationResult.Success();
     }
 
-    // Update an existing post (handles slug regeneration)
-    // Business rule: Slug is regenerated in case the Title was changed
+    // Update editable fields while preserving the existing public URL.
     public async Task<ContentValidationResult> UpdatePostAsync(
         Post post,
         CancellationToken cancellationToken = default)
@@ -279,10 +278,7 @@ public class PostService : IPostService, IPublicationSchedule
             ]);
         }
 
-        // BUSINESS RULE: Regenerate slug in case the title was changed
-        // This ensures the slug always matches the current title
         existingPost.Title = post.Title;
-        existingPost.Slug = SlugGenerator.Generate(post.Title);
         existingPost.Summary = post.Summary;
         existingPost.Content = post.Content;
         existingPost.ThumbnailUrl = post.ThumbnailUrl;
