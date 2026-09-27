@@ -41,6 +41,7 @@ namespace DevCoreBlog.Services;
 // Implements ICategoryService interface
 public class CategoryService : ICategoryService
 {
+    private const int MaximumSlugAttempts = 100;
     // Private readonly field to hold the injected CategoryRepository
     private readonly CategoryRepository _categoryRepository;
     private readonly PublicListCacheInvalidator _publicListCache;
@@ -100,7 +101,9 @@ public class CategoryService : ICategoryService
 
     // Create a new category (handles slug generation)
     // Business rule: Slug is auto-generated from Name (using SlugGenerator)
-    public async Task<ContentValidationResult> CreateCategoryAsync(Category category)
+    public async Task<ContentValidationResult> CreateCategoryAsync(
+        Category category,
+        CancellationToken cancellationToken = default)
     {
         CategoryContentRules.Normalize(category);
         var validationResult = CategoryContentRules.Validate(category);
@@ -109,17 +112,27 @@ public class CategoryService : ICategoryService
             return validationResult;
         }
 
-        // BUSINESS RULE: Auto-generate URL-friendly slug from the category name
-        // Example: "C# Dersleri" → "c-sharp-dersleri"
-        category.Slug = SlugGenerator.Generate(category.Name);
+        var baseSlug = SlugGenerator.GenerateBase(category.Name, "category");
+        for (var attempt = 0; attempt < MaximumSlugAttempts; attempt++)
+        {
+            category.Slug = SlugGenerator.Candidate(baseSlug, attempt);
+            if (await _categoryRepository.SlugExistsAsync(category.Slug, cancellationToken))
+            {
+                continue;
+            }
 
-        // Add the category to the database via repository
-        await _categoryRepository.AddAsync(category);
+            if (await _categoryRepository.TryCreateWithSlugAsync(
+                    category, cancellationToken))
+            {
+                await _publicListCache.InvalidateAsync(cancellationToken);
+                return ContentValidationResult.Success();
+            }
+        }
 
-        // Commit the transaction to the database
-        await _categoryRepository.SaveChangesAsync();
-        await _publicListCache.InvalidateAsync();
-        return ContentValidationResult.Success();
+        return ContentValidationResult.FromErrors(
+        [
+            new(nameof(Category.Name), "Could not reserve a unique address. Try another name.")
+        ]);
     }
 
     // Update an existing category without replacing server-owned state.

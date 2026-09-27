@@ -43,5 +43,13 @@ public class ApplicationDbContext : DbContext
             .WithMany(category => category.Posts)
             .HasForeignKey(post => post.CategoryId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Post>()
+            .HasIndex(post => post.Slug)
+            .IsUnique();
+
+        modelBuilder.Entity<Category>()
+            .HasIndex(category => category.Slug)
+            .IsUnique();
     }
 }

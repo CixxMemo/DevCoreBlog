@@ -79,7 +79,7 @@ public interface IPostService
         Post post,
         CancellationToken cancellationToken = default);
 
-    // Update an existing post (handles validation and slug regeneration)
+    // Update an existing post without changing its public slug.
     Task<ContentValidationResult> UpdatePostAsync(
         Post post,
         CancellationToken cancellationToken = default);

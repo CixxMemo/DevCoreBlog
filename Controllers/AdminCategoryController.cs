@@ -76,7 +76,9 @@ public class AdminCategoryController : Controller
     // Delegates to service layer for slug generation and saving.
     [HttpPost]          // Only respond to POST requests (form submissions)
     [ValidateAntiForgeryToken]  // Protect against CSRF attacks using the hidden token in the form
-    public async Task<IActionResult> Create([Bind("Name")] CategoryFormInput input)
+    public async Task<IActionResult> Create(
+        [Bind("Name")] CategoryFormInput input,
+        CancellationToken cancellationToken)
     {
         // Check if all model validations passed (e.g. Name is not empty)
         if (ModelState.IsValid)
@@ -84,7 +86,8 @@ public class AdminCategoryController : Controller
             var category = new Category { Name = input.Name };
             // Delegate to service layer — business logic (slug generation)
             // is handled in CategoryService.CreateCategoryAsync()
-            var result = await _categoryService.CreateCategoryAsync(category);
+            var result = await _categoryService.CreateCategoryAsync(
+                category, cancellationToken);
             ModelState.AddContentErrors(result);
             if (result.IsValid)
             {

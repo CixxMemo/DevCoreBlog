@@ -32,6 +32,7 @@ namespace DevCoreBlog.Data.Repositories;
 public class CategoryRepository : GenericRepository<Category>, IActiveCategoryLookup
 {
     private const string PostsCategoryForeignKey = "FK_Posts_Categories_CategoryId";
+    private const string SlugIndex = "IX_Categories_Slug";
     private readonly ILogger<CategoryRepository> _logger;
 
     // Constructor passes the ApplicationDbContext to the base class
@@ -40,6 +41,34 @@ public class CategoryRepository : GenericRepository<Category>, IActiveCategoryLo
         ILogger<CategoryRepository> logger) : base(context)
     {
         _logger = logger;
+    }
+
+    /// <summary>Checks a candidate before insert; the unique index resolves races.</summary>
+    public Task<bool> SlugExistsAsync(string slug, CancellationToken cancellationToken) =>
+        _context.Categories.AsNoTracking()
+            .AnyAsync(category => category.Slug == slug, cancellationToken);
+
+    /// <summary>Detaches only the failed insert so another slug can be tried.</summary>
+    public async Task<bool> TryCreateWithSlugAsync(
+        Category category, CancellationToken cancellationToken)
+    {
+        await _context.Categories.AddAsync(category, cancellationToken);
+        try
+        {
+            await _context.SaveChangesAsync(cancellationToken);
+            return true;
+        }
+        catch (DbUpdateException exception) when (
+            exception.InnerException is PostgresException
+            {
+                SqlState: PostgresErrorCodes.UniqueViolation,
+                ConstraintName: SlugIndex
+            })
+        {
+            _context.Entry(category).State = EntityState.Detached;
+            category.Id = 0;
+            return false;
+        }
     }
 
     // -------------------------------------------------------------------------

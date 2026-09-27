@@ -1,6 +1,6 @@
 # Güncel mimari ve çalışma kararları
 
-**Güncelleme:** 23 Eylül 2026 — F12 içerik sınırları.
+**Güncelleme:** 27 Eylül 2026 — F20 kalıcı URL sahipliği.
 
 Kullanıcı eski kuralların yenilenmesini, SOLID/temiz kod/güvenlik sınırlarının güçlendirilmesini, eski planların kaldırılabilmesini ve yeni geliştirme planının buna uyarlanmasını açıkça istedi. Aşağıdaki teknik seçimler bu yetki kapsamında mevcut ürün yapısını koruyarak yapıldı. Kullanıcının ayrıca eski A/B seçeneklerinden birini seçtiği iddia edilmiyor; o karar ağacı yeni kurallarla kaldırıldı.
 
@@ -79,6 +79,14 @@ Bu sınırlar Core'daki ortak kurallardan servis, MVC ve webhook'a uygulanır. F
 İzole F01 veri envanterinde 500 karakteri aşan bir sentetik özet ve pasif kategoriye bağlı bir sentetik yazı bulundu. Kayıtlar korunur; yeniden yazılmak istenirse güncel kuralları sağlamaları gerekir. Gerçek production verisi F12 sırasında okunmadı veya değiştirilmedi.
 
 **Durum:** UYGULANDI — F12.
+
+## D08 — Geçmiş slug çakışmasında tek URL sahibi
+
+F20 göçünde aynı boş olmayan slug'ı paylaşan yazı veya kategorilerden en küçük ID mevcut URL'yi korur. Diğer kayıtlar mevcut bütün slug'lar saklı tutularak ilk boş numaralı adrese geçer. Boş/yalnızca boşluk slug'ı olan kayıtlar tür adı ve ID tabanlı boşta bir adrese geçer. Bu işlem kayıt silmez, birleştirmez veya geçmişte belirsiz olan URL için iki ayrı yönlendirme uydurmaz.
+
+Gerçek veritabanında göç çalıştırılmadan önce [salt okunur envanter](../../scripts/verification/f20_slug_inventory.sql) incelenir. Önerilen ID sahibi gerçek ürün beklentisine uymuyorsa somut kayıt tablosuyla kullanıcı kararı alınır; production göçü otomatik çalıştırılmaz.
+
+**Durum:** F20 kodu ve sentetik PostgreSQL göçüyle doğrulandı; gerçek veri envanteri/deploy ayrı operasyonel adımdır.
 
 ## Gerektiğinde alınacak gerçek ürün/ortam bilgileri
 

@@ -24,6 +24,17 @@ namespace DevCoreBlog.Core.Shared.Helpers;
 // Static class — cannot be instantiated, accessed as SlugGenerator.Generate(...)
 public static class SlugGenerator
 {
+    /// <summary>Uses a stable entity-specific word when text has no URL characters.</summary>
+    public static string GenerateBase(string text, string fallback)
+    {
+        var generated = Generate(text);
+        return generated.Length == 0 ? fallback : generated;
+    }
+
+    /// <summary>Returns the original address first, then numbered alternatives.</summary>
+    public static string Candidate(string baseSlug, int attempt) =>
+        attempt == 0 ? baseSlug : $"{baseSlug}-{attempt + 1}";
+
     // Converts the given text into a clean, lowercase URL-friendly slug string
     public static string Generate(string text)
     {

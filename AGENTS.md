@@ -110,7 +110,7 @@ SOLID “her sınıfa interface”, “her metoda factory” veya puan uğruna i
 
 - Her public sorgu aynı yayın kuralını uygular: aktif yazı + yayın izni + PublishDate ≤ UTC şimdi + aktif kategori. Draft/future/pasif içerik detay, arama, feed, ilgili yazı ve sitemap'te sızamaz.
 - Zamanı UTC sakla/karşılaştır; form gösterimini açık site saat dilimine dönüştür. Süreye bağlı davranış için yerleşik TimeProvider gibi testlenebilir saat kullan; eski tarihi tahminen kaydırma.
-- Slug düzenlemede kararlı kalır; benzersizlik DB constraint'iyle güvenceye alınır. Slug değişimi gerçek ürün ihtiyacıysa redirect/çakışma planı gerekir. “Kontrol ettim sonra kaydettim” yarış koruması değildir.
+- Slug düzenlemede kararlı kalır; benzersizlik DB constraint'iyle güvenceye alınır. Geçmişte aynı boş olmayan slug'ı paylaşan kayıtlarda en küçük ID eski URL'nin sahibidir; diğerleri boşta olan numaralı slug'a taşınır. Gerçek veri göçünden önce salt okunur çakışma envanteri ve sahiplik gözden geçirilir. Slug değişimi gerçek ürün ihtiyacıysa redirect/çakışma planı gerekir. “Kontrol ettim sonra kaydettim” yarış koruması değildir.
 - Sayaç güncellemesi yalnızca sayaç alanını atomik değiştirir; eski entity ile bütün satırı ezmez. Edit çakışması kullanıcı metnini kaybettirmeden bildirilir.
 - İlişkili veriyi koruyan FK/transaction/concurrency kuralları DB'de de uygulanır. Kullanıcı verisini düşüren otomatik cascade veya kontrolsüz toplu update ekleme.
 - Read sorgularında ihtiyaç kadar kolon/ilişki/kayıt, uygun AsNoTracking ve DB tarafında sıralama/sayfalama kullan. Sınırsız GetAll + bellek filtresi ve N+1 üretme.

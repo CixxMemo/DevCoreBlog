@@ -52,7 +52,9 @@ public interface ICategoryService
     // -------------------------------------------------------------------------
 
     // Create a new category (handles slug generation)
-    Task<ContentValidationResult> CreateCategoryAsync(Category category);
+    Task<ContentValidationResult> CreateCategoryAsync(
+        Category category,
+        CancellationToken cancellationToken = default);
 
     // Updates only editable category fields; null means the requested row was not found.
     Task<ContentValidationResult?> UpdateCategoryAsync(int id, string name);

@@ -119,7 +119,7 @@ Bu bölüm bir çalıştırma emri değildir. Her seferinde yalnızca **bir faz 
 
 **Agent'ın uygulayacağı sıra:**
 
-1. Mevcut boş/çakışan slug'ları salt okunur raporla. Gerçek veride hangi kaydın mevcut URL'yi koruyacağı belirsizse sadece o kararı kullanıcıya somut tabloyla sun.
+1. Mevcut boş/çakışan slug'ları salt okunur raporla. Aynı boş olmayan slug'da en küçük ID eski URL'nin sahibidir; gerçek veri envanteri bu sahipliğin ürün beklentisine uyduğunu göstermiyorsa migration'dan önce somut tabloyla kullanıcı kararını al.
 2. Yeni kayıt için deterministik suffix ve boş slug fallback kuralı; DB unique index son güvence. Eşzamanlı unique violation'ı sınırlı tekrar ile ele al.
 3. Migration önce test verisi üzerinde çakışma çözümüyle doğrulansın. Aynı eski URL'yi paylaşan iki kayıt için iki ayrı 301 hedefi varmış gibi davranma; tek sahip kuralını belgele.
 
@@ -184,4 +184,3 @@ Bu bölüm bir çalıştırma emri değildir. Her seferinde yalnızca **bir faz 
 **İzlenebilirlik:** F3.
 
 **Durma noktası:** Kanıtı uygulama kaydına ve DURUM.md'ye işle; sonraki fazı başlatma.
-

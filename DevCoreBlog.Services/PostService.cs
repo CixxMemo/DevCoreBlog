@@ -42,6 +42,7 @@ namespace DevCoreBlog.Services;
 // Implements IPostService interface
 public class PostService : IPostService, IPublicationSchedule
 {
+    private const int MaximumSlugAttempts = 100;
     // Private readonly field to hold the injected PostRepository
     private readonly PostRepository _postRepository;
     private readonly IActiveCategoryLookup _activeCategoryLookup;
@@ -239,22 +240,30 @@ public class PostService : IPostService, IPublicationSchedule
             return validationResult;
         }
 
-        // BUSINESS RULE: Auto-generate URL-friendly slug from the post title
-        // Example: "ASP.NET Core ile Blog Yazma" → "asp-net-core-ile-blog-yazma"
-        post.Slug = SlugGenerator.Generate(post.Title);
-
         // BUSINESS RULE: Set creation time to UTC (required for PostgreSQL timestamp with time zone)
         // This ensures consistent timestamps across different time zones
         post.CreatedDate = _timeProvider.GetUtcNow().UtcDateTime;
 
-        // Add the post to the database via repository
-        await _postRepository.AddAsync(post);
+        var baseSlug = SlugGenerator.GenerateBase(post.Title, "post");
+        for (var attempt = 0; attempt < MaximumSlugAttempts; attempt++)
+        {
+            post.Slug = SlugGenerator.Candidate(baseSlug, attempt);
+            if (await _postRepository.SlugExistsAsync(post.Slug, cancellationToken))
+            {
+                continue;
+            }
 
-        // Commit the transaction to the database
-        await _postRepository.SaveChangesAsync();
-        await _publicListCache.InvalidateAsync(cancellationToken);
+            if (await _postRepository.TryCreateWithSlugAsync(post, cancellationToken))
+            {
+                await _publicListCache.InvalidateAsync(cancellationToken);
+                return ContentValidationResult.Success();
+            }
+        }
 
-        return ContentValidationResult.Success();
+        return ContentValidationResult.FromErrors(
+        [
+            new(nameof(Post.Title), "Could not reserve a unique address. Try another title.")
+        ]);
     }
 
     // Update editable fields while preserving the existing public URL.

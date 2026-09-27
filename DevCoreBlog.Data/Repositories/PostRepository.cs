@@ -1,13 +1,44 @@
 using System.Linq.Expressions;
 using DevCoreBlog.Core.Entities;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace DevCoreBlog.Data.Repositories;
 
 /// <summary>Runs public post queries through one SQL-translatable visibility rule.</summary>
 public class PostRepository : GenericRepository<Post>
 {
+    private const string SlugIndex = "IX_Posts_Slug";
+
     public PostRepository(ApplicationDbContext context) : base(context) { }
+
+    /// <summary>Checks a candidate before insert; the unique index remains the final arbiter.</summary>
+    public Task<bool> SlugExistsAsync(string slug, CancellationToken cancellationToken) =>
+        _context.Posts.AsNoTracking()
+            .AnyAsync(post => post.Slug == slug, cancellationToken);
+
+    /// <summary>Retries may reuse the entity after this method detaches a collided insert.</summary>
+    public async Task<bool> TryCreateWithSlugAsync(
+        Post post, CancellationToken cancellationToken)
+    {
+        await _context.Posts.AddAsync(post, cancellationToken);
+        try
+        {
+            await _context.SaveChangesAsync(cancellationToken);
+            return true;
+        }
+        catch (DbUpdateException exception) when (
+            exception.InnerException is PostgresException
+            {
+                SqlState: PostgresErrorCodes.UniqueViolation,
+                ConstraintName: SlugIndex
+            })
+        {
+            _context.Entry(post).State = EntityState.Detached;
+            post.Id = 0;
+            return false;
+        }
+    }
 
     // The captured UTC instant is a query parameter; all public paths use this predicate.
     private static Expression<Func<Post, bool>> VisibleAt(DateTime utcNow) =>
