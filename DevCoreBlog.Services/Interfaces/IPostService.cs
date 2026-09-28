@@ -82,7 +82,8 @@ public interface IPostService
     // Update an existing post without changing its public slug.
     Task<ContentValidationResult> UpdatePostAsync(
         Post post,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default,
+        long? expectedEditVersion = null);
 
     // Delete a post by its Id
     Task DeletePostAsync(int id);

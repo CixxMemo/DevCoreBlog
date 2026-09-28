@@ -34,6 +34,7 @@ using DevCoreBlog.Core.Entities;
 using DevCoreBlog.Core.Interfaces;
 using DevCoreBlog.Data;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace DevCoreBlog.Data.Repositories;
 
@@ -135,5 +136,25 @@ public class GenericRepository<T> : IRepository<T> where T : BaseEntity
         // SaveChangesAsync() executes all pending INSERT/UPDATE/DELETE operations
         // It returns the number of entities affected
         await _context.SaveChangesAsync();
+    }
+
+    /// <summary>Writes one tracked edit only when the form's loaded version is still current.</summary>
+    public async Task<bool> TrySaveVersionedEditAsync(
+        T entity,
+        Expression<Func<T, long>> versionProperty,
+        long expectedVersion,
+        CancellationToken cancellationToken = default)
+    {
+        _context.Entry(entity).Property(versionProperty).OriginalValue = expectedVersion;
+        try
+        {
+            await _context.SaveChangesAsync(cancellationToken);
+            return true;
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            _context.Entry(entity).State = EntityState.Detached;
+            return false;
+        }
     }
 }

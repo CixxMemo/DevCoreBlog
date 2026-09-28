@@ -244,7 +244,8 @@ public class PostService : IPostService, IPublicationSchedule
     // Update editable fields while preserving the existing public URL.
     public async Task<ContentValidationResult> UpdatePostAsync(
         Post post,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        long? expectedEditVersion = null)
     {
         var validationResult = await ValidatePostAsync(post, cancellationToken);
         if (!validationResult.IsValid)
@@ -262,6 +263,13 @@ public class PostService : IPostService, IPublicationSchedule
             ]);
         }
 
+        var loadedVersion = expectedEditVersion ?? existingPost.EditVersion;
+        if (loadedVersion != existingPost.EditVersion)
+        {
+            return ContentValidationResult.Conflict(
+                "This post changed since you opened it. Your edits are still here. Reload the current post before trying again.");
+        }
+
         existingPost.Title = post.Title;
         existingPost.Summary = post.Summary;
         existingPost.Content = post.Content;
@@ -273,11 +281,15 @@ public class PostService : IPostService, IPublicationSchedule
 
         existingPost.PublishDate = post.PublishDate;
 
-        // Update the post in the database via repository
-        await _postRepository.UpdateAsync(existingPost);
+        existingPost.EditVersion = checked(loadedVersion + 1);
 
-        // Commit the transaction to the database
-        await _postRepository.SaveChangesAsync();
+        if (!await _postRepository.TrySaveVersionedEditAsync(
+                existingPost, saved => saved.EditVersion,
+                loadedVersion, cancellationToken))
+        {
+            return ContentValidationResult.Conflict(
+                "This post changed since you opened it. Your edits are still here. Reload the current post before trying again.");
+        }
         await _publicListCache.InvalidateAsync(cancellationToken);
 
         return ContentValidationResult.Success();

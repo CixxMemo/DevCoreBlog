@@ -11,6 +11,7 @@ import sys
 from http_probe_support import (
     cookie_opener,
     extract_antiforgery_token,
+    extract_hidden_value,
     has_authentication_cookie,
     post_file,
     request,
@@ -164,6 +165,7 @@ def main() -> int:
             content=corrupt_png,
             fields={
                 "Id": "2001",
+                "EditVersion": extract_hidden_value(edit_body, "EditVersion") or "",
                 "Title": edit_marker,
                 "Content": "F09 invalid cover edit content",
                 "CategoryId": "1001",

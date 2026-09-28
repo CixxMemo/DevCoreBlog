@@ -11,6 +11,8 @@ public sealed class CategoryFormInput
 {
     public int Id { get; set; }
 
+    public long EditVersion { get; set; }
+
     [Required(ErrorMessage = "Category name is required.")]
     [StringLength(
         CategoryContentRules.MaximumNameLength,

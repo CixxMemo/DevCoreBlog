@@ -152,12 +152,12 @@
     @* ========================================================================= *@
     @* MAIN ADMIN SHELL — Full Height Responsive Flex Layout                     *@
     @* ========================================================================= *@
-    <div class="flex h-screen overflow-hidden">
+    <div class="flex flex-col md:flex-row h-screen overflow-hidden">
 
         @* ===================================================================== *@
         @* FIXED LEFT SIDEBAR (w-64, border-r-2 border-black, bg-white)          *@
         @* ===================================================================== *@
-        <aside class="w-64 flex-shrink-0 border-r-2 border-black bg-white flex flex-col justify-between h-full z-20">
+        <aside class="w-full md:w-64 flex-shrink-0 border-r-2 border-black bg-white flex flex-col justify-between h-44 md:h-full overflow-y-auto md:overflow-visible z-20">
             
             @* Top Section: Brand & Primary Navigation *@
             <div class="flex flex-col">
@@ -250,7 +250,7 @@
         @* ===================================================================== *@
         @* MAIN CONTENT AREA (Header + View Body)                                *@
         @* ===================================================================== *@
-        <div class="flex-1 flex flex-col min-w-0 overflow-hidden bg-[#f4f4f0]">
+        <div class="flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden bg-[#f4f4f0]">
             
             @* Top Navigation / Breadcrumb Header *@
             <header class="border-b-2 border-black bg-white px-6 py-3.5 flex items-center justify-between flex-shrink-0">

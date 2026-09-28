@@ -28,9 +28,14 @@
         <form asp-action="Edit" method="post" class="space-y-5">
             @* Hidden Id *@
             <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="EditVersion" />
 
             @* Validation Summary *@
             <div asp-validation-summary="ModelOnly" class="border-2 border-rose-600 bg-rose-50 p-3 font-mono text-xs font-bold text-rose-700"></div>
+            @if (Context.Response.StatusCode == 409)
+            {
+                <a asp-action="Edit" asp-route-id="@Model.Id" class="inline-block max-w-full whitespace-normal break-words border-2 border-black px-3 py-2 font-mono text-xs font-bold underline focus:outline-2 focus:outline-offset-2">Reload current category</a>
+            }
 
             @* Category Name Input *@
             <div>

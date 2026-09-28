@@ -8,6 +8,7 @@ import subprocess
 from http_probe_support import (
     cookie_opener,
     extract_antiforgery_token,
+    extract_hidden_value,
     request,
     submit_login,
 )
@@ -48,7 +49,8 @@ def main() -> int:
     post_edit_status, _, post_edit_body = request(admin, post_edit_url)
     post_token = extract_antiforgery_token(post_edit_body)
     post_form = {
-        "Id": "2001", "Title": "F19 Renamed Post",
+        "Id": "2001", "EditVersion": extract_hidden_value(post_edit_body, "EditVersion") or "",
+        "Title": "F19 Renamed Post",
         "Content": "F19 stable post address content", "CategoryId": "1001",
         "Summary": "F19_STABLE_POST_MARKER", "Excerpt": "F19 stable excerpt",
         "IsPublished": "true", "IsActive": "true",
@@ -74,12 +76,16 @@ def main() -> int:
     old_post_after_toggle = request(visitor, old_post_url)
     post_slug_after_toggle = slug("Posts", 2001)
 
+    refreshed_post = request(admin, post_edit_url)
+    post_form["EditVersion"] = extract_hidden_value(refreshed_post[2], "EditVersion") or ""
     post_form["IsActive"] = "false"
     inactive_save_status, _, _ = request(
         admin, post_edit_url, data=post_form,
     )
     inactive_public_status = request(visitor, old_post_url)[0]
     inactive_slug = slug("Posts", 2001)
+    refreshed_post = request(admin, post_edit_url)
+    post_form["EditVersion"] = extract_hidden_value(refreshed_post[2], "EditVersion") or ""
     post_form["IsActive"] = "true"
     reactivate_save_status, _, _ = request(
         admin, post_edit_url, data=post_form,
@@ -91,7 +97,8 @@ def main() -> int:
     category_token = extract_antiforgery_token(category_edit_body)
     category_save_status, category_save_url, _ = request(
         admin, category_edit_url,
-        data={"Id": "1001", "Name": "F19 Renamed Category",
+        data={"Id": "1001", "EditVersion": extract_hidden_value(category_edit_body, "EditVersion") or "",
+              "Name": "F19 Renamed Category",
               "Slug": "attacker-category-slug",
               "__RequestVerificationToken": category_token or ""},
     )

@@ -159,6 +159,15 @@ def extract_antiforgery_token(body: str) -> str | None:
     return html.unescape(match.group(1)) if match else None
 
 
+def extract_hidden_value(body: str, name: str) -> str | None:
+    """Read a named hidden input from a server-rendered form."""
+    tag = re.search(r'<input[^>]+name="' + re.escape(name) + r'"[^>]*>', body)
+    if not tag:
+        return None
+    value = re.search(r'\bvalue="([^"]*)"', tag.group())
+    return html.unescape(value.group(1)) if value else None
+
+
 def get_antiforgery_token(opener, url: str) -> tuple[int, str | None, str]:
     status, _, body = request(opener, url)
     return status, extract_antiforgery_token(body), body

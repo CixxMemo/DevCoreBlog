@@ -117,6 +117,7 @@ public class AdminCategoryController : Controller
         return View(new CategoryFormInput
         {
             Id = category.Id,
+            EditVersion = category.EditVersion,
             Name = category.Name,
             Slug = category.Slug
         });
@@ -131,21 +132,32 @@ public class AdminCategoryController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(
         int id,
-        [Bind("Id,Name")] CategoryFormInput input)
+        [Bind("Id,EditVersion,Name")] CategoryFormInput input,
+        CancellationToken cancellationToken)
     {
         // Safety check: ensure the URL Id matches the form's hidden Id field
         if (id != input.Id)
             return NotFound();
 
+        if (input.EditVersion <= 0)
+        {
+            ModelState.AddModelError(string.Empty, "Reload this category before saving.");
+        }
+
         if (ModelState.IsValid)
         {
             // The service loads the tracked row and changes only editable fields.
             // A null result means the category disappeared before this POST.
-            var result = await _categoryService.UpdateCategoryAsync(id, input.Name);
+            var result = await _categoryService.UpdateCategoryAsync(
+                id, input.Name, input.EditVersion, cancellationToken);
             if (result is null)
                 return NotFound();
 
             ModelState.AddContentErrors(result);
+            if (result.IsConflict)
+            {
+                Response.StatusCode = StatusCodes.Status409Conflict;
+            }
             if (result.IsValid)
             {
                 return RedirectToAction(nameof(Index));

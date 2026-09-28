@@ -139,12 +139,20 @@ public class CategoryService : ICategoryService
     // The name can change without moving the category's public URL.
     public async Task<ContentValidationResult?> UpdateCategoryAsync(
         int id,
-        string name)
+        string name,
+        long expectedEditVersion,
+        CancellationToken cancellationToken = default)
     {
         var existingCategory = await _categoryRepository.GetByIdAsync(id);
         if (existingCategory is null)
         {
             return null;
+        }
+
+        if (expectedEditVersion != existingCategory.EditVersion)
+        {
+            return ContentValidationResult.Conflict(
+                "This category changed since you opened it. Your edits are still here. Reload the current category before trying again.");
         }
 
         // Validate a detached candidate before changing the tracked entity. This
@@ -158,11 +166,19 @@ public class CategoryService : ICategoryService
         }
 
         existingCategory.Name = editableCategory.Name;
+        existingCategory.EditVersion = checked(expectedEditVersion + 1);
 
         // GetByIdAsync returns a tracked row, so SaveChanges writes only changed
         // properties instead of marking every column as modified.
-        await _categoryRepository.SaveChangesAsync();
-        await _publicListCache.InvalidateAsync();
+        if (!await _categoryRepository.TrySaveVersionedEditAsync(
+                existingCategory, saved => saved.EditVersion,
+                expectedEditVersion, cancellationToken))
+        {
+            return ContentValidationResult.Conflict(
+                "This category changed since you opened it. Your edits are still here. Reload the current category before trying again.");
+        }
+
+        await _publicListCache.InvalidateAsync(cancellationToken);
         return ContentValidationResult.Success();
     }
 

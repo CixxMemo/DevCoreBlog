@@ -18,10 +18,15 @@
 <form asp-action="Edit" method="post" id="postForm" enctype="multipart/form-data">
     @* Hidden Id for entity matching *@
     <input type="hidden" asp-for="Id" />
+    <input type="hidden" asp-for="EditVersion" />
 
     @if (!ViewData.ModelState.IsValid)
     {
         <div asp-validation-summary="All" class="border-2 border-rose-600 bg-rose-50 p-4 font-mono text-xs font-bold text-rose-700 mb-6"></div>
+        @if (Context.Response.StatusCode == 409)
+        {
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="inline-block max-w-full whitespace-normal break-words mb-6 border-2 border-black px-4 py-2 font-mono text-xs font-bold underline focus:outline-2 focus:outline-offset-2">Reload current post</a>
+        }
     }
 
     <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">

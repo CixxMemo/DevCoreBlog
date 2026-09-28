@@ -11,6 +11,7 @@ import sys
 from http_probe_support import (
     cookie_opener,
     extract_antiforgery_token,
+    extract_hidden_value,
     has_authentication_cookie,
     post_file,
     request,
@@ -111,6 +112,7 @@ def main() -> int:
         post_id=EXISTING_POST_ID,
     )
     edit_fields["ThumbnailUrl"] = malicious_cover
+    edit_fields["EditVersion"] = extract_hidden_value(edit_body, "EditVersion") or ""
     edit_fields["__RequestVerificationToken"] = edit_token
     edit_save_status, edit_save_url, _ = request(
         opener,
@@ -145,6 +147,8 @@ def main() -> int:
         "F11 failed upload content retained",
         post_id=EXISTING_POST_ID,
     )
+    failed_upload_fields["EditVersion"] = extract_hidden_value(
+        edit_after_body, "EditVersion") or ""
     corrupt_png = b"not-a-real-png"
     failed_upload_status, failed_upload_url, failed_upload_body = post_file(
         opener,

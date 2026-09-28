@@ -105,6 +105,8 @@ task_pg_started=1
 createdb -h 127.0.0.1 -p "$task_pg_port" -U "$task_pg_user" "$task_db"
 psql -h 127.0.0.1 -p "$task_pg_port" -U "$task_pg_user" -d "$task_db" \
     -v ON_ERROR_STOP=1 -f "$task_source/scripts/verification/f01_fixture.sql" >/dev/null
+psql -X -h 127.0.0.1 -p "$task_pg_port" -U "$task_pg_user" -d "$task_db" \
+    -v ON_ERROR_STOP=1 -c 'ALTER TABLE "Posts" ADD COLUMN "EditVersion" bigint NOT NULL DEFAULT 1; ALTER TABLE "Categories" ADD COLUMN "EditVersion" bigint NOT NULL DEFAULT 1;' >/dev/null
 
 if [ "${1:-current}" = current ]; then
     DB_CONNECTION_STRING="Host=127.0.0.1;Port=$task_pg_port;Database=$task_db;Username=$task_pg_user" \

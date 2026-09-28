@@ -53,6 +53,9 @@ public class Post : BaseEntity
     // Default value is 0 and no visitor identity is stored.
     public int ViewCount { get; set; } = 0;
 
+    // Content edits advance this token; visitor counter writes leave it unchanged.
+    public long EditVersion { get; set; } = 1;
+
     // -----------------------------------------------------------------------
     // SCHEDULED PUBLISHING
     // -----------------------------------------------------------------------

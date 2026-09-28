@@ -57,7 +57,9 @@ public interface ICategoryService
         CancellationToken cancellationToken = default);
 
     // Updates only editable category fields; null means the requested row was not found.
-    Task<ContentValidationResult?> UpdateCategoryAsync(int id, string name);
+    Task<ContentValidationResult?> UpdateCategoryAsync(
+        int id, string name, long expectedEditVersion,
+        CancellationToken cancellationToken = default);
 
     // Delete a category by its Id (returns false if category has posts)
     Task<bool> DeleteCategoryAsync(int id);

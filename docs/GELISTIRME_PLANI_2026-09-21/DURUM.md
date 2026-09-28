@@ -1,11 +1,11 @@
 # İlerleme çizelgesi
 
-- **Son kayıt:** 27 Eylül 2026 — F21 atomik okunma sayacı sentetik PostgreSQL'de doğrulandı.
-- **Tamamlanan plan fazı:** 22/58 (F00–F21).
-- **Tamamlanan uygulama kodu fazı:** 20.
+- **Son kayıt:** 28 Eylül 2026 — F22 edit çakışması sentetik PostgreSQL'de doğrulandı.
+- **Tamamlanan plan fazı:** 23/58 (F00–F22).
+- **Tamamlanan uygulama kodu fazı:** 21.
 - **Aktif faz:** Yok.
-- **Sıradaki faz:** F22 — kullanıcı onayı bekleniyor.
-- **Uygulama kodu:** F02–F09 güvenlik fazları tamamlandı. F10 migration zincirini doğruladı. F11–F13 form/içerik güvenliğini tamamladı. F14 kategori update'ini güvenli alanlara daralttı. F15 kategori silmesini DB constraint'i ve yarış yönetimiyle veri kaybına karşı korudu. F16 yayın zamanını açık saat dilimiyle UTC'ye bağladı. F17 public görünürlüğü tek kurala bağladı. F18 tek süreçli liste cache'ini yayın sınırı ve mutation invalidation'ıyla doğruladı. F19 düzenlemede kayıtlı slug'ı korudu. F20 benzersiz slug indekslerini ve geçmiş çakışma göçünü ekledi. F21 yalnızca uygun public GET'leri atomik sayıyor.
+- **Sıradaki faz:** F23 — kullanıcı onayı bekleniyor.
+- **Uygulama kodu:** F02–F09 güvenlik fazları tamamlandı. F10 migration zincirini doğruladı. F11–F13 form/içerik güvenliğini tamamladı. F14 kategori update'ini güvenli alanlara daralttı. F15 kategori silmesini DB constraint'i ve yarış yönetimiyle veri kaybına karşı korudu. F16 yayın zamanını açık saat dilimiyle UTC'ye bağladı. F17 public görünürlüğü tek kurala bağladı. F18 tek süreçli liste cache'ini yayın sınırı ve mutation invalidation'ıyla doğruladı. F19 düzenlemede kayıtlı slug'ı korudu. F20 benzersiz slug indekslerini ve geçmiş çakışma göçünü ekledi. F21 yalnızca uygun public GET'leri atomik sayıyor. F22 eski edit sekmelerinin içerik ezmesini sürüm karşılaştırmasıyla önlüyor.
 
 ## Kullanım
 
@@ -42,7 +42,7 @@
 | [x] | F19 | Düzenlemede kalıcı slug'ı koru | TAMAMLANDI — KOD | [F19 kanıtı](../uygulama-kayitlari/F19-2026-09-27.md) |
 | [x] | F20 | Slug benzersizliği ve çakışma göçü | TAMAMLANDI — KOD | [F20 kanıtı](../uygulama-kayitlari/F20-2026-09-27.md) |
 | [x] | F21 | Okunma sayacını atomik artır | TAMAMLANDI — KOD | [F21 kanıtı](../uygulama-kayitlari/F21-2026-09-27.md) |
-| [ ] | F22 | Eşzamanlı editlerde veri kaybını önle | BAŞLAMADI | — |
+| [x] | F22 | Eşzamanlı editlerde veri kaybını önle | TAMAMLANDI — KOD | [F22 kanıtı](../uygulama-kayitlari/F22-2026-09-28.md) |
 | [ ] | F23 | Hata sayfaları ve HTTP durumlarını düzelt | BAŞLAMADI | — |
 | [ ] | F24 | Repository bağımlılıklarını sözleşmeye taşı | BAŞLAMADI | — |
 | [ ] | F25 | Controller ve Razor'dan DbContext'i çıkar | BAŞLAMADI | — |
@@ -81,11 +81,11 @@
 
 ## Son agent teslimi
 
-- Tamamlanan faz: F21 okunma sayacını atomik artır.
-- Değişen davranış: Yalnızca anonim public detay GET'i sayaç artırır; HEAD ve yönetici sayılmaz. DB yalnız `ViewCount` sütununu yazar; sayaç tekil kişi değildir.
-- Çalıştırılan kontroller ve sonuç: Build 0 uyarı/0 hata. Sentetik PostgreSQL/HTTP'de F21 6/6; 24 paralel GET 24 artış, içerik/yayın yazımı 0. Ayrı koşularda F18 cache, F19/F14 ve F11/F12/F17 regresyonları geçti. [Ayrıntılı kanıt](../uygulama-kayitlari/F21-2026-09-27.md).
-- Doğrulanamayan/engel: Production trafik/veri testi yapılmadı; bot veya tekil ziyaretçi ayrımı yok. F22 edit çakışması ayrı duruyor.
-- Sıradaki tek faz: F22.
-- Kullanıcıdan gereken: F22'yi başlatmak için açık onay.
+- Tamamlanan faz: F22 eşzamanlı editlerde veri kaybını önle.
+- Değişen davranış: Yazı/kategori editlerinde eski sürüm 409 çatışması verir, ilk kayıt ve ikinci sekmenin metni korunur. Sayaç artışı edit sürümünü değiştirmez.
+- Çalıştırılan kontroller ve sonuç: Build 0 uyarı/0 hata. Boş ve F20 şemalı sentetik PostgreSQL migration'ı; iki sekme, paralel yazma ve sayaç ayrımı geçti. F17/F19/F21, F14/F11/F12 regresyonları ve mobil/masaüstü tarayıcı kontrolü geçti. [Ayrıntılı kanıt](../uygulama-kayitlari/F22-2026-09-28.md).
+- Doğrulanamayan/engel: Production yükseltmesi yapılmadı; F34 genel mobil panel ve F31 medya başarısızlığı akışı açık.
+- Sıradaki tek faz: F23.
+- Kullanıcıdan gereken: F23'ü başlatmak için açık onay.
 
 [Ana plan](/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/docs/GELISTIRME_PLANI_2026-09-21/README.md) · [Hazır mesajlar](/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/docs/GELISTIRME_PLANI_2026-09-21/AGENT_PROMPTLARI.md)

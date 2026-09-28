@@ -13,6 +13,7 @@ from dataclasses import dataclass
 from http_probe_support import (
     cookie_opener,
     extract_antiforgery_token,
+    extract_hidden_value,
     has_authentication_cookie,
     request,
     submit_login,
@@ -134,6 +135,7 @@ def main() -> int:
             edit_url,
             data={
                 "Id": str(INACTIVE_CATEGORY_ID),
+                "EditVersion": extract_hidden_value(edit_body, "EditVersion") or "",
                 "Name": updated_name,
                 "Slug": "attacker-controlled-category-slug",
                 "CreatedDate": "2001-01-01T00:00:00Z",

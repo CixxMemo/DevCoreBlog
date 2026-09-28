@@ -13,6 +13,7 @@ import sys
 from http_probe_support import (
     cookie_opener,
     extract_antiforgery_token,
+    extract_hidden_value,
     has_authentication_cookie,
     request,
     submit_login,
@@ -165,9 +166,11 @@ def main() -> int:
     )
     checks["form_identifies_site_time_zone"] = "Europe/Istanbul" in create_page and "Europe/Istanbul" in edit_page
     if edit_token is not None:
+        edit_fields = fields(args.marker, local_time, edit_token, post_id)
+        edit_fields["EditVersion"] = extract_hidden_value(edit_page, "EditVersion") or ""
         update_status, update_url, _ = request(
             opener, edit_url,
-            data=fields(args.marker, local_time, edit_token, post_id),
+            data=edit_fields,
         )
         updated_row = stored_row(args, args.marker)
         checks["edit_roundtrip_preserves_utc"] = (
@@ -187,6 +190,7 @@ def main() -> int:
     old_value = publish_value(old_page)
     if old_status == 200 and old_token and old_value:
         old_fields = fields("F01 Future Post", old_value, old_token, "2002")
+        old_fields["EditVersion"] = extract_hidden_value(old_page, "EditVersion") or ""
         old_fields.update({
             "Content": "F01_FUTURE_VISIBLE_MARKER",
             "Summary": "F01_FUTURE_VISIBLE_MARKER",

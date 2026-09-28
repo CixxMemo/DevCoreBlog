@@ -11,6 +11,8 @@ public sealed class PostFormInput
 {
     public int Id { get; set; }
 
+    public long EditVersion { get; set; }
+
     [Required(ErrorMessage = "Title is required.")]
     [StringLength(
         PostContentRules.MaximumTitleLength,

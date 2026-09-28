@@ -51,5 +51,13 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<Category>()
             .HasIndex(category => category.Slug)
             .IsUnique();
+
+        modelBuilder.Entity<Post>()
+            .Property(post => post.EditVersion)
+            .IsConcurrencyToken();
+
+        modelBuilder.Entity<Category>()
+            .Property(category => category.EditVersion)
+            .IsConcurrencyToken();
     }
 }

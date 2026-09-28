@@ -94,6 +94,12 @@ F21'de sayaç yalnızca anonim public yazı detayına gelen uygun GET isteğinde
 
 **Durum:** F21 kodu ve sentetik PostgreSQL/HTTP eşzamanlılık kontrolüyle doğrulandı.
 
+## D10 — İçerik edit sürümü sayaçtan ayrıdır
+
+F22'de Post ve Category için uygulama tarafından artırılan tek `EditVersion` concurrency token'ı seçildi. Admin edit formu yüklenen sürümü taşır; EF Core kayıtta orijinal sürümü SQL koşulunda kıyaslar. Kaydetme çakışması 409 ile bildirilir, ikinci sekmenin girdisi ekranda kalır. Post `ViewCount` artışı bu sürümü değiştirmez; PostgreSQL `xmin` bu nedenle kullanılmadı. Tam revizyon geçmişi tutulmaz.
+
+**Durum:** F22 kodu, boş/önceki şema migration'ı ve sentetik PostgreSQL/HTTP yarış kontrolüyle doğrulandı.
+
 ## Gerektiğinde alınacak gerçek ürün/ortam bilgileri
 
 Bunlar şimdi topluca sorulmaz. Mevcut kaynaktan doğrulanamıyorsa ilgili fazda sorulur; önceki tercih tekrar sorulmaz.

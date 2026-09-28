@@ -215,7 +215,7 @@ public class AdminPostController : Controller
     [RequestFormLimits(MultipartBodyLengthLimit = ImageUploadPolicy.MaximumRequestBytes)]
     public async Task<IActionResult> Edit(
         int id,
-        [Bind("Id,Title,Content,CategoryId,Summary,Excerpt,IsPublished,IsActive,PublishDate")] PostFormInput input,
+        [Bind("Id,EditVersion,Title,Content,CategoryId,Summary,Excerpt,IsPublished,IsActive,PublishDate")] PostFormInput input,
         IFormFile? thumbnailFile,
         CancellationToken cancellationToken)
     {
@@ -228,6 +228,17 @@ public class AdminPostController : Controller
         var existingPost = await _postService.GetPostByIdAsync(id);
         if (existingPost is null)
             return NotFound();
+
+        if (input.EditVersion <= 0)
+        {
+            ModelState.AddModelError(string.Empty, "Reload this post before saving.");
+        }
+        else if (input.EditVersion != existingPost.EditVersion)
+        {
+            ModelState.AddModelError(string.Empty,
+                "This post changed since you opened it. Your edits are still here. Reload the current post before trying again.");
+            Response.StatusCode = StatusCodes.Status409Conflict;
+        }
 
         var post = MapToPost(input, existingPost.ThumbnailUrl);
         // The browser edits seconds; retain the stored subsecond instant when
@@ -262,8 +273,13 @@ public class AdminPostController : Controller
             // The service preserves the stored slug when editable fields change.
             var updateResult = await _postService.UpdatePostAsync(
                 post,
-                cancellationToken);
+                cancellationToken,
+                input.EditVersion);
             ModelState.AddContentErrors(updateResult);
+            if (updateResult.IsConflict)
+            {
+                Response.StatusCode = StatusCodes.Status409Conflict;
+            }
             if (updateResult.IsValid)
             {
                 return RedirectToAction(nameof(Index));
@@ -398,6 +414,7 @@ public class AdminPostController : Controller
         return new PostFormInput
         {
             Id = post.Id,
+            EditVersion = post.EditVersion,
             Title = post.Title,
             Content = post.Content,
             CategoryId = post.CategoryId,
