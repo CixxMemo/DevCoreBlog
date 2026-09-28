@@ -385,11 +385,9 @@ var app = builder.Build();
 // Global Error Handling Middleware
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
-// In non-development environments, use a generic error handler page
-// and enable HTTP Strict Transport Security (HSTS) for browser security.
+// Enable HTTP Strict Transport Security (HSTS) outside development.
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Home/Error");
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }

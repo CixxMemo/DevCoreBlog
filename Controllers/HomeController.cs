@@ -14,8 +14,6 @@
 //   Controller → Service → Repository → Database
 // =============================================================================
 
-// Import for generating a trace identifier on error pages
-using System.Diagnostics;
 // Import MVC base classes and attributes
 using Microsoft.AspNetCore.Mvc;
 // Import the ErrorViewModel used by the Error action
@@ -248,8 +246,14 @@ public class HomeController : Controller
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult Error()
     {
-        // Use the current Activity's trace ID, or fall back to HttpContext's trace ID.
-        // This helps correlate error reports with server logs.
-        return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        Response.StatusCode = StatusCodes.Status500InternalServerError;
+        return View(new ErrorViewModel { RequestId = HttpContext.TraceIdentifier });
+    }
+
+    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+    public IActionResult NotFoundPage()
+    {
+        Response.StatusCode = StatusCodes.Status404NotFound;
+        return View(new ErrorViewModel { RequestId = HttpContext.TraceIdentifier });
     }
 }

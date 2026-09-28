@@ -1,10 +1,10 @@
 @model ErrorViewModel
 @{
     Layout = "_ErrorLayout";
-    ViewData["Title"] = "Server error";
+    ViewData["Title"] = "Page not found";
 }
-<h1>Something went wrong</h1>
-<p>Please try again later.</p>
+<h1>Page not found</h1>
+<p>The page you requested could not be found.</p>
 @if (Model.ShowRequestId)
 {
     <p class="request-id">Request ID: <code>@Model.RequestId</code></p>

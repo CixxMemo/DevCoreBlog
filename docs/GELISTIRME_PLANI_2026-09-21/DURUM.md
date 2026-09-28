@@ -1,11 +1,11 @@
 # İlerleme çizelgesi
 
-- **Son kayıt:** 28 Eylül 2026 — F22 edit çakışması sentetik PostgreSQL'de doğrulandı.
-- **Tamamlanan plan fazı:** 23/58 (F00–F22).
-- **Tamamlanan uygulama kodu fazı:** 21.
+- **Son kayıt:** 28 Eylül 2026 — F23 hata sayfaları ve HTTP durumları izole HTTP'de doğrulandı.
+- **Tamamlanan plan fazı:** 24/58 (F00–F23).
+- **Tamamlanan uygulama kodu fazı:** 22.
 - **Aktif faz:** Yok.
-- **Sıradaki faz:** F23 — kullanıcı onayı bekleniyor.
-- **Uygulama kodu:** F02–F09 güvenlik fazları tamamlandı. F10 migration zincirini doğruladı. F11–F13 form/içerik güvenliğini tamamladı. F14 kategori update'ini güvenli alanlara daralttı. F15 kategori silmesini DB constraint'i ve yarış yönetimiyle veri kaybına karşı korudu. F16 yayın zamanını açık saat dilimiyle UTC'ye bağladı. F17 public görünürlüğü tek kurala bağladı. F18 tek süreçli liste cache'ini yayın sınırı ve mutation invalidation'ıyla doğruladı. F19 düzenlemede kayıtlı slug'ı korudu. F20 benzersiz slug indekslerini ve geçmiş çakışma göçünü ekledi. F21 yalnızca uygun public GET'leri atomik sayıyor. F22 eski edit sekmelerinin içerik ezmesini sürüm karşılaştırmasıyla önlüyor.
+- **Sıradaki faz:** F24 — kullanıcı onayı bekleniyor.
+- **Uygulama kodu:** F02–F09 güvenlik fazları tamamlandı. F10 migration zincirini doğruladı. F11–F13 form/içerik güvenliğini tamamladı. F14 kategori update'ini güvenli alanlara daralttı. F15 kategori silmesini DB constraint'i ve yarış yönetimiyle veri kaybına karşı korudu. F16 yayın zamanını açık saat dilimiyle UTC'ye bağladı. F17 public görünürlüğü tek kurala bağladı. F18 tek süreçli liste cache'ini yayın sınırı ve mutation invalidation'ıyla doğruladı. F19 düzenlemede kayıtlı slug'ı korudu. F20 benzersiz slug indekslerini ve geçmiş çakışma göçünü ekledi. F21 yalnızca uygun public GET'leri atomik sayıyor. F22 eski edit sekmelerinin içerik ezmesini sürüm karşılaştırmasıyla önlüyor. F23 hata akışında gerçek 404/500 ve JSON durumlarını koruyor.
 
 ## Kullanım
 
@@ -43,7 +43,7 @@
 | [x] | F20 | Slug benzersizliği ve çakışma göçü | TAMAMLANDI — KOD | [F20 kanıtı](../uygulama-kayitlari/F20-2026-09-27.md) |
 | [x] | F21 | Okunma sayacını atomik artır | TAMAMLANDI — KOD | [F21 kanıtı](../uygulama-kayitlari/F21-2026-09-27.md) |
 | [x] | F22 | Eşzamanlı editlerde veri kaybını önle | TAMAMLANDI — KOD | [F22 kanıtı](../uygulama-kayitlari/F22-2026-09-28.md) |
-| [ ] | F23 | Hata sayfaları ve HTTP durumlarını düzelt | BAŞLAMADI | — |
+| [x] | F23 | Hata sayfaları ve HTTP durumlarını düzelt | TAMAMLANDI — KOD | [F23 kanıtı](../uygulama-kayitlari/F23-2026-09-28.md) |
 | [ ] | F24 | Repository bağımlılıklarını sözleşmeye taşı | BAŞLAMADI | — |
 | [ ] | F25 | Controller ve Razor'dan DbContext'i çıkar | BAŞLAMADI | — |
 | [ ] | F26 | Renderer ve Cloudinary bağlantısını DI sınırına al | BAŞLAMADI | — |
@@ -81,11 +81,11 @@
 
 ## Son agent teslimi
 
-- Tamamlanan faz: F22 eşzamanlı editlerde veri kaybını önle.
-- Değişen davranış: Yazı/kategori editlerinde eski sürüm 409 çatışması verir, ilk kayıt ve ikinci sekmenin metni korunur. Sayaç artışı edit sürümünü değiştirmez.
-- Çalıştırılan kontroller ve sonuç: Build 0 uyarı/0 hata. Boş ve F20 şemalı sentetik PostgreSQL migration'ı; iki sekme, paralel yazma ve sayaç ayrımı geçti. F17/F19/F21, F14/F11/F12 regresyonları ve mobil/masaüstü tarayıcı kontrolü geçti. [Ayrıntılı kanıt](../uygulama-kayitlari/F22-2026-09-28.md).
-- Doğrulanamayan/engel: Production yükseltmesi yapılmadı; F34 genel mobil panel ve F31 medya başarısızlığı akışı açık.
-- Sıradaki tek faz: F23.
-- Kullanıcıdan gereken: F23'ü başlatmak için açık onay.
+- Tamamlanan faz: F23 hata sayfaları ve HTTP durumları.
+- Değişen davranış: DB arızası HTML/JSON uçlarında 500, bilinmeyen sayfa 404, bozuk JSON 400 döner; redirect döngüsü yok. Hata görünümü DB'den bağımsızdır.
+- Çalıştırılan kontroller ve sonuç: Build 0 uyarı/0 hata. Kapalı sentetik DB, statik 500 yedeği, F17/F11/F12/F22 regresyonları ve mobil/masaüstü tarayıcı kontrolü geçti. [Ayrıntılı kanıt](../uygulama-kayitlari/F23-2026-09-28.md).
+- Doğrulanamayan/engel: Production proxy ve F51–F52 CSP uyumu ayrı fazlarda doğrulanacak.
+- Sıradaki tek faz: F24.
+- Kullanıcıdan gereken: F24'ü başlatmak için açık onay.
 
 [Ana plan](/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/docs/GELISTIRME_PLANI_2026-09-21/README.md) · [Hazır mesajlar](/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/docs/GELISTIRME_PLANI_2026-09-21/AGENT_PROMPTLARI.md)

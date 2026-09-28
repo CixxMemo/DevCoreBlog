@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] · DevCoreBlog</title>
+    <style>
+        body { margin: 0; background: #fff; color: #171717; font: 1rem/1.6 system-ui, sans-serif; }
+        .error-page { box-sizing: border-box; max-width: 40rem; margin: 12vh auto; padding: 1.5rem; }
+        .brand { font-weight: 700; border-bottom: 2px solid currentColor; padding-bottom: .75rem; }
+        h1 { font-size: clamp(2rem, 6vw, 3rem); line-height: 1.15; }
+        .request-id { overflow-wrap: anywhere; color: #444; }
+        a { display: inline-block; color: #0645ad; padding: .25rem 0; }
+        a:focus-visible { outline: 3px solid #0645ad; outline-offset: 3px; }
+    </style>
+</head>
+<body>
+    <main class="error-page">
+        <p class="brand">DevCoreBlog</p>
+        @RenderBody()
+        <a href="/">Return home</a>
+    </main>
+</body>
+</html>
