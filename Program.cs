@@ -127,6 +127,7 @@ builder.Services.AddScoped<ICategoryRepository>(serviceProvider =>
     serviceProvider.GetRequiredService<CategoryRepository>());
 builder.Services.AddScoped<IActiveCategoryLookup>(serviceProvider =>
     serviceProvider.GetRequiredService<CategoryRepository>());
+builder.Services.AddScoped<IAdminDashboardReadRepository, AdminDashboardReadRepository>();
 
 // ---------------------------------------------------------------------------
 // SERVICE LAYER REGISTRATION (Business Logic)
@@ -140,6 +141,7 @@ builder.Services.AddScoped<IPostService>(serviceProvider =>
 builder.Services.AddScoped<IPublicationSchedule>(serviceProvider =>
     serviceProvider.GetRequiredService<PostService>());
 builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<IAdminDashboardService, AdminDashboardService>();
 builder.Services.AddScoped<IImageService, ImageService>();
 builder.Services.AddSingleton<ImageUploadPolicy>();
 builder.Services.AddSingleton<CloudinaryImageUploadRequestFactory>();

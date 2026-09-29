@@ -12,6 +12,10 @@ task_app_port=${DEVCORE_F17_APP_PORT:-15161}
 task_pg_user=$(id -un)
 task_db=devcoreblog_f01_test
 task_admin_password=f17-isolated-password
+task_ef_command_log_level=Warning
+if [ "${DEVCORE_F25_PROBE:-0}" = 1 ]; then
+    task_ef_command_log_level=Information
+fi
 task_app_pid=
 task_pg_started=0
 
@@ -127,6 +131,7 @@ fi
         ADMIN_USERNAME=f17-admin ADMIN_PASSWORD_HASH="$task_admin_password_hash" \
         CLOUDINARY_CLOUD_NAME=f17-cloud CLOUDINARY_API_KEY=f17-key \
         CLOUDINARY_API_SECRET=f17-secret WEBHOOK_API_SECRET=f17-webhook \
+        "Logging__LogLevel__Microsoft.EntityFrameworkCore.Database.Command=$task_ef_command_log_level" \
         dotnet run --no-build --project DevCoreBlog.csproj \
         --urls "http://127.0.0.1:$task_app_port" > "$task_tmp/application.log" 2>&1
 ) &
@@ -136,6 +141,15 @@ DEVCORE_TEST_ADMIN_USERNAME=f17-admin \
 DEVCORE_TEST_ADMIN_PASSWORD="$task_admin_password" \
 python3 "$task_source/scripts/verification/f17_visibility_probe.py" \
     --base-url "http://127.0.0.1:$task_app_port"
+
+if [ "${DEVCORE_F25_PROBE:-0}" = 1 ]; then
+    DEVCORE_TEST_ADMIN_USERNAME=f17-admin \
+    DEVCORE_TEST_ADMIN_PASSWORD="$task_admin_password" \
+    python3 "$task_source/scripts/verification/f25_dashboard_probe.py" \
+        --base-url "http://127.0.0.1:$task_app_port" \
+        --application-log "$task_tmp/application.log" \
+        --pg-port "$task_pg_port" --pg-user "$task_pg_user"
+fi
 
 if [ "${DEVCORE_F18_PROBE:-0}" = 1 ]; then
     DEVCORE_TEST_ADMIN_USERNAME=f17-admin \

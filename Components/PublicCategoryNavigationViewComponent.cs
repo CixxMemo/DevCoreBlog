@@ -13,6 +13,9 @@ public sealed class PublicCategoryNavigationViewComponent : ViewComponent
         _categories = categories;
     }
 
-    public async Task<IViewComponentResult> InvokeAsync() =>
-        View(await _categories.GetActiveCategoriesAsync());
+    public async Task<IViewComponentResult> InvokeAsync(bool featured = false)
+    {
+        var categories = await _categories.GetActiveCategoriesAsync();
+        return View(featured ? "Featured" : "Default", categories.ToList());
+    }
 }

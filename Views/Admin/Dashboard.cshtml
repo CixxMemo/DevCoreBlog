@@ -9,20 +9,13 @@
 @*   4. System & Integration Health Status Panel                                *@
 @* ============================================================================= *@
 
-@using DevCoreBlog.Core.Entities
+@model DevCoreBlog.Services.Models.AdminDashboardSnapshot
 
 @{
     ViewData["Title"] = "Command Dashboard";
 
-    // Safely cast ViewBag data with fallbacks
-    var totalPosts = (int)(ViewBag.TotalPosts ?? 0);
-    var publishedPosts = (int)(ViewBag.PublishedPosts ?? 0);
-    var draftPosts = (int)(ViewBag.DraftPosts ?? 0);
-    var totalViews = (int)(ViewBag.TotalViews ?? 0);
-    var categoryCount = (int)(ViewBag.CategoryCount ?? 0);
-    var topPosts = ViewBag.TopPosts as List<Post> ?? new List<Post>();
-    var environmentName = (string)(ViewBag.EnvironmentName ?? "Production");
-    var isDbConnected = (bool)(ViewBag.IsDatabaseConnected ?? true);
+    var topPosts = Model.TopPosts;
+    var environmentName = (string)(ViewData["EnvironmentName"] ?? "Production");
 }
 
 <div class="space-y-8">
@@ -66,7 +59,7 @@
                 Total Posts
             </div>
             <div class="text-3xl md:text-4xl font-black text-black my-2">
-                @totalPosts
+                @Model.TotalPosts
             </div>
             <div class="font-mono text-[10px] text-neutral-600 border-t border-neutral-200 pt-2 flex items-center justify-between">
                 <span>ALL TIME</span>
@@ -81,7 +74,7 @@
                 <span>Published</span>
             </div>
             <div class="text-3xl md:text-4xl font-black text-black my-2">
-                @publishedPosts
+                @Model.PublishedPosts
             </div>
             <div class="font-mono text-[10px] text-neutral-600 border-t border-neutral-200 pt-2">
                 LIVE ON BLOG
@@ -95,7 +88,7 @@
                 <span>Drafts</span>
             </div>
             <div class="text-3xl md:text-4xl font-black text-black my-2">
-                @draftPosts
+                @Model.DraftPosts
             </div>
             <div class="font-mono text-[10px] text-neutral-600 border-t border-neutral-200 pt-2">
                 UNPUBLISHED
@@ -108,7 +101,7 @@
                 Total Views
             </div>
             <div class="text-3xl md:text-4xl font-black text-black my-2">
-                @totalViews.ToString("N0")
+                @Model.TotalViews.ToString("N0")
             </div>
             <div class="font-mono text-[10px] text-neutral-600 border-t border-neutral-200 pt-2">
                 ARTICLE READS
@@ -121,7 +114,7 @@
                 Categories
             </div>
             <div class="text-3xl md:text-4xl font-black text-black my-2">
-                @categoryCount
+                @Model.CategoryCount
             </div>
             <div class="font-mono text-[10px] text-neutral-600 border-t border-neutral-200 pt-2 flex items-center justify-between">
                 <span>ACTIVE TOPICS</span>
@@ -153,7 +146,7 @@
                 </div>
 
                 @* Table of Top Posts *@
-                @if (topPosts.Any())
+                @if (topPosts.Count > 0)
                 {
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse font-sans text-xs">
@@ -191,7 +184,7 @@
                                         @* Category Badge *@
                                         <td class="p-3 whitespace-nowrap">
                                             <span class="border border-black bg-neutral-100 px-2 py-0.5 font-mono text-[10px] font-bold uppercase">
-                                                @(post.Category?.Name ?? "Uncategorized")
+                                                @post.CategoryName
                                             </span>
                                         </td>
 
@@ -294,9 +287,9 @@
             @* DB Health *@
             <div class="border border-black bg-neutral-50 p-3 font-mono text-xs flex items-center justify-between">
                 <span class="text-neutral-600 font-bold uppercase">Database:</span>
-                <span class="flex items-center gap-1.5 font-bold @(isDbConnected ? "text-emerald-700" : "text-rose-700")">
-                    <span class="w-2 h-2 @(isDbConnected ? "bg-emerald-500" : "bg-rose-500") inline-block"></span>
-                    @(isDbConnected ? "Connected (PostgreSQL)" : "Disconnected")
+                <span class="flex items-center gap-1.5 font-bold text-emerald-700">
+                    <span class="w-2 h-2 bg-emerald-500 inline-block"></span>
+                    Connected (PostgreSQL)
                 </span>
             </div>
 

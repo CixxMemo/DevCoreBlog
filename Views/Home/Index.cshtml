@@ -375,32 +375,8 @@
         </div>
     </div>
 
-    @* --- Widget 4: Featured Topics / Tags --- *@
-    <div class="bg-white dark:bg-[#121215] border-2 border-gray-900 dark:border-zinc-700 rounded-none p-4">
-        <div class="flex items-center gap-2 border-b-2 border-gray-900 dark:border-zinc-700 pb-2 mb-3">
-            <span class="w-2 h-2 bg-gray-900 dark:bg-zinc-200 inline-block"></span>
-            <h3 class="font-mono font-bold text-xs uppercase tracking-wider text-gray-900 dark:text-zinc-100 m-0">
-                Featured Topics
-            </h3>
-        </div>
-        <div class="flex flex-wrap gap-1.5">
-            <a href="/kategori/vibe-coding" class="bg-gray-100 dark:bg-zinc-800 hover:bg-gray-900 hover:text-white dark:hover:bg-primary dark:hover:text-white border border-gray-300 dark:border-zinc-700 text-gray-800 dark:text-zinc-200 text-[10px] font-mono font-bold px-2 py-1 no-underline transition-none">
-                #VibeCoding
-            </a>
-            <a href="/kategori/ai" class="bg-gray-100 dark:bg-zinc-800 hover:bg-gray-900 hover:text-white dark:hover:bg-primary dark:hover:text-white border border-gray-300 dark:border-zinc-700 text-gray-800 dark:text-zinc-200 text-[10px] font-mono font-bold px-2 py-1 no-underline transition-none">
-                #AI
-            </a>
-            <a href="/kategori/felsefe" class="bg-gray-100 dark:bg-zinc-800 hover:bg-gray-900 hover:text-white dark:hover:bg-primary dark:hover:text-white border border-gray-300 dark:border-zinc-700 text-gray-800 dark:text-zinc-200 text-[10px] font-mono font-bold px-2 py-1 no-underline transition-none">
-                #Philosophy
-            </a>
-            <a href="/kategori/haberler" class="bg-gray-100 dark:bg-zinc-800 hover:bg-gray-900 hover:text-white dark:hover:bg-primary dark:hover:text-white border border-gray-300 dark:border-zinc-700 text-gray-800 dark:text-zinc-200 text-[10px] font-mono font-bold px-2 py-1 no-underline transition-none">
-                #News
-            </a>
-            <a href="/kategori/kesfet" class="bg-gray-100 dark:bg-zinc-800 hover:bg-gray-900 hover:text-white dark:hover:bg-primary dark:hover:text-white border border-gray-300 dark:border-zinc-700 text-gray-800 dark:text-zinc-200 text-[10px] font-mono font-bold px-2 py-1 no-underline transition-none">
-                #Discover
-            </a>
-        </div>
-    </div>
+    @* --- Widget 4: Active topics --- *@
+    @await Component.InvokeAsync("PublicCategoryNavigation", new { featured = true })
 
 </aside>
 
