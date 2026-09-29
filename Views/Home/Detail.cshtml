@@ -3,13 +3,13 @@
 @* ============================================================================= *@
 
 @using DevCoreBlog.Core.Entities
-@using DevCoreBlog.Core.Shared.Helpers
 @model Post
+@inject DevCoreBlog.Services.Interfaces.ISafeMarkdownRenderer MarkdownRenderer
 
 @{
     ViewData["Title"] = Model.Title;
     ViewData["TerminalPath"] = $"posts/{Model.Slug}";
-    var safePostContent = MarkdownHelper.ToSafeHtml(Model.Content);
+    var safePostContent = MarkdownRenderer.ToSafeHtml(Model.Content);
 }
 
 <article class="max-w-4xl mx-auto w-full">

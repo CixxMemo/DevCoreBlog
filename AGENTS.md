@@ -46,7 +46,7 @@ wwwroot/                          Statik CSS/JS/medya
 docs/                             Plan, karar, kanıt ve tarihsel arşiv
 ```
 
-**Hedef referans yönü:** Data → Core; Services → Core; Web → Services/Core ve yalnızca composition root/DI kaydı için Data. Services/Data birbirine döngüsel bağımlı olamaz. Core Web/EF/Cloudinary/Markdig gibi sunum veya sağlayıcı detaylarına bağımlı olamaz. Mevcut Services → Data bağımlılığı F24'te, Core → Markdig bağımlılığı F26'da kaldırılacak teknik borçtur; yeni kod bu borcu genişletmez.
+**Hedef referans yönü:** Data → Core; Services → Core; Web → Services/Core ve yalnızca composition root/DI kaydı için Data. Services/Data birbirine döngüsel bağımlı olamaz. Core Web/EF/Cloudinary/Markdig gibi sunum veya sağlayıcı detaylarına bağımlı olamaz. Services → Data bağımlılığı F24'te, Core → Markdig bağımlılığı F26'da kaldırıldı; yeni kod bu sınırları yeniden ihlal etmez.
 
 - Controller: HTTP binding, authorization, validation sonucunu çevirme, servis çağrısı, response. İş kuralı, SQL/EF sorgusu, vendor istemci kurulumu ve HTML sanitization burada yığılmaz.
 - Razor/JS: gösterim ve etkileşim. View içine DbContext/repository veya güvenlik/yayın kararı koymak yasaktır. Veri gereken layout için servis kullanan ViewComponent uygundur.

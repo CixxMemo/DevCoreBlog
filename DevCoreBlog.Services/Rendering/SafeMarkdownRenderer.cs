@@ -5,20 +5,21 @@ using Markdig.Renderers;
 using Markdig.Renderers.Html;
 using Markdig.Renderers.Html.Inlines;
 using Markdig.Syntax.Inlines;
+using DevCoreBlog.Services.Interfaces;
 
-namespace DevCoreBlog.Core.Shared.Helpers;
+namespace DevCoreBlog.Services.Rendering;
 
 /// <summary>
 /// Converts the blog's supported Markdown subset into HTML at the public render boundary.
 /// </summary>
-public static class MarkdownHelper
+public sealed class SafeMarkdownRenderer : ISafeMarkdownRenderer
 {
     private static readonly MarkdownPipeline SafePipeline = CreatePipeline();
 
     /// <summary>
     /// Renders Markdown with raw HTML disabled and all link targets validated.
     /// </summary>
-    public static string ToSafeHtml(string? markdown)
+    public string ToSafeHtml(string? markdown)
     {
         return string.IsNullOrWhiteSpace(markdown)
             ? string.Empty

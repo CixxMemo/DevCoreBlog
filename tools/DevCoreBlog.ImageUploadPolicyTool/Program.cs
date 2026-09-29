@@ -1,3 +1,6 @@
+using System.Reflection;
+using CloudinaryDotNet;
+using CloudinaryDotNet.Actions;
 using DevCoreBlog.Services;
 using DevCoreBlog.Services.Images;
 using Microsoft.AspNetCore.Http;
@@ -65,6 +68,15 @@ var guardedService = new ImageService(
     NullLogger<ImageService>.Instance);
 var guardedUpload = await guardedService.UploadImageAsync(validPng);
 
+var uploadClient = DispatchProxy.Create<ICloudinaryUploadApi, FailingCloudinaryUploadProxy>();
+var uploadProxy = (FailingCloudinaryUploadProxy)(object)uploadClient;
+var providerStorage = new CloudinaryImageStorage(
+    uploadClient,
+    new CloudinaryImageUploadRequestFactory(),
+    NullLogger<CloudinaryImageStorage>.Instance);
+var providerUpload = await providerStorage.UploadAsync(
+    new MemoryStream(pngBytes, writable: false), "png");
+
 var checks = new Dictionary<string, bool>
 {
     ["missing_file_is_rejected"] =
@@ -111,7 +123,9 @@ var checks = new Dictionary<string, bool>
     ["unsafe_storage_metadata_is_rejected"] =
         oversizedStorageResult.CallCount == 1 &&
         !guardedUpload.Succeeded &&
-        guardedUpload.FailureKind == ImageUploadFailureKind.StorageUnavailable
+        guardedUpload.FailureKind == ImageUploadFailureKind.StorageUnavailable,
+    ["upload_client_is_replaceable_without_network"] =
+        uploadProxy.CallCount == 1 && !providerUpload.Succeeded
 };
 
 foreach (var check in checks)
@@ -149,5 +163,24 @@ internal sealed class StubImageStorage : IImageStorage
     {
         CallCount++;
         return Task.FromResult(_outcome);
+    }
+}
+
+/// <summary>Records SDK calls without contacting the image provider.</summary>
+public class FailingCloudinaryUploadProxy : DispatchProxy
+{
+    public int CallCount { get; private set; }
+
+    protected override object? Invoke(MethodInfo? targetMethod, object?[]? args)
+    {
+        if (targetMethod?.Name != "UploadAsync" ||
+            targetMethod.ReturnType != typeof(Task<ImageUploadResult>))
+        {
+            throw new NotSupportedException("Unexpected image upload SDK call.");
+        }
+
+        CallCount++;
+        return Task.FromException<ImageUploadResult>(
+            new InvalidOperationException("Synthetic provider failure."));
     }
 }

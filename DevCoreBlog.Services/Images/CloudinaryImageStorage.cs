@@ -3,32 +3,21 @@ using Microsoft.Extensions.Logging;
 
 namespace DevCoreBlog.Services.Images;
 
+/// <summary>Uploads validated image streams through the injected Cloudinary client.</summary>
 public sealed class CloudinaryImageStorage : IImageStorage
 {
-    private readonly Cloudinary _cloudinary;
+    private readonly ICloudinaryUploadApi _cloudinary;
     private readonly CloudinaryImageUploadRequestFactory _requestFactory;
     private readonly ILogger<CloudinaryImageStorage> _logger;
 
     public CloudinaryImageStorage(
+        ICloudinaryUploadApi cloudinary,
         CloudinaryImageUploadRequestFactory requestFactory,
         ILogger<CloudinaryImageStorage> logger)
     {
-        var cloudName = Environment.GetEnvironmentVariable("CLOUDINARY_CLOUD_NAME");
-        var apiKey = Environment.GetEnvironmentVariable("CLOUDINARY_API_KEY");
-        var apiSecret = Environment.GetEnvironmentVariable("CLOUDINARY_API_SECRET");
-
-        if (string.IsNullOrWhiteSpace(cloudName) ||
-            string.IsNullOrWhiteSpace(apiKey) ||
-            string.IsNullOrWhiteSpace(apiSecret))
-        {
-            throw new InvalidOperationException(
-                "Cloudinary credentials are required for image storage.");
-        }
-
+        _cloudinary = cloudinary;
         _requestFactory = requestFactory;
         _logger = logger;
-        _cloudinary = new Cloudinary(new Account(cloudName, apiKey, apiSecret));
-        _cloudinary.Api.Secure = true;
     }
 
     public async Task<ImageStorageOutcome> UploadAsync(

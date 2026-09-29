@@ -21,6 +21,8 @@ using DevCoreBlog.Services.Interfaces;
 using DevCoreBlog.Services.Security;
 using DevCoreBlog.Services.Images;
 using DevCoreBlog.Services.Publishing;
+using DevCoreBlog.Services.Rendering;
+using CloudinaryDotNet;
 // Import Middlewares
 using DevCoreBlog.Middlewares;
 // Import validated application configuration models
@@ -142,9 +144,24 @@ builder.Services.AddScoped<IPublicationSchedule>(serviceProvider =>
     serviceProvider.GetRequiredService<PostService>());
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IAdminDashboardService, AdminDashboardService>();
+builder.Services.AddSingleton<ISafeMarkdownRenderer, SafeMarkdownRenderer>();
 builder.Services.AddScoped<IImageService, ImageService>();
 builder.Services.AddSingleton<ImageUploadPolicy>();
 builder.Services.AddSingleton<CloudinaryImageUploadRequestFactory>();
+var cloudinaryCloudName = Environment.GetEnvironmentVariable("CLOUDINARY_CLOUD_NAME");
+var cloudinaryApiKey = Environment.GetEnvironmentVariable("CLOUDINARY_API_KEY");
+var cloudinaryApiSecret = Environment.GetEnvironmentVariable("CLOUDINARY_API_SECRET");
+if (string.IsNullOrWhiteSpace(cloudinaryCloudName) ||
+    string.IsNullOrWhiteSpace(cloudinaryApiKey) ||
+    string.IsNullOrWhiteSpace(cloudinaryApiSecret))
+{
+    throw new InvalidOperationException("Cloudinary credentials are required for image storage.");
+}
+
+var cloudinary = new Cloudinary(new Account(
+    cloudinaryCloudName, cloudinaryApiKey, cloudinaryApiSecret));
+cloudinary.Api.Secure = true;
+builder.Services.AddSingleton<ICloudinaryUploadApi>(cloudinary);
 builder.Services.AddScoped<IImageStorage, CloudinaryImageStorage>();
 builder.Services.AddSingleton<IAdminPasswordVerifier, Pbkdf2PasswordHasher>();
 
