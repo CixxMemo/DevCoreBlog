@@ -1,59 +1,27 @@
-// =============================================================================
-// PostService.cs — Post Business Logic Layer
-// =============================================================================
-// This class implements IPostService and contains all business logic for blog posts.
-// It sits between the Controller and the Repository layer.
-//
-// What is the Service Layer?
-//   - The Service layer contains business logic (rules, validations, transformations).
-//   - It coordinates between the Controller and the Repository.
-//   - Example flow:
-//     1. Controller receives a request (e.g., "Create a new post")
-//     2. Controller calls PostService.CreatePostAsync(post)
-//     3. PostService applies business rules (generate slug, set date)
-//     4. PostService calls PostRepository.AddAsync(post) to save to database
-//     5. PostService calls PostRepository.SaveChangesAsync() to commit
-//     6. Controller receives the result and returns a view/redirect
-//
-// Why not put business logic in the Controller?
-//   - Controllers should only handle HTTP concerns (requests, responses, routing).
-//   - Business logic should be in Services for:
-//     1. Reusability — Multiple controllers can use the same service
-//     2. Testability — Services can be unit tested without HTTP context
-//     3. Separation of Concerns — Each layer has one responsibility
-//
-// Business Rules in PostService:
-//   - Slug is auto-generated from Title (using SlugGenerator)
-//   - CreatedDate is set from TimeProvider in UTC on creation
-//   - Existing slugs stay stable when a title changes
-// =============================================================================
-
 using DevCoreBlog.Core.Entities;
 using DevCoreBlog.Core.Interfaces;
 using DevCoreBlog.Core.Shared.Helpers;
 using DevCoreBlog.Core.Validation;
-using DevCoreBlog.Data.Repositories;
 using DevCoreBlog.Services.Interfaces;
 using DevCoreBlog.Services.Publishing;
 
 namespace DevCoreBlog.Services;
 
-// Service class for Post-related business logic
-// Implements IPostService interface
+/// <summary>Coordinates post validation, publication rules and persistence contracts.</summary>
 public class PostService : IPostService, IPublicationSchedule
 {
     private const int MaximumSlugAttempts = 100;
-    // Private readonly field to hold the injected PostRepository
-    private readonly PostRepository _postRepository;
+    // Post use cases depend on the domain persistence contract.
+    private readonly IPostRepository _postRepository;
     private readonly IActiveCategoryLookup _activeCategoryLookup;
     private readonly PublicationTimeZone _publicationTimeZone;
     private readonly TimeProvider _timeProvider;
     private readonly PublicListCacheInvalidator _publicListCache;
 
-    // Constructor receives PostRepository via dependency injection
+    // Constructor receives the repository contract via dependency injection
     // The DI container (configured in Program.cs) provides the instance
     public PostService(
-        PostRepository postRepository,
+        IPostRepository postRepository,
         IActiveCategoryLookup activeCategoryLookup,
         PublicationTimeZone publicationTimeZone,
         TimeProvider timeProvider,
@@ -109,7 +77,7 @@ public class PostService : IPostService, IPublicationSchedule
         return await _postRepository.SearchPostsAsync(query, _timeProvider.GetUtcNow().UtcDateTime);
     }
 
-    // Keep public data uncached until F18 defines safe invalidation and expiry.
+    // The repository applies visibility before the output-cache policy stores this list.
     public async Task<(IEnumerable<Post> Posts, int TotalCount)> GetPublishedPostsPagedAsync(int page, int pageSize)
     {
         return await _postRepository.GetPublishedPostsPagedAsync(
@@ -284,8 +252,7 @@ public class PostService : IPostService, IPublicationSchedule
         existingPost.EditVersion = checked(loadedVersion + 1);
 
         if (!await _postRepository.TrySaveVersionedEditAsync(
-                existingPost, saved => saved.EditVersion,
-                loadedVersion, cancellationToken))
+                existingPost, loadedVersion, cancellationToken))
         {
             return ContentValidationResult.Conflict(
                 "This post changed since you opened it. Your edits are still here. Reload the current post before trying again.");

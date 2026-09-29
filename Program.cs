@@ -121,6 +121,10 @@ builder.Services
 // the same DbContext instance within that request.
 builder.Services.AddScoped<PostRepository>();
 builder.Services.AddScoped<CategoryRepository>();
+builder.Services.AddScoped<IPostRepository>(serviceProvider =>
+    serviceProvider.GetRequiredService<PostRepository>());
+builder.Services.AddScoped<ICategoryRepository>(serviceProvider =>
+    serviceProvider.GetRequiredService<CategoryRepository>());
 builder.Services.AddScoped<IActiveCategoryLookup>(serviceProvider =>
     serviceProvider.GetRequiredService<CategoryRepository>());
 

@@ -29,7 +29,7 @@ namespace DevCoreBlog.Data.Repositories;
 
 // CategoryRepository extends GenericRepository<Category>
 // T is replaced with Category, so all methods work with Category entities
-public class CategoryRepository : GenericRepository<Category>, IActiveCategoryLookup
+public class CategoryRepository : GenericRepository<Category>, ICategoryRepository, IActiveCategoryLookup
 {
     private const string PostsCategoryForeignKey = "FK_Posts_Categories_CategoryId";
     private const string SlugIndex = "IX_Categories_Slug";
@@ -42,6 +42,12 @@ public class CategoryRepository : GenericRepository<Category>, IActiveCategoryLo
     {
         _logger = logger;
     }
+
+    /// <summary>Persists one edit only when its loaded content version still matches.</summary>
+    public Task<bool> TrySaveVersionedEditAsync(
+        Category category, long expectedVersion, CancellationToken cancellationToken = default) =>
+        base.TrySaveVersionedEditAsync(
+            category, saved => saved.EditVersion, expectedVersion, cancellationToken);
 
     /// <summary>Checks a candidate before insert; the unique index resolves races.</summary>
     public Task<bool> SlugExistsAsync(string slug, CancellationToken cancellationToken) =>

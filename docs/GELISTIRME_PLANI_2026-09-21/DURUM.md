@@ -1,11 +1,11 @@
 # İlerleme çizelgesi
 
-- **Son kayıt:** 28 Eylül 2026 — F23 hata sayfaları ve HTTP durumları izole HTTP'de doğrulandı.
-- **Tamamlanan plan fazı:** 24/58 (F00–F23).
-- **Tamamlanan uygulama kodu fazı:** 22.
+- **Son kayıt:** 28 Eylül 2026 — F24 repository sözleşmeleri ve bağımlılık yönü doğrulandı.
+- **Tamamlanan plan fazı:** 25/58 (F00–F24).
+- **Tamamlanan uygulama kodu fazı:** 23.
 - **Aktif faz:** Yok.
-- **Sıradaki faz:** F24 — kullanıcı onayı bekleniyor.
-- **Uygulama kodu:** F02–F09 güvenlik fazları tamamlandı. F10 migration zincirini doğruladı. F11–F13 form/içerik güvenliğini tamamladı. F14 kategori update'ini güvenli alanlara daralttı. F15 kategori silmesini DB constraint'i ve yarış yönetimiyle veri kaybına karşı korudu. F16 yayın zamanını açık saat dilimiyle UTC'ye bağladı. F17 public görünürlüğü tek kurala bağladı. F18 tek süreçli liste cache'ini yayın sınırı ve mutation invalidation'ıyla doğruladı. F19 düzenlemede kayıtlı slug'ı korudu. F20 benzersiz slug indekslerini ve geçmiş çakışma göçünü ekledi. F21 yalnızca uygun public GET'leri atomik sayıyor. F22 eski edit sekmelerinin içerik ezmesini sürüm karşılaştırmasıyla önlüyor. F23 hata akışında gerçek 404/500 ve JSON durumlarını koruyor.
+- **Sıradaki faz:** F25 — kullanıcı onayı bekleniyor.
+- **Uygulama kodu:** F02–F09 güvenlik fazları tamamlandı. F10 migration zincirini doğruladı. F11–F13 form/içerik güvenliğini tamamladı. F14 kategori update'ini güvenli alanlara daralttı. F15 kategori silmesini DB constraint'i ve yarış yönetimiyle veri kaybına karşı korudu. F16 yayın zamanını açık saat dilimiyle UTC'ye bağladı. F17 public görünürlüğü tek kurala bağladı. F18 tek süreçli liste cache'ini yayın sınırı ve mutation invalidation'ıyla doğruladı. F19 düzenlemede kayıtlı slug'ı korudu. F20 benzersiz slug indekslerini ve geçmiş çakışma göçünü ekledi. F21 yalnızca uygun public GET'leri atomik sayıyor. F22 eski edit sekmelerinin içerik ezmesini sürüm karşılaştırmasıyla önlüyor. F23 hata akışında gerçek 404/500 ve JSON durumlarını koruyor. F24 servislerin somut Data repository bağımlılığını Core sözleşmelerine taşıdı.
 
 ## Kullanım
 
@@ -44,7 +44,7 @@
 | [x] | F21 | Okunma sayacını atomik artır | TAMAMLANDI — KOD | [F21 kanıtı](../uygulama-kayitlari/F21-2026-09-27.md) |
 | [x] | F22 | Eşzamanlı editlerde veri kaybını önle | TAMAMLANDI — KOD | [F22 kanıtı](../uygulama-kayitlari/F22-2026-09-28.md) |
 | [x] | F23 | Hata sayfaları ve HTTP durumlarını düzelt | TAMAMLANDI — KOD | [F23 kanıtı](../uygulama-kayitlari/F23-2026-09-28.md) |
-| [ ] | F24 | Repository bağımlılıklarını sözleşmeye taşı | BAŞLAMADI | — |
+| [x] | F24 | Repository bağımlılıklarını sözleşmeye taşı | TAMAMLANDI — KOD | [F24 kanıtı](../uygulama-kayitlari/F24-2026-09-28.md) |
 | [ ] | F25 | Controller ve Razor'dan DbContext'i çıkar | BAŞLAMADI | — |
 | [ ] | F26 | Renderer ve Cloudinary bağlantısını DI sınırına al | BAŞLAMADI | — |
 | [ ] | F27 | Webhook kabul sözleşmesini sadeleştir | BAŞLAMADI | — |
@@ -81,11 +81,11 @@
 
 ## Son agent teslimi
 
-- Tamamlanan faz: F23 hata sayfaları ve HTTP durumları.
-- Değişen davranış: DB arızası HTML/JSON uçlarında 500, bilinmeyen sayfa 404, bozuk JSON 400 döner; redirect döngüsü yok. Hata görünümü DB'den bağımsızdır.
-- Çalıştırılan kontroller ve sonuç: Build 0 uyarı/0 hata. Kapalı sentetik DB, statik 500 yedeği, F17/F11/F12/F22 regresyonları ve mobil/masaüstü tarayıcı kontrolü geçti. [Ayrıntılı kanıt](../uygulama-kayitlari/F23-2026-09-28.md).
-- Doğrulanamayan/engel: Production proxy ve F51–F52 CSP uyumu ayrı fazlarda doğrulanacak.
-- Sıradaki tek faz: F24.
-- Kullanıcıdan gereken: F24'ü başlatmak için açık onay.
+- Tamamlanan faz: F24 repository bağımlılıklarını sözleşmeye taşı.
+- Değişen davranış: Uygulama davranışı korunurken servisler iki Core repository sözleşmesine bağlandı; Services→Data proje referansı kaldırıldı.
+- Çalıştırılan kontroller ve sonuç: Build 0 uyarı/0 hata; F17/F19/F14/F11/F12, F15 silme yarışı, F21 sayaç ve F22 edit çakışması sentetik PostgreSQL'de geçti. [Ayrıntılı kanıt](../uygulama-kayitlari/F24-2026-09-28.md).
+- Doğrulanamayan/engel: Eski geniş F01 koşucusu güncel olmayan F10 migration beklentisinde durdu; F24 ile ilgili davranışlar güncel ayrı problarla geçti. Production verisi kullanılmadı.
+- Sıradaki tek faz: F25.
+- Kullanıcıdan gereken: F25'i başlatmak için açık onay.
 
 [Ana plan](/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/docs/GELISTIRME_PLANI_2026-09-21/README.md) · [Hazır mesajlar](/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/docs/GELISTIRME_PLANI_2026-09-21/AGENT_PROMPTLARI.md)

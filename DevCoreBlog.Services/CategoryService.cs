@@ -1,55 +1,24 @@
-// =============================================================================
-// CategoryService.cs — Category Business Logic Layer
-// =============================================================================
-// This class implements ICategoryService and contains all business logic for
-// blog categories. It sits between the Controller and the Repository layer.
-//
-// What is the Service Layer?
-//   - The Service layer contains business logic (rules, validations, transformations).
-//   - It coordinates between the Controller and the Repository.
-//   - Example flow:
-//     1. Controller receives a request (e.g., "Delete a category")
-//     2. Controller calls CategoryService.DeleteCategoryAsync(id)
-//     3. CategoryService checks business rules (does category have posts?)
-//     4. If allowed, CategoryService calls CategoryRepository.DeleteAsync(category)
-//     5. CategoryService calls CategoryRepository.SaveChangesAsync() to commit
-//     6. Controller receives the result and returns a view/redirect
-//
-// Why not put business logic in the Controller?
-//   - Controllers should only handle HTTP concerns (requests, responses, routing).
-//   - Business logic should be in Services for:
-//     1. Reusability — Multiple controllers can use the same service
-//     2. Testability — Services can be unit tested without HTTP context
-//     3. Separation of Concerns — Each layer has one responsibility
-//
-// Business Rules in CategoryService:
-//   - Slug is auto-generated from Name (using SlugGenerator)
-//   - Existing slugs stay stable when a name changes
-//   - Categories with posts cannot be deleted (relationship protection)
-// =============================================================================
-
 using DevCoreBlog.Core.Entities;
+using DevCoreBlog.Core.Interfaces;
 using DevCoreBlog.Core.Shared.Helpers;
 using DevCoreBlog.Core.Validation;
-using DevCoreBlog.Data.Repositories;
 using DevCoreBlog.Services.Interfaces;
 using DevCoreBlog.Services.Publishing;
 
 namespace DevCoreBlog.Services;
 
-// Service class for Category-related business logic
-// Implements ICategoryService interface
+/// <summary>Coordinates category validation and safe writes through domain contracts.</summary>
 public class CategoryService : ICategoryService
 {
     private const int MaximumSlugAttempts = 100;
-    // Private readonly field to hold the injected CategoryRepository
-    private readonly CategoryRepository _categoryRepository;
+    // Category use cases depend on the domain persistence contract.
+    private readonly ICategoryRepository _categoryRepository;
     private readonly PublicListCacheInvalidator _publicListCache;
 
-    // Constructor receives CategoryRepository via dependency injection
+    // Constructor receives the repository contract via dependency injection
     // The DI container (configured in Program.cs) provides the instance
     public CategoryService(
-        CategoryRepository categoryRepository,
+        ICategoryRepository categoryRepository,
         PublicListCacheInvalidator publicListCache)
     {
         // Store the injected repository for use in all service methods
@@ -171,8 +140,7 @@ public class CategoryService : ICategoryService
         // GetByIdAsync returns a tracked row, so SaveChanges writes only changed
         // properties instead of marking every column as modified.
         if (!await _categoryRepository.TrySaveVersionedEditAsync(
-                existingCategory, saved => saved.EditVersion,
-                expectedEditVersion, cancellationToken))
+                existingCategory, expectedEditVersion, cancellationToken))
         {
             return ContentValidationResult.Conflict(
                 "This category changed since you opened it. Your edits are still here. Reload the current category before trying again.");

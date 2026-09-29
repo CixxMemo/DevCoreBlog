@@ -1,16 +1,23 @@
 using System.Linq.Expressions;
 using DevCoreBlog.Core.Entities;
+using DevCoreBlog.Core.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 
 namespace DevCoreBlog.Data.Repositories;
 
 /// <summary>Runs public post queries through one SQL-translatable visibility rule.</summary>
-public class PostRepository : GenericRepository<Post>
+public class PostRepository : GenericRepository<Post>, IPostRepository
 {
     private const string SlugIndex = "IX_Posts_Slug";
 
     public PostRepository(ApplicationDbContext context) : base(context) { }
+
+    /// <summary>Persists one edit only when its loaded content version still matches.</summary>
+    public Task<bool> TrySaveVersionedEditAsync(
+        Post post, long expectedVersion, CancellationToken cancellationToken = default) =>
+        base.TrySaveVersionedEditAsync(
+            post, saved => saved.EditVersion, expectedVersion, cancellationToken);
 
     /// <summary>Checks a candidate before insert; the unique index remains the final arbiter.</summary>
     public Task<bool> SlugExistsAsync(string slug, CancellationToken cancellationToken) =>

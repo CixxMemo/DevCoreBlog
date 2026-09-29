@@ -2,7 +2,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DevCoreBlog.Core\DevCoreBlog.Core.csproj" />
-    <ProjectReference Include="..\DevCoreBlog.Data\DevCoreBlog.Data.csproj" />
   </ItemGroup>
 
   <ItemGroup>

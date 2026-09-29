@@ -167,6 +167,15 @@ if [ "${DEVCORE_F21_PROBE:-0}" = 1 ]; then
         --pg-port "$task_pg_port" --pg-user "$task_pg_user"
 fi
 
+if [ "${DEVCORE_F15_PROBE:-0}" = 1 ]; then
+    DEVCORE_TEST_ADMIN_USERNAME=f17-admin \
+    DEVCORE_TEST_ADMIN_PASSWORD="$task_admin_password" \
+    python3 "$task_source/scripts/verification/f15_category_delete_probe.py" \
+        --base-url "http://127.0.0.1:$task_app_port" \
+        --database-port "$task_pg_port" --database-user "$task_pg_user" \
+        --database-name "$task_db"
+fi
+
 if [ "${1:-current}" = current ] && [ "${DEVCORE_F17_HOLD_FOR_BROWSER:-0}" != 1 ]; then
     DEVCORE_TEST_ADMIN_USERNAME=f17-admin \
     DEVCORE_TEST_ADMIN_PASSWORD="$task_admin_password" \
