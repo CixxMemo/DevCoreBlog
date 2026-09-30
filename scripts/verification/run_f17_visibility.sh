@@ -13,8 +13,12 @@ task_pg_user=$(id -un)
 task_db=devcoreblog_f01_test
 task_admin_password=f17-isolated-password
 task_ef_command_log_level=Warning
+task_webhook_rate_limit=5
 if [ "${DEVCORE_F25_PROBE:-0}" = 1 ]; then
     task_ef_command_log_level=Information
+fi
+if [ -n "${DEVCORE_F27_PROBE:-}" ]; then
+    task_webhook_rate_limit=20
 fi
 task_app_pid=
 task_pg_started=0
@@ -161,7 +165,10 @@ fi
         DB_CONNECTION_STRING="Host=127.0.0.1;Port=$task_pg_port;Database=$task_db;Username=$task_pg_user" \
         ADMIN_USERNAME=f17-admin ADMIN_PASSWORD_HASH="$task_admin_password_hash" \
         CLOUDINARY_CLOUD_NAME=f17-cloud CLOUDINARY_API_KEY=f17-key \
-        CLOUDINARY_API_SECRET=f17-secret WEBHOOK_API_SECRET=f17-webhook \
+        CLOUDINARY_API_SECRET=f17-secret \
+        WEBHOOK_API_SECRET="${DEVCORE_F27_WEBHOOK_SECRET-f17-webhook}" \
+        ALLOW_WEBHOOK_PUBLISH="${DEVCORE_F27_ALLOW_PUBLISH:-false}" \
+        Security__WebhookRateLimit__PermitLimit="$task_webhook_rate_limit" \
         "Logging__LogLevel__Microsoft.EntityFrameworkCore.Database.Command=$task_ef_command_log_level" \
         dotnet run --no-build --project DevCoreBlog.csproj \
         --urls "http://127.0.0.1:$task_app_port" > "$task_tmp/application.log" 2>&1
@@ -240,11 +247,24 @@ if [ "${1:-current}" = current ] && [ "${DEVCORE_F17_HOLD_FOR_BROWSER:-0}" != 1 
     DEVCORE_TEST_ADMIN_PASSWORD="$task_admin_password" \
     python3 "$task_source/scripts/verification/f11_optional_thumbnail_probe.py" \
         --base-url "http://127.0.0.1:$task_app_port"
-    DEVCORE_TEST_ADMIN_USERNAME=f17-admin \
-    DEVCORE_TEST_ADMIN_PASSWORD="$task_admin_password" \
-    DEVCORE_TEST_WEBHOOK_SECRET=f17-webhook \
-    python3 "$task_source/scripts/verification/f12_content_validation_probe.py" \
-        --base-url "http://127.0.0.1:$task_app_port"
+    if [ "${DEVCORE_F27_PROBE:-}" != missing ]; then
+        DEVCORE_TEST_ADMIN_USERNAME=f17-admin \
+        DEVCORE_TEST_ADMIN_PASSWORD="$task_admin_password" \
+        DEVCORE_TEST_WEBHOOK_SECRET=f17-webhook \
+        python3 "$task_source/scripts/verification/f12_content_validation_probe.py" \
+            --base-url "http://127.0.0.1:$task_app_port"
+    fi
+fi
+
+if [ -n "${DEVCORE_F27_PROBE:-}" ]; then
+    case "$DEVCORE_F27_PROBE" in
+        disabled|enabled|missing) ;;
+        *) printf 'Expected DEVCORE_F27_PROBE=disabled, enabled or missing.\n' >&2; exit 2 ;;
+    esac
+    python3 "$task_source/scripts/verification/f27_webhook_probe.py" \
+        --base-url "http://127.0.0.1:$task_app_port" \
+        --mode "$DEVCORE_F27_PROBE" \
+        --pg-port "$task_pg_port" --pg-user "$task_pg_user"
 fi
 
 if [ "${DEVCORE_F17_HOLD_FOR_BROWSER:-0}" = 1 ]; then

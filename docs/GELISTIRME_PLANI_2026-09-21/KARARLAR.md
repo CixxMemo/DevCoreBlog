@@ -108,7 +108,7 @@ Bunlar şimdi topluca sorulmaz. Mevcut kaynaktan doğrulanamıyorsa ilgili fazda
 |---|---|---|
 | F16 | Gerçek site saat dilimi; plan varsayımı Europe/Istanbul | UTC dönüşümü/roundtrip kanıtı. |
 | F20 | Gerçek URL çakışmasında korunacak yazı | Dry-run liste ve alternatif. |
-| F27 | Otomasyonun doğrudan yayın tercihi | Taslak varsayılanı/açık yayın yetkisi. |
+| F27 | Otomasyonun doğrudan yayın tercihi | `ALLOW_WEBHOOK_PUBLISH` varsayılan `false`; yalnız açık `true` ayarıyla yetkili webhook doğrudan yayımlar. Canlı ortamda açma kararı ayrıca verilir. |
 | F47 | Gerçek yazar/biyografi/iletişim | Uydurulmamış içerikle sayfa taslağı. |
 | F50 | Kaynakta yoksa gerçek hosting/proxy düzeni | Config ve header güven sınırı. |
 | F56 | Sonradan istenecek canlı dağıtım yetkisi | Staging kanıtı ve geri dönüş planı. |

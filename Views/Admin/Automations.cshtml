@@ -34,7 +34,7 @@
         <div class="flex flex-wrap items-center gap-2">
             <span class="border-2 border-black bg-emerald-100 text-emerald-900 font-mono text-xs font-bold px-3 py-1 uppercase flex items-center gap-1.5">
                 <span class="w-2 h-2 bg-emerald-600 inline-block"></span>
-                <span>PIPELINE ONLINE</span>
+                <span>WEBHOOK ROUTE</span>
             </span>
             <span class="border-2 border-black bg-neutral-100 font-mono text-xs font-bold px-3 py-1 uppercase text-neutral-700">
                 RATE LIMITED
@@ -58,7 +58,7 @@
                 </h2>
             </div>
             <span class="font-mono text-xs text-neutral-600">
-                Max 5 requests/min • Fail-Safe Draft Mode
+                Default 5 requests/min • 2 MiB JSON limit
             </span>
         </div>
 
@@ -79,15 +79,15 @@
 
                 <div class="border border-black p-3 bg-neutral-50 space-y-1">
                     <span class="text-neutral-500 uppercase text-[10px] font-bold block">SECURITY COMPARISON:</span>
-                    <strong class="text-emerald-700 text-sm block">FixedTimeEquals (Timing-Proof)</strong>
+                    <strong class="text-emerald-700 text-sm block">Fixed-time byte comparison</strong>
                 </div>
             </div>
 
             @* Security & Behavior Bullet Points *@
             <div class="border-l-4 border-black bg-neutral-50 p-4 font-mono text-xs text-neutral-700 space-y-1">
-                <p><strong>• Fail-Safe Drafting:</strong> Posts created via this endpoint default to <code>"isPublished": false</code> (Draft) unless explicitly flagged <code>true</code>.</p>
-                <p><strong>• Automatic Generation:</strong> Post slug, creation date, and markdown processing are handled automatically by the backend pipeline.</p>
-                <p><strong>• Constant-Time Authentication:</strong> Protects against timing side-channel attacks by comparing secret byte hashes in fixed time.</p>
+                <p><strong>• Draft by Default:</strong> <code>"isPublished": true</code> publishes only when the server sets <code>ALLOW_WEBHOOK_PUBLISH=true</code>. Otherwise the post remains a draft.</p>
+                <p><strong>• Automatic Generation:</strong> The backend generates the slug and creation date. Markdown renders safely on the public post page.</p>
+                <p><strong>• Secret Authentication:</strong> Send <code>X-DevCore-Secret</code> from your private configuration. The server compares secret bytes in fixed time and rejects unauthenticated requests before reading JSON.</p>
             </div>
 
             @* JSON Payload Template Box *@
@@ -104,7 +104,7 @@
                 <pre id="webhook-payload-snippet" class="border-2 border-black bg-neutral-900 text-neutral-100 p-4 font-mono text-xs overflow-x-auto selection:bg-neutral-700">{
   "title": "Autonomous AI Workflows with .NET 10",
   "content": "## Introduction\n\nAutomated article body written in full Markdown with code blocks and links.\n\n```csharp\npublic void RunWorkflow() => Console.WriteLine(\"Automated\");\n```",
-  "summary": "How autonomous AI agent pipelines publish directly to DevCoreBlog.",
+  "summary": "How automation pipelines prepare posts for DevCoreBlog.",
   "excerpt": "A deep dive into webhook integration pipelines.",
   "coverImageUrl": "https://res.cloudinary.com/demo/image/upload/sample.jpg",
   "categoryId": @defaultCategoryId,
@@ -125,7 +125,7 @@
 
                 <pre id="curl-snippet" class="border-2 border-black bg-neutral-900 text-emerald-400 p-4 font-mono text-xs overflow-x-auto whitespace-pre-wrap selection:bg-neutral-700">curl -X POST "http://localhost:5000/api/webhooks/posts" \
   -H "Content-Type: application/json" \
-  -H "X-DevCore-Secret: devcore_webhook_secret_key_8f7b2c" \
+  -H "X-DevCore-Secret: YOUR_WEBHOOK_SECRET" \
   -d '{"title":"Test Post from cURL","content":"# Hello World\nTesting webhook ingestion.","categoryId":@defaultCategoryId,"isPublished":false}'</pre>
             </div>
 

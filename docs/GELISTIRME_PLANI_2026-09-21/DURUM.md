@@ -1,11 +1,11 @@
 # İlerleme çizelgesi
 
-- **Son kayıt:** 29 Eylül 2026 — F26 renderer ve Cloudinary DI sınırı doğrulandı.
-- **Tamamlanan plan fazı:** 27/58 (F00–F26).
-- **Tamamlanan uygulama kodu fazı:** 25.
+- **Son kayıt:** 30 Eylül 2026 — F27 webhook kabul ve yayın yetkisi doğrulandı.
+- **Tamamlanan plan fazı:** 28/58 (F00–F27).
+- **Tamamlanan uygulama kodu fazı:** 26.
 - **Aktif faz:** Yok.
-- **Sıradaki faz:** F27 — kullanıcı onayı bekleniyor.
-- **Uygulama kodu:** F02–F09 güvenlik fazları tamamlandı. F10 migration zincirini doğruladı. F11–F13 form/içerik güvenliğini tamamladı. F14 kategori update'ini güvenli alanlara daralttı. F15 kategori silmesini DB constraint'i ve yarış yönetimiyle veri kaybına karşı korudu. F16 yayın zamanını açık saat dilimiyle UTC'ye bağladı. F17 public görünürlüğü tek kurala bağladı. F18 tek süreçli liste cache'ini yayın sınırı ve mutation invalidation'ıyla doğruladı. F19 düzenlemede kayıtlı slug'ı korudu. F20 benzersiz slug indekslerini ve geçmiş çakışma göçünü ekledi. F21 yalnızca uygun public GET'leri atomik sayıyor. F22 eski edit sekmelerinin içerik ezmesini sürüm karşılaştırmasıyla önlüyor. F23 hata akışında gerçek 404/500 ve JSON durumlarını koruyor. F24 servislerin somut Data repository bağımlılığını Core sözleşmelerine taşıdı. F25 dashboard sorgularını servis/repository sınırına ve kategori menülerini asenkron bileşene taşıdı. F26 güvenli Markdown renderer'ını Services'e taşıyıp Cloudinary istemcisini composition root'tan enjekte etti.
+- **Sıradaki faz:** F28 — kullanıcı onayı bekleniyor.
+- **Uygulama kodu:** F02–F09 güvenlik fazları tamamlandı. F10 migration zincirini doğruladı. F11–F13 form/içerik güvenliğini tamamladı. F14 kategori update'ini güvenli alanlara daralttı. F15 kategori silmesini DB constraint'i ve yarış yönetimiyle veri kaybına karşı korudu. F16 yayın zamanını açık saat dilimiyle UTC'ye bağladı. F17 public görünürlüğü tek kurala bağladı. F18 tek süreçli liste cache'ini yayın sınırı ve mutation invalidation'ıyla doğruladı. F19 düzenlemede kayıtlı slug'ı korudu. F20 benzersiz slug indekslerini ve geçmiş çakışma göçünü ekledi. F21 yalnızca uygun public GET'leri atomik sayıyor. F22 eski edit sekmelerinin içerik ezmesini sürüm karşılaştırmasıyla önlüyor. F23 hata akışında gerçek 404/500 ve JSON durumlarını koruyor. F24 servislerin somut Data repository bağımlılığını Core sözleşmelerine taşıdı. F25 dashboard sorgularını servis/repository sınırına ve kategori menülerini asenkron bileşene taşıdı. F26 güvenli Markdown renderer'ını Services'e taşıyıp Cloudinary istemcisini composition root'tan enjekte etti. F27 webhook'u secret-önce, sınırlı JSON kabulüne ve açık yayın yetkisine bağladı.
 
 ## Kullanım
 
@@ -47,7 +47,7 @@
 | [x] | F24 | Repository bağımlılıklarını sözleşmeye taşı | TAMAMLANDI — KOD | [F24 kanıtı](../uygulama-kayitlari/F24-2026-09-28.md) |
 | [x] | F25 | Controller ve Razor'dan DbContext'i çıkar | TAMAMLANDI — KOD | [F25 kanıtı](../uygulama-kayitlari/F25-2026-09-29.md) |
 | [x] | F26 | Renderer ve Cloudinary bağlantısını DI sınırına al | TAMAMLANDI — KOD | [F26 kanıtı](../uygulama-kayitlari/F26-2026-09-29.md) |
-| [ ] | F27 | Webhook kabul sözleşmesini sadeleştir | BAŞLAMADI | — |
+| [x] | F27 | Webhook kabul sözleşmesini sadeleştir | TAMAMLANDI — KOD | [F27 kanıtı](../uygulama-kayitlari/F27-2026-09-30.md) |
 | [ ] | F28 | Webhook tekrarlarını tek kayda indir | BAŞLAMADI | — |
 | [ ] | F29 | Portföy beslemesini sınırlı DB sorgusuyla üret | BAŞLAMADI | — |
 | [ ] | F30 | Yazı editörünün ortak kodunu tek yerde topla | BAŞLAMADI | — |
@@ -81,11 +81,11 @@
 
 ## Son agent teslimi
 
-- Tamamlanan faz: F26 renderer ve Cloudinary bağlantısını DI sınırına al.
-- Değişen davranış: Markdown HTML çıktısı değişmedi; Cloudinary credential eksikse uygulama güvenli biçimde açılmıyor. Renderer ve upload istemcisi DI ile sağlanıyor.
-- Çalıştırılan kontroller ve sonuç: Build 0 uyarı/0 hata; F04 HTML özeti önce ve sonra aynı, F09/F17/F11/F12 regresyonları sentetik PostgreSQL/HTTP ortamında geçti. İkame upload istemcisi ve eksik Cloudinary config sınandı. [Ayrıntılı kanıt](../uygulama-kayitlari/F26-2026-09-29.md).
-- Doğrulanamayan/engel: Production verisi ve gerçek Cloudinary hesabıyla başarılı upload kullanılmadı; mevcut sağlayıcı ağı taklit edilmedi.
-- Sıradaki tek faz: F27.
-- Kullanıcıdan gereken: F27'yi başlatmak için açık onay.
+- Tamamlanan faz: F27 webhook kabul sözleşmesini sadeleştir.
+- Değişen davranış: Webhook secret'ı JSON'dan önce doğrulanıyor; 2 MiB gövde sınırı ve 429 hız sınırı var. `isPublished=true` yalnız `ALLOW_WEBHOOK_PUBLISH=true` ile doğrudan yayımlıyor; varsayılan taslak.
+- Çalıştırılan kontroller ve sonuç: Build 0 uyarı/0 hata; F27'nin 19 kapalı-varsayılan kontrolü, açık yayın ve eksik secret denemeleri ile F17/F11/F12 regresyonları sentetik PostgreSQL/HTTP'de geçti. Mobil/masaüstü tarayıcıda açıklama, klavye, taşma ve konsol kontrol edildi. [Ayrıntılı kanıt](../uygulama-kayitlari/F27-2026-09-30.md).
+- Doğrulanamayan/engel: Production otomasyonu ve gerçek secret kullanılmadı. Kalıcı webhook idempotency F28 kapsamındadır.
+- Sıradaki tek faz: F28.
+- Kullanıcıdan gereken: F28'i başlatmak için açık onay.
 
 [Ana plan](/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/docs/GELISTIRME_PLANI_2026-09-21/README.md) · [Hazır mesajlar](/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/docs/GELISTIRME_PLANI_2026-09-21/AGENT_PROMPTLARI.md)

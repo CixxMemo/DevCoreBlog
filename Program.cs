@@ -148,6 +148,17 @@ builder.Services.AddSingleton<ISafeMarkdownRenderer, SafeMarkdownRenderer>();
 builder.Services.AddScoped<IImageService, ImageService>();
 builder.Services.AddSingleton<ImageUploadPolicy>();
 builder.Services.AddSingleton<CloudinaryImageUploadRequestFactory>();
+var rawAllowWebhookPublish = Environment.GetEnvironmentVariable("ALLOW_WEBHOOK_PUBLISH");
+var allowWebhookPublish = false;
+if (!string.IsNullOrEmpty(rawAllowWebhookPublish) &&
+    !bool.TryParse(rawAllowWebhookPublish, out allowWebhookPublish))
+{
+    throw new InvalidOperationException("ALLOW_WEBHOOK_PUBLISH must be true or false.");
+}
+
+builder.Services.AddSingleton(new WebhookIngressOptions(
+    Environment.GetEnvironmentVariable("WEBHOOK_API_SECRET"),
+    allowWebhookPublish));
 var cloudinaryCloudName = Environment.GetEnvironmentVariable("CLOUDINARY_CLOUD_NAME");
 var cloudinaryApiKey = Environment.GetEnvironmentVariable("CLOUDINARY_API_KEY");
 var cloudinaryApiSecret = Environment.GetEnvironmentVariable("CLOUDINARY_API_SECRET");
@@ -259,6 +270,9 @@ var loginRateLimitPermitLimit = builder.Configuration.GetValue(
 var loginRateLimitWindowSeconds = builder.Configuration.GetValue(
     "Security:LoginRateLimit:WindowSeconds",
     60);
+var webhookRateLimitPermitLimit = builder.Configuration.GetValue(
+    "Security:WebhookRateLimit:PermitLimit",
+    5);
 
 if (loginRateLimitPermitLimit is < 1 or > 20)
 {
@@ -270,6 +284,12 @@ if (loginRateLimitWindowSeconds is < 1 or > 300)
 {
     throw new InvalidOperationException(
         "Security:LoginRateLimit:WindowSeconds must be between 1 and 300.");
+}
+
+if (webhookRateLimitPermitLimit is < 1 or > 20)
+{
+    throw new InvalidOperationException(
+        "Security:WebhookRateLimit:PermitLimit must be between 1 and 20.");
 }
 
 builder.Services.AddRateLimiter(options =>
@@ -288,14 +308,14 @@ builder.Services.AddRateLimiter(options =>
                 Window = TimeSpan.FromSeconds(loginRateLimitWindowSeconds)
             }));
 
-    // Webhook Limiter: Max 5 requests per minute per IP for inbound webhook writes
+    // Webhook limiter uses only the direct connection IP until trusted proxies are configured.
     options.AddPolicy("WebhookLimiter", httpContext =>
         RateLimitPartition.GetFixedWindowLimiter(
             partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "anonymous-webhook",
             factory: partition => new FixedWindowRateLimiterOptions
             {
                 AutoReplenishment = true,
-                PermitLimit = 5,
+                PermitLimit = webhookRateLimitPermitLimit,
                 QueueLimit = 0,
                 Window = TimeSpan.FromMinutes(1)
             }));

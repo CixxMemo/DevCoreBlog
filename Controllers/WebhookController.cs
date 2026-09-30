@@ -1,18 +1,7 @@
-// =============================================================================
-// WebhookController.cs — Hardened Inbound Webhook Receiver
-// =============================================================================
-// This controller exposes an authenticated, rate-limited webhook endpoint
-// for workflow automation platforms like n8n, Make.com, or custom AI agents.
-//
-// Security Standards:
-//   1. Rate Limiting: Protected by ASP.NET Core WebhookLimiter (Max 5 req/min).
-//   2. Timing-Attack Resistance: Uses CryptographicOperations.FixedTimeEquals.
-//   3. Environment-Based Auth: Compares against WEBHOOK_API_SECRET env variable.
-//   4. Fail-Safe Default: New articles default to Draft (IsPublished = false).
-// =============================================================================
-
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
+using DevCoreBlog.Configuration;
 using DevCoreBlog.Core.Entities;
 using DevCoreBlog.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -21,93 +10,98 @@ using Microsoft.AspNetCore.RateLimiting;
 
 namespace DevCoreBlog.Controllers;
 
+/// <summary>Accepts bounded post submissions from the secret-authenticated webhook.</summary>
 [ApiController]
 [Route("api/webhooks")]
 [EnableRateLimiting("WebhookLimiter")]
-public class WebhookController : ControllerBase
+public sealed class WebhookController : ControllerBase
 {
+    private static readonly JsonSerializerOptions JsonOptions =
+        new(JsonSerializerDefaults.Web);
+
     private readonly IPostService _postService;
-    private readonly IConfiguration _configuration;
+    private readonly WebhookIngressOptions _options;
+    private readonly TimeProvider _timeProvider;
 
     public WebhookController(
         IPostService postService,
-        IConfiguration configuration)
+        WebhookIngressOptions options,
+        TimeProvider timeProvider)
     {
         _postService = postService;
-        _configuration = configuration;
+        _options = options;
+        _timeProvider = timeProvider;
     }
 
-    // -------------------------------------------------------------------------
-    // POST /api/webhooks/posts
-    // Ingests incoming JSON payload from n8n / Make.com and creates a blog draft.
-    // -------------------------------------------------------------------------
+    /// <summary>Authenticates before reading JSON, then maps allowed fields into a post.</summary>
     [HttpPost("posts")]
     [AllowAnonymous]
     [IgnoreAntiforgeryToken]
-    public async Task<IActionResult> IngestPost(
-        [FromBody] WebhookPostPayload? payload,
-        CancellationToken cancellationToken)
+    [RequestSizeLimit(WebhookIngressOptions.MaximumRequestBodyBytes)]
+    public async Task<IActionResult> IngestPost(CancellationToken cancellationToken)
     {
-        // 1. Validate the secret auth header (X-DevCore-Secret)
-        if (!Request.Headers.TryGetValue("X-DevCore-Secret", out var providedSecretHeader) || 
-            string.IsNullOrWhiteSpace(providedSecretHeader))
+        if (!HasValidSecret())
         {
-            return Unauthorized(new { success = false, message = "Missing or empty authentication header." });
+            return Unauthorized(new { success = false, message = "Unauthorized." });
         }
 
-        // 2. Load configured server secret from environment variable or appsettings
-        var expectedSecret = Environment.GetEnvironmentVariable("WEBHOOK_API_SECRET")
-            ?? _configuration["DevCoreBlog:WebhookApiKey"];
-
-        if (string.IsNullOrEmpty(expectedSecret))
+        if (Request.ContentLength > WebhookIngressOptions.MaximumRequestBodyBytes)
         {
-            return StatusCode(500, new { success = false, message = "Webhook API secret is not configured on the server." });
+            return StatusCode(StatusCodes.Status413PayloadTooLarge,
+                new { success = false, message = "Payload is too large." });
         }
 
-        // 3. Constant-time comparison to protect against timing side-channel attacks
-        var providedBytes = Encoding.UTF8.GetBytes(providedSecretHeader.ToString());
-        var expectedBytes = Encoding.UTF8.GetBytes(expectedSecret);
-
-        if (providedBytes.Length != expectedBytes.Length || 
-            !CryptographicOperations.FixedTimeEquals(providedBytes, expectedBytes))
+        if (!Request.HasJsonContentType())
         {
-            return Unauthorized(new { success = false, message = "Invalid webhook secret." });
+            return StatusCode(StatusCodes.Status415UnsupportedMediaType,
+                new { success = false, message = "JSON content is required." });
         }
 
-        // 4. Validate payload integrity
-        if (payload == null)
+        WebhookPostPayload? payload;
+        try
+        {
+            payload = await JsonSerializer.DeserializeAsync<WebhookPostPayload>(
+                Request.Body, JsonOptions, cancellationToken);
+        }
+        catch (BadHttpRequestException exception)
+            when (exception.StatusCode == StatusCodes.Status413PayloadTooLarge)
+        {
+            return StatusCode(StatusCodes.Status413PayloadTooLarge,
+                new { success = false, message = "Payload is too large." });
+        }
+        catch (JsonException)
+        {
+            return BadRequest(new { success = false, message = "Invalid JSON payload." });
+        }
+
+        if (payload is null)
         {
             return BadRequest(new { success = false, message = "Empty JSON payload." });
         }
 
-        // 5. Map payload to Domain Entity with Fail-Safe Draft mode
         var post = new Post
         {
-            Title = payload.Title.Trim(),
-            Content = payload.Content,
+            Title = payload.Title?.Trim() ?? string.Empty,
+            Content = payload.Content ?? string.Empty,
             Summary = payload.Summary?.Trim() ?? string.Empty,
             Excerpt = payload.Excerpt?.Trim() ?? string.Empty,
             ThumbnailUrl = payload.CoverImageUrl?.Trim() ?? string.Empty,
             CategoryId = payload.CategoryId,
-            // Fail-safe: Default to Draft (false) unless explicitly flagged true by automation
-            IsPublished = payload.IsPublished,
+            IsPublished = payload.IsPublished && _options.AllowPublish,
             IsActive = true,
-            PublishDate = payload.PublishDate ?? DateTime.UtcNow
+            PublishDate = payload.PublishDate ?? _timeProvider.GetUtcNow().UtcDateTime
         };
 
-        // 6. Save via PostService (handles automatic slug generation and date tagging)
         var validationResult = await _postService.CreatePostAsync(
-            post,
-            cancellationToken);
+            post, cancellationToken);
         if (!validationResult.IsValid)
         {
-            var errors = validationResult.Errors.Select(error => new
-            {
-                field = error.Field == nameof(Post.ThumbnailUrl)
-                    ? nameof(WebhookPostPayload.CoverImageUrl)
-                    : error.Field,
-                message = error.Message
-            });
+            var errors = validationResult.Errors.Select(error =>
+                new WebhookFieldError(
+                    error.Field == nameof(Post.ThumbnailUrl)
+                        ? nameof(WebhookPostPayload.CoverImageUrl)
+                        : error.Field,
+                    error.Message));
 
             return BadRequest(new
             {
@@ -117,7 +111,6 @@ public class WebhookController : ControllerBase
             });
         }
 
-        // 7. Return structured JSON response
         return Ok(new
         {
             success = true,
@@ -129,19 +122,47 @@ public class WebhookController : ControllerBase
             message = post.IsPublished ? "Post created and published." : "Post saved as draft."
         });
     }
+
+    private bool HasValidSecret()
+    {
+        if (string.IsNullOrWhiteSpace(_options.Secret) ||
+            !Request.Headers.TryGetValue("X-DevCore-Secret", out var providedHeader) ||
+            providedHeader.Count != 1)
+        {
+            return false;
+        }
+
+        var providedSecret = providedHeader[0];
+        if (string.IsNullOrWhiteSpace(providedSecret))
+        {
+            return false;
+        }
+
+        var providedBytes = Encoding.UTF8.GetBytes(providedSecret);
+        var expectedBytes = Encoding.UTF8.GetBytes(_options.Secret);
+        return providedBytes.Length == expectedBytes.Length &&
+            CryptographicOperations.FixedTimeEquals(providedBytes, expectedBytes);
+    }
+
+    private sealed record WebhookFieldError(string Field, string Message);
 }
 
-// -----------------------------------------------------------------------------
-// WebhookPostPayload — Minimalist incoming DTO for n8n / Make.com nodes
-// -----------------------------------------------------------------------------
-public class WebhookPostPayload
+/// <summary>Allows only client-editable post fields from the existing JSON contract.</summary>
+public sealed class WebhookPostPayload
 {
-    public string Title { get; set; } = string.Empty;
-    public string Content { get; set; } = string.Empty;
-    public string? Summary { get; set; }
-    public string? Excerpt { get; set; }
-    public string? CoverImageUrl { get; set; }
-    public int CategoryId { get; set; }
-    public bool IsPublished { get; set; } = false;
-    public DateTime? PublishDate { get; set; }
+    public string? Title { get; init; }
+
+    public string? Content { get; init; }
+
+    public string? Summary { get; init; }
+
+    public string? Excerpt { get; init; }
+
+    public string? CoverImageUrl { get; init; }
+
+    public int CategoryId { get; init; }
+
+    public bool IsPublished { get; init; }
+
+    public DateTime? PublishDate { get; init; }
 }
