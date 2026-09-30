@@ -1,0 +1,182 @@
+Build
+
+  DevCoreBlog.Core -> /Users/mehmetcankocakurt/Documents/development/DevCoreBlog/DevCoreBlog.Core/bin/Debug/net10.0/DevCoreBlog.Core.dll
+  DevCoreBlog.Data -> /Users/mehmetcankocakurt/Documents/development/DevCoreBlog/DevCoreBlog.Data/bin/Debug/net10.0/DevCoreBlog.Data.dll
+  DevCoreBlog.Services -> /Users/mehmetcankocakurt/Documents/development/DevCoreBlog/DevCoreBlog.Services/bin/Debug/net10.0/DevCoreBlog.Services.dll
+  DevCoreBlog -> /Users/mehmetcankocakurt/Documents/development/DevCoreBlog/bin/Debug/net10.0/DevCoreBlog.dll
+
+Oluşturma başarılı oldu.
+    0 Uyarı
+    0 Hata
+
+Geçen Süre 00:00:01.59
+
+
+F30 final HTTP / synthetic storage
+
+{
+  "checks": {
+    "create_shared_contract": true,
+    "create_cover_save_with_fixture_storage": true,
+    "create_validation_retains_encoded_input": true,
+    "create_editor_upload_with_fixture_storage": true,
+    "create_editor_upload_requires_csrf": true,
+    "edit_shared_contract": true,
+    "edit_cover_save_with_fixture_storage": true,
+    "edit_validation_retains_encoded_input": true,
+    "edit_editor_upload_with_fixture_storage": true,
+    "edit_editor_upload_requires_csrf": true
+  },
+  "storage": "synthetic; Cloudinary not verified"
+}
+
+
+F11 final
+
+F11 isolated optional cover and validation verification
+{
+  "checks": {
+    "create_form_has_optional_cover_and_hides_empty_summary": true,
+    "create_without_cover_persists": true,
+    "edit_form_does_not_post_stored_cover": true,
+    "edit_without_file_preserves_server_cover": true,
+    "validation_failure_retains_inputs_and_does_not_persist": true,
+    "upload_failure_retains_inputs_cover_and_database_state": true
+  },
+  "statuses": {
+    "create_without_cover_final": 200,
+    "edit_without_file_final": 200,
+    "validation_failure_final": 200,
+    "failed_upload_final": 200
+  }
+}
+
+
+F13 final
+
+F13 frontend validation and JavaScript-free form verification
+{
+  "checks": {
+    "all_form_pages_load_one_ordered_local_validation_chain": true,
+    "post_pages_load_shared_editor_helper_once": true,
+    "login_does_not_load_form_plugins": true,
+    "markdown_textarea_is_visible_without_javascript": true,
+    "client_and_server_required_messages_match": true,
+    "post_can_be_saved_without_javascript": true
+  },
+  "statuses": {
+    "post_create": 200,
+    "post_edit": 200,
+    "category_create": 200,
+    "category_edit": 200,
+    "login": 200,
+    "invalid_post": 200,
+    "javascript_free_save_final": 200
+  }
+}
+
+
+F09 before date compatibility correction
+
+F09 isolated image upload HTTP verification
+{
+  "checks": {
+    "editor_rejects_fake_extension": true,
+    "editor_rejects_svg": true,
+    "editor_rejects_corrupt_image": true,
+    "editor_rejects_oversized_image": true,
+    "legacy_endpoint_uses_same_policy_and_json_error": true,
+    "create_cover_failure_is_visible_and_not_persisted": true,
+    "edit_cover_failure_is_visible_and_not_persisted": true,
+    "forms_advertise_the_server_allowlist_and_limits": true
+  },
+  "statuses": {
+    "editor_fake_extension": 400,
+    "editor_svg": 400,
+    "editor_corrupt": 400,
+    "editor_oversized": 413,
+    "legacy_fake_extension": 400,
+    "create_invalid_cover_final": 200,
+    "edit_invalid_cover_final": 200
+  }
+}
+
+
+F12 before date compatibility correction
+
+F12 shared MVC and webhook validation verification
+{
+  "checks": {
+    "form_exposes_matching_limits_and_only_active_categories": true,
+    "system_fields_are_absent_from_create_contract": true,
+    "form_rejects_oversized_summary_without_persisting": true,
+    "webhook_rejects_same_summary_rule_with_field_error": true,
+    "webhook_maps_cover_rule_to_payload_field": true,
+    "webhook_rejects_inactive_category": true,
+    "valid_form_ignores_submitted_system_fields": true,
+    "category_form_enforces_name_limit": true
+  },
+  "statuses": {
+    "post_form_invalid": 200,
+    "post_form_overpost_final": 200,
+    "category_form_invalid": 200,
+    "webhook_shared_invalid": 400,
+    "webhook_inactive_category": 400
+  }
+}
+
+
+F04 final renderer
+
+f26_markdown_raw_html_is_rendered_inert=true
+f26_markdown_event_handler_attributes_are_not_active=true
+f26_markdown_dangerous_link_and_image_schemes_are_rejected=true
+f26_markdown_generic_attributes_are_not_enabled=true
+f26_markdown_approved_youtube_url_uses_fixed_embed=true
+f26_markdown_fake_youtube_host_is_not_embedded=true
+f26_markdown_safe_https_and_relative_links_render=true
+f26_markdown_table_list_and_csharp_code_render=true
+f26_markdown_sha256=a82b927e4b2e4fd7883e7561f5faaecd7f9c7e8481e79342f3218ac6e86c9a3c
+
+
+Browser final
+
+{
+  "createValidation": "CategoryId required; inputs retained",
+  "createSave": "redirect to AdminPost",
+  "editSave": "redirect to AdminPost; slug retained",
+  "keyboard": "Title Tab -> Upload Image/GIF, Enter submit",
+  "sizes": [
+    {
+      "width": 1440,
+      "scrollWidth": 1440
+    },
+    {
+      "width": 390,
+      "scrollWidth": 390
+    }
+  ],
+  "errors": []
+}
+
+F17 final fixture
+
+f17_public_unpaged_visibility=true
+f17_every_public_query_hides_ineligible_rows=true
+f17_public_category_and_feed_are_bounded=true
+f17_admin_keeps_hidden_rows=true
+f17_boundary_before_is_hidden=true
+f17_boundary_at_is_visible=true
+f17_inactive_category_post_count=1
+f17_http_public_routes_respond=true
+f17_http_public_lists_hide_all_four_cases=true
+f17_http_public_navigation_hides_inactive_category=true
+f17_http_details_return_404=true
+f17_http_inactive_category_returns_404=true
+f17_http_sitemap_hides_inactive_category=true
+f17_http_api_categories_hide_inactive=true
+f17_http_feed_preserves_shape_and_limit=true
+f17_http_feed_is_not_stored=true
+f17_http_public_html_is_not_stored=true
+f17_http_admin_keeps_all_rows=true
+f17_http_detail_statuses={"f01-draft": 404, "f01-duplicate-title": 404, "f01-future-visible-marker": 404, "f01-inactive-post": 404}

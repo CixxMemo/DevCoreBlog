@@ -1,11 +1,11 @@
 # İlerleme çizelgesi
 
-- **Son kayıt:** 30 Eylül 2026 — F29 portföy projection, güvenilir URL ve CORS sınırı doğrulandı.
-- **Tamamlanan plan fazı:** 30/58 (F00–F29).
-- **Tamamlanan uygulama kodu fazı:** 28.
+- **Son kayıt:** 30 Eylül 2026 — F30 ortak yazı formu ve editör modülü doğrulandı.
+- **Tamamlanan plan fazı:** 31/58 (F00–F30).
+- **Tamamlanan uygulama kodu fazı:** 29.
 - **Aktif faz:** Yok.
-- **Sıradaki faz:** F30 — kullanıcı onayı bekleniyor.
-- **Uygulama kodu:** F02–F09 güvenlik fazları tamamlandı. F10 migration zincirini doğruladı. F11–F13 form/içerik güvenliğini tamamladı. F14 kategori update'ini güvenli alanlara daralttı. F15 kategori silmesini DB constraint'i ve yarış yönetimiyle veri kaybına karşı korudu. F16 yayın zamanını açık saat dilimiyle UTC'ye bağladı. F17 public görünürlüğü tek kurala bağladı. F18 tek süreçli liste cache'ini yayın sınırı ve mutation invalidation'ıyla doğruladı. F19 düzenlemede kayıtlı slug'ı korudu. F20 benzersiz slug indekslerini ve geçmiş çakışma göçünü ekledi. F21 yalnızca uygun public GET'leri atomik sayıyor. F22 eski edit sekmelerinin içerik ezmesini sürüm karşılaştırmasıyla önlüyor. F23 hata akışında gerçek 404/500 ve JSON durumlarını koruyor. F24 servislerin somut Data repository bağımlılığını Core sözleşmelerine taşıdı. F25 dashboard sorgularını servis/repository sınırına ve kategori menülerini asenkron bileşene taşıdı. F26 güvenli Markdown renderer'ını Services'e taşıyıp Cloudinary istemcisini composition root'tan enjekte etti. F27 webhook'u secret-önce, sınırlı JSON kabulüne ve açık yayın yetkisine bağladı. F28 anahtarlı gönderimleri kalıcı işlem kaydı ve tek transaction ile tekrar korumasına bağladı. F29 portföyü dar DB projection, kararlı sıralama ve yapılandırılmış site URL'sine bağladı.
+- **Sıradaki faz:** F31 — kullanıcı onayı bekleniyor.
+- **Uygulama kodu:** F02–F09 güvenlik fazları tamamlandı. F10 migration zincirini doğruladı. F11–F13 form/içerik güvenliğini tamamladı. F14 kategori update'ini güvenli alanlara daralttı. F15 kategori silmesini DB constraint'i ve yarış yönetimiyle veri kaybına karşı korudu. F16 yayın zamanını açık saat dilimiyle UTC'ye bağladı. F17 public görünürlüğü tek kurala bağladı. F18 tek süreçli liste cache'ini yayın sınırı ve mutation invalidation'ıyla doğruladı. F19 düzenlemede kayıtlı slug'ı korudu. F20 benzersiz slug indekslerini ve geçmiş çakışma göçünü ekledi. F21 yalnızca uygun public GET'leri atomik sayıyor. F22 eski edit sekmelerinin içerik ezmesini sürüm karşılaştırmasıyla önlüyor. F23 hata akışında gerçek 404/500 ve JSON durumlarını koruyor. F24 servislerin somut Data repository bağımlılığını Core sözleşmelerine taşıdı. F25 dashboard sorgularını servis/repository sınırına ve kategori menülerini asenkron bileşene taşıdı. F26 güvenli Markdown renderer'ını Services'e taşıyıp Cloudinary istemcisini composition root'tan enjekte etti. F27 webhook'u secret-önce, sınırlı JSON kabulüne ve açık yayın yetkisine bağladı. F28 anahtarlı gönderimleri kalıcı işlem kaydı ve tek transaction ile tekrar korumasına bağladı. F29 portföyü dar DB projection, kararlı sıralama ve yapılandırılmış site URL'sine bağladı. F30 Create/Edit ortak formunu ve editör davranışlarını tek partial/modülde topladı.
 
 ## Kullanım
 
@@ -50,7 +50,7 @@
 | [x] | F27 | Webhook kabul sözleşmesini sadeleştir | TAMAMLANDI — KOD | [F27 kanıtı](../uygulama-kayitlari/F27-2026-09-30.md) |
 | [x] | F28 | Webhook tekrarlarını tek kayda indir | TAMAMLANDI — KOD | [F28 kanıtı](../uygulama-kayitlari/F28-2026-09-30.md) |
 | [x] | F29 | Portföy beslemesini sınırlı DB sorgusuyla üret | TAMAMLANDI — KOD | [F29 kanıtı](../uygulama-kayitlari/F29-2026-09-30.md) |
-| [ ] | F30 | Yazı editörünün ortak kodunu tek yerde topla | BAŞLAMADI | — |
+| [x] | F30 | Yazı editörünün ortak kodunu tek yerde topla | TAMAMLANDI | [Kayıt](../uygulama-kayitlari/F30-2026-09-30.md) |
 | [ ] | F31 | Başarısız kayıtta yazının kaybolmasını önle | BAŞLAMADI | — |
 | [ ] | F32 | Taslak, zamanlama ve yayınlama eylemlerini anlaşılır yap | BAŞLAMADI | — |
 | [ ] | F33 | Sunucu çıktısıyla tutarlı güvenli önizleme ekle | BAŞLAMADI | — |
@@ -81,11 +81,11 @@
 
 ## Son agent teslimi
 
-- Tamamlanan faz: F29 portföy beslemesini sınırlı DB sorgusuyla üret.
-- Değişen davranış: En çok üç görünür yazı dar projection ile DB'de sıralanıyor. JSON alanları korunuyor; mutlak URL Host yerine doğrulanmış SITE_URL ve mevcut post rotasından geliyor. CORS config'i ile UI aynı kaynaktan; no-store korunuyor.
-- Çalıştırılan kontroller ve sonuç: Build 0 uyarı/0 hata; 15 F29 HTTP/SQL ve 10 config kontrolü geçti. F17/F11/F12 ve F28'in 17 kontrolü korundu. Mobil/masaüstü URL/CORS/klavye/taşma/konsol doğrulandı. [Ayrıntılı kanıt](../uygulama-kayitlari/F29-2026-09-30.md).
-- Doğrulanamayan/engel: Gerçek hosting/portföy istemcisi ve production config değiştirilmedi; canlıya alınmadan gerçek HTTPS SITE_URL ayarlanmalı. Site genelindeki SEO/canonical geçişi F43–F45 kapsamındadır.
-- Sıradaki tek faz: F30.
-- Kullanıcıdan gereken: F30'u başlatmak için açık onay.
+- Tamamlanan faz: F30 yazı editörünün ortak kodunu tek yerde topla.
+- Değişen davranış: Create/Edit ortak partial ve yerel JS modülü kullanıyor; form/security/slug/kapak korunuyor. Submit-time taslak silme kaldırıldı; tarih alanındaki jQuery exception'ı düzeltildi.
+- Çalıştırılan kontroller ve sonuç: Build 0 uyarı/0 hata; F30 10, son F11/F13 12, F04 8 kontrolü ve F17 geçti. F09/F12 taşıma kontrolleri geçti. Mobil/masaüstü form, klavye ve son temiz konsol doğrulandı. [Ayrıntılı kanıt](../uygulama-kayitlari/F30-2026-09-30.md).
+- Doğrulanamayan/engel: Cloudinary canlı upload yapılmadı; başarı akışı test kopyasında sentetik storage ile sınandı. Tam kurtarma/başarılı save sonrası temizleme ve eski kaydın ezilmesi F31'de; genel mobil admin iyileştirmesi F34'te.
+- Sıradaki tek faz: F31.
+- Kullanıcıdan gereken: F31'i başlatmak için açık onay.
 
 [Ana plan](/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/docs/GELISTIRME_PLANI_2026-09-21/README.md) · [Hazır mesajlar](/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/docs/GELISTIRME_PLANI_2026-09-21/AGENT_PROMPTLARI.md)

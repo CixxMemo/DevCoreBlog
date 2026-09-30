@@ -68,6 +68,9 @@ for task_project in . DevCoreBlog.Core DevCoreBlog.Data DevCoreBlog.Services \
     fi
 done
 : > "$task_source/.env"
+if [ "${DEVCORE_F30_PROBE:-0}" = 1 ]; then
+    python3 "$task_source/scripts/verification/f30_prepare_fixture.py" --source "$task_source"
+fi
 
 case "${1:-current}" in
     baseline)

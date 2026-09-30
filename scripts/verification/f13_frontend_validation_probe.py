@@ -152,7 +152,7 @@ def main() -> int:
         ),
         "post_pages_load_shared_editor_helper_once": all(
             sum(
-                source.startswith("/js/admin-post-editor.js")
+                source.startswith("/js/post-editor.js")
                 for source in script_sources(pages[name])
             )
             == 1
