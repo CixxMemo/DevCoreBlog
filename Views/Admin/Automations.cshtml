@@ -87,6 +87,8 @@
             <div class="border-l-4 border-black bg-neutral-50 p-4 font-mono text-xs text-neutral-700 space-y-1">
                 <p><strong>• Draft by Default:</strong> <code>"isPublished": true</code> publishes only when the server sets <code>ALLOW_WEBHOOK_PUBLISH=true</code>. Otherwise the post remains a draft.</p>
                 <p><strong>• Automatic Generation:</strong> The backend generates the slug and creation date. Markdown renders safely on the public post page.</p>
+                <p><strong>• Safe Retries:</strong> Generate one <code>Idempotency-Key</code> for each new post and reuse it with the same payload on every retry. Use 1–128 ASCII letters, digits, dots, underscores or hyphens. Reusing a key with different fields returns <code>409 Conflict</code>.</p>
+                <p><strong>• Client Migration:</strong> Existing requests without this header still work, but have no duplicate protection. Successful keys are retained indefinitely, including after a post is deleted. Failed requests do not consume a key; retry <code>429</code> or <code>5xx</code> with backoff and the same key.</p>
                 <p><strong>• Secret Authentication:</strong> Send <code>X-DevCore-Secret</code> from your private configuration. The server compares secret bytes in fixed time and rejects unauthenticated requests before reading JSON.</p>
             </div>
 
@@ -126,6 +128,7 @@
                 <pre id="curl-snippet" class="border-2 border-black bg-neutral-900 text-emerald-400 p-4 font-mono text-xs overflow-x-auto whitespace-pre-wrap selection:bg-neutral-700">curl -X POST "http://localhost:5000/api/webhooks/posts" \
   -H "Content-Type: application/json" \
   -H "X-DevCore-Secret: YOUR_WEBHOOK_SECRET" \
+  -H "Idempotency-Key: YOUR_UNIQUE_POST_KEY" \
   -d '{"title":"Test Post from cURL","content":"# Hello World\nTesting webhook ingestion.","categoryId":@defaultCategoryId,"isPublished":false}'</pre>
             </div>
 

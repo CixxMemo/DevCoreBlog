@@ -38,6 +38,7 @@ var publicListCache = new PublicListCacheInvalidator(
     cacheServices.GetRequiredService<IOutputCacheStore>());
 var postService = new PostService(
     postRepository,
+    new WebhookPostRepository(context),
     categoryRepository,
     new PublicationTimeZone(TimeZoneInfo.FindSystemTimeZoneById("Europe/Istanbul")),
     TimeProvider.System,

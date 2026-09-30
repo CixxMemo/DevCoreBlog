@@ -8,11 +8,12 @@ using DevCoreBlog.Services.Publishing;
 namespace DevCoreBlog.Services;
 
 /// <summary>Coordinates post validation, publication rules and persistence contracts.</summary>
-public class PostService : IPostService, IPublicationSchedule
+public class PostService : IPostService, IPublicationSchedule, IWebhookPostService
 {
     private const int MaximumSlugAttempts = 100;
     // Post use cases depend on the domain persistence contract.
     private readonly IPostRepository _postRepository;
+    private readonly IWebhookPostRepository _webhookRepository;
     private readonly IActiveCategoryLookup _activeCategoryLookup;
     private readonly PublicationTimeZone _publicationTimeZone;
     private readonly TimeProvider _timeProvider;
@@ -22,6 +23,7 @@ public class PostService : IPostService, IPublicationSchedule
     // The DI container (configured in Program.cs) provides the instance
     public PostService(
         IPostRepository postRepository,
+        IWebhookPostRepository webhookRepository,
         IActiveCategoryLookup activeCategoryLookup,
         PublicationTimeZone publicationTimeZone,
         TimeProvider timeProvider,
@@ -29,6 +31,7 @@ public class PostService : IPostService, IPublicationSchedule
     {
         // Store the injected repository for use in all service methods
         _postRepository = postRepository;
+        _webhookRepository = webhookRepository;
         _activeCategoryLookup = activeCategoryLookup;
         _publicationTimeZone = publicationTimeZone;
         _timeProvider = timeProvider;
@@ -183,10 +186,33 @@ public class PostService : IPostService, IPublicationSchedule
             return validationResult;
         }
 
-        // BUSINESS RULE: Set creation time to UTC (required for PostgreSQL timestamp with time zone)
-        // This ensures consistent timestamps across different time zones
-        post.CreatedDate = _timeProvider.GetUtcNow().UtcDateTime;
+        return (await CreateValidatedPostAsync(post, null, null, cancellationToken)).Validation;
+    }
 
+    /// <summary>Replays successful submissions before current validation or publication settings.</summary>
+    public async Task<WebhookPostResult> CreateAsync(
+        Post post, string key, string payloadHash, CancellationToken cancellationToken)
+    {
+        var receipt = await _webhookRepository.FindAsync(key, cancellationToken);
+        if (receipt is not null)
+        {
+            return Replay(receipt, payloadHash);
+        }
+
+        var validation = await ValidatePostAsync(post, cancellationToken);
+        if (!validation.IsValid)
+        {
+            return new(validation);
+        }
+
+        return await CreateValidatedPostAsync(post, key, payloadHash, cancellationToken);
+    }
+
+    // Normal and webhook creation share date, slug retry and cache invalidation rules.
+    private async Task<WebhookPostResult> CreateValidatedPostAsync(
+        Post post, string? key, string? payloadHash, CancellationToken cancellationToken)
+    {
+        post.CreatedDate = _timeProvider.GetUtcNow().UtcDateTime;
         var baseSlug = SlugGenerator.GenerateBase(post.Title, "post");
         for (var attempt = 0; attempt < MaximumSlugAttempts; attempt++)
         {
@@ -196,18 +222,49 @@ public class PostService : IPostService, IPublicationSchedule
                 continue;
             }
 
+            if (key is not null && payloadHash is not null)
+            {
+                var result = await _webhookRepository.TryCreateAsync(
+                    post, key, payloadHash, cancellationToken);
+                if (result is null)
+                {
+                    continue;
+                }
+
+                if (result.Created)
+                {
+                    await _publicListCache.InvalidateAsync(cancellationToken);
+                }
+                return Replay(result.Receipt, payloadHash);
+            }
+
             if (await _postRepository.TryCreateWithSlugAsync(post, cancellationToken))
             {
                 await _publicListCache.InvalidateAsync(cancellationToken);
-                return ContentValidationResult.Success();
+                return new(ContentValidationResult.Success(), WebhookPostSnapshot.FromPost(post));
             }
         }
 
-        return ContentValidationResult.FromErrors(
+        // A competing keyed request may have won while all slug candidates were occupied.
+        if (key is not null && payloadHash is not null)
+        {
+            var receipt = await _webhookRepository.FindAsync(key, cancellationToken);
+            if (receipt is not null)
+            {
+                return Replay(receipt, payloadHash);
+            }
+        }
+
+        return new(ContentValidationResult.FromErrors(
         [
             new(nameof(Post.Title), "Could not reserve a unique address. Try another title.")
-        ]);
+        ]));
     }
+
+    private static WebhookPostResult Replay(WebhookReceipt receipt, string payloadHash) =>
+        receipt.PayloadHash == payloadHash
+            ? new(ContentValidationResult.Success(), WebhookPostSnapshot.FromReceipt(receipt))
+            : new(ContentValidationResult.Success(), KeyConflict: true);
 
     // Update editable fields while preserving the existing public URL.
     public async Task<ContentValidationResult> UpdatePostAsync(

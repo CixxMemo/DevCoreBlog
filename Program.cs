@@ -122,6 +122,7 @@ builder.Services
 // This ensures each request gets its own repository instance, which shares
 // the same DbContext instance within that request.
 builder.Services.AddScoped<PostRepository>();
+builder.Services.AddScoped<IWebhookPostRepository, WebhookPostRepository>();
 builder.Services.AddScoped<CategoryRepository>();
 builder.Services.AddScoped<IPostRepository>(serviceProvider =>
     serviceProvider.GetRequiredService<PostRepository>());
@@ -139,6 +140,8 @@ builder.Services.AddScoped<IAdminDashboardReadRepository, AdminDashboardReadRepo
 // Controllers will depend on service interfaces (IPostService, ICategoryService).
 builder.Services.AddScoped<PostService>();
 builder.Services.AddScoped<IPostService>(serviceProvider =>
+    serviceProvider.GetRequiredService<PostService>());
+builder.Services.AddScoped<IWebhookPostService>(serviceProvider =>
     serviceProvider.GetRequiredService<PostService>());
 builder.Services.AddScoped<IPublicationSchedule>(serviceProvider =>
     serviceProvider.GetRequiredService<PostService>());

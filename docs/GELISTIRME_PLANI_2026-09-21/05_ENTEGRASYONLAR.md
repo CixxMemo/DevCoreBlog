@@ -34,6 +34,8 @@ Bu bölüm bir çalıştırma emri değildir. Her seferinde yalnızca **bir faz 
 
 ## F28 — Webhook tekrarlarını tek kayda indir
 
+**Uygulanan sözleşme:** [Webhook ve istemci geçişi](../WEBHOOK_SOZLESMESI.md). Anahtarlı isteklerde kalıcı tekrar koruması; anahtarsız eski istemciler geriye uyum için çalışır. Başarılı anahtar süresiz saklanır; hata anahtarı tüketmez.
+
 **Neden:** Ağ tekrarı aynı yazıyı birden çok kez oluşturabiliyor.
 
 **Ön koşul:** F27 tamamlanmış; mevcut webhook/portföy sınırları kök AGENTS.md kapsamında korunuyor.

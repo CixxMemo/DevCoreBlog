@@ -100,6 +100,19 @@ F22'de Post ve Category için uygulama tarafından artırılan tek `EditVersion`
 
 **Durum:** F22 kodu, boş/önceki şema migration'ı ve sentetik PostgreSQL/HTTP yarış kontrolüyle doğrulandı.
 
+## D11 — Kalıcı webhook tekrar koruması ve istemci geçişi
+
+F28 ile isteğe bağlı `Idempotency-Key` eklendi. Anahtarsız eski istemciler çalışır,
+ancak tekrar koruması yalnız anahtar taşıyan gönderimlerde geçerlidir. Anahtar,
+typed payload özeti ve oluşturulan post referansı tek transaction'da tutulur;
+DB benzersizlik kuralı eşzamanlı isteklerde tek post sağlar. Aynı anahtar/aynı
+girdi ilk yanıtı döndürür, farklı girdi 409 üretir. Başarılı kayıt süresiz saklanır;
+post silinince nullable FK ayrılır ama ilk sonuç korunur. Başarısız işlem yeni
+anahtarı tüketmez. Dış otomasyon değişikliği ve canlı migration yapılmadı.
+
+[İstemci, saklama ve geri dönüş sözleşmesi](../WEBHOOK_SOZLESMESI.md).
+**Durum:** F28 sentetik PostgreSQL/HTTP kabulüyle doğrulandı.
+
 ## Gerektiğinde alınacak gerçek ürün/ortam bilgileri
 
 Bunlar şimdi topluca sorulmaz. Mevcut kaynaktan doğrulanamıyorsa ilgili fazda sorulur; önceki tercih tekrar sorulmaz.

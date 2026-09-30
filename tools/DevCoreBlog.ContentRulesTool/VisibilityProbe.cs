@@ -27,6 +27,7 @@ internal static class VisibilityProbe
             cacheServices.GetRequiredService<IOutputCacheStore>());
         var service = new PostService(
             postRepository,
+            new WebhookPostRepository(context),
             categoryRepository,
             new PublicationTimeZone(TimeZoneInfo.FindSystemTimeZoneById("Europe/Istanbul")),
             clock,

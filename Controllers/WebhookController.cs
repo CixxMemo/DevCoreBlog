@@ -20,15 +20,18 @@ public sealed class WebhookController : ControllerBase
         new(JsonSerializerDefaults.Web);
 
     private readonly IPostService _postService;
+    private readonly IWebhookPostService _webhookPostService;
     private readonly WebhookIngressOptions _options;
     private readonly TimeProvider _timeProvider;
 
     public WebhookController(
         IPostService postService,
+        IWebhookPostService webhookPostService,
         WebhookIngressOptions options,
         TimeProvider timeProvider)
     {
         _postService = postService;
+        _webhookPostService = webhookPostService;
         _options = options;
         _timeProvider = timeProvider;
     }
@@ -43,6 +46,11 @@ public sealed class WebhookController : ControllerBase
         if (!HasValidSecret())
         {
             return Unauthorized(new { success = false, message = "Unauthorized." });
+        }
+
+        if (!TryReadIdempotencyKey(out var key))
+        {
+            return BadRequest(new { success = false, message = "Idempotency-Key must contain 1 to 128 ASCII letters, digits, dots, underscores or hyphens." });
         }
 
         if (Request.ContentLength > WebhookIngressOptions.MaximumRequestBodyBytes)
@@ -92,8 +100,27 @@ public sealed class WebhookController : ControllerBase
             PublishDate = payload.PublishDate ?? _timeProvider.GetUtcNow().UtcDateTime
         };
 
-        var validationResult = await _postService.CreatePostAsync(
-            post, cancellationToken);
+        WebhookPostResult result;
+        if (key is null)
+        {
+            // Existing clients may migrate independently; only keyed requests have retry protection.
+            var validation = await _postService.CreatePostAsync(post, cancellationToken);
+            result = new(validation, validation.IsValid ? WebhookPostSnapshot.FromPost(post) : null);
+        }
+        else
+        {
+            // Hash the typed client fields, before generated dates or server publication policy.
+            var payloadHash = Convert.ToHexString(SHA256.HashData(
+                JsonSerializer.SerializeToUtf8Bytes(payload, JsonOptions)));
+            result = await _webhookPostService.CreateAsync(post, key, payloadHash, cancellationToken);
+        }
+
+        if (result.KeyConflict)
+        {
+            return Conflict(new { success = false, message = "Idempotency-Key was already used with a different payload." });
+        }
+
+        var validationResult = result.Validation;
         if (!validationResult.IsValid)
         {
             var errors = validationResult.Errors.Select(error =>
@@ -111,16 +138,38 @@ public sealed class WebhookController : ControllerBase
             });
         }
 
+        var saved = result.Post
+            ?? throw new InvalidOperationException("Successful webhook submission requires a post result.");
         return Ok(new
         {
             success = true,
-            postId = post.Id,
-            title = post.Title,
-            slug = post.Slug,
-            isPublished = post.IsPublished,
-            publishDate = post.PublishDate,
-            message = post.IsPublished ? "Post created and published." : "Post saved as draft."
+            postId = saved.Id,
+            title = saved.Title,
+            slug = saved.Slug,
+            isPublished = saved.IsPublished,
+            publishDate = saved.PublishDate,
+            message = saved.IsPublished ? "Post created and published." : "Post saved as draft."
         });
+    }
+
+    // Missing headers preserve the old contract; present headers must be unambiguous and bounded.
+    private bool TryReadIdempotencyKey(out string? key)
+    {
+        key = null;
+        if (!Request.Headers.TryGetValue("Idempotency-Key", out var header))
+        {
+            return true;
+        }
+
+        if (header.Count != 1 || header[0] is not { Length: >= 1 and <= 128 } value ||
+            value.Any(character => !char.IsAsciiLetterOrDigit(character) &&
+                character is not '.' and not '_' and not '-'))
+        {
+            return false;
+        }
+
+        key = value;
+        return true;
     }
 
     private bool HasValidSecret()

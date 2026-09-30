@@ -17,7 +17,7 @@ task_webhook_rate_limit=5
 if [ "${DEVCORE_F25_PROBE:-0}" = 1 ]; then
     task_ef_command_log_level=Information
 fi
-if [ -n "${DEVCORE_F27_PROBE:-}" ]; then
+if [ -n "${DEVCORE_F27_PROBE:-}" ] || [ "${DEVCORE_F28_PROBE:-0}" = 1 ]; then
     task_webhook_rate_limit=20
 fi
 task_app_pid=
@@ -142,10 +142,48 @@ pg_ctl -D "$task_pgdata" -l "$task_tmp/postgres.log" \
     -o "-p $task_pg_port -h 127.0.0.1 -k $task_socket" -w start >/dev/null
 task_pg_started=1
 createdb -h 127.0.0.1 -p "$task_pg_port" -U "$task_pg_user" "$task_db"
+if [ "${DEVCORE_F28_PROBE:-0}" = 1 ]; then
+    createdb -h 127.0.0.1 -p "$task_pg_port" -U "$task_pg_user" f28_empty
+    (
+        cd "$task_source"
+        for task_migration_db in f28_empty "$task_db"; do
+            task_connection="Host=127.0.0.1;Port=$task_pg_port;Database=$task_migration_db;Username=$task_pg_user"
+            task_target=
+            if [ "$task_migration_db" = "$task_db" ]; then task_target=20260928073947_EditVersions; fi
+            DB_CONNECTION_STRING="$task_connection" dotnet ef database update $task_target \
+                --no-build --project DevCoreBlog.csproj --startup-project DevCoreBlog.csproj \
+                --context ApplicationDbContext --connection "$task_connection" --no-color
+        done
+    )
+    # Reuse only the synthetic inserts, preserving the actual migrated schema.
+    sed -n '/^INSERT INTO "Categories"/,$p' "$task_source/scripts/verification/f01_fixture.sql" > "$task_tmp/seed.sql"
+    psql -X -h 127.0.0.1 -p "$task_pg_port" -U "$task_pg_user" -d "$task_db" \
+        -v ON_ERROR_STOP=1 -f "$task_tmp/seed.sql" >/dev/null
+    task_snapshot_sql='SELECT row_to_json(p) FROM "Posts" p ORDER BY "Id"; SELECT row_to_json(c) FROM "Categories" c ORDER BY "Id";'
+    psql -X -h 127.0.0.1 -p "$task_pg_port" -U "$task_pg_user" -d "$task_db" \
+        -At -c "$task_snapshot_sql" > "$task_tmp/prior-data.txt"
+    (
+        cd "$task_source"
+        task_connection="Host=127.0.0.1;Port=$task_pg_port;Database=$task_db;Username=$task_pg_user"
+        DB_CONNECTION_STRING="$task_connection" dotnet ef database update --no-build \
+            --project DevCoreBlog.csproj --startup-project DevCoreBlog.csproj \
+            --context ApplicationDbContext --connection "$task_connection" --no-color
+    )
+    psql -X -h 127.0.0.1 -p "$task_pg_port" -U "$task_pg_user" -d "$task_db" \
+        -At -c "$task_snapshot_sql" > "$task_tmp/upgraded-data.txt"
+    cmp "$task_tmp/prior-data.txt" "$task_tmp/upgraded-data.txt"
+    printf 'f28_prior_migration_preserves_data=true\n'
+    task_empty_count=$(psql -X -h 127.0.0.1 -p "$task_pg_port" -U "$task_pg_user" \
+        -d f28_empty -At -c 'SELECT count(*) FROM "WebhookReceipts";')
+    [ "$task_empty_count" = 0 ]
+    printf 'f28_empty_database_migration=true\n'
+else
 psql -h 127.0.0.1 -p "$task_pg_port" -U "$task_pg_user" -d "$task_db" \
     -v ON_ERROR_STOP=1 -f "$task_source/scripts/verification/f01_fixture.sql" >/dev/null
 psql -X -h 127.0.0.1 -p "$task_pg_port" -U "$task_pg_user" -d "$task_db" \
     -v ON_ERROR_STOP=1 -c 'ALTER TABLE "Posts" ADD COLUMN "EditVersion" bigint NOT NULL DEFAULT 1; ALTER TABLE "Categories" ADD COLUMN "EditVersion" bigint NOT NULL DEFAULT 1;' >/dev/null
+
+fi
 
 if [ "${1:-current}" = current ]; then
     DB_CONNECTION_STRING="Host=127.0.0.1;Port=$task_pg_port;Database=$task_db;Username=$task_pg_user" \
@@ -157,6 +195,7 @@ if [ "${1:-current}" = current ]; then
         --project "$task_source/tools/DevCoreBlog.ContentRulesTool/DevCoreBlog.ContentRulesTool.csproj"
 fi
 
+start_app() {
 (
     cd "$task_source"
     exec env -u ADMIN_PASSWORD \
@@ -174,6 +213,8 @@ fi
         --urls "http://127.0.0.1:$task_app_port" > "$task_tmp/application.log" 2>&1
 ) &
 task_app_pid=$!
+}
+start_app
 
 DEVCORE_TEST_ADMIN_USERNAME=f17-admin \
 DEVCORE_TEST_ADMIN_PASSWORD="$task_admin_password" \
@@ -242,7 +283,7 @@ if [ "${DEVCORE_F15_PROBE:-0}" = 1 ]; then
         --database-name "$task_db"
 fi
 
-if [ "${1:-current}" = current ] && [ "${DEVCORE_F17_HOLD_FOR_BROWSER:-0}" != 1 ]; then
+if [ "${1:-current}" = current ] && { [ "${DEVCORE_F17_HOLD_FOR_BROWSER:-0}" != 1 ] || [ "${DEVCORE_F28_PROBE:-0}" = 1 ]; }; then
     DEVCORE_TEST_ADMIN_USERNAME=f17-admin \
     DEVCORE_TEST_ADMIN_PASSWORD="$task_admin_password" \
     python3 "$task_source/scripts/verification/f11_optional_thumbnail_probe.py" \
@@ -254,6 +295,18 @@ if [ "${1:-current}" = current ] && [ "${DEVCORE_F17_HOLD_FOR_BROWSER:-0}" != 1 
         python3 "$task_source/scripts/verification/f12_content_validation_probe.py" \
             --base-url "http://127.0.0.1:$task_app_port"
     fi
+fi
+
+if [ "${DEVCORE_F28_PROBE:-0}" = 1 ]; then
+    python3 "$task_source/scripts/verification/f28_webhook_probe.py" \
+        --base-url "http://127.0.0.1:$task_app_port" --mode acceptance \
+        --pg-port "$task_pg_port" --pg-user "$task_pg_user"
+    kill "$task_app_pid"
+    wait "$task_app_pid" || true
+    start_app
+    python3 "$task_source/scripts/verification/f28_webhook_probe.py" \
+        --base-url "http://127.0.0.1:$task_app_port" --mode restart \
+        --pg-port "$task_pg_port" --pg-user "$task_pg_user"
 fi
 
 if [ -n "${DEVCORE_F27_PROBE:-}" ]; then

@@ -32,9 +32,19 @@ public class ApplicationDbContext : DbContext
     // Represents the "Categories" table — use _context.Categories to query/manage categories
     public DbSet<Category> Categories { get; set; }
 
+    public DbSet<WebhookReceipt> WebhookReceipts { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        var receipt = modelBuilder.Entity<WebhookReceipt>();
+        receipt.HasKey(item => item.Key);
+        receipt.Property(item => item.Key).HasMaxLength(128).HasAnnotation("Relational:Collation", "C");
+        receipt.Property(item => item.PayloadHash).HasMaxLength(64);
+        receipt.Property(item => item.Title).HasMaxLength(200);
+        receipt.HasOne(item => item.Post).WithMany()
+            .HasForeignKey(item => item.PostId).OnDelete(DeleteBehavior.SetNull);
 
         // The database must reject category deletion while posts still reference it.
         // This also closes the race between the service's early check and DELETE.
