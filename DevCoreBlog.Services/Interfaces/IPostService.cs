@@ -21,6 +21,7 @@
 
 using DevCoreBlog.Core.Entities;
 using DevCoreBlog.Core.Validation;
+using DevCoreBlog.Services.Publishing;
 
 namespace DevCoreBlog.Services.Interfaces;
 
@@ -71,16 +72,22 @@ public interface IPostService
         Post post,
         CancellationToken cancellationToken = default);
 
+    // Apply editor intent and validate before uploads; other integrations keep their contracts.
+    Task<ContentValidationResult> PrepareEditorSaveAsync(
+        Post post, PostSaveAction action, CancellationToken cancellationToken = default);
+
     // Create a new post (handles validation, slug generation and date setting)
     Task<ContentValidationResult> CreatePostAsync(
         Post post,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default,
+        PostSaveAction? saveAction = null);
 
     // Update an existing post without changing its public slug.
     Task<ContentValidationResult> UpdatePostAsync(
         Post post,
         CancellationToken cancellationToken = default,
-        long? expectedEditVersion = null);
+        long? expectedEditVersion = null,
+        PostSaveAction? saveAction = null);
 
     // Delete a post by its Id
     Task DeletePostAsync(int id);

@@ -1,15 +1,7 @@
-@* ============================================================================= *@
-@* AdminPost/Index.cshtml — High-Productivity Post Management (Tech Minimal)    *@
-@* ============================================================================= *@
-@* This view delivers a developer-first post management table with:             *@
-@*   1. Live Per-Row ViewCount tracking badges.                                 *@
-@*   2. Instant Inline Status Toggle (IsPublished) via AJAX without reload.     *@
-@*   3. Client-Side instant search, category filtering, and status switching.   *@
-@*   4. Direct "View Live" links to public blog URLs.                           *@
-@* ============================================================================= *@
-
-@model List<DevCoreBlog.Core.Entities.Post>
+@* Publication states are computed before rendering; actions live in the editor. *@
+@model List<DevCoreBlog.Models.Admin.PostListItem>
 @using DevCoreBlog.Core.Entities
+@using DevCoreBlog.Core.Publishing
 
 @{
     ViewData["Title"] = "Posts";
@@ -84,7 +76,9 @@
                         class="border-2 border-black px-3 py-1.5 font-mono text-xs bg-white text-black focus:outline-none cursor-pointer">
                     <option value="all">All Statuses</option>
                     <option value="published">Published Only</option>
+                    <option value="scheduled">Scheduled Only</option>
                     <option value="draft">Drafts Only</option>
+                    <option value="inactive">Inactive Only</option>
                 </select>
             </div>
 
@@ -116,9 +110,10 @@
                         </tr>
                     </thead>
                     <tbody id="posts-table-body" class="divide-y divide-neutral-200 border-b border-black">
-                        @foreach (var post in Model)
+                        @foreach (var item in Model)
                         {
-                            var statusValue = post.IsPublished ? "published" : "draft";
+                            var post = item.Post;
+                            var statusValue = item.State.ToString().ToLowerInvariant();
                             var categoryName = post.Category?.Name ?? "Uncategorized";
 
                             <tr class="post-row hover:bg-neutral-50 transition-none"
@@ -144,30 +139,9 @@
                                     </span>
                                 </td>
 
-                                @* 3. Instant Inline Status Toggle Badge Button *@
+                                @* The state reflects activity, category, publication permission and UTC time. *@
                                 <td class="p-3.5 text-center whitespace-nowrap">
-                                    @if (post.IsPublished)
-                                    {
-                                        <button type="button" 
-                                                onclick="togglePublish(@post.Id, this)" 
-                                                data-post-id="@post.Id"
-                                                class="status-toggle-btn inline-flex items-center gap-1.5 border border-emerald-700 bg-emerald-50 text-emerald-900 font-mono text-[11px] font-bold px-2.5 py-1 uppercase cursor-pointer hover:bg-emerald-100 transition-none"
-                                                title="Click to switch status to Draft">
-                                            <span class="w-2 h-2 bg-emerald-600 inline-block"></span>
-                                            <span>Published</span>
-                                        </button>
-                                    }
-                                    else
-                                    {
-                                        <button type="button" 
-                                                onclick="togglePublish(@post.Id, this)" 
-                                                data-post-id="@post.Id"
-                                                class="status-toggle-btn inline-flex items-center gap-1.5 border border-neutral-400 bg-neutral-100 text-neutral-700 font-mono text-[11px] font-bold px-2.5 py-1 uppercase cursor-pointer hover:bg-neutral-200 transition-none"
-                                                title="Click to switch status to Published">
-                                            <span class="w-2 h-2 bg-neutral-400 inline-block"></span>
-                                            <span>Draft</span>
-                                        </button>
-                                    }
+                                    <span class="inline-block border border-black bg-neutral-100 px-2.5 py-1 font-mono text-xs font-bold">@item.State</span>
                                 </td>
 
                                 @* 4. Dedicated ViewCount Badge *@
@@ -191,12 +165,12 @@
                                             EDIT
                                         </a>
 
-                                        @* View Live button *@
-                                        <a href="/post/@post.Slug" target="_blank"
-                                           class="live-link-btn border border-black bg-neutral-100 hover:bg-black hover:text-white px-2.5 py-1 font-bold inline-block transition-none"
-                                           title="Open article in public view">
-                                            LIVE ↗
-                                        </a>
+                                        @if (item.State == PostPublicationState.Published)
+                                        {
+                                            <a href="/post/@post.Slug" target="_blank"
+                                               class="live-link-btn border border-black bg-neutral-100 px-2.5 py-1 font-bold inline-block"
+                                               title="Open article in public view">LIVE ↗</a>
+                                        }
 
                                         @* Delete form *@
                                         <form asp-action="Delete" asp-route-id="@post.Id" method="post" class="inline m-0 p-0"
@@ -242,101 +216,6 @@
         <script type="module" src="~/js/post-recovery-complete.js" asp-append-version="true"></script>
     }
     <script>
-        // =========================================================================
-        // Instant Inline Status Toggle (AJAX POST)
-        // Switches post IsPublished status seamlessly without a page reload.
-        // =========================================================================
-        function togglePublish(postId, buttonElement) {
-            if (!buttonElement || !postId) return;
-
-            const antiforgeryToken = document.querySelector(
-                '#antiforgery-token input[name="__RequestVerificationToken"]'
-            )?.value;
-            if (!antiforgeryToken) {
-                if (window.showToast) {
-                    window.showToast('Security token unavailable. Refresh the page and try again.', 'error');
-                }
-                return;
-            }
-
-            // Set button to syncing state
-            const originalHtml = buttonElement.innerHTML;
-            buttonElement.disabled = true;
-            buttonElement.innerHTML = `<span class="font-mono text-[10px]">SYNCING...</span>`;
-
-            fetch(`/AdminPost/TogglePublish/${postId}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRF-TOKEN': antiforgeryToken
-                }
-            })
-            .then(async response => {
-                const isJson = response.headers.get('content-type')?.includes('application/json');
-                const data = isJson ? await response.json() : null;
-                if (!response.ok) {
-                    const message = typeof data?.message === 'string'
-                        ? data.message
-                        : response.status === 400
-                            ? 'Your security token is invalid or expired. Refresh the page and try again.'
-                            : 'Failed to update status. Please try again.';
-                    throw new Error(message);
-                }
-                return data;
-            })
-            .then(data => {
-                buttonElement.disabled = false;
-                if (data.success) {
-                    const row = document.getElementById(`post-row-${postId}`);
-                    
-                    if (data.isPublished) {
-                        // Updated to Published state
-                        buttonElement.className = 'status-toggle-btn inline-flex items-center gap-1.5 border border-emerald-700 bg-emerald-50 text-emerald-900 font-mono text-[11px] font-bold px-2.5 py-1 uppercase cursor-pointer hover:bg-emerald-100 transition-none';
-                        buttonElement.title = 'Click to switch status to Draft';
-                        buttonElement.innerHTML = `<span class="w-2 h-2 bg-emerald-600 inline-block"></span><span>Published</span>`;
-                        if (row) row.setAttribute('data-status', 'published');
-                    } else {
-                        // Updated to Draft state
-                        buttonElement.className = 'status-toggle-btn inline-flex items-center gap-1.5 border border-neutral-400 bg-neutral-100 text-neutral-700 font-mono text-[11px] font-bold px-2.5 py-1 uppercase cursor-pointer hover:bg-neutral-200 transition-none';
-                        buttonElement.title = 'Click to switch status to Published';
-                        buttonElement.innerHTML = `<span class="w-2 h-2 bg-neutral-400 inline-block"></span><span>Draft</span>`;
-                        if (row) row.setAttribute('data-status', 'draft');
-                    }
-
-                    // Re-apply filter rules so row updates visibility if a filter is active
-                    applyFilters();
-
-                    // Display non-blocking feedback toast
-                    if (window.showToast) {
-                        const successMessage = typeof data.message === 'string'
-                            ? data.message
-                            : 'Status updated.';
-                        window.showToast(successMessage, 'success');
-                    }
-                } else {
-                    buttonElement.innerHTML = originalHtml;
-                    if (window.showToast) {
-                        const errorMessage = typeof data.message === 'string'
-                            ? data.message
-                            : 'Status update failed.';
-                        window.showToast(errorMessage, 'error');
-                    }
-                }
-            })
-            .catch(error => {
-                console.error('Toggle error:', error);
-                buttonElement.disabled = false;
-                buttonElement.innerHTML = originalHtml;
-                if (window.showToast) {
-                    const message = error instanceof Error && error.message
-                        ? error.message
-                        : 'Failed to update status. Please try again.';
-                    window.showToast(message, 'error');
-                }
-            });
-        }
-
         // =========================================================================
         // Client-Side Search & Filter Engine
         // Evaluates search queries, category selections, and status filters instantly.

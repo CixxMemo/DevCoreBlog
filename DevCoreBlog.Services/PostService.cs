@@ -179,11 +179,51 @@ public class PostService : IPostService, IPublicationSchedule, IWebhookPostServi
         return ContentValidationResult.FromErrors(errors);
     }
 
+    /// <summary>Validates site time before applying explicit draft, schedule or publish intent.</summary>
+    public async Task<ContentValidationResult> PrepareEditorSaveAsync(
+        Post post, PostSaveAction action, CancellationToken cancellationToken = default)
+    {
+        var validation = await ValidatePostAsync(post, cancellationToken);
+        if (!validation.IsValid) return validation;
+        var utcNow = _timeProvider.GetUtcNow().UtcDateTime;
+        switch (action)
+        {
+            case PostSaveAction.SaveDraft:
+                post.IsPublished = false;
+                break;
+            case PostSaveAction.Schedule:
+                if (post.PublishDate <= utcNow)
+                    return ContentValidationResult.FromErrors([
+                        new(nameof(Post.PublishDate), "Choose a future publish date to schedule this post.")]);
+                post.IsPublished = true;
+                break;
+            case PostSaveAction.Publish:
+                post.IsPublished = true;
+                post.PublishDate = utcNow;
+                break;
+            case PostSaveAction.Save:
+                var stored = post.Id > 0 ? await _postRepository.GetByIdAsync(post.Id) : null;
+                if (stored is null)
+                    return ContentValidationResult.FromErrors([
+                        new("SaveAction", "Save changes requires an existing post.")]);
+                post.IsPublished = stored.IsPublished;
+                post.PublishDate = stored.PublishDate;
+                break;
+            default:
+                return ContentValidationResult.FromErrors([
+                    new("SaveAction", "Choose a valid save action.")]);
+        }
+        return ContentValidationResult.Success();
+    }
+
     public async Task<ContentValidationResult> CreatePostAsync(
         Post post,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        PostSaveAction? saveAction = null)
     {
-        var validationResult = await ValidatePostAsync(post, cancellationToken);
+        var validationResult = saveAction is { } action
+            ? await PrepareEditorSaveAsync(post, action, cancellationToken)
+            : await ValidatePostAsync(post, cancellationToken);
         if (!validationResult.IsValid)
         {
             return validationResult;
@@ -273,9 +313,12 @@ public class PostService : IPostService, IPublicationSchedule, IWebhookPostServi
     public async Task<ContentValidationResult> UpdatePostAsync(
         Post post,
         CancellationToken cancellationToken = default,
-        long? expectedEditVersion = null)
+        long? expectedEditVersion = null,
+        PostSaveAction? saveAction = null)
     {
-        var validationResult = await ValidatePostAsync(post, cancellationToken);
+        var validationResult = saveAction is { } action
+            ? await PrepareEditorSaveAsync(post, action, cancellationToken)
+            : await ValidatePostAsync(post, cancellationToken);
         if (!validationResult.IsValid)
         {
             return validationResult;

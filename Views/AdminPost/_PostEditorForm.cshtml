@@ -1,4 +1,5 @@
 @model DevCoreBlog.Models.Admin.PostFormInput
+@using DevCoreBlog.Core.Publishing
 @* Shared MVC form; the page explicitly supplies its mode even after invalid binding. *@
 @{
     var isEdit = string.Equals(ViewData["PostEditorMode"] as string, "edit", StringComparison.Ordinal);
@@ -8,6 +9,8 @@
       data-mode="@(isEdit ? "edit" : "create")" data-post-id="@Model.Id"
       data-upload-url="@Url.Action("UploadEditorImage", "AdminPost")" data-slug="@Model.Slug">
     <input type="hidden" name="recoveryRevision" value="" />
+    @* Recovery metadata only; publication intent comes from the submit button. *@
+    <input type="hidden" name="IsPublished" value="@Model.IsPublished.ToString().ToLowerInvariant()" />
     @if (isEdit)
     {
         <input type="hidden" asp-for="Id" />
@@ -129,13 +132,25 @@
 
         <div class="space-y-6">
 
-            @* Primary Save / Publish Button *@
+            @* Explicit native submit values also work without JavaScript. *@
             <div class="border-2 border-black bg-white p-4 space-y-3">
-                <button type="submit"
-                        class="w-full border-2 border-black bg-black text-white hover:bg-neutral-800 p-3 font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-none">
-                    <span>⚡</span>
-                    <span>@(isEdit ? "Update Post" : "Publish / Save Post")</span>
-                </button>
+                <p class="font-mono text-xs font-bold">@(isEdit ? "Saved state" : "Current state"): @Model.PublicationState</p>
+                @if (isEdit)
+                {
+                    <button type="submit" name="SaveAction" value="Save"
+                            class="w-full border-2 border-black bg-black text-white p-3 font-mono text-xs font-bold focus:outline-2 focus:outline-offset-2">
+                        Save changes (keep @(Model.IsPublished ? "publication" : "draft"))
+                    </button>
+                    <p class="font-mono text-xs text-neutral-600">Save changes keeps the saved publication flag and date.</p>
+                }
+                <button type="submit" name="SaveAction" value="SaveDraft"
+                        class="w-full border-2 border-black bg-white text-black p-3 font-mono text-xs font-bold focus:outline-2 focus:outline-offset-2">Save Draft</button>
+                <button type="submit" name="SaveAction" value="Schedule"
+                        class="w-full border-2 border-black bg-white text-black p-3 font-mono text-xs font-bold focus:outline-2 focus:outline-offset-2">Schedule</button>
+                <button type="submit" name="SaveAction" value="Publish"
+                        class="w-full border-2 border-black bg-black text-white p-3 font-mono text-xs font-bold focus:outline-2 focus:outline-offset-2">Publish now</button>
+                <p class="font-mono text-xs text-neutral-600">Schedule uses a future site time. Publish now uses the server clock. Public visibility also requires an active post and category.</p>
+                <span asp-validation-for="SaveAction" class="font-mono text-xs text-rose-600 block"></span>
 
                 <a asp-action="Index"
                    class="block w-full text-center border-2 border-black bg-neutral-100 hover:bg-black hover:text-white p-2 font-mono text-xs font-bold uppercase transition-none">
@@ -199,7 +214,7 @@
 
                 @* Native seconds and server validation own dates; jQuery step does not support datetime-local. *@
                 <div>
-                    <label asp-for="PublishDate" class="block font-mono text-xs font-bold uppercase text-black mb-1">Publish Date (@Model.SiteTimeZoneId)</label>
+                    <label asp-for="PublishDate" class="block font-mono text-xs font-bold uppercase text-black mb-1">Schedule Date (@Model.SiteTimeZoneId)</label>
                     <input asp-for="PublishDate" asp-format="{0:yyyy-MM-ddTHH:mm:ss}" type="datetime-local" step="1" class="w-full border-2 border-black p-2 font-mono text-xs bg-white text-black focus:outline-none" />
                     <span asp-validation-for="PublishDate" class="font-mono text-xs text-rose-600 block mt-1"></span>
                 </div>
@@ -235,11 +250,6 @@
 
                 @* Status Flags *@
                 <div class="border-t border-black pt-3 space-y-2 font-mono text-xs">
-                    <label class="flex items-center gap-2 cursor-pointer">
-                        <input asp-for="IsPublished" class="w-4 h-4 border-2 border-black accent-black rounded-none" />
-                        <span class="font-bold">Publish Live (IsPublished)</span>
-                    </label>
-
                     <label class="flex items-center gap-2 cursor-pointer">
                         <input asp-for="IsActive" class="w-4 h-4 border-2 border-black accent-black rounded-none" />
                         <span class="font-bold">Active in System (IsActive)</span>

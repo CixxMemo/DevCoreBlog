@@ -1,5 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using DevCoreBlog.Core.Validation;
+using DevCoreBlog.Core.Publishing;
+using DevCoreBlog.Services.Publishing;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace DevCoreBlog.Models.Admin;
@@ -38,6 +40,13 @@ public sealed class PostFormInput
         ErrorMessage = "Excerpt cannot exceed {1} characters.")]
     public string? Excerpt { get; set; }
 
+    [EnumDataType(typeof(PostSaveAction), ErrorMessage = "Choose a valid save action.")]
+    public PostSaveAction SaveAction { get; set; } = PostSaveAction.SaveDraft;
+
+    [BindNever]
+    public PostPublicationState PublicationState { get; set; } = PostPublicationState.Draft;
+
+    [BindNever]
     public bool IsPublished { get; set; }
 
     public bool IsActive { get; set; } = true;

@@ -67,17 +67,17 @@
             </div>
         </div>
 
-        @* Card 2: Published Articles *@
+        @* Card 2: Publication permission, including scheduled posts. *@
         <div class="border-2 border-black bg-white p-5 flex flex-col justify-between">
             <div class="font-mono text-[11px] font-bold text-neutral-500 uppercase tracking-wider flex items-center gap-1.5">
                 <span class="w-2 h-2 bg-emerald-500 inline-block"></span>
-                <span>Published</span>
+                <span>Publication enabled</span>
             </div>
             <div class="text-3xl md:text-4xl font-black text-black my-2">
                 @Model.PublishedPosts
             </div>
             <div class="font-mono text-[10px] text-neutral-600 border-t border-neutral-200 pt-2">
-                LIVE ON BLOG
+                INCLUDES SCHEDULED
             </div>
         </div>
 
@@ -200,10 +200,6 @@
                                             <a asp-controller="AdminPost" asp-action="Edit" asp-route-id="@post.Id"
                                                class="border border-black bg-white hover:bg-black hover:text-white px-2 py-1 font-bold inline-block">
                                                 EDIT
-                                            </a>
-                                            <a href="/post/@post.Slug" target="_blank"
-                                               class="border border-black bg-neutral-100 hover:bg-black hover:text-white px-2 py-1 font-bold inline-block">
-                                                LIVE ↗
                                             </a>
                                         </td>
                                     </tr>

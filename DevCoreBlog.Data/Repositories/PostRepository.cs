@@ -1,3 +1,4 @@
+using DevCoreBlog.Core.Publishing;
 using System.Linq.Expressions;
 using DevCoreBlog.Core.Entities;
 using DevCoreBlog.Core.ReadModels;
@@ -50,8 +51,7 @@ public class PostRepository : GenericRepository<Post>, IPostRepository
 
     // The captured UTC instant is a query parameter; all public paths use this predicate.
     private static Expression<Func<Post, bool>> VisibleAt(DateTime utcNow) =>
-        post => post.IsActive && post.IsPublished && post.PublishDate <= utcNow &&
-                post.Category.IsActive;
+        PostPublication.VisibleAt(utcNow);
 
     private IQueryable<Post> PublicPosts(DateTime utcNow) =>
         _context.Posts.AsNoTracking().Where(VisibleAt(utcNow));

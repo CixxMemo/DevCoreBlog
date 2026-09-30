@@ -23,6 +23,7 @@ using DevCoreBlog.Services.Images;
 using DevCoreBlog.Services.Publishing;
 // Import the Post entity
 using DevCoreBlog.Core.Entities;
+using DevCoreBlog.Core.Publishing;
 // Import MVC attributes and base classes
 using Microsoft.AspNetCore.Mvc;
 // Import SelectList for populating the category dropdown in views
@@ -77,7 +78,9 @@ public class AdminPostController : Controller
 
         // Delegate to service layer — business logic is in PostService
         var posts = await _postService.GetAllPostsAsync();
-        return View(posts);
+        var utcNow = _timeProvider.GetUtcNow().UtcDateTime;
+        return View(posts.Select(post => new PostListItem(post,
+            PostPublication.StateAt(post, post.Category?.IsActive == true, utcNow))).ToList());
     }
 
     // -------------------------------------------------------------------------
@@ -113,7 +116,9 @@ public class AdminPostController : Controller
         {
             success = true,
             isPublished = post.IsPublished,
-            message = post.IsPublished ? $"'{post.Title}' is now Published." : $"'{post.Title}' moved to Drafts."
+            message = post.IsPublished
+                ? "Publication enabled. The saved date and active category still control visibility."
+                : "Post moved to Drafts."
         });
     }
 
@@ -147,7 +152,7 @@ public class AdminPostController : Controller
     [RequestSizeLimit(ImageUploadPolicy.MaximumRequestBytes)]
     [RequestFormLimits(MultipartBodyLengthLimit = ImageUploadPolicy.MaximumRequestBytes)]
     public async Task<IActionResult> Create(
-        [Bind("Title,Content,CategoryId,Summary,Excerpt,IsPublished,IsActive,PublishDate")] PostFormInput input,
+        [Bind("Title,Content,CategoryId,Summary,Excerpt,SaveAction,IsActive,PublishDate")] PostFormInput input,
         IFormFile? thumbnailFile,
         Guid? recoveryRevision,
         CancellationToken cancellationToken)
@@ -156,9 +161,8 @@ public class AdminPostController : Controller
 
         if (ModelState.IsValid)
         {
-            var validationResult = await _postService.ValidatePostAsync(
-                post,
-                cancellationToken);
+            var validationResult = await _postService.PrepareEditorSaveAsync(
+                post, input.SaveAction, cancellationToken);
             ModelState.AddContentErrors(validationResult);
         }
 
@@ -172,8 +176,7 @@ public class AdminPostController : Controller
             // Delegate to service layer — business logic (slug generation, date setting)
             // is handled in PostService.CreatePostAsync()
             var createResult = await _postService.CreatePostAsync(
-                post,
-                cancellationToken);
+                post, cancellationToken, input.SaveAction);
             ModelState.AddContentErrors(createResult);
             if (createResult.IsValid)
             {
@@ -183,7 +186,9 @@ public class AdminPostController : Controller
 
         // If validation failed, re-populate the dropdown and re-show the form
         input.SiteTimeZoneId = _publicationTimeZone.Id;
-        await PopulateCategorySelectAsync(input.CategoryId);
+        var categoryIsActive = await PopulateCategorySelectAsync(input.CategoryId);
+        input.PublicationState = PostPublication.StateAt(post, categoryIsActive,
+            _timeProvider.GetUtcNow().UtcDateTime);
         return View(input);
     }
 
@@ -201,8 +206,11 @@ public class AdminPostController : Controller
             return NotFound();
 
         // Get all categories for the dropdown
-        await PopulateCategorySelectAsync(post.CategoryId);
-        return View(MapToInput(post));
+        var categoryIsActive = await PopulateCategorySelectAsync(post.CategoryId);
+        var input = MapToInput(post);
+        input.PublicationState = PostPublication.StateAt(post, categoryIsActive,
+            _timeProvider.GetUtcNow().UtcDateTime);
+        return View(input);
     }
 
     // -------------------------------------------------------------------------
@@ -216,7 +224,7 @@ public class AdminPostController : Controller
     [RequestFormLimits(MultipartBodyLengthLimit = ImageUploadPolicy.MaximumRequestBytes)]
     public async Task<IActionResult> Edit(
         int id,
-        [Bind("Id,EditVersion,Title,Content,CategoryId,Summary,Excerpt,IsPublished,IsActive,PublishDate")] PostFormInput input,
+        [Bind("Id,EditVersion,Title,Content,CategoryId,Summary,Excerpt,SaveAction,IsActive,PublishDate")] PostFormInput input,
         IFormFile? thumbnailFile,
         Guid? recoveryRevision,
         CancellationToken cancellationToken)
@@ -259,9 +267,8 @@ public class AdminPostController : Controller
 
         if (ModelState.IsValid)
         {
-            var validationResult = await _postService.ValidatePostAsync(
-                post,
-                cancellationToken);
+            var validationResult = await _postService.PrepareEditorSaveAsync(
+                post, input.SaveAction, cancellationToken);
             ModelState.AddContentErrors(validationResult);
         }
 
@@ -276,7 +283,7 @@ public class AdminPostController : Controller
             var updateResult = await _postService.UpdatePostAsync(
                 post,
                 cancellationToken,
-                input.EditVersion);
+                input.EditVersion, input.SaveAction);
             ModelState.AddContentErrors(updateResult);
             if (updateResult.IsConflict)
             {
@@ -291,7 +298,10 @@ public class AdminPostController : Controller
         // If validation failed, re-populate the dropdown and re-show the form
         input.ThumbnailUrl = post.ThumbnailUrl;
         input.SiteTimeZoneId = _publicationTimeZone.Id;
-        await PopulateCategorySelectAsync(input.CategoryId);
+        var categoryIsActive = await PopulateCategorySelectAsync(input.CategoryId, existingPost.CategoryId);
+        input.PublicationState = PostPublication.StateAt(existingPost, categoryIsActive,
+            _timeProvider.GetUtcNow().UtcDateTime);
+        input.IsPublished = existingPost.IsPublished;
         return View(input);
     }
 
@@ -396,14 +406,16 @@ public class AdminPostController : Controller
         };
     }
 
-    private async Task PopulateCategorySelectAsync(int? selectedCategoryId = null)
+    private async Task<bool> PopulateCategorySelectAsync(
+        int? selectedCategoryId = null, int? stateCategoryId = null)
     {
-        var categories = await _categoryService.GetAllCategoriesAsync();
+        var categories = (await _categoryService.GetAllCategoriesAsync()).ToList();
         ViewBag.CategoryId = new SelectList(
             categories.Where(category => category.IsActive),
             "Id",
             "Name",
             selectedCategoryId);
+        return categories.Any(category => category.Id == (stateCategoryId ?? selectedCategoryId) && category.IsActive);
     }
 
     private static Post MapToPost(PostFormInput input, string thumbnailUrl)
@@ -429,6 +441,7 @@ public class AdminPostController : Controller
         {
             Id = post.Id,
             EditVersion = post.EditVersion,
+            SaveAction = PostSaveAction.Save,
             Title = post.Title,
             Content = post.Content,
             CategoryId = post.CategoryId,

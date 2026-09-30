@@ -130,6 +130,18 @@ liste ek browser origin'i açmaz. CORS kimlik kontrolü değildir.
 Canlı domain/hosting ve dış portföy istemcisi bu fazda değiştirilmedi.
 **Durum:** F29 sentetik PostgreSQL/HTTP ve tarayıcı kanıtıyla doğrulandı.
 
+## D13 — Açık yönetici kayıt eylemleri
+
+F32 aynı MVC formunda Save Draft, Schedule ve Publish now kullanır. Schedule
+gelecekte bir site zamanı ister; Publish now sunucunun UTC saatini alır. Edit'teki
+normal Save kayıtlı yayın iznini ve tarihini korur. Eksik eylem Save Draft'tır;
+eski IsPublished form değeri yetki/niyet kaynağı değildir. Bilinmeyen eylem
+reddedilir. Yayın durumu aktif yazı/kategori, izin ve UTC tarihle hesaplanır.
+F31 kurtarma biçimi korunur; kurtarılan eski yayın bayrağı yeniden yayınlama yapmaz.
+Dashboard bayrak sayacı Publication enabled / Includes scheduled olarak gösterilir;
+public görünürlüğü kanıtlamayan sıralama satırlarında LIVE bağlantısı yoktur.
+**Durum:** F32 izole PostgreSQL/HTTP ve gerçek tarayıcı kanıtıyla doğrulandı.
+
 ## Gerektiğinde alınacak gerçek ürün/ortam bilgileri
 
 Bunlar şimdi topluca sorulmaz. Mevcut kaynaktan doğrulanamıyorsa ilgili fazda sorulur; önceki tercih tekrar sorulmaz.

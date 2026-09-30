@@ -68,7 +68,7 @@ Bu bölüm bir çalıştırma emri değildir. Her seferinde yalnızca **bir faz 
 **Agent'ın uygulayacağı sıra:**
 
 1. Save Draft, Schedule ve Publish eylemlerini aynı mevcut MVC formunun açık submit değerleriyle ayır. Güvenli form input sözleşmesini ve mevcut servis iş kurallarını kullan; gerekirse küçük typed input modeli kullan.
-2. Save Draft yayın bayrağını kapatır; Schedule açıkça gelecekte bir an ister; Publish şimdi yayınlamayı açıkça ifade eder. Düzenlenmiş bir yayınlı yazının normal Save davranışını etiketinde açıkla.
+2. Save Draft yayın bayrağını kapatır; Schedule açıkça gelecekte bir an ister; Publish şimdi yayınlamayı açıkça ifade eder. Edit normal Save kayıtlı yayın iznini ve tarihini korur; bunu etiketinde açıkla. Eksik eylem Save Draft varsayılır; istemci IsPublished alanı yayın kararı vermez.
 3. F16 zaman dilimi ve F17 görünürlük kuralını kullan; geçersiz zaman veya kategori seçimini sunucuda reddet. Kullanıcının içerik girişini koru.
 4. Liste/forma Draft, Scheduled, Published, Inactive durumlarını aynı kuralla yansıt; planlanmış yazıya henüz herkese açıkmış gibi View bağlantısı verme.
 

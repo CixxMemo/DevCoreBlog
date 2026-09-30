@@ -109,6 +109,7 @@ SOLID “her sınıfa interface”, “her metoda factory” veya puan uğruna i
 ## 7. Veri bütünlüğü, yayın ve cache
 
 - Her public sorgu aynı yayın kuralını uygular: aktif yazı + yayın izni + PublishDate ≤ UTC şimdi + aktif kategori. Draft/future/pasif içerik detay, arama, feed, ilgili yazı ve sitemap'te sızamaz.
+- F32 yönetici formunda Save Draft yayın iznini kapatır; Schedule gelecekte bir site zamanı ister; Publish now sunucunun UTC saatini kullanır. Edit normal Save kayıtlı yayın iznini ve tarihini korur. Eksik eylem güvenli taslak varsayımıdır; istemci IsPublished değeri yayın kararı değildir. Liste/form durumu ortak domain kuralından gelir.
 - Zamanı UTC sakla/karşılaştır; form gösterimini açık site saat dilimine dönüştür. Süreye bağlı davranış için yerleşik TimeProvider gibi testlenebilir saat kullan; eski tarihi tahminen kaydırma.
 - Slug düzenlemede kararlı kalır; benzersizlik DB constraint'iyle güvenceye alınır. Geçmişte aynı boş olmayan slug'ı paylaşan kayıtlarda en küçük ID eski URL'nin sahibidir; diğerleri boşta olan numaralı slug'a taşınır. Gerçek veri göçünden önce salt okunur çakışma envanteri ve sahiplik gözden geçirilir. Slug değişimi gerçek ürün ihtiyacıysa redirect/çakışma planı gerekir. “Kontrol ettim sonra kaydettim” yarış koruması değildir.
 - Sayaç güncellemesi yalnızca sayaç alanını atomik değiştirir; eski entity ile bütün satırı ezmez. Yalnızca anonim public detay GET isteği sayılır; HEAD ve yönetici isteği sayılmaz. Bu sayı tekil kişi değildir, bot isteği içerebilir. Edit çakışması kullanıcı metnini kaybettirmeden bildirilir.

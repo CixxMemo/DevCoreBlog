@@ -22,7 +22,8 @@ export function initializeRecoveryForm({ form, setMarkdown, updatePreview }) {
             const field = form.elements.namedItem(name);
             // MVC checkbox helpers also emit a hidden false input.
             const checkbox = form.querySelector(`input[type="checkbox"][name="${name}"]`);
-            return [name, checkbox ? checkbox.checked : field.value];
+            return [name, name === 'IsPublished' || name === 'IsActive'
+                ? (checkbox ? checkbox.checked : field.value === 'true') : field.value];
         }));
     }
 
@@ -73,7 +74,9 @@ export function initializeRecoveryForm({ form, setMarkdown, updatePreview }) {
         for (const name of fieldNames) {
             if (name === 'Content') setMarkdown(fields[name]);
             else if (name === 'IsPublished' || name === 'IsActive') {
-                form.querySelector(`input[type="checkbox"][name="${name}"]`).checked = fields[name];
+                const checkbox = form.querySelector(`input[type="checkbox"][name="${name}"]`);
+                if (checkbox) checkbox.checked = fields[name];
+                else form.elements.namedItem(name).value = String(fields[name]);
             } else form.elements.namedItem(name).value = fields[name];
         }
         updatePreview();
