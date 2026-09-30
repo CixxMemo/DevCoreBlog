@@ -7,12 +7,12 @@
 @*   3. Live Category ID reference table and copyable cURL / JSON test snippets. *@
 @* ============================================================================= *@
 
-@using DevCoreBlog.Core.Entities
+@model DevCoreBlog.Models.Admin.AutomationsViewModel
 
 @{
     ViewData["Title"] = "Automations & API Hub";
-    var categories = ViewBag.Categories as List<Category> ?? new List<Category>();
-    var corsOrigins = (string)(ViewBag.CorsOrigins ?? "http://localhost:3000,https://mehmetcan.dev");
+    var categories = Model.Categories;
+    var corsOrigins = Model.CorsOrigins.Count == 0 ? "None configured" : string.Join(",", Model.CorsOrigins);
     var defaultCategoryId = categories.FirstOrDefault()?.Id ?? 1;
 }
 
@@ -125,7 +125,7 @@
                     </button>
                 </div>
 
-                <pre id="curl-snippet" class="border-2 border-black bg-neutral-900 text-emerald-400 p-4 font-mono text-xs overflow-x-auto whitespace-pre-wrap selection:bg-neutral-700">curl -X POST "http://localhost:5000/api/webhooks/posts" \
+                <pre id="curl-snippet" class="border-2 border-black bg-neutral-900 text-emerald-400 p-4 font-mono text-xs overflow-x-auto whitespace-pre-wrap selection:bg-neutral-700">curl -X POST "@(Model.SiteUrl)/api/webhooks/posts" \
   -H "Content-Type: application/json" \
   -H "X-DevCore-Secret: YOUR_WEBHOOK_SECRET" \
   -H "Idempotency-Key: YOUR_UNIQUE_POST_KEY" \
@@ -209,9 +209,11 @@
 
                 <div class="border border-black p-3 bg-neutral-50 space-y-1">
                     <span class="text-neutral-500 uppercase text-[10px] font-bold block">RETURN PAYLOAD:</span>
-                    <strong class="text-emerald-700 text-sm block">Array of 3 latest published posts</strong>
+                    <strong class="text-emerald-700 text-sm block">Array of up to 3 visible posts</strong>
                 </div>
             </div>
+
+            <p class="font-mono text-xs text-neutral-700">This feed is public. CORS controls which browser origins may read the response; it does not authenticate callers. Links use the configured site URL. Draft, future and inactive content is excluded, and responses are not cached.</p>
 
             @* React Code Snippet Box *@
             <div class="space-y-2">
@@ -226,7 +228,7 @@
 
                 <pre id="react-snippet" class="border-2 border-black bg-neutral-900 text-neutral-100 p-4 font-mono text-xs overflow-x-auto selection:bg-neutral-700">// In your React Portfolio Component:
 async function getLatestArticles() {
-  const res = await fetch("https://devcoreblog.com/api/public/posts/latest", {
+  const res = await fetch("@(Model.SiteUrl)/api/public/posts/latest", {
     cache: 'no-store' // Recheck publication visibility on each request
   });
   
@@ -234,7 +236,7 @@ async function getLatestArticles() {
   return res.json();
 }
 
-// Response Schema:
+// Response Schema (illustrative values):
 // [
 //   {
 //     "id": 12,
@@ -244,7 +246,7 @@ async function getLatestArticles() {
 //     "excerpt": "A deep dive into vibe coding.",
 //     "coverImageUrl": "https://res.cloudinary.com/...",
 //     "publishDate": "2026-08-20T00:00:00Z",
-//     "url": "https://devcoreblog.com/post/vibe-coding-the-future-of-automation",
+//     "url": "@(Model.SiteUrl)/post/vibe-coding-the-future-of-automation",
 //     "categoryName": "Vibe Coding"
 //   }
 // ]</pre>

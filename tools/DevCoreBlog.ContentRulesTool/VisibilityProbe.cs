@@ -53,16 +53,18 @@ internal static class VisibilityProbe
         var futureAt = await service.GetPostBySlugAsync("f01-future-visible-marker");
 
         var hidden = new[] { 2002, 2003, 2004, 2008 };
-        var publicLists = new IEnumerable<Post>[]
+        var publicLists = new IEnumerable<int>[]
         {
-            paged.Posts, categoryPosts, categoryPaged.Posts, search, related, latest
+            paged.Posts.Select(post => post.Id), categoryPosts.Select(post => post.Id),
+            categoryPaged.Posts.Select(post => post.Id), search.Select(post => post.Id),
+            related.Select(post => post.Id), latest.Select(post => post.Id)
         };
         var checks = new Dictionary<string, bool>
         {
             ["public_unpaged_visibility"] = listed.Contains(2001) &&
                 hidden.All(id => !listed.Contains(id)),
             ["every_public_query_hides_ineligible_rows"] =
-                publicLists.All(posts => hidden.All(id => posts.All(post => post.Id != id))),
+                publicLists.All(posts => hidden.All(id => posts.All(postId => postId != id))),
             ["public_category_and_feed_are_bounded"] =
                 (await categoryRepository.GetActiveCategoryBySlugAsync("f01-inactive")) == null &&
                 activeCategories.All(category => category.IsActive) &&

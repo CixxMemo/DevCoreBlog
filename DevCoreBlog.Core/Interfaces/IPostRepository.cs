@@ -1,4 +1,5 @@
 using DevCoreBlog.Core.Entities;
+using DevCoreBlog.Core.ReadModels;
 
 namespace DevCoreBlog.Core.Interfaces;
 
@@ -20,7 +21,8 @@ public interface IPostRepository
         string categorySlug, int page, int pageSize, DateTime utcNow);
     Task<IEnumerable<Post>> GetRelatedPostsAsync(
         int currentPostId, int categoryId, DateTime utcNow);
-    Task<IEnumerable<Post>> GetLatestPublicPostsAsync(DateTime utcNow);
+    Task<IReadOnlyList<PublicFeedPost>> GetLatestPublicPostsAsync(
+        DateTime utcNow, CancellationToken cancellationToken = default);
     Task<int?> IncrementVisibleViewCountAsync(
         int id, DateTime utcNow, CancellationToken cancellationToken = default);
     Task<IEnumerable<Post>> GetAllPostsWithCategoryAsync();

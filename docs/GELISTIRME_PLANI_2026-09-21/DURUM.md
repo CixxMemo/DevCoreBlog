@@ -1,11 +1,11 @@
 # İlerleme çizelgesi
 
-- **Son kayıt:** 30 Eylül 2026 — F28 kalıcı webhook tekrar koruması doğrulandı.
-- **Tamamlanan plan fazı:** 29/58 (F00–F28).
-- **Tamamlanan uygulama kodu fazı:** 27.
+- **Son kayıt:** 30 Eylül 2026 — F29 portföy projection, güvenilir URL ve CORS sınırı doğrulandı.
+- **Tamamlanan plan fazı:** 30/58 (F00–F29).
+- **Tamamlanan uygulama kodu fazı:** 28.
 - **Aktif faz:** Yok.
-- **Sıradaki faz:** F29 — kullanıcı onayı bekleniyor.
-- **Uygulama kodu:** F02–F09 güvenlik fazları tamamlandı. F10 migration zincirini doğruladı. F11–F13 form/içerik güvenliğini tamamladı. F14 kategori update'ini güvenli alanlara daralttı. F15 kategori silmesini DB constraint'i ve yarış yönetimiyle veri kaybına karşı korudu. F16 yayın zamanını açık saat dilimiyle UTC'ye bağladı. F17 public görünürlüğü tek kurala bağladı. F18 tek süreçli liste cache'ini yayın sınırı ve mutation invalidation'ıyla doğruladı. F19 düzenlemede kayıtlı slug'ı korudu. F20 benzersiz slug indekslerini ve geçmiş çakışma göçünü ekledi. F21 yalnızca uygun public GET'leri atomik sayıyor. F22 eski edit sekmelerinin içerik ezmesini sürüm karşılaştırmasıyla önlüyor. F23 hata akışında gerçek 404/500 ve JSON durumlarını koruyor. F24 servislerin somut Data repository bağımlılığını Core sözleşmelerine taşıdı. F25 dashboard sorgularını servis/repository sınırına ve kategori menülerini asenkron bileşene taşıdı. F26 güvenli Markdown renderer'ını Services'e taşıyıp Cloudinary istemcisini composition root'tan enjekte etti. F27 webhook'u secret-önce, sınırlı JSON kabulüne ve açık yayın yetkisine bağladı. F28 anahtarlı gönderimleri kalıcı işlem kaydı ve tek transaction ile tekrar korumasına bağladı.
+- **Sıradaki faz:** F30 — kullanıcı onayı bekleniyor.
+- **Uygulama kodu:** F02–F09 güvenlik fazları tamamlandı. F10 migration zincirini doğruladı. F11–F13 form/içerik güvenliğini tamamladı. F14 kategori update'ini güvenli alanlara daralttı. F15 kategori silmesini DB constraint'i ve yarış yönetimiyle veri kaybına karşı korudu. F16 yayın zamanını açık saat dilimiyle UTC'ye bağladı. F17 public görünürlüğü tek kurala bağladı. F18 tek süreçli liste cache'ini yayın sınırı ve mutation invalidation'ıyla doğruladı. F19 düzenlemede kayıtlı slug'ı korudu. F20 benzersiz slug indekslerini ve geçmiş çakışma göçünü ekledi. F21 yalnızca uygun public GET'leri atomik sayıyor. F22 eski edit sekmelerinin içerik ezmesini sürüm karşılaştırmasıyla önlüyor. F23 hata akışında gerçek 404/500 ve JSON durumlarını koruyor. F24 servislerin somut Data repository bağımlılığını Core sözleşmelerine taşıdı. F25 dashboard sorgularını servis/repository sınırına ve kategori menülerini asenkron bileşene taşıdı. F26 güvenli Markdown renderer'ını Services'e taşıyıp Cloudinary istemcisini composition root'tan enjekte etti. F27 webhook'u secret-önce, sınırlı JSON kabulüne ve açık yayın yetkisine bağladı. F28 anahtarlı gönderimleri kalıcı işlem kaydı ve tek transaction ile tekrar korumasına bağladı. F29 portföyü dar DB projection, kararlı sıralama ve yapılandırılmış site URL'sine bağladı.
 
 ## Kullanım
 
@@ -49,7 +49,7 @@
 | [x] | F26 | Renderer ve Cloudinary bağlantısını DI sınırına al | TAMAMLANDI — KOD | [F26 kanıtı](../uygulama-kayitlari/F26-2026-09-29.md) |
 | [x] | F27 | Webhook kabul sözleşmesini sadeleştir | TAMAMLANDI — KOD | [F27 kanıtı](../uygulama-kayitlari/F27-2026-09-30.md) |
 | [x] | F28 | Webhook tekrarlarını tek kayda indir | TAMAMLANDI — KOD | [F28 kanıtı](../uygulama-kayitlari/F28-2026-09-30.md) |
-| [ ] | F29 | Portföy beslemesini sınırlı DB sorgusuyla üret | BAŞLAMADI | — |
+| [x] | F29 | Portföy beslemesini sınırlı DB sorgusuyla üret | TAMAMLANDI — KOD | [F29 kanıtı](../uygulama-kayitlari/F29-2026-09-30.md) |
 | [ ] | F30 | Yazı editörünün ortak kodunu tek yerde topla | BAŞLAMADI | — |
 | [ ] | F31 | Başarısız kayıtta yazının kaybolmasını önle | BAŞLAMADI | — |
 | [ ] | F32 | Taslak, zamanlama ve yayınlama eylemlerini anlaşılır yap | BAŞLAMADI | — |
@@ -81,11 +81,11 @@
 
 ## Son agent teslimi
 
-- Tamamlanan faz: F28 webhook tekrarlarını tek kayda indir.
-- Değişen davranış: `Idempotency-Key` taşıyan aynı gönderim seri/eşzamanlı/restart sonrasında tek yazı ve ilk sonucu üretir; farklı payload 409. Başarılı işlem kaydı süresiz korunur; hata anahtarı tüketmez. Anahtarsız eski istemciler çalışır ancak tekrar koruması yoktur.
-- Çalıştırılan kontroller ve sonuç: Build 0 uyarı/0 hata. Boş ve F27 şemalı PostgreSQL migration'ı, 17 F28 HTTP/DB kontrolü, F17/F11/F12 ve F27'nin 19 güvenlik kontrolü geçti. Mobil/masaüstü açıklama, taşma, klavye ve konsol kontrol edildi. [Ayrıntılı kanıt](../uygulama-kayitlari/F28-2026-09-30.md).
-- Doğrulanamayan/engel: Canlı migration ve dış otomasyon istemcisinin anahtar geçişi yapılmadı; production veri/secret kullanılmadı. Saklama süresi değiştirilirse ayrı karar gerekir.
-- Sıradaki tek faz: F29.
-- Kullanıcıdan gereken: F29'u başlatmak için açık onay.
+- Tamamlanan faz: F29 portföy beslemesini sınırlı DB sorgusuyla üret.
+- Değişen davranış: En çok üç görünür yazı dar projection ile DB'de sıralanıyor. JSON alanları korunuyor; mutlak URL Host yerine doğrulanmış SITE_URL ve mevcut post rotasından geliyor. CORS config'i ile UI aynı kaynaktan; no-store korunuyor.
+- Çalıştırılan kontroller ve sonuç: Build 0 uyarı/0 hata; 15 F29 HTTP/SQL ve 10 config kontrolü geçti. F17/F11/F12 ve F28'in 17 kontrolü korundu. Mobil/masaüstü URL/CORS/klavye/taşma/konsol doğrulandı. [Ayrıntılı kanıt](../uygulama-kayitlari/F29-2026-09-30.md).
+- Doğrulanamayan/engel: Gerçek hosting/portföy istemcisi ve production config değiştirilmedi; canlıya alınmadan gerçek HTTPS SITE_URL ayarlanmalı. Site genelindeki SEO/canonical geçişi F43–F45 kapsamındadır.
+- Sıradaki tek faz: F30.
+- Kullanıcıdan gereken: F30'u başlatmak için açık onay.
 
 [Ana plan](/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/docs/GELISTIRME_PLANI_2026-09-21/README.md) · [Hazır mesajlar](/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/docs/GELISTIRME_PLANI_2026-09-21/AGENT_PROMPTLARI.md)

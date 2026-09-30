@@ -14,7 +14,7 @@ task_db=devcoreblog_f01_test
 task_admin_password=f17-isolated-password
 task_ef_command_log_level=Warning
 task_webhook_rate_limit=5
-if [ "${DEVCORE_F25_PROBE:-0}" = 1 ]; then
+if [ "${DEVCORE_F25_PROBE:-0}" = 1 ] || [ "${DEVCORE_F29_PROBE:-0}" = 1 ]; then
     task_ef_command_log_level=Information
 fi
 if [ -n "${DEVCORE_F27_PROBE:-}" ] || [ "${DEVCORE_F28_PROBE:-0}" = 1 ]; then
@@ -103,6 +103,10 @@ esac
         fi
     fi
 )
+
+if [ "${DEVCORE_F29_PROBE:-0}" = 1 ]; then
+    python3 "$task_source/scripts/verification/f29_configuration_probe.py" --source "$task_source"
+fi
 
 if [ "${DEVCORE_F26_PROBE:-0}" = 1 ]; then
     if (
@@ -200,6 +204,8 @@ start_app() {
     cd "$task_source"
     exec env -u ADMIN_PASSWORD \
         TZ=UTC SITE_TIME_ZONE=Europe/Istanbul \
+        SITE_URL="${DEVCORE_F29_SITE_URL:-https://blog.example.test}" \
+        PORTFOLIO_CORS_ORIGIN="${DEVCORE_F29_CORS_ORIGIN:-https://portfolio.example.test}" \
         ASPNETCORE_ENVIRONMENT=Development DOTNET_ENVIRONMENT=Development \
         DB_CONNECTION_STRING="Host=127.0.0.1;Port=$task_pg_port;Database=$task_db;Username=$task_pg_user" \
         ADMIN_USERNAME=f17-admin ADMIN_PASSWORD_HASH="$task_admin_password_hash" \
@@ -318,6 +324,13 @@ if [ -n "${DEVCORE_F27_PROBE:-}" ]; then
         --base-url "http://127.0.0.1:$task_app_port" \
         --mode "$DEVCORE_F27_PROBE" \
         --pg-port "$task_pg_port" --pg-user "$task_pg_user"
+fi
+
+if [ "${DEVCORE_F29_PROBE:-0}" = 1 ]; then
+    python3 "$task_source/scripts/verification/f29_portfolio_probe.py" \
+        --mode acceptance --base-url "http://127.0.0.1:$task_app_port" \
+        --pg-port "$task_pg_port" --pg-user "$task_pg_user" \
+        --application-log "$task_tmp/application.log"
 fi
 
 if [ "${DEVCORE_F17_HOLD_FOR_BROWSER:-0}" = 1 ]; then

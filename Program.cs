@@ -46,6 +46,10 @@ var builder = WebApplication.CreateBuilder(args);
 var dotenvPath = Path.Combine(builder.Environment.ContentRootPath, ".env");
 DotNetEnv.Env.Load(dotenvPath);
 
+var siteUrl = new SiteUrlOptions(
+    Environment.GetEnvironmentVariable("SITE_URL"), builder.Environment.IsDevelopment());
+builder.Services.AddSingleton(siteUrl);
+
 // ---------------------------------------------------------------------------
 // SERVICE REGISTRATION (Dependency Injection Container)
 // ---------------------------------------------------------------------------
@@ -140,6 +144,8 @@ builder.Services.AddScoped<IAdminDashboardReadRepository, AdminDashboardReadRepo
 // Controllers will depend on service interfaces (IPostService, ICategoryService).
 builder.Services.AddScoped<PostService>();
 builder.Services.AddScoped<IPostService>(serviceProvider =>
+    serviceProvider.GetRequiredService<PostService>());
+builder.Services.AddScoped<IPublicFeedService>(serviceProvider =>
     serviceProvider.GetRequiredService<PostService>());
 builder.Services.AddScoped<IWebhookPostService>(serviceProvider =>
     serviceProvider.GetRequiredService<PostService>());
@@ -376,17 +382,16 @@ builder.Services.AddRateLimiter(options =>
 // ---------------------------------------------------------------------------
 // CORS POLICY REGISTRATION (React Portfolio Showcase Integration)
 // ---------------------------------------------------------------------------
-var rawCorsOrigins = Environment.GetEnvironmentVariable("PORTFOLIO_CORS_ORIGIN")
-    ?? "http://localhost:3000,http://localhost:5173,https://mehmetcan.dev";
-
-var allowedOrigins = rawCorsOrigins
-    .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+// CORS is a browser read policy, not authorization for this public endpoint.
+var portfolioCors = new PortfolioCorsOptions(
+    Environment.GetEnvironmentVariable("PORTFOLIO_CORS_ORIGIN"), builder.Environment.IsDevelopment());
+builder.Services.AddSingleton(portfolioCors);
 
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("PortfolioPolicy", policy =>
     {
-        policy.WithOrigins(allowedOrigins)
+        policy.WithOrigins(portfolioCors.Origins.ToArray())
               .WithMethods("GET", "OPTIONS")
               .WithHeaders("Content-Type", "Accept", "X-Requested-With");
     });

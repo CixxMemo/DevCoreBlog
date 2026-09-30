@@ -1,5 +1,6 @@
 using System.Linq.Expressions;
 using DevCoreBlog.Core.Entities;
+using DevCoreBlog.Core.ReadModels;
 using DevCoreBlog.Core.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
@@ -159,13 +160,17 @@ public class PostRepository : GenericRepository<Post>, IPostRepository
             .ToListAsync();
     }
 
-    // Limit and sort in PostgreSQL so the portfolio feed never loads admin rows.
-    public async Task<IEnumerable<Post>> GetLatestPublicPostsAsync(DateTime utcNow) =>
+    // Project before materialization: full content and category graphs never leave PostgreSQL.
+    public async Task<IReadOnlyList<PublicFeedPost>> GetLatestPublicPostsAsync(
+        DateTime utcNow, CancellationToken cancellationToken = default) =>
         await PublicPosts(utcNow)
-            .Include(post => post.Category)
             .OrderByDescending(post => post.PublishDate)
+            .ThenBy(post => post.Id)
             .Take(3)
-            .ToListAsync();
+            .Select(post => new PublicFeedPost(
+                post.Id, post.Title, post.Slug, post.Summary, post.Excerpt,
+                post.ThumbnailUrl, post.PublishDate, post.Category.Name))
+            .ToListAsync(cancellationToken);
 
     // Administrative queries intentionally include drafts, future and inactive rows.
     public async Task<IEnumerable<Post>> GetAllPostsWithCategoryAsync() =>

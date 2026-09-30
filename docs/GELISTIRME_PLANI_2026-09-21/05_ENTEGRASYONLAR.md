@@ -63,6 +63,8 @@ Bu bölüm bir çalıştırma emri değildir. Her seferinde yalnızca **bir faz 
 
 ## F29 — Portföy beslemesini sınırlı DB sorgusuyla üret
 
+**Uygulanan sözleşme:** [Portföy alan, URL, CORS ve cache sınırları](../PORTFOY_BESLEME_SOZLESMESI.md). Production doğrulanmış `SITE_URL` ister; sıralama PublishDate DESC, Id ASC; no-store korunur.
+
 **Neden:** Üç kayıt için bütün yazılar yükleniyor; dış URL host başlığından üretiliyor.
 
 **Ön koşul:** F28 tamamlanmış; mevcut webhook/portföy sınırları kök AGENTS.md kapsamında korunuyor.

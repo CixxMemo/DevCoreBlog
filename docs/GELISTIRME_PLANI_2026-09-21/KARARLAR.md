@@ -113,6 +113,23 @@ anahtarı tüketmez. Dış otomasyon değişikliği ve canlı migration yapılma
 [İstemci, saklama ve geri dönüş sözleşmesi](../WEBHOOK_SOZLESMESI.md).
 **Durum:** F28 sentetik PostgreSQL/HTTP kabulüyle doğrulandı.
 
+## D12 — Portföy için doğrulanmış site origin'i ve dar projection
+
+F29 portföy feed'i mevcut JSON alanlarıyla en çok üç görünür yazı döndürür;
+`PublishDate DESC, Id ASC`, LIMIT ve dar kolon seçimi DB'de uygulanır. Controller
+küçük `IPublicFeedService` okuma sözleşmesini kullanır; tam Post/Category grafiği
+ve Markdown içerik dışarı taşınmaz. `no-store` korunur.
+
+Production `SITE_URL` için açık HTTPS origin gerektirir; eksik/geçersiz ayar
+başlatmayı durdurur. Development loopback HTTP'ye izin verir, ayar yoksa
+localhost:5000 varsayılanıdır. Feed URL'si mevcut post-en rotası ve bu origin'den
+gelir. CORS'un gerçek doğrulanmış listesi UI'da da kullanılır; boş production
+liste ek browser origin'i açmaz. CORS kimlik kontrolü değildir.
+
+[Portföy/config/cache sözleşmesi](../PORTFOY_BESLEME_SOZLESMESI.md).
+Canlı domain/hosting ve dış portföy istemcisi bu fazda değiştirilmedi.
+**Durum:** F29 sentetik PostgreSQL/HTTP ve tarayıcı kanıtıyla doğrulandı.
+
 ## Gerektiğinde alınacak gerçek ürün/ortam bilgileri
 
 Bunlar şimdi topluca sorulmaz. Mevcut kaynaktan doğrulanamıyorsa ilgili fazda sorulur; önceki tercih tekrar sorulmaz.

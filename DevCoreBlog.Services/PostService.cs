@@ -1,4 +1,5 @@
 using DevCoreBlog.Core.Entities;
+using DevCoreBlog.Core.ReadModels;
 using DevCoreBlog.Core.Interfaces;
 using DevCoreBlog.Core.Shared.Helpers;
 using DevCoreBlog.Core.Validation;
@@ -8,7 +9,7 @@ using DevCoreBlog.Services.Publishing;
 namespace DevCoreBlog.Services;
 
 /// <summary>Coordinates post validation, publication rules and persistence contracts.</summary>
-public class PostService : IPostService, IPublicationSchedule, IWebhookPostService
+public class PostService : IPostService, IPublicationSchedule, IWebhookPostService, IPublicFeedService
 {
     private const int MaximumSlugAttempts = 100;
     // Post use cases depend on the domain persistence contract.
@@ -101,8 +102,10 @@ public class PostService : IPostService, IPublicationSchedule, IWebhookPostServi
             currentPostId, categoryId, _timeProvider.GetUtcNow().UtcDateTime);
     }
 
-    public Task<IEnumerable<Post>> GetLatestPublicPostsAsync() =>
-        _postRepository.GetLatestPublicPostsAsync(_timeProvider.GetUtcNow().UtcDateTime);
+    public Task<IReadOnlyList<PublicFeedPost>> GetLatestPublicPostsAsync(
+        CancellationToken cancellationToken = default) =>
+        _postRepository.GetLatestPublicPostsAsync(
+            _timeProvider.GetUtcNow().UtcDateTime, cancellationToken);
 
     // Public detail GETs increment one database column without saving a stale post.
     public async Task<int?> IncrementViewCountAsync(
