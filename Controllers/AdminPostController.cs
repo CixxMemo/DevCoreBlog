@@ -149,6 +149,7 @@ public class AdminPostController : Controller
     public async Task<IActionResult> Create(
         [Bind("Title,Content,CategoryId,Summary,Excerpt,IsPublished,IsActive,PublishDate")] PostFormInput input,
         IFormFile? thumbnailFile,
+        Guid? recoveryRevision,
         CancellationToken cancellationToken)
     {
         var post = MapToPost(input, string.Empty);
@@ -176,7 +177,7 @@ public class AdminPostController : Controller
             ModelState.AddContentErrors(createResult);
             if (createResult.IsValid)
             {
-                return RedirectToAction(nameof(Index));
+                return RedirectAfterSave("devcore_editor_draft_create", recoveryRevision);
             }
         }
 
@@ -217,6 +218,7 @@ public class AdminPostController : Controller
         int id,
         [Bind("Id,EditVersion,Title,Content,CategoryId,Summary,Excerpt,IsPublished,IsActive,PublishDate")] PostFormInput input,
         IFormFile? thumbnailFile,
+        Guid? recoveryRevision,
         CancellationToken cancellationToken)
     {
         // Safety check: URL Id must match the form's hidden Id field
@@ -282,7 +284,7 @@ public class AdminPostController : Controller
             }
             if (updateResult.IsValid)
             {
-                return RedirectToAction(nameof(Index));
+                return RedirectAfterSave($"devcore_editor_draft_edit_{id}", recoveryRevision);
             }
         }
 
@@ -335,6 +337,18 @@ public class AdminPostController : Controller
         CancellationToken cancellationToken)
     {
         return UploadImageAsync(file, cancellationToken);
+    }
+
+    // Emit a protected, one-use receipt only after persistence reports success.
+    // The browser compares the exact local revision before clearing recovery text.
+    private RedirectToActionResult RedirectAfterSave(string recoveryKey, Guid? revision)
+    {
+        if (revision is { } savedRevision && savedRevision != Guid.Empty)
+        {
+            TempData["SavedPostRecoveryKey"] = recoveryKey;
+            TempData["SavedPostRecoveryRevision"] = savedRevision.ToString("D");
+        }
+        return RedirectToAction(nameof(Index));
     }
 
     private async Task<bool> TrySetThumbnailAsync(

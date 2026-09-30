@@ -15,6 +15,15 @@
     ViewData["Title"] = "Posts";
     var categories = ViewBag.Categories as List<Category> ?? new List<Category>();
     var totalPostsCount = Model.Count;
+    var recoveryKey = TempData["SavedPostRecoveryKey"] as string;
+    // TempData restores GUID-shaped strings as Guid values after the redirect.
+    var recoveryRevision = TempData["SavedPostRecoveryRevision"]?.ToString();
+}
+
+@if (recoveryKey is not null && recoveryRevision is not null)
+{
+    <p id="post-recovery-receipt" role="status" class="mb-4 border-2 border-black p-3 font-mono text-xs"
+       data-recovery-key="@recoveryKey" data-recovery-revision="@recoveryRevision">Post saved. Checking its local recovery copy…</p>
 }
 
 <div id="antiforgery-token" class="hidden" aria-hidden="true">
@@ -228,6 +237,10 @@
 @* CLIENT-SIDE ENGINE — Instant Search, Filter & AJAX Publish Toggle              *@
 @* ============================================================================= *@
 @section Scripts {
+    @if (recoveryKey is not null && recoveryRevision is not null)
+    {
+        <script type="module" src="~/js/post-recovery-complete.js" asp-append-version="true"></script>
+    }
     <script>
         // =========================================================================
         // Instant Inline Status Toggle (AJAX POST)

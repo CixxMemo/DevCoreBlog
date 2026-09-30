@@ -1,3 +1,5 @@
+import { initializeRecoveryForm } from './post-recovery-form.js';
+
 // Shared progressive enhancement; all mutable editor state stays on this page.
 function create(options) {
     const editorElement = options?.editorElement;
@@ -33,13 +35,9 @@ function create(options) {
 }
 
 function initializePostEditor() {
-    const STORAGE_KEY = 'devcore_editor_draft_create';
-    const SCRATCH_TRANSFER_KEY = 'devcore_editor_scratch_transfer';
-
     const titleInput = document.getElementById('post-title-input');
     const summaryInput = document.getElementById('post-summary-input');
     const contentHidden = document.getElementById('Content');
-    const categorySelect = document.getElementById('CategoryId');
     const postForm = document.getElementById('postForm');
     if (!postForm) return;
     const isCreate = postForm.dataset.mode === 'create';
@@ -61,14 +59,6 @@ function initializePostEditor() {
     const wordCountEl = document.getElementById('metric-word-count');
     const readingTimeEl = document.getElementById('metric-reading-time');
     const charCountEl = document.getElementById('metric-char-count');
-    const autosaveStatusEl = document.getElementById('autosave-status');
-
-    // Recovery banner
-    const recoveryBanner = document.getElementById('draft-recovery-banner');
-    const draftTimestampEl = document.getElementById('draft-timestamp');
-    const btnRestoreDraft = document.getElementById('btn-restore-draft');
-    const btnDiscardDraft = document.getElementById('btn-discard-draft');
-
     // Initialize Toast UI Editor
     const editorElement = document.querySelector('#editor');
     const contentFallback = document.getElementById('content-fallback');
@@ -93,7 +83,6 @@ function initializePostEditor() {
         // Update hidden content before form submit
         postForm.addEventListener('submit', function () {
             contentHidden.value = editor.getMarkdown();
-            // Recovery text survives submission; confirmed-save cleanup belongs to F31.
         });
     }
 
@@ -265,77 +254,7 @@ function initializePostEditor() {
     if (summaryInput) summaryInput.addEventListener('input', updatePreviewsAndMetrics);
     contentHidden.addEventListener('input', updatePreviewsAndMetrics);
 
-    // LocalStorage Auto-Save & Recovery Pipeline
-    if (isCreate) initializeRecovery();
-
-    // Preserve the existing create-only recovery behavior in one guarded boundary.
-    function initializeRecovery() {
-        const storage = {
-            getItem(key) { try { return window.localStorage.getItem(key); } catch { return null; } },
-            setItem(key, value) { try { window.localStorage.setItem(key, value); return true; } catch { return false; } },
-            removeItem(key) { try { window.localStorage.removeItem(key); } catch { /* Storage may be disabled. */ } }
-        };
-        // 1. Check for transfer from Dashboard Scratchpad
-        const scratchNote = storage.getItem(SCRATCH_TRANSFER_KEY);
-        if (scratchNote) {
-            setMarkdown(scratchNote);
-            storage.removeItem(SCRATCH_TRANSFER_KEY);
-            if (window.showToast) window.showToast('Note restored from Scratchpad.', 'success');
-        }
-
-        // 2. Check for saved draft in localStorage
-        const savedDraftRaw = storage.getItem(STORAGE_KEY);
-        if (savedDraftRaw && !scratchNote) {
-            try {
-                const draft = JSON.parse(savedDraftRaw);
-                if (draft && (draft.title || draft.content)) {
-                    draftTimestampEl.textContent = draft.savedAt ? new Date(draft.savedAt).toLocaleTimeString() : 'earlier';
-                    recoveryBanner.classList.remove('hidden');
-
-                    btnRestoreDraft.addEventListener('click', function () {
-                        if (draft.title) titleInput.value = draft.title;
-                        if (draft.summary) summaryInput.value = draft.summary;
-                        if (draft.categoryId && categorySelect) categorySelect.value = draft.categoryId;
-                        if (draft.content) setMarkdown(draft.content);
-                        recoveryBanner.classList.add('hidden');
-                        updatePreviewsAndMetrics();
-                        if (window.showToast) window.showToast('Draft restored successfully.', 'success');
-                    });
-
-                    btnDiscardDraft.addEventListener('click', function () {
-                        storage.removeItem(STORAGE_KEY);
-                        recoveryBanner.classList.add('hidden');
-                        if (window.showToast) window.showToast('Draft discarded.', 'info');
-                    });
-                }
-            } catch (e) {
-                console.error('Failed to parse draft:', e);
-            }
-        }
-
-        // 3. Periodic Auto-Save interval (every 3 seconds)
-        setInterval(function () {
-            const title = titleInput?.value || '';
-            const content = editor ? editor.getMarkdown() : contentHidden.value;
-            const summary = summaryInput?.value || '';
-            const categoryId = categorySelect?.value || '';
-
-            if (title.trim() || content.trim()) {
-                const draftPayload = {
-                    title: title,
-                    summary: summary,
-                    categoryId: categoryId,
-                    content: content,
-                    savedAt: new Date().toISOString()
-                };
-                const saved = storage.setItem(STORAGE_KEY, JSON.stringify(draftPayload));
-                if (saved && autosaveStatusEl) {
-                    autosaveStatusEl.textContent = 'DRAFT SAVED';
-                    autosaveStatusEl.className = 'bg-emerald-100 border border-emerald-600 px-2 py-0.5 font-bold text-emerald-900';
-                }
-            }
-        }, 3000);
-    }
+    initializeRecoveryForm({ form: postForm, setMarkdown, updatePreview: updatePreviewsAndMetrics });
 
     function insertText(value) {
         if (editor) editor.insertText(value);

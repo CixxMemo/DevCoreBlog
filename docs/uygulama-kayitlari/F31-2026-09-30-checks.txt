@@ -1,0 +1,122 @@
+BUILD
+  Geri yüklenecek projeler belirleniyor...
+  Geri yükleme için tüm projeler güncel.
+  DevCoreBlog.Core -> /Users/mehmetcankocakurt/Documents/development/DevCoreBlog/DevCoreBlog.Core/bin/Debug/net10.0/DevCoreBlog.Core.dll
+  DevCoreBlog.Data -> /Users/mehmetcankocakurt/Documents/development/DevCoreBlog/DevCoreBlog.Data/bin/Debug/net10.0/DevCoreBlog.Data.dll
+  DevCoreBlog.Services -> /Users/mehmetcankocakurt/Documents/development/DevCoreBlog/DevCoreBlog.Services/bin/Debug/net10.0/DevCoreBlog.Services.dll
+  DevCoreBlog -> /Users/mehmetcankocakurt/Documents/development/DevCoreBlog/bin/Debug/net10.0/DevCoreBlog.dll
+
+Oluşturma başarılı oldu.
+    0 Uyarı
+    0 Hata
+
+Geçen Süre 00:00:01.14
+
+
+F31 STORAGE / NATIVE FORM
+{
+  "checks": {
+    "isolated_keys_and_whitelisted_fields": true,
+    "reload_offers_without_overwriting_and_restores_empty_fields": true,
+    "legacy_create_copy_requires_explicit_restore": true,
+    "malformed_copy_is_not_silently_overwritten": true,
+    "simultaneous_tabs_preserve_first_copy_and_expose_conflict": true,
+    "stale_receipt_keeps_newer_copy_matching_receipt_clears_only_its_key": true,
+    "stale_restore_and_discard_cannot_delete_an_unseen_newer_copy": true,
+    "denied_storage_quota_and_missing_locks_are_nonthrowing": true,
+    "scratch_transfer_is_offered_and_only_matching_transfer_is_cleared": true,
+    "untrusted_receipt_key_and_bad_revision_do_not_clear_storage": true,
+    "storage_failure_does_not_block_native_form_submission": true
+  },
+  "count": 11
+}
+
+
+F31 MVC RECEIPTS
+{
+  "checks": {
+    "query_cannot_forge_receipt": true,
+    "invalid_create_retains_text_without_receipt_or_write": true,
+    "malformed_revision_fails_without_receipt": true,
+    "successful_create_has_exact_server_key_and_revision": true,
+    "receipt_is_consumed_once": true,
+    "invalid_edit_retains_text_without_receipt": true,
+    "successful_edit_has_exact_server_key_and_revision": true,
+    "stale_edit_409_retains_text_without_receipt_or_write": true
+  },
+  "count": 8
+}
+
+
+F11 REGRESSION
+F11 isolated optional cover and validation verification
+{
+  "checks": {
+    "create_form_has_optional_cover_and_hides_empty_summary": true,
+    "create_without_cover_persists": true,
+    "edit_form_does_not_post_stored_cover": true,
+    "edit_without_file_preserves_server_cover": true,
+    "validation_failure_retains_inputs_and_does_not_persist": true,
+    "upload_failure_retains_inputs_cover_and_database_state": true
+  },
+  "statuses": {
+    "create_without_cover_final": 200,
+    "edit_without_file_final": 200,
+    "validation_failure_final": 200,
+    "failed_upload_final": 200
+  }
+}
+
+
+F13 REGRESSION
+F13 frontend validation and JavaScript-free form verification
+{
+  "checks": {
+    "all_form_pages_load_one_ordered_local_validation_chain": true,
+    "post_pages_load_shared_editor_helper_once": true,
+    "login_does_not_load_form_plugins": true,
+    "markdown_textarea_is_visible_without_javascript": true,
+    "client_and_server_required_messages_match": true,
+    "post_can_be_saved_without_javascript": true
+  },
+  "statuses": {
+    "post_create": 200,
+    "post_edit": 200,
+    "category_create": 200,
+    "category_edit": 200,
+    "login": 200,
+    "invalid_post": 200,
+    "javascript_free_save_final": 200
+  }
+}
+
+
+F17 ISOLATED POSTGRESQL / HTTP
+f17_public_unpaged_visibility=true
+f17_every_public_query_hides_ineligible_rows=true
+f17_public_category_and_feed_are_bounded=true
+f17_admin_keeps_hidden_rows=true
+f17_boundary_before_is_hidden=true
+f17_boundary_at_is_visible=true
+f17_inactive_category_post_count=1
+f17_http_public_routes_respond=true
+f17_http_public_lists_hide_all_four_cases=true
+f17_http_public_navigation_hides_inactive_category=true
+f17_http_details_return_404=true
+f17_http_inactive_category_returns_404=true
+f17_http_sitemap_hides_inactive_category=true
+f17_http_api_categories_hide_inactive=true
+f17_http_feed_preserves_shape_and_limit=true
+f17_http_feed_is_not_stored=true
+f17_http_public_html_is_not_stored=true
+f17_http_admin_keeps_all_rows=true
+f17_http_detail_statuses={"f01-draft": 404, "f01-duplicate-title": 404, "f01-future-visible-marker": 404, "f01-inactive-post": 404}
+
+BROWSER
+Chrome: mobile innerWidth=390, scrollWidth=390; desktop innerWidth=1440, scrollWidth=1440.
+Restore Enter: title=F31 Mobile Recovery, content=F31 mobile unsaved content.
+Tab: btn-discard-draft, outline=auto. Discard then reload: offer=false, server title retained.
+IAB: Create success receipt cleared; Create reload offer=false; Edit reload offer=true.
+IAB two-tab: Tab B current text unchanged, LOCAL SAVE PAUSED; explicit Restore returns Tab A Newer Copy.
+IAB 409 then Reload current post then Restore: F31 Stale Tab Retained / F31 stale submit content must survive.
+Error logs: Create=[], Edit=[], Chrome=[]

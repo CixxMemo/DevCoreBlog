@@ -7,6 +7,7 @@
 <form asp-action="@(isEdit ? "Edit" : "Create")" method="post" id="postForm" enctype="multipart/form-data"
       data-mode="@(isEdit ? "edit" : "create")" data-post-id="@Model.Id"
       data-upload-url="@Url.Action("UploadEditorImage", "AdminPost")" data-slug="@Model.Slug">
+    <input type="hidden" name="recoveryRevision" value="" />
     @if (isEdit)
     {
         <input type="hidden" asp-for="Id" />
@@ -27,13 +28,11 @@
 
         <div class="lg:col-span-3 space-y-4">
 
-            @if (!isEdit)
-            {
-            @* LocalStorage Draft Recovery Banner *@
-            <div id="draft-recovery-banner" class="hidden border-2 border-black bg-amber-50 p-4 font-mono text-xs font-bold text-amber-900 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            @* Offer recovery on both forms without replacing server text. *@
+            <div id="draft-recovery-banner" role="status" class="hidden border-2 border-black bg-amber-50 p-4 font-mono text-xs font-bold text-amber-900 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div class="flex items-center gap-2">
                     <span class="w-2 h-2 bg-amber-500 inline-block flex-shrink-0"></span>
-                    <span>Unsaved draft found (<span id="draft-timestamp">recently</span>).</span>
+                    <div><span id="draft-recovery-message"></span> <span id="draft-timestamp"></span></div>
                 </div>
                 <div class="flex items-center gap-2">
                     <button type="button" id="btn-restore-draft" class="border border-black bg-black text-white hover:bg-neutral-800 px-3 py-1 font-mono text-xs font-bold uppercase transition-none">
@@ -45,7 +44,7 @@
                 </div>
             </div>
 
-            }
+            <p class="font-mono text-xs text-neutral-600">Recovery copies stay in this browser. Files are not saved locally.</p>
 
             @* Title Input Box *@
             <div class="border-2 border-black bg-white p-4">
@@ -117,13 +116,10 @@
                     <span><strong id="metric-char-count" class="text-black">0</strong> chars</span>
                 </div>
                 <div class="flex items-center gap-2 text-[10px] text-neutral-500 uppercase">
+                    <span id="autosave-status" role="status" aria-live="polite" class="bg-neutral-100 border border-black px-2 py-0.5 font-bold text-neutral-700">LOCAL RECOVERY READY</span>
                     @if (isEdit)
                     {
                         <span class="bg-neutral-100 border border-black px-2 py-0.5 font-bold text-neutral-700">POST ID: #@Model.Id</span>
-                    }
-                    else
-                    {
-                        <span id="autosave-status" class="bg-neutral-100 border border-black px-2 py-0.5 font-bold text-neutral-700">AUTOSAVE READY</span>
                     }
                 </div>
             </div>
