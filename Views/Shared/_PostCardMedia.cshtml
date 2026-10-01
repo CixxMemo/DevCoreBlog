@@ -1,0 +1,12 @@
+@model DevCoreBlog.Models.Public.PostCardModel
+@* Covers are decorative within a link already named by the post title. *@
+<div class="post-card-media">
+    @if (!string.IsNullOrEmpty(Model.Post.ThumbnailUrl))
+    {
+        <img src="@Model.Post.ThumbnailUrl" alt="" loading="lazy" decoding="async" />
+    }
+    else
+    {
+        <div class="post-cover-placeholder" aria-hidden="true"><span>DEVCORE // POST</span></div>
+    }
+</div>

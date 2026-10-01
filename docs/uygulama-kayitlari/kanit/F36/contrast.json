@@ -1,0 +1,16 @@
+{
+  "method": "WCAG relative luminance, selected component colors only",
+  "ratios": {
+    "light_meta": 7.56,
+    "dark_meta": 7.3,
+    "badge": 6.29,
+    "dark_link": 6.27
+  },
+  "minimum": 4.5,
+  "all_pass": true,
+  "admin_mobile": {
+    "width": 390,
+    "root_font": "14px",
+    "horizontal_overflow": false
+  }
+}

@@ -1,0 +1,30 @@
+@model DevCoreBlog.Models.Public.PostCardModel
+@using DevCoreBlog.Models.Public
+@{
+    var presentationClass = Model.Presentation switch
+    {
+        PostCardPresentation.Featured => "post-card-featured",
+        PostCardPresentation.Compact => "post-card-compact",
+        _ => "post-card-standard"
+    };
+}
+@* Presentation never decides publication or queries persistence. *@
+<a href="/yazi/@Model.Post.Slug" class="post-card @presentationClass">
+    <partial name="_PostCardMedia" model="Model" />
+    <div class="post-card-body">
+        <span class="post-category">@(Model.Post.Category?.Name ?? "General")</span>
+        @if (Model.Presentation == PostCardPresentation.Featured)
+        {
+            <h2 class="post-card-title">@Model.Post.Title</h2>
+        }
+        else
+        {
+            <h3 class="post-card-title">@Model.Post.Title</h3>
+        }
+        @if (Model.Presentation != PostCardPresentation.Compact && !string.IsNullOrWhiteSpace(Model.Post.Summary))
+        {
+            <p class="post-card-summary">@Model.Post.Summary</p>
+        }
+        <partial name="_PostMetadata" model="Model.Post" />
+    </div>
+</a>

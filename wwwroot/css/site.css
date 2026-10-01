@@ -5,10 +5,10 @@
  * It is loaded on every page (both public and admin) via the layout files.
  *
  * Includes: base font sizing, focus ring accessibility, sticky footer,
- * card hover effects, admin table styling, markdown content styling,
+ * shared public cards, markdown content styling,
  * and Prism.js code block overrides.
  *
- * Design: Tech Minimal — Sharp edges, high contrast, orange/yellow accents.
+ * Design: Tech Minimal — Sharp edges, high contrast, existing indigo accents.
  * ============================================================================= */
 
 /* =============================================================================
@@ -27,9 +27,12 @@
   /* Background and surface colors */
   --bg-primary: #f9fafb;
   --bg-card: #ffffff;
+  --cover-grid: rgba(17, 24, 39, 0.12);
   --bg-surface: #ffffff;
 
   /* Flat high-contrast accent colors (Indigo) */
+  --brand: #4f46e5;
+  --brand-hover: #4338ca;
   --accent: #4f46e5;
   --accent-hover: #4338ca;
 
@@ -39,7 +42,7 @@
   /* Text colors */
   --text-primary: #111827;
   --text-secondary: #374151;
-  --text-muted: #6b7280;
+  --text-muted: #4b5563;
 
   /* Typography */
   --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
@@ -50,56 +53,17 @@
 html.dark {
   --bg-primary: #09090b;
   --bg-card: #121215;
+  --cover-grid: rgba(244, 244, 245, 0.14);
   --bg-surface: #121215;
-  --accent: #6366f1;
-  --accent-hover: #4f46e5;
+  --accent: #818cf8;
+  --accent-hover: #a5b4fc;
   --border: #3f3f46;
   --text-primary: #f4f4f5;
   --text-secondary: #a1a1aa;
-  --text-muted: #71717a;
+  --text-muted: #a1a1aa;
 }
 
-/* --- Direct Dark Mode Styles (Guaranteed Instant Theme Switch) --- */
-html.dark body {
-  background-color: #09090b !important;
-  color: #f4f4f5 !important;
-}
-
-html.dark aside,
-html.dark .bg-surface,
-html.dark .bg-white {
-  background-color: #121215 !important;
-  color: #f4f4f5 !important;
-}
-
-html.dark .border-border,
-html.dark .border-gray-900 {
-  border-color: #3f3f46 !important;
-}
-
-html.dark .border-gray-200,
-html.dark .border-gray-100 {
-  border-color: #27272a !important;
-}
-
-html.dark .text-gray-900,
-html.dark .text-gray-800 {
-  color: #f4f4f5 !important;
-}
-
-html.dark .text-gray-700,
-html.dark .text-gray-600 {
-  color: #a1a1aa !important;
-}
-
-html.dark .text-gray-500 {
-  color: #71717a !important;
-}
-
-html.dark .bg-gray-50,
-html.dark .bg-gray-100 {
-  background-color: #18181b !important;
-}
+.public-root { font-size: 16px; }
 
 /* Set the base font size for the entire page */
 html {
@@ -126,16 +90,6 @@ html {
  * disabled so that Tailwind utility classes have full control over the
  * Tech Minimal layout, grid, and borders.
  * ============================================================================= */
-
-/* Admin table — add vertical alignment and striped rows for readability */
-.table-admin {
-  vertical-align: middle;
-}
-
-/* Make textareas in admin forms use monospace font for better code/content editing */
-textarea.form-control {
-  font-family: 'JetBrains Mono', 'Courier New', Courier, monospace;
-}
 
 /* =============================================================================
  * Markdown Content & Prism.js Code Block Styling
@@ -172,7 +126,7 @@ textarea.form-control {
 .markdown-content h4 { font-size: 1.125rem; }
 
 /* Paragraphs — comfortable reading spacing */
-.markdown-content p, .post-content p, .blog-body p {
+.markdown-content p {
   font-family: var(--font-sans);
   font-size: 1.125rem; /* 18px */
   line-height: 1.8;
@@ -180,10 +134,11 @@ textarea.form-control {
   margin-bottom: 1.5rem;
 }
 
-/* Links — Terminal Orange accent, underline on hover */
+/* Article links stay identifiable without relying on color. */
 .markdown-content a {
   color: var(--accent, #f97316);
-  text-decoration: none;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
   border-bottom: 1px solid transparent;
   transition: border-color 0.15s;
 }
@@ -193,35 +148,35 @@ textarea.form-control {
 }
 
 /* Inline code — monospace, dark bg, sharp border */
-.markdown-content code:not([class*="language-"]) {
+.markdown-content :not(pre) > code:not([class*="language-"]) {
   font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace);
   font-size: 0.85em;
   background-color: var(--bg-surface, #1c2128);
   color: var(--text-primary, #E6EDF3);
   padding: 0.2em 0.4em;
   border: 1px solid var(--border, #30363d);
-  border-radius: 2px;
+  border-radius: 0;
 }
 
 /* --- Prism.js Code Block Overrides --- */
-/* Make code blocks match terminal aesthetic: sharp edges, orange border */
+/* Authored rules follow Prism; no important override is needed. */
 .markdown-content pre {
-  border: 1px solid var(--accent, #f97316) !important;
-  border-radius: 0 !important;
-  margin: 2rem 0 !important;
-  font-size: 0.875rem !important;
-  line-height: 1.6 !important;
-  background: #111418 !important; /* Slightly darker than surface */
-  box-shadow: 4px 4px 0 0 rgba(249, 115, 22, 0.2);
+  border: 1px solid var(--accent, #f97316);
+  border-radius: 0;
+  margin: 2rem 0;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  background: #111418; /* Slightly darker than surface */
+  box-shadow: none;
 }
 
 .markdown-content pre code {
-  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace) !important;
-  border-radius: 0 !important;
-  text-shadow: none !important;
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace);
+  border-radius: 0;
+  text-shadow: none;
 }
 
-/* Blockquotes — left border accent (orange), muted text */
+/* Blockquotes use the shared accent and surface. */
 .markdown-content blockquote {
   border-left: 4px solid var(--accent, #f97316);
   margin: 2rem 0;
@@ -300,29 +255,146 @@ textarea.form-control {
 }
 
 
-/* =============================================================================
- * Animations — Entry animations for page elements
- * ============================================================================= */
-@keyframes fadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(15px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fade-up {
-  animation: fadeUp 0.4s ease-out forwards;
-  opacity: 0; /* Hidden by default before animation starts */
-}
-
-/* =============================================================================
- * TECH MINIMAL ENFORCEMENT — Phase 5
- * ============================================================================= */
-/* Force all elements to have sharp edges, overriding any inline or library styles */
-* {
+/* Preserve admin corners without a public/global override. */
+body:not(.public-site) * {
   border-radius: 0 !important;
 }
+
+/* Shared public tokens; layout utilities continue to own geometry. */
+.public-site {
+  --public-space: 1.25rem;
+  --public-rule: 2px solid var(--border);
+  --public-meta-size: 0.8125rem;
+  --public-copy-size: 0.9375rem;
+  --public-leading: 1.65;
+}
+.public-site :is(a, button, input):focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+.post-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-width: 0;
+  overflow: hidden;
+  border: var(--public-rule);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  text-decoration: none;
+}
+.post-card:hover, .post-card:focus-visible {
+  border-color: var(--accent);
+}
+.post-card-media {
+  flex-shrink: 0;
+  aspect-ratio: 16 / 9;
+  border-bottom: var(--public-rule);
+  overflow: hidden;
+}
+.post-card-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.post-cover-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  background-color: var(--bg-primary);
+  background-image: linear-gradient(var(--cover-grid) 1px, transparent 1px), linear-gradient(90deg, var(--cover-grid) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+.post-cover-placeholder span {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  padding: 0.25rem 0.5rem;
+  font: 700 var(--public-meta-size)/1.5 var(--font-mono);
+}
+.post-card-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: var(--public-space);
+  min-width: 0;
+}
+.post-category {
+  align-self: flex-start;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  background: var(--brand);
+  color: #fff;
+  padding: 0.25rem 0.5rem;
+  font: 700 var(--public-meta-size)/1.5 var(--font-sans);
+}
+.post-card-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+.post-card-featured .post-card-title {
+  font-size: clamp(1.25rem, 2vw, 1.75rem);
+}
+.post-card-summary {
+  color: var(--text-secondary);
+  font-size: var(--public-copy-size);
+  line-height: var(--public-leading);
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+}
+.post-metadata {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  color: var(--text-muted);
+  font: var(--public-meta-size)/1.6 var(--font-mono);
+}
+.post-card .post-metadata {
+  margin-top: auto;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+.public-detail-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  padding: var(--public-space);
+  margin-bottom: 2rem;
+  background: var(--bg-card);
+  border: var(--public-rule);
+  color: var(--text-secondary);
+  font-size: var(--public-copy-size);
+}
+.public-detail-meta .post-metadata {
+  flex: 1;
+  min-width: 12rem;
+}
+.public-detail-cover {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+.public-empty-state {
+  padding: 2rem var(--public-space);
+  margin-bottom: 1rem;
+  text-align: center;
+  background: var(--bg-card);
+  border: var(--public-rule);
+  color: var(--text-secondary);
+  font: var(--public-copy-size)/var(--public-leading) var(--font-mono);
+}
+
+/* Indigo text uses a readable tint on dark surfaces; badge backgrounds stay branded. */
+html.dark .public-site .text-primary { color: var(--accent); }
+
+.public-site main, .public-site article { min-width: 0; }
+.public-site article > h1 { overflow-wrap: anywhere; }

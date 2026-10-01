@@ -66,6 +66,8 @@ Bu bölüm bir çalıştırma emri değildir. Her seferinde yalnızca **bir faz 
 
 **Ön koşul:** F35 tamamlanmış.
 
+**Uygulama kaydı:** [F36 kabul ve kanıt](../uygulama-kayitlari/F36-2026-10-01.md).
+
 **Dokunulacak alanlar:** Public Razor views/partials; wwwroot/css/site.css; Tailwind yapılandırması.
 
 **Agent'ın uygulayacağı sıra:**
@@ -93,7 +95,7 @@ Bu bölüm bir çalıştırma emri değildir. Her seferinde yalnızca **bir faz 
 
 **Ön koşul:** F36 tamamlanmış.
 
-**Dokunulacak alanlar:** Views/Shared/_Layout.cshtml; nav/category ViewComponent; site.js.
+**Dokunulacak alanlar:** Views/Shared/_Layout.cshtml; nav/category ViewComponent; mevcut layout navigasyon kodu (F36 kullanılmayan carousel site.js dosyasını kaldırdı).
 
 **Agent'ın uygulayacağı sıra:**
 

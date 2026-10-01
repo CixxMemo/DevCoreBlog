@@ -1,10 +1,10 @@
 # İlerleme çizelgesi
 
-- **Son kayıt:** 1 Ekim 2026 — F35 frontend varlıklarının temiz kurulum/build/publish ve tarayıcı kontrolleri doğrulandı.
-- **Tamamlanan plan fazı:** 36/58 (F00–F35).
-- **Tamamlanan uygulama kodu fazı:** 34.
+- **Son kayıt:** 1 Ekim 2026 — F36 ortak kartlar, okunabilirlik ve mobil/masaüstü kabul kontrolleri doğrulandı.
+- **Tamamlanan plan fazı:** 37/58 (F00–F36).
+- **Tamamlanan uygulama kodu fazı:** 35.
 - **Aktif faz:** Yok.
-- **Sıradaki faz:** F36 — kullanıcı onayı bekleniyor.
+- **Sıradaki faz:** F37 — kullanıcı onayı bekleniyor.
 - **Uygulama kodu:** F02–F09 güvenlik fazları tamamlandı. F10 migration zincirini doğruladı. F11–F13 form/içerik güvenliğini tamamladı. F14 kategori update'ini güvenli alanlara daralttı. F15 kategori silmesini DB constraint'i ve yarış yönetimiyle veri kaybına karşı korudu. F16 yayın zamanını açık saat dilimiyle UTC'ye bağladı. F17 public görünürlüğü tek kurala bağladı. F18 tek süreçli liste cache'ini yayın sınırı ve mutation invalidation'ıyla doğruladı. F19 düzenlemede kayıtlı slug'ı korudu. F20 benzersiz slug indekslerini ve geçmiş çakışma göçünü ekledi. F21 yalnızca uygun public GET'leri atomik sayıyor. F22 eski edit sekmelerinin içerik ezmesini sürüm karşılaştırmasıyla önlüyor. F23 hata akışında gerçek 404/500 ve JSON durumlarını koruyor. F24 servislerin somut Data repository bağımlılığını Core sözleşmelerine taşıdı. F25 dashboard sorgularını servis/repository sınırına ve kategori menülerini asenkron bileşene taşıdı. F26 güvenli Markdown renderer'ını Services'e taşıyıp Cloudinary istemcisini composition root'tan enjekte etti. F27 webhook'u secret-önce, sınırlı JSON kabulüne ve açık yayın yetkisine bağladı. F28 anahtarlı gönderimleri kalıcı işlem kaydı ve tek transaction ile tekrar korumasına bağladı. F29 portföyü dar DB projection, kararlı sıralama ve yapılandırılmış site URL'sine bağladı. F30 Create/Edit ortak formunu ve editör davranışlarını tek partial/modülde topladı. F31 Create/Edit kurtarmayı yazı kimliği, açık Restore/Discard, sekme koordinasyonu ve doğrulanmış başarılı kayıt bilgisine bağladı. F32 açık kayıt eylemlerini, normal Save korumasını ve doğru yayın durumunu uyguladı. F33 aynı güvenli render sınırından, DB yazısı/sayaç/yayın yan etkisi olmayan özel HTML önizleme üretiyor. F34 yönetim panelini mobil drawer, kontrollü tablo kaydırma ve dar ekranda kullanılabilir form/editörle düzenledi; gerçek %200 Chrome yakınlaştırmasında yatay taşma olmadığını doğruladı. F35 Tailwind CLI/lockfile ile yerel CSS ve sabit lisanslı editör/Prism varlıklarını build/publish akışına bağladı.
 
 ## Kullanım
@@ -56,7 +56,7 @@
 | [x] | F33 | Sunucu çıktısıyla tutarlı güvenli önizleme ekle | TAMAMLANDI — KOD | [Kayıt](../uygulama-kayitlari/F33-2026-10-01.md) |
 | [x] | F34 | Yönetim panelini telefonda kullanılabilir yap | TAMAMLANDI — KOD | [Kayıt](../uygulama-kayitlari/F34-2026-10-01.md) |
 | [x] | F35 | Frontend varlıklarını tekrarlanabilir derlemeye geçir | TAMAMLANDI — KOD | [F35 kanıtı](../uygulama-kayitlari/F35-2026-10-01.md) |
-| [ ] | F36 | Ortak görsel düzeni ve okunabilirliği toparla | BAŞLAMADI | — |
+| [x] | F36 | Ortak görsel düzeni ve okunabilirliği toparla | TAMAMLANDI — KOD | [F36 kanıtı](../uygulama-kayitlari/F36-2026-10-01.md) |
 | [ ] | F37 | Okuyucu gezinmesi ve aramayı erişilebilir yap | BAŞLAMADI | — |
 | [ ] | F38 | Ana sayfada içerik keşfini gerçek veriye bağla | BAŞLAMADI | — |
 | [ ] | F39 | Yazı okuma deneyimini tamamla | BAŞLAMADI | — |
@@ -81,10 +81,10 @@
 
 ## Son agent teslimi
 
-- Bu turdaki faz: F35 — Play CDN kaldırıldı; mevcut Tailwind/Toast UI/Prism sürümleri sabit yerel build/publish düzenine geçirildi. Toolbar sırası düzeltildi.
-- Kontroller: Build 0 uyarı/0 hata; temiz npm kurulumunda iki asset build tüm dosyalarda aynı hash'i üretti; temiz publish varlıkları otomatik hazırlayıp dahil etti. 9 HTTP sayfasında 10 yerel varlık 200/cache busting kontrolü, F17/F12 servis ve görünürlük, 10 F30 editör, 30 F33 önizleme kontrolü geçti. Gerçek tarayıcıda desktop/mobil, drawer/Escape/odak, dark mode, Create/Edit, Markdown aktarımı ve Prism C# etiketi/renklendirmesi doğrulandı. [Kanıt](../uygulama-kayitlari/F35-2026-10-01.md).
-- Sınırlama: Tüm cihaz/tarayıcılar, production/Cloudinary doğrulanmadı. Browserslist veri eskiliği uyarısı var. npm audit 0 bildirilen açık yalnız lockfile kapsamındadır; Toast UI bundle içindeki eski DOMPurify 2.3.3 yükseltilmedi ve ayrı bakım/güvenlik değerlendirmesi gerekir. Geçici fixture temizlendi; generated/bin/obj kaynak diff'ine eklenmedi.
-- Aktif faz: Yok. Sıradaki tek faz: F36 — Ortak görsel düzeni ve okunabilirliği toparla; başlaması için kullanıcı onayı bekleniyor.
-- Kullanıcıdan gereken: F36 için açık onay.
+- Bu turdaki faz: F36 — ortak kart/kapak/metadata/boş durum partial'ları; public token ve okunabilirlik; kullanılmayan carousel/legacy CSS kaldırıldı.
+- Kontroller: Build 0 uyarı/0 hata; F17/F12, F35 yerel asset HTTP ve 30 F33 önizleme kontrolü geçti. Gerçek tarayıcıda 1280px/390px açık-koyu tema, uzun başlık/kapak/placeholder/boş-hata durumları, Tab/Enter odağı ve Prism doğrulandı; son ölçümlerde yatay taşma ve console hatası yok. [Kanıt](../uygulama-kayitlari/F36-2026-10-01.md).
+- Sınırlama: Production/tüm cihazlar doğrulanmadı. Public drawer odak yönetimi F37, mevcut tarih kültürü F42; F35 vendor bakım sınırlaması sürüyor. Geçici fixture temizlendi; generated/bin/obj kaynak diff'ine eklenmedi.
+- Aktif faz: Yok. Sıradaki tek faz: F37 — Okuyucu gezinmesi ve aramayı erişilebilir yap.
+- Kullanıcıdan gereken: F37 için açık onay.
 
 [Ana plan](/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/docs/GELISTIRME_PLANI_2026-09-21/README.md) · [Hazır mesajlar](/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/docs/GELISTIRME_PLANI_2026-09-21/AGENT_PROMPTLARI.md)

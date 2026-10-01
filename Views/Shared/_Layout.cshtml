@@ -7,7 +7,7 @@
 @* ============================================================================= *@
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="public-root">
 <head>
     <script>
         // =====================================================================
@@ -87,13 +87,13 @@
     <link rel="stylesheet" href="~/generated/tailwind-public.css" asp-append-version="true" />
     
     @* Site Custom CSS *@
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 
     @* Prism.js Syntax Highlighting Styles *@
     <link href="~/generated/prism/themes/prism-tomorrow.css" rel="stylesheet" asp-append-version="true" />
     <link href="~/generated/prism/plugins/toolbar/prism-toolbar.css" rel="stylesheet" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
-<body class="bg-[#f9fafb] dark:bg-[#09090b] min-h-screen text-gray-900 dark:text-zinc-100 font-sans transition-colors duration-150 flex flex-col md:flex-row">
+<body class="public-site bg-[#f9fafb] dark:bg-[#09090b] min-h-screen text-gray-900 dark:text-zinc-100 font-sans transition-colors duration-150 flex flex-col md:flex-row">
 
     @* ============================================================================= *@
     @* MOBILE TOP BAR — Sticky header visible only on mobile/tablet viewports (<768px)*@
@@ -158,7 +158,7 @@
                 <a href="/Account/Login" class="text-xs font-mono font-bold text-primary hover:underline no-underline">
                     [Sign In]
                 </a>
-                <span class="text-[10px] font-mono text-gray-500 dark:text-zinc-500">
+                <span class="text-xs font-mono text-gray-500 dark:text-zinc-500">
                     &copy; @DateTime.Now.Year
                 </span>
             </div>
@@ -187,7 +187,6 @@
         @RenderBody()
     </main>
 
-    <script src="~/js/site.js" asp-append-version="true"></script>
 
     @* Prism.js Highlighting Scripts *@
     <script src="~/generated/prism/components/prism-core.min.js" asp-append-version="true"></script>

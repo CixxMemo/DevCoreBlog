@@ -6,7 +6,7 @@ module.exports = {
     theme: { extend: {
         ...shared.theme.extend,
         colors: {
-            primary: { DEFAULT: '#4f46e5', hover: '#4338ca' },
+            primary: { DEFAULT: 'var(--brand)', hover: 'var(--brand-hover)' },
             accent: { DEFAULT: '#4f46e5', light: '#6366f1', dark: '#4338ca' }
         },
         borderRadius: Object.fromEntries(['none', 'sm', 'DEFAULT', 'md', 'lg', 'xl', '2xl', '3xl', 'full'].map(key => [key, '0']))

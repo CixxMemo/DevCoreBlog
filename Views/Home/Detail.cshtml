@@ -16,31 +16,17 @@
         @Model.Title
     </h1>
 
-    @* Meta Info Bar (Tech Minimal) *@
-    <div class="bg-white dark:bg-[#121215] border-2 border-gray-900 dark:border-zinc-700 p-4 mb-8 flex flex-col sm:flex-row sm:items-center justify-between font-mono text-xs gap-3">
-        <div class="flex flex-wrap items-center gap-4 text-gray-600 dark:text-zinc-400">
-            <span>
-                <span class="text-primary font-bold">#</span> @(Model.Category?.Name ?? "General")
-            </span>
-            <span>|</span>
-            <span>
-                📅 @Model.PublishDate.ToString("MMM dd, yyyy")
-            </span>
-            <span>|</span>
-            <span>
-                ⏱ @ViewBag.ReadingTime min read
-            </span>
-        </div>
-        <div class="text-gray-500 dark:text-zinc-400">
-            👁 @Model.ViewCount views
-        </div>
+    <div class="public-detail-meta">
+        <span class="post-category">@(Model.Category?.Name ?? "General")</span>
+        <span>@ViewBag.ReadingTime min read</span>
+        <partial name="_PostMetadata" model="Model" />
     </div>
 
     @* Optional Hero Thumbnail on detail page *@
     @if (!string.IsNullOrEmpty(Model.ThumbnailUrl))
     {
         <div class="mb-8 border-2 border-gray-900 dark:border-zinc-700 overflow-hidden">
-            <img src="@Model.ThumbnailUrl" alt="@Model.Title" class="w-full max-h-96 object-cover" />
+            <img src="@Model.ThumbnailUrl" alt="@Model.Title" class="public-detail-cover" />
         </div>
     }
 
