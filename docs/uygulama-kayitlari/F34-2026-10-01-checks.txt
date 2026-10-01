@@ -1,0 +1,18 @@
+F34 browser acceptance notes (synthetic local fixture only)
+
+Responsive post-list viewport checks:
+360 CSS px: innerWidth=360, documentElement.scrollWidth=360, body.scrollWidth=360; drawer button displayed; sidebar position=fixed; table wrapper clientWidth=322, scrollWidth=788.
+390 CSS px: innerWidth=390, documentElement.scrollWidth=390, body.scrollWidth=390; drawer button displayed; sidebar position=fixed; table wrapper clientWidth=352, scrollWidth=788.
+768 CSS px: innerWidth=768, documentElement.scrollWidth=768, body.scrollWidth=768; drawer button hidden; sidebar position=static; table wrapper clientWidth=438, scrollWidth=933.
+1440 CSS px: innerWidth=1440, documentElement.scrollWidth=1440, body.scrollWidth=1440; drawer button hidden; sidebar position=static; table wrapper clientWidth=1110, scrollWidth=1110.
+
+At 390 CSS px, edit form loaded Toast UI, had 26 category options (placeholder + one fixture category + 24 synthetic categories), preserved a 140-character synthetic headline without document overflow, and exposed five submit actions with 44px height. Blank Create form submitted as Save Draft was rejected server-side with Title, Content, and CategoryId validation messages; no post was created. Browser console error list was empty.
+
+Drawer keyboard check at 390 CSS px: Enter on Open admin navigation set aria-expanded=true and exposed nav. Tab entered the drawer. Escape set aria-expanded=false, removed inert from page content/header background and returned focus to admin-menu-toggle. Desktop at 768px/1440px retained static sidebar and hid the drawer control.
+
+In the first attempt Chrome control passed to the user, so no success was claimed then. The follow-up below completed the real zoom check. Temporary viewport overrides were used only at explicit widths.
+
+Actual Chrome zoom follow-up, 1 Oct 2026: Chrome's own zoom menu showed 200% on the isolated localhost F17 fixture tab. Before the test the tab showed 90%; after the test it was restored to 90% and the temporary tab was closed. At 200%, with DevTools docked (effective innerWidth 391 CSS px): post-list documentElement clientWidth/scrollWidth were 391/391; the table's `.overflow-x-auto` wrapper was clientWidth 354 and scrollWidth 787, overflow-x `auto`; horizontal table content stayed in that wrapper. On Edit Post, documentElement clientWidth/scrollWidth were 391/391, main clientWidth/scrollWidth were 386/386, and Toast UI editor rendered at 353.5px wide with 352px scrollWidth. Five visible save/publication actions had 44px heights. `body.scrollWidth` rounded to 392 while its measured fractional box width was 391.5; document root had no horizontal scroll (scrollX 0, root scrollWidth equals root clientWidth). The DevTools console showed the existing Tailwind CDN production warning and no JavaScript errors. The page was visually checked at 200%; the saved dashboard screenshot remains the 390×844 capture above because the native app screenshot was not written to a new file.
+
+Build: `dotnet build DevCoreBlog.csproj --no-restore --nologo --disable-build-servers -m:1 -p:NuGetAudit=false -nodeReuse:false` — 0 warnings, 0 errors.
+Fixture regression: `run_f17_visibility.sh current` passed its F12/F17 isolated data, service and HTTP checks and stayed available for browser checks. Temporary cluster and app were stopped with Ctrl-C and trap cleanup.
