@@ -4,12 +4,10 @@
 
 @using DevCoreBlog.Core.Entities
 @model Post
-@inject DevCoreBlog.Services.Interfaces.ISafeMarkdownRenderer MarkdownRenderer
 
 @{
     ViewData["Title"] = Model.Title;
     ViewData["TerminalPath"] = $"posts/{Model.Slug}";
-    var safePostContent = MarkdownRenderer.ToSafeHtml(Model.Content);
 }
 
 <article class="max-w-4xl mx-auto w-full">
@@ -47,10 +45,7 @@
     }
 
     @* Post Content — Markdown Rendered *@
-    <div class="markdown-content text-gray-800 dark:text-zinc-200 leading-relaxed text-base">
-        @* ToSafeHtml is the single tested boundary that may produce markup for post content. *@
-        @Html.Raw(safePostContent)
-    </div>
+    <partial name="_PostContent" model="Model.Content" />
 
     @* Footer Navigation *@
     <div class="mt-12 pt-6 border-t-2 border-gray-900 dark:border-zinc-700 flex justify-between items-center">

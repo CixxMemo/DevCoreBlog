@@ -5,7 +5,7 @@
     var isEdit = string.Equals(ViewData["PostEditorMode"] as string, "edit", StringComparison.Ordinal);
 }
 
-<form asp-action="@(isEdit ? "Edit" : "Create")" method="post" id="postForm" enctype="multipart/form-data"
+<form asp-action="@(isEdit ? "Edit" : "Create")" method="post" id="postForm" enctype="multipart/form-data" rel="noopener"
       data-mode="@(isEdit ? "edit" : "create")" data-post-id="@Model.Id"
       data-upload-url="@Url.Action("UploadEditorImage", "AdminPost")" data-slug="@Model.Slug">
     <input type="hidden" name="recoveryRevision" value="" />
@@ -152,6 +152,11 @@
                 <p class="font-mono text-xs text-neutral-600">Schedule uses a future site time. Publish now uses the server clock. Public visibility also requires an active post and category.</p>
                 <span asp-validation-for="SaveAction" class="font-mono text-xs text-rose-600 block"></span>
 
+                <button type="submit" formaction="@Url.Action("Preview", "AdminPost")" formtarget="_blank"
+                        formenctype="application/x-www-form-urlencoded"
+                        class="w-full border-2 border-black bg-white text-black p-3 font-mono text-xs font-bold focus:outline-2 focus:outline-offset-2">Preview in new tab</button>
+                <p class="font-mono text-xs text-neutral-600">Private server preview. Your editor stays open; nothing is saved or published.</p>
+
                 <a asp-action="Index"
                    class="block w-full text-center border-2 border-black bg-neutral-100 hover:bg-black hover:text-white p-2 font-mono text-xs font-bold uppercase transition-none">
                     Cancel & Return
@@ -259,4 +264,3 @@
         </div>
     </div>
 </form>
-

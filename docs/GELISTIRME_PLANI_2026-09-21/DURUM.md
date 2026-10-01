@@ -1,11 +1,11 @@
 # İlerleme çizelgesi
 
-- **Son kayıt:** 30 Eylül 2026 — F32 açık taslak/zamanlama/yayın eylemleri ve doğru yayın durumu doğrulandı.
-- **Tamamlanan plan fazı:** 33/58 (F00–F32).
-- **Tamamlanan uygulama kodu fazı:** 31.
+- **Son kayıt:** 1 Ekim 2026 — F33 özel, güvenli ve kaydetmeyen HTML önizleme doğrulandı.
+- **Tamamlanan plan fazı:** 34/58 (F00–F33).
+- **Tamamlanan uygulama kodu fazı:** 32.
 - **Aktif faz:** Yok.
-- **Sıradaki faz:** F33 — kullanıcı onayı bekleniyor.
-- **Uygulama kodu:** F02–F09 güvenlik fazları tamamlandı. F10 migration zincirini doğruladı. F11–F13 form/içerik güvenliğini tamamladı. F14 kategori update'ini güvenli alanlara daralttı. F15 kategori silmesini DB constraint'i ve yarış yönetimiyle veri kaybına karşı korudu. F16 yayın zamanını açık saat dilimiyle UTC'ye bağladı. F17 public görünürlüğü tek kurala bağladı. F18 tek süreçli liste cache'ini yayın sınırı ve mutation invalidation'ıyla doğruladı. F19 düzenlemede kayıtlı slug'ı korudu. F20 benzersiz slug indekslerini ve geçmiş çakışma göçünü ekledi. F21 yalnızca uygun public GET'leri atomik sayıyor. F22 eski edit sekmelerinin içerik ezmesini sürüm karşılaştırmasıyla önlüyor. F23 hata akışında gerçek 404/500 ve JSON durumlarını koruyor. F24 servislerin somut Data repository bağımlılığını Core sözleşmelerine taşıdı. F25 dashboard sorgularını servis/repository sınırına ve kategori menülerini asenkron bileşene taşıdı. F26 güvenli Markdown renderer'ını Services'e taşıyıp Cloudinary istemcisini composition root'tan enjekte etti. F27 webhook'u secret-önce, sınırlı JSON kabulüne ve açık yayın yetkisine bağladı. F28 anahtarlı gönderimleri kalıcı işlem kaydı ve tek transaction ile tekrar korumasına bağladı. F29 portföyü dar DB projection, kararlı sıralama ve yapılandırılmış site URL'sine bağladı. F30 Create/Edit ortak formunu ve editör davranışlarını tek partial/modülde topladı. F31 Create/Edit kurtarmayı yazı kimliği, açık Restore/Discard, sekme koordinasyonu ve doğrulanmış başarılı kayıt bilgisine bağladı. F32 açık kayıt eylemlerini, normal Save korumasını ve doğru yayın durumunu uyguladı.
+- **Sıradaki faz:** F34 — kullanıcı onayı bekleniyor.
+- **Uygulama kodu:** F02–F09 güvenlik fazları tamamlandı. F10 migration zincirini doğruladı. F11–F13 form/içerik güvenliğini tamamladı. F14 kategori update'ini güvenli alanlara daralttı. F15 kategori silmesini DB constraint'i ve yarış yönetimiyle veri kaybına karşı korudu. F16 yayın zamanını açık saat dilimiyle UTC'ye bağladı. F17 public görünürlüğü tek kurala bağladı. F18 tek süreçli liste cache'ini yayın sınırı ve mutation invalidation'ıyla doğruladı. F19 düzenlemede kayıtlı slug'ı korudu. F20 benzersiz slug indekslerini ve geçmiş çakışma göçünü ekledi. F21 yalnızca uygun public GET'leri atomik sayıyor. F22 eski edit sekmelerinin içerik ezmesini sürüm karşılaştırmasıyla önlüyor. F23 hata akışında gerçek 404/500 ve JSON durumlarını koruyor. F24 servislerin somut Data repository bağımlılığını Core sözleşmelerine taşıdı. F25 dashboard sorgularını servis/repository sınırına ve kategori menülerini asenkron bileşene taşıdı. F26 güvenli Markdown renderer'ını Services'e taşıyıp Cloudinary istemcisini composition root'tan enjekte etti. F27 webhook'u secret-önce, sınırlı JSON kabulüne ve açık yayın yetkisine bağladı. F28 anahtarlı gönderimleri kalıcı işlem kaydı ve tek transaction ile tekrar korumasına bağladı. F29 portföyü dar DB projection, kararlı sıralama ve yapılandırılmış site URL'sine bağladı. F30 Create/Edit ortak formunu ve editör davranışlarını tek partial/modülde topladı. F31 Create/Edit kurtarmayı yazı kimliği, açık Restore/Discard, sekme koordinasyonu ve doğrulanmış başarılı kayıt bilgisine bağladı. F32 açık kayıt eylemlerini, normal Save korumasını ve doğru yayın durumunu uyguladı. F33 aynı güvenli render sınırından, DB yazısı/sayaç/yayın yan etkisi olmayan özel HTML önizleme üretiyor.
 
 ## Kullanım
 
@@ -53,7 +53,7 @@
 | [x] | F30 | Yazı editörünün ortak kodunu tek yerde topla | TAMAMLANDI | [Kayıt](../uygulama-kayitlari/F30-2026-09-30.md) |
 | [x] | F31 | Başarısız kayıtta yazının kaybolmasını önle | TAMAMLANDI — KOD | [Kayıt](../uygulama-kayitlari/F31-2026-09-30.md) |
 | [x] | F32 | Taslak, zamanlama ve yayınlama eylemlerini anlaşılır yap | TAMAMLANDI — KOD | [Kayıt](../uygulama-kayitlari/F32-2026-09-30.md) |
-| [ ] | F33 | Sunucu çıktısıyla tutarlı güvenli önizleme ekle | BAŞLAMADI | — |
+| [x] | F33 | Sunucu çıktısıyla tutarlı güvenli önizleme ekle | TAMAMLANDI — KOD | [Kayıt](../uygulama-kayitlari/F33-2026-10-01.md) |
 | [ ] | F34 | Yönetim panelini telefonda kullanılabilir yap | BAŞLAMADI | — |
 | [ ] | F35 | Frontend varlıklarını tekrarlanabilir derlemeye geçir | BAŞLAMADI | — |
 | [ ] | F36 | Ortak görsel düzeni ve okunabilirliği toparla | BAŞLAMADI | — |
@@ -81,11 +81,11 @@
 
 ## Son agent teslimi
 
-- Tamamlanan faz: F32 taslak, zamanlama ve yayınlama eylemleri.
-- Değişen davranış: Save Draft / Schedule / Publish now açık submit değerleriyle çalışır. Edit normal Save kayıtlı izin/tarihi korur. Liste/form dört gerçek durumu gösterir; Scheduled yazının LIVE bağlantısı yoktur.
-- Kontroller: Build 0 hata, 2 NU1900 ağ uyarısı; F32 22, F31 HTTP 8/kurtarma 11, F11/F13 12 ve F17 geçti. Gerçek masaüstü/mobil, Tab odağı ve temiz konsol doğrulandı. [Kanıt](../uygulama-kayitlari/F32-2026-09-30.md).
-- Sınırlama: NuGet advisory ağı erişilemedi; canlı Cloudinary/production doğrulanmadı. Genel mobil admin navigasyonu F34'te.
-- Sıradaki tek faz: F33 — Sunucu çıktısıyla tutarlı güvenli önizleme ekle.
-- Kullanıcıdan gereken: F33 için açık onay.
+- Tamamlanan faz: F33 sunucu çıktısıyla tutarlı güvenli önizleme.
+- Değişen davranış: Create/Edit ayrı sekmede yetkili/CSRF korumalı HTML preview üretir; aynı güvenli renderer/partial kullanılır, DB/sayaç/yayın değişmez. Form ve yerel kurtarma korunur; seçilen kapak önizlemede upload edilmez.
+- Kontroller: Build 0 hata/2 NU1900 ağ uyarısı; F33 30, F32 22, F31 MVC 8/kurtarma 11, F11/F13 12 ve F17 geçti. Gerçek 1440/390, Enter, tablo/kod/yerel PNG, satır değişmezliği ve temiz konsol doğrulandı. [Kanıt](../uygulama-kayitlari/F33-2026-10-01.md).
+- Sınırlama: NuGet advisory ağı erişilemedi; canlı Cloudinary/production ve bütün tarayıcı sürümleri doğrulanmadı. CDN asset borcu F35'te.
+- Sıradaki tek faz: F34 — Yönetim panelini telefonda kullanılabilir yap. Kapalı mobil drawer, Escape/odak geri dönüşü, form/tablo düzeni ve farklı ekran/zoom kontrolleri uygulanacak.
+- Kullanıcıdan gereken: F34 için açık onay.
 
 [Ana plan](/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/docs/GELISTIRME_PLANI_2026-09-21/README.md) · [Hazır mesajlar](/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/docs/GELISTIRME_PLANI_2026-09-21/AGENT_PROMPTLARI.md)

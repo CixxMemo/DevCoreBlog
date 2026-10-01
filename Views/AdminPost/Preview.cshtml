@@ -1,0 +1,37 @@
+@model DevCoreBlog.Models.Admin.PostPreviewModel
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Private post preview";
+}
+
+<div class="w-full min-w-0">
+<div class="max-w-4xl mx-auto w-full mb-8 border-2 border-gray-900 dark:border-zinc-700 p-4 font-mono text-sm" role="status">
+    <h1 class="font-bold">Private preview — Not saved</h1>
+    <p>Return to your original editor tab to continue. This preview does not publish or save your changes.</p>
+    <p>Only the saved cover is shown. A newly selected cover stays in the editor until you save.</p>
+</div>
+
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="max-w-4xl mx-auto w-full border-2 border-rose-600 bg-rose-50 p-4 text-rose-800">
+        <h2 class="font-bold">Correct these fields in the editor, then preview again.</h2>
+        <div asp-validation-summary="All"></div>
+    </div>
+}
+else
+{
+    <article class="max-w-4xl mx-auto w-full">
+        <h2 class="text-2xl sm:text-4xl font-bold tracking-tight mb-6 font-sans text-gray-900 dark:text-zinc-100 leading-tight">@Model.Title</h2>
+        <div class="bg-white dark:bg-[#121215] border-2 border-gray-900 dark:border-zinc-700 p-4 mb-8 font-mono text-xs">
+            <span class="text-primary font-bold">#</span> @Model.CategoryName
+        </div>
+        @if (!string.IsNullOrEmpty(Model.ThumbnailUrl))
+        {
+            <div class="mb-8 border-2 border-gray-900 dark:border-zinc-700 overflow-hidden">
+                <img src="@Model.ThumbnailUrl" alt="@Model.Title" class="w-full max-h-96 object-cover" />
+            </div>
+        }
+        <partial name="_PostContent" model="Model.Content" />
+    </article>
+}
+</div>

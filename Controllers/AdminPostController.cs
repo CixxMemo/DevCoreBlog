@@ -49,6 +49,7 @@ public class AdminPostController : Controller
     private readonly IImageService _imageService;
     private readonly PublicationTimeZone _publicationTimeZone;
     private readonly TimeProvider _timeProvider;
+    private const int MaximumPreviewRequestBytes = 1_048_576;
 
     // Constructor receives services from the DI container
     public AdminPostController(
@@ -139,6 +140,39 @@ public class AdminPostController : Controller
                 _timeProvider.GetUtcNow().UtcDateTime),
             SiteTimeZoneId = _publicationTimeZone.Id
         });
+    }
+
+    /// <summary>Validates unsaved editor input and returns private HTML without write-side effects.</summary>
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
+    [RequestSizeLimit(MaximumPreviewRequestBytes)]
+    [RequestFormLimits(ValueLengthLimit = 800_000, MultipartBodyLengthLimit = MaximumPreviewRequestBytes)]
+    public async Task<IActionResult> Preview(
+        [Bind("Id,Title,Content,CategoryId,Summary,Excerpt,PublishDate")] PostFormInput? input,
+        CancellationToken cancellationToken)
+    {
+        Response.Headers["X-Robots-Tag"] = "noindex, nofollow, noarchive";
+        // Failed body binding may provide no model; reject it before accessing fields.
+        if (Request.ContentLength > MaximumPreviewRequestBytes)
+            return StatusCode(StatusCodes.Status413PayloadTooLarge, "Request too large.");
+        if (input is null) return BadRequest("Invalid preview input.");
+        // Stored media is read only; selected files and client cover URLs are never uploaded or trusted.
+        var storedPost = input.Id > 0 ? await _postService.GetPostByIdAsync(input.Id) : null;
+        if (input.Id < 0 || (input.Id > 0 && storedPost is null)) return NotFound();
+
+        var post = MapToPost(input, storedPost?.ThumbnailUrl ?? string.Empty);
+        if (ModelState.IsValid)
+            ModelState.AddContentErrors(await _postService.ValidatePostAsync(post, cancellationToken));
+
+        var category = ModelState.IsValid
+            ? await _categoryService.GetCategoryByIdAsync(input.CategoryId) : null;
+        if (ModelState.IsValid && (category is null || !category.IsActive))
+            ModelState.AddModelError(nameof(input.CategoryId), "Select an active category.");
+
+        if (!ModelState.IsValid) Response.StatusCode = StatusCodes.Status400BadRequest;
+        return View(new PostPreviewModel(post.Title, post.Content, category?.Name ?? string.Empty,
+            post.ThumbnailUrl));
     }
 
     // -------------------------------------------------------------------------

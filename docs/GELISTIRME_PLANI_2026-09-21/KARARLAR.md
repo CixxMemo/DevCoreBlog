@@ -44,7 +44,7 @@ Küçük gerekçeli test/build bağımlılığı yasak değil. Olmayan aracı va
 
 F33 yetkili HTML önizleme, F46 standart XML RSS üretir. Ayrı API mimarisi veya SPA gerekmez. Auth/no-store/yayın görünürlüğü/encoding kuralları çıktı formatından bağımsız uygulanır.
 
-**Durum:** KAPSAMDA. Kullanıcı RSS'i açıkça ertelerse gerekçesiyle kaydedilir; tamamlandı sayılmaz.
+**Durum:** F33 uygulandı. Native Preview in new tab düğmesi yalnız o POST için ayrı target ve URL kullanır; normal Save formu korunur. Detay/önizleme aynı güvenli içerik partial'ını kullanır. Önizleme upload yapmaz; kayıtlı kapağı gösterir. [F33 kanıtı](../uygulama-kayitlari/F33-2026-10-01.md). F46 kapsamda; kullanıcı RSS'i açıkça ertelerse gerekçesiyle kaydedilir, tamamlandı sayılmaz.
 
 ## D06 — Küçük tipli sözleşmeler izinli, kontrolsüz aktarım yasak
 

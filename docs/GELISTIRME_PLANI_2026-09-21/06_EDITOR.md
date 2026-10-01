@@ -96,7 +96,7 @@ Bu bölüm bir çalıştırma emri değildir. Her seferinde yalnızca **bir faz 
 
 1. Yetkili, antiforgery korumalı POST ile yalnızca HTML Razor önizleme üret; bu bir yeni Web API/JSON endpoint'i değildir. Aynı güvenli renderer ve validation sınırlarını kullan.
 2. Önizlemeyi kaydetmeden aç; DB yazısı, yayın durumu değişimi ve ViewCount artışı yapma. Cache-Control no-store ve indekslenmeme kuralı uygula.
-3. Kaydedilmemiş içerik, uzun kod, tablo ve görseli gerçek detay tipografisiyle göster. Tek kullanımlık form target/yeni pencere yaklaşımında kullanıcının alanlarını kaybetme.
+3. Kaydedilmemiş içerik, uzun kod, tablo ve görseli gerçek detay tipografisiyle göster. Native düğmenin formaction/formtarget değerleri yalnız o POST'ta geçerlidir; normal Save ve kurtarma metni korunur. Önizleme kapak upload'ı yapmaz, yalnız sunucudaki kayıtlı kapağı gösterir; seçilen yeni dosyanın editörde kaldığını açıkla.
 
 **Kabul ve kanıt:** Taslak önizleme yalnızca oturum sahibi tarafından görülür; XSS fixture'ları çalışmaz; DB/sayaç değişmez; gerçek detay ile biçim aynı. Kod değiştiyse derleme sıfır hatayla tamamlanmalı; ilgili eski kontroller korunmalı.
 
