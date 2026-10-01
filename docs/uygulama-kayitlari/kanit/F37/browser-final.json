@@ -1,0 +1,41 @@
+[
+  {
+    "current": "# F01 Active Category",
+    "overflow": false,
+    "role": "complementary",
+    "searchForms": 1,
+    "stage": "desktop final",
+    "tag": "DIV",
+    "width": 1280
+  },
+  {
+    "active": "mobile-close-btn",
+    "bodyOverflow": "hidden",
+    "headerInert": true,
+    "mainInert": true,
+    "modal": "true",
+    "role": "dialog",
+    "stage": "open final",
+    "tag": "DIV",
+    "width": 390
+  },
+  {
+    "active": "theme-toggle-btn",
+    "stage": "reverse final"
+  },
+  {
+    "href": "/",
+    "stage": "forward final"
+  },
+  {
+    "active": "mobile-menu-btn",
+    "expanded": "false",
+    "mainInert": false,
+    "role": "complementary",
+    "stage": "escape final"
+  },
+  {
+    "active": "main-content",
+    "stage": "skip final"
+  }
+]

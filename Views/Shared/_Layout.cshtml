@@ -95,10 +95,12 @@
 </head>
 <body class="public-site bg-[#f9fafb] dark:bg-[#09090b] min-h-screen text-gray-900 dark:text-zinc-100 font-sans transition-colors duration-150 flex flex-col md:flex-row">
 
+    <a id="skip-content" class="public-skip-link" href="#main-content">Skip to content</a>
+
     @* ============================================================================= *@
     @* MOBILE TOP BAR — Sticky header visible only on mobile/tablet viewports (<768px)*@
     @* ============================================================================= *@
-    <header class="md:hidden sticky top-0 z-30 flex items-center justify-between px-4 py-3 bg-white dark:bg-[#121215] border-b-2 border-gray-900 dark:border-zinc-800">
+    <header id="public-header" class="md:hidden sticky top-0 z-30 flex items-center justify-between px-4 py-3 bg-white dark:bg-[#121215] border-b-2 border-gray-900 dark:border-zinc-800">
         @* Mobile Brand Logo *@
         <a href="/" class="font-mono font-black text-lg tracking-tight text-gray-900 dark:text-white no-underline">
             <span class="text-primary">DEV</span>CORE<span class="text-xs ml-1 font-mono uppercase bg-gray-900 dark:bg-zinc-700 text-white px-1.5 py-0.5">BLOG</span>
@@ -108,7 +110,8 @@
         <button type="button" 
                 id="mobile-menu-btn"
                 aria-label="Open navigation menu" 
-                class="p-1.5 border-2 border-gray-900 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-900 dark:text-zinc-100 hover:bg-gray-900 hover:text-white dark:hover:bg-primary dark:hover:text-white focus:outline-none rounded-none cursor-pointer">
+                aria-controls="main-sidebar" aria-expanded="false"
+                class="public-menu-control p-1.5 border-2 border-gray-900 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-900 dark:text-zinc-100 hover:bg-gray-900 hover:text-white dark:hover:bg-primary dark:hover:text-white focus:outline-none rounded-none cursor-pointer">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
             </svg>
@@ -117,14 +120,15 @@
 
     @* Mobile Drawer Backdrop Overlay *@
     <div id="sidebar-backdrop" 
-         class="fixed inset-0 bg-black/60 z-40 hidden md:hidden transition-opacity duration-200" 
+         class="public-drawer-backdrop"
          aria-hidden="true"></div>
 
     @* ============================================================================= *@
     @* LEFT SIDEBAR — Responsive Off-Canvas Drawer (Mobile) & Fixed Rail (Desktop)   *@
     @* ============================================================================= *@
-    <aside id="main-sidebar" 
-           class="w-64 fixed top-0 left-0 h-screen bg-white dark:bg-[#121215] border-r-2 border-gray-900 dark:border-zinc-800 flex flex-col justify-between z-50 md:z-40 overflow-y-auto transform -translate-x-full transition-transform duration-200 ease-in-out md:translate-x-0">
+    <div id="main-sidebar" role="complementary"
+           aria-label="Reader navigation"
+           class="public-sidebar bg-white dark:bg-[#121215] border-r-2 border-gray-900 dark:border-zinc-800 flex flex-col justify-between">
         <div>
             @* Logo & Mobile Close Header *@
             <div class="p-4 border-b-2 border-gray-900 dark:border-zinc-800 bg-white dark:bg-[#121215] flex items-center justify-between">
@@ -136,7 +140,7 @@
                 <button type="button" 
                         id="mobile-close-btn"
                         aria-label="Close navigation menu" 
-                        class="md:hidden p-1 text-gray-600 dark:text-zinc-400 hover:text-black dark:hover:text-white border border-gray-900 dark:border-zinc-700 bg-white dark:bg-zinc-800 cursor-pointer">
+                        class="public-menu-control p-1 text-gray-600 dark:text-zinc-400 hover:text-black dark:hover:text-white border border-gray-900 dark:border-zinc-700 bg-white dark:bg-zinc-800 cursor-pointer">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                     </svg>
@@ -144,8 +148,8 @@
             </div>
 
             @* Navigation Menu Links — Merlin'in Kazanı style list with sharp hover *@
-            <nav class="flex flex-col">
-                <a href="/" class="block py-3 px-4 hover:bg-gray-900 hover:text-white dark:hover:bg-primary dark:hover:text-white rounded-none border-b border-gray-200 dark:border-zinc-800 transition-none font-bold text-sm text-gray-900 dark:text-zinc-200 no-underline">
+            <nav aria-label="Main navigation" class="flex flex-col">
+                <a href="/" aria-current="@(Context.Request.Path == "/" ? "page" : null)" class="block py-3 px-4 hover:bg-gray-900 hover:text-white dark:hover:bg-primary dark:hover:text-white rounded-none border-b border-gray-200 dark:border-zinc-800 transition-none font-bold text-sm text-gray-900 dark:text-zinc-200 no-underline">
                     Home
                 </a>
                 @await Component.InvokeAsync("PublicCategoryNavigation")
@@ -178,13 +182,16 @@
                 <span>Toggle Theme</span>
             </button>
         </div>
-    </aside>
+    </div>
 
     @* ============================================================================= *@
     @* RIGHT MAIN CONTENT AREA — Seamless responsive flow                            *@
     @* ============================================================================= *@
-    <main class="flex-1 w-full md:ml-64 p-4 sm:p-6 lg:p-8 flex gap-8 min-w-0">
-        @RenderBody()
+    <main id="main-content" tabindex="-1" class="flex-1 w-full md:ml-64 p-4 sm:p-6 lg:p-8 min-w-0">
+        <partial name="_PublicSearch" />
+        <div class="flex gap-8 min-w-0">
+            @RenderBody()
+        </div>
     </main>
 
 
@@ -194,48 +201,7 @@
     <script src="~/generated/prism/plugins/toolbar/prism-toolbar.min.js" asp-append-version="true"></script>
     <script src="~/generated/prism/plugins/show-language/prism-show-language.min.js" asp-append-version="true"></script>
 
-    @* ============================================================================= *@
-    @* Vanilla JS Mobile Sidebar Drawer Controller                                   *@
-    @* ============================================================================= *@
-    <script>
-        (function() {
-            var menuBtn = document.getElementById('mobile-menu-btn');
-            var closeBtn = document.getElementById('mobile-close-btn');
-            var sidebar = document.getElementById('main-sidebar');
-            var backdrop = document.getElementById('sidebar-backdrop');
-
-            function openSidebar() {
-                if (sidebar) {
-                    sidebar.classList.remove('-translate-x-full');
-                }
-                if (backdrop) {
-                    backdrop.classList.remove('hidden');
-                }
-                document.body.classList.add('overflow-hidden', 'md:overflow-auto');
-            }
-
-            function closeSidebar() {
-                if (sidebar) {
-                    sidebar.classList.add('-translate-x-full');
-                }
-                if (backdrop) {
-                    backdrop.classList.add('hidden');
-                }
-                document.body.classList.remove('overflow-hidden', 'md:overflow-auto');
-            }
-
-            if (menuBtn) menuBtn.addEventListener('click', openSidebar);
-            if (closeBtn) closeBtn.addEventListener('click', closeSidebar);
-            if (backdrop) backdrop.addEventListener('click', closeSidebar);
-
-            // Close mobile drawer when pressing Escape key
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape' && sidebar && !sidebar.classList.contains('-translate-x-full')) {
-                    closeSidebar();
-                }
-            });
-        })();
-    </script>
+    <script src="~/js/public-navigation.js" asp-append-version="true"></script>
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>

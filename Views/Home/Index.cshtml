@@ -2,7 +2,7 @@
 @* Home/Index.cshtml — Public Home Page (Tech Minimal & Merlin'in Kazanı Layout) *@
 @* ============================================================================= *@
 @* This view renders:                                                           *@
-@*   1. Main Central Column: Search bar, Asymmetric Hero, Articles Grid         *@
+@*   1. Main Central Column: Asymmetric Hero, Articles Grid         *@
 @*   2. Right Aside Column: Numbered Trends, Quotes, AI Spotlight Boxes         *@
 @* Full support for Light & Dark mode via Tailwind 'dark' class.                 *@
 @* ============================================================================= *@
@@ -34,31 +34,6 @@
 @* MAIN CENTRAL COLUMN                                                           *@
 @* ============================================================================= *@
 <div class="flex-1 min-w-0">
-
-    @* --- 1. Top Search Bar (Tech Minimal with Ctrl + K Indicator) --- *@
-    <div class="mb-6">
-        <form action="/ara" method="get" class="w-full relative flex items-center">
-            @* Terminal Search Prompt Symbol *@
-            <div class="absolute left-3.5 flex items-center pointer-events-none text-gray-500 dark:text-zinc-400 font-mono font-bold text-sm select-none">
-                &gt;
-            </div>
-
-            @* Streamlined Search Input Field *@
-            <input type="text" 
-                   id="global-search-input"
-                   name="query" 
-                   placeholder="Search articles, concepts, or tags..." 
-                   autocomplete="off"
-                   class="w-full bg-white dark:bg-[#121215] border-2 border-gray-900 dark:border-zinc-700 text-gray-900 dark:text-zinc-100 placeholder-gray-500 dark:placeholder-zinc-400 pl-8 pr-20 py-2.5 text-sm font-mono rounded-none focus:outline-none focus:border-primary dark:focus:border-primary focus:bg-neutral-50 dark:focus:bg-zinc-900/50 transition-none" />
-
-            @* Keyboard Shortcut Indicator Badge (Ctrl + K / ⌘K) *@
-            <div class="absolute right-3 flex items-center pointer-events-none">
-                <kbd class="hidden sm:inline-block font-mono text-xs font-bold border border-gray-900 dark:border-zinc-700 bg-neutral-100 dark:bg-zinc-800 text-gray-700 dark:text-zinc-300 px-1.5 py-0.5 uppercase select-none rounded-none">
-                    Ctrl + K
-                </kbd>
-            </div>
-        </form>
-    </div>
 
     @if (Model.Any())
     {
@@ -247,27 +222,3 @@
     @await Component.InvokeAsync("PublicCategoryNavigation", new { featured = true })
 
 </aside>
-
-@section Scripts {
-    <script>
-        // =====================================================================
-        // Global Keyboard Shortcut: Ctrl + K (or Cmd + K on macOS)
-        // Focuses the top search bar instantly when pressed from anywhere on the page
-        // =====================================================================
-        document.addEventListener('keydown', function(e) {
-            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
-                e.preventDefault();
-                var searchInput = document.getElementById('global-search-input');
-                if (searchInput) {
-                    searchInput.focus();
-                    searchInput.select();
-                }
-            } else if (e.key === 'Escape') {
-                var searchInput = document.getElementById('global-search-input');
-                if (searchInput && document.activeElement === searchInput) {
-                    searchInput.blur();
-                }
-            }
-        });
-    </script>
-}

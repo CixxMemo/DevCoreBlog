@@ -398,3 +398,76 @@ html.dark .public-site .text-primary { color: var(--accent); }
 
 .public-site main, .public-site article { min-width: 0; }
 .public-site article > h1 { overflow-wrap: anywhere; }
+
+/* Navigation stays in the document flow until its drawer controller is ready. */
+.public-sidebar { width: 100%; }
+.public-menu-control, .public-drawer-backdrop { display: none; }
+.public-navigation-ready .public-menu-control { display: inline-flex; }
+.public-navigation-ready .public-sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  width: 16rem;
+  height: 100dvh;
+  overflow-y: auto;
+  z-index: 50;
+  transform: translateX(-100%);
+  visibility: hidden;
+}
+.public-navigation-ready .public-sidebar.is-open {
+  transform: translateX(0);
+  visibility: visible;
+}
+.public-navigation-ready .public-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: rgb(0 0 0 / 60%);
+}
+.public-drawer-open { overflow: hidden; }
+.public-drawer-open .public-drawer-backdrop { display: block; }
+.public-site nav [aria-current="page"] { text-decoration: underline; text-underline-offset: 0.25em; }
+.public-skip-link {
+  position: fixed;
+  left: 1rem;
+  top: 1rem;
+  z-index: 60;
+  transform: translateY(-200%);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  border: var(--public-rule);
+  padding: 0.75rem;
+}
+.public-skip-link:focus { transform: translateY(0); }
+.public-search {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  min-width: 0;
+  font: var(--public-copy-size)/1.5 var(--font-mono);
+}
+.public-search input, .public-search button {
+  padding: 0.625rem 0.75rem;
+  border: var(--public-rule);
+  background: var(--bg-card);
+  color: var(--text-primary);
+}
+.public-search input { flex: 1; min-width: 0; width: 100%; }
+.public-search input::placeholder { color: var(--text-muted); opacity: 1; }
+.public-search button { font-weight: 700; cursor: pointer; }
+.public-search button:hover { border-color: var(--accent); }
+.public-search-shortcut { display: none; color: var(--text-muted); font-size: var(--public-meta-size); }
+@media (min-width: 768px) {
+  .public-sidebar, .public-navigation-ready .public-sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    width: 16rem;
+    height: 100dvh;
+    overflow-y: auto;
+    z-index: 40;
+    transform: none;
+    visibility: visible;
+  }
+  .public-navigation-ready .public-menu-control { display: none; }
+  .public-search-shortcut { display: inline; }
+}
