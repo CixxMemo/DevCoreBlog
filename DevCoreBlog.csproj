@@ -4,6 +4,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <DefaultItemExcludes>$(DefaultItemExcludes);node_modules/**;frontend/**;scripts/frontend/**</DefaultItemExcludes>
   </PropertyGroup>
 
   <ItemGroup>
@@ -49,4 +50,18 @@
     <None Remove="tools\**" />
   </ItemGroup>
 
+  <!-- Build before static web assets are discovered, including on a clean checkout. -->
+  <Target Name="InstallFrontendDependencies" BeforeTargets="BuildFrontendAssets"
+          Inputs="package.json;package-lock.json" Outputs="node_modules/.package-lock.json"
+          Condition="'$(DesignTimeBuild)' != 'true'">
+    <Exec Command="npm ci --ignore-scripts --no-fund --no-audit" WorkingDirectory="$(MSBuildProjectDirectory)" />
+  </Target>
+  <Target Name="BuildFrontendAssets" BeforeTargets="PrepareForBuild"
+          Condition="'$(DesignTimeBuild)' != 'true'">
+    <Exec Command="npm run build" WorkingDirectory="$(MSBuildProjectDirectory)" />
+    <ItemGroup>
+      <Content Remove="wwwroot/generated/**" />
+      <Content Include="wwwroot/generated/**" CopyToPublishDirectory="PreserveNewest" />
+    </ItemGroup>
+  </Target>
 </Project>

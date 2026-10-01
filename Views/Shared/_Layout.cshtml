@@ -83,50 +83,15 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
     
-    @* Tailwind CSS Play CDN with Tech Minimal Flat Configuration *@
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
-                        mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
-                    },
-                    colors: {
-                        primary: {
-                            DEFAULT: '#4f46e5',
-                            hover: '#4338ca',
-                        },
-                        accent: {
-                            DEFAULT: '#4f46e5',
-                            light: '#6366f1',
-                            dark: '#4338ca',
-                        },
-                    },
-                    borderRadius: {
-                        'none': '0',
-                        'sm': '0',
-                        'DEFAULT': '0',
-                        'md': '0',
-                        'lg': '0',
-                        'xl': '0',
-                        '2xl': '0',
-                        '3xl': '0',
-                        'full': '0',
-                    },
-                },
-            },
-        }
-    </script>
+    @* Compiled Tailwind CSS — existing public theme *@
+    <link rel="stylesheet" href="~/generated/tailwind-public.css" asp-append-version="true" />
     
     @* Site Custom CSS *@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 
     @* Prism.js Syntax Highlighting Styles *@
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/plugins/show-language/prism-show-language.min.css" rel="stylesheet" />
+    <link href="~/generated/prism/themes/prism-tomorrow.css" rel="stylesheet" asp-append-version="true" />
+    <link href="~/generated/prism/plugins/toolbar/prism-toolbar.css" rel="stylesheet" asp-append-version="true" />
 </head>
 <body class="bg-[#f9fafb] dark:bg-[#09090b] min-h-screen text-gray-900 dark:text-zinc-100 font-sans transition-colors duration-150 flex flex-col md:flex-row">
 
@@ -225,9 +190,10 @@
     <script src="~/js/site.js" asp-append-version="true"></script>
 
     @* Prism.js Highlighting Scripts *@
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/components/prism-core.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/plugins/autoloader/prism-autoloader.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/plugins/show-language/prism-show-language.min.js"></script>
+    <script src="~/generated/prism/components/prism-core.min.js" asp-append-version="true"></script>
+    <script src="~/generated/prism/plugins/autoloader/prism-autoloader.min.js" asp-append-version="true"></script>
+    <script src="~/generated/prism/plugins/toolbar/prism-toolbar.min.js" asp-append-version="true"></script>
+    <script src="~/generated/prism/plugins/show-language/prism-show-language.min.js" asp-append-version="true"></script>
 
     @* ============================================================================= *@
     @* Vanilla JS Mobile Sidebar Drawer Controller                                   *@

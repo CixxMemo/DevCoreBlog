@@ -4,3 +4,7 @@ obj/
 
 ## Environment variables (secrets — NEVER commit)
 .env
+
+## Reproducible frontend dependencies and build output
+node_modules/
+wwwroot/generated/

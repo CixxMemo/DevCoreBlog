@@ -1,0 +1,15 @@
+{
+  "checks": {
+    "create_shared_contract": true,
+    "create_cover_save_with_fixture_storage": true,
+    "create_validation_retains_encoded_input": true,
+    "create_editor_upload_with_fixture_storage": true,
+    "create_editor_upload_requires_csrf": true,
+    "edit_shared_contract": true,
+    "edit_cover_save_with_fixture_storage": true,
+    "edit_validation_retains_encoded_input": true,
+    "edit_editor_upload_with_fixture_storage": true,
+    "edit_editor_upload_requires_csrf": true
+  },
+  "storage": "synthetic; Cloudinary not verified"
+}

@@ -34,11 +34,13 @@ Korunan tercihler: Tech Minimal, English UI ve anlamlı English kod yorumları; 
 
 ## D04 — Bağımlılık ve Tailwind build aracı
 
-Mevcut Tailwind sürümüne uygun en küçük resmi build aracı F35'te doğrulanacak. Paket/API varlığı, uyum, lisans ve bakım maliyeti araştırılmadan bağımlılık eklenmez. Gerekli araç version/lock ile sabitlenir; Play CDN ve latest üretim hedefi değildir.
+F35'te mevcut Play CDN bundle'ı Tailwind 3.4.17 olarak doğrulandı; aynı sürümün resmi `tailwindcss` CLI paketi ve Prism 1.30.0 exact sürüm/lockfile ile sabitlendi (MIT). Tailwind 4'e geçilmedi. Mevcut Toast UI `latest` yanıtı 3.2.2; npm dağıtımı mevcut all-in-one dosyasını içermediğinden resmi 3.2.2 CDN dosyaları değiştirilmeden kaynak vendor dizininde, hash ve lisanslarla korunur. Runtime bütün bu varlıkları yerelden okur.
+
+`npm run build`, mevcut public/admin temalarıyla ayrı CSS ve lisanslı vendor çıktısı üretir. Küçük Node standart kütüphane script'i yeterli olduğundan bundler/PostCSS framework'ü eklenmedi. `dotnet build/publish` npm kurulumunu gerektiğinde yeniler ve asset build'i çalıştırır. Node/npm yalnız build ortamında gereklidir. Razor/JS tam literal sınıfları taranır; üretilmiş çıktı Git dışında tutulur, temiz publish'e eklenir. [Resmi v3 CLI](https://v3.tailwindcss.com/docs/installation), [Prism Toolbar](https://prismjs.com/plugins/toolbar/), [Show Language](https://prismjs.com/plugins/show-language/), [Toast UI sürümü](https://github.com/nhn/tui.editor/releases/tag/editor%403.2.2), [F35 kanıtı](../uygulama-kayitlari/F35-2026-10-01.md).
 
 Küçük gerekçeli test/build bağımlılığı yasak değil. Olmayan aracı var saymak, gereksiz framework veya bütün yığını değiştirmek yasak. Rutin teknik işte yeniden kullanıcı izni istenmez; gerçek kapsam/ücretli servis/ürün değişimi ayrıca somutlaştırılır.
 
-**Durum:** POLİTİKA BELİRLENDİ; somut sürüm F35'te doğrulanacak.
+**Durum:** UYGULANDI — F35; temiz kurulum, tekrar üretim, publish ve gerçek tarayıcı doğrulandı.
 
 ## D05 — RSS ve HTML önizleme MVC çıktılarıdır
 

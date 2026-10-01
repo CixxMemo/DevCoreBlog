@@ -28,7 +28,7 @@ Bu dosya projenin **tek güncel ana talimat kaynağıdır**. Her yeni görevde v
 | Yapılandırma | Environment değişkenleri; yerelde mevcut DotNetEnv. Gerçek secret repo dışında kalır. |
 | Cache / limit / DI | ASP.NET Core/.NET yerleşik araçları. Redis, queue veya yeni altyapı varsayma. |
 
-Paket sürümlerinin kaynağı `.csproj`, varsa lock/tool manifest ve gerçek restore sonucudur. Bu belgeye güncelliği garanti edilemeyen “latest” sürüm listesi kopyalama. Başlangıçta EF Design/Tools ve runtime patch sürümleri farklı; uyumluluk F10'da doğrulanacak. Mevcut Tailwind CDN ve Toast UI `latest` kullanımı hedef standart değildir; F35'te tekrarlanabilir asset build/sabit sürüme geçilecek.
+Paket sürümlerinin kaynağı `.csproj`, varsa lock/tool manifest ve gerçek restore sonucudur. Bu belgeye güncelliği garanti edilemeyen “latest” sürüm listesi kopyalama. Başlangıçta EF Design/Tools ve runtime patch sürümleri farklı; uyumluluk F10'da doğrulanacak. F35 ile Tailwind resmi CLI/lockfile üzerinden derlenir; mevcut Toast UI ve Prism sabit sürümleri lisanslarıyla yerelde sunulur. Frontend kaynakları `frontend/`, build komutu `npm run build`, üretilmiş çıktı `wwwroot/generated/` içindedir; build/publish bunları hazırlar. Somut sürüm ve doğrulama D04/F35 kaydındadır.
 
 Yeni bağımlılık yalnızca somut ihtiyacı çözüyor, mevcut araç yeterli değil, resmi API/sürüm/lisans doğrulanmış ve bakım maliyeti gerekçelendirilmişse eklenebilir. Mevcut yığına gerekli build/test aracı için gereksiz ürün onayı isteme. Büyük framework, sağlayıcı, ücretli servis veya ürün mimarisi değişimini kapsam dışına taşıma. Paketleri körlemesine major sürüme yükseltmek ve var olmayan API'leri uydurmak yasaktır.
 
@@ -128,7 +128,7 @@ SOLID “her sınıfa interface”, “her metoda factory” veya puan uğruna i
 - Tech Minimal korunur: keskin kenar, yüksek kontrast, okunur font/boşluk. Neon gradient, glass/backdrop-blur, shadow-2xl ve rounded-3xl benzeri aşırı dekoratif stil yasaktır.
 - Responsive/klavye erişimi zorunlu: semantik HTML, label/validation ilişkisi, görünür focus, drawer Escape/odak geri dönüşü, mobil taşma kontrolü. Renk tek durum göstergesi olamaz.
 - UI/validation İngilizce; kullanıcı içeriklerini tercüme etme. Tarih kültürü/saat dilimi açık olsun. Taslak kurtarma kaydı başarılı server save doğrulanmadan silinmez.
-- Üretimde Play CDN veya `latest` asset'e dayanma; gerekli F35 geçişini kontrollü yap. Gereksiz global CSS override ve !important zinciri ekleme.
+- Üretimde Play CDN veya `latest` asset'e dayanma; F35 yerel ve kilitli asset build sınırını koru. Gereksiz global CSS override ve !important zinciri ekleme.
 - Canonical/site URL doğrulanmış config'ten üretilir; Host header'dan güvenilmez mutlak link üretme. SEO için sahte yazar/tarih/istatistik ve görünmeyen içerik uydurma.
 
 ## 9. Çalışma ağacı ve doğrulama

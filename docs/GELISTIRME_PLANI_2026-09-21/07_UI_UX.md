@@ -58,6 +58,8 @@ Bu bölüm bir çalıştırma emri değildir. Her seferinde yalnızca **bir faz 
 
 ---
 
+**F35 uygulama kaydı:** [1 Ekim 2026 kanıtı](../uygulama-kayitlari/F35-2026-10-01.md); sürüm/build kararı D04'te kayıtlıdır. Güncel durum DURUM.md'dedir.
+
 ## F36 — Ortak görsel düzeni ve okunabilirliği toparla
 
 **Neden:** Tekrarlanan kartlar, küçük metinler ve üst üste CSS override'ları tutarsızlık oluşturuyor.

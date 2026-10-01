@@ -1,0 +1,15 @@
+{
+  "name": "devcoreblog-assets",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "build": "node scripts/frontend/build.mjs"
+  },
+  "devDependencies": {
+    "tailwindcss": "3.4.17",
+    "prismjs": "1.30.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

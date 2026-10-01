@@ -40,6 +40,28 @@ docs/                            Aktif plan, karar, kanıt ve tarihsel arşiv
 
 Dört proje korunur. Core'un Markdig bağımlılığı ve Services'ın Data bağımlılığı F24/F26'da giderilecek teknik borçtur. Gerçek paket sürümleri .csproj dosyalarından doğrulanır.
 
+## Frontend derlemesi (F35)
+
+Build ortamında .NET SDK yanında Node.js 22 veya üzeri ve npm gerekir. Sabit paketler `package.json`/`package-lock.json` içindedir. İlk kurulum:
+
+```sh
+npm ci --ignore-scripts --no-fund --no-audit
+```
+
+Tek frontend derleme komutu:
+
+```sh
+npm run build
+```
+
+`dotnet build DevCoreBlog.csproj` ve `dotnet publish DevCoreBlog.csproj` aynı derlemeyi otomatik çalıştırır; eksik veya lockfile'dan eski npm kurulumu önce `npm ci` ile hazırlanır. `dotnet run --no-build` öncesinde build yapılmalıdır. Razor/JS sınıfı değişince yeniden build gerekir; tarayıcıda Tailwind derleyicisi yoktur.
+
+- Tarama: `Views/**/*.cshtml`, `wwwroot/js/**/*.js`; inline Razor script'leri de taranır. Sınıf adlarını tam literal olarak yaz; `bg-${color}-600` gibi birleştirme kullanma. Toast/drawer durumları mevcut sonlu literal adları kullanır.
+- `frontend/tailwind.public.cjs` ve `tailwind.admin.cjs` mevcut iki layout temasını korur; ortak font/tarama ayarı `tailwind.shared.cjs` içindedir. Eski kullanılmayan browser `wwwroot/tailwind.config.js` kaldırıldı.
+- Tailwind 3.4.17 resmi CLI ve Prism 1.30.0 npm lock'tan gelir. Mevcut Toast UI 3.2.2 dağıtımı [kaynak/hash/lisans kaydıyla](frontend/vendor/toastui/README.md) yerelde tutulur. Toolbar, Show Language'den önce yüklenir; Prism dilleri yerel components dizininden otomatik açılır.
+- Çıktı `wwwroot/generated/` içine yazılır; bu klasör ve `node_modules/` Git'e eklenmez. Temiz checkout'ta build üretir ve publish'e dahil eder. Uygulama çalışma ortamında Node/npm gerekmez. Yerel CSS/JS URL'leri `asp-append-version` ile cache busting kullanır.
+- Temiz kurulum, aynı hash ile ikinci derleme ve temiz publish kabul kontrolü: `sh scripts/verification/run_f35_assets.sh`. Yalnız geçici kaynak kopyasında çalışır; gerçek `.env` kopyalanmaz.
+
 ## Agent için yerel doğrulama başlangıcı
 
 Önce kurulu .NET SDK'yı ve mevcut değişiklikleri incele. Root'tan derleme komutu:
