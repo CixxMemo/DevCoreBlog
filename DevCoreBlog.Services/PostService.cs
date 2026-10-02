@@ -56,6 +56,11 @@ public class PostService : IPostService, IPublicationSchedule, IWebhookPostServi
         return await _postRepository.GetPublishedPostsAsync(_timeProvider.GetUtcNow().UtcDateTime);
     }
 
+    public Task<IReadOnlyList<TopReadPost>> GetMostReadPublicPostsAsync(
+        CancellationToken cancellationToken = default) =>
+        _postRepository.GetMostReadPublicPostsAsync(
+            _timeProvider.GetUtcNow().UtcDateTime, cancellationToken);
+
     // Get a single post by its slug (only if published)
     // The repository applies the shared public visibility rule at the current UTC instant.
     public async Task<Post?> GetPostBySlugAsync(string slug)

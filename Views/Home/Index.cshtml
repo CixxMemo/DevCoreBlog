@@ -1,86 +1,58 @@
-@* ============================================================================= *@
-@* Home/Index.cshtml — Public Home Page (Tech Minimal & Merlin'in Kazanı Layout) *@
-@* ============================================================================= *@
-@* This view renders:                                                           *@
-@*   1. Main Central Column: Asymmetric Hero, Articles Grid         *@
-@*   2. Right Aside Column: Numbered Trends, Quotes, AI Spotlight Boxes         *@
-@* Full support for Light & Dark mode via Tailwind 'dark' class.                 *@
-@* ============================================================================= *@
-
-@using DevCoreBlog.Core.Entities
 @using DevCoreBlog.Models.Public
-@model List<Post>
-
+@model HomePageModel
 @{
     ViewData["Title"] = "Home";
-
-    // Split posts into Hero features (first 3) and standard grid feed (remaining)
-    // If fewer than 3 posts exist, gracefully fallback so the page never breaks
-    var mainHero = Model.FirstOrDefault();
-    var subHeroes = Model.Skip(1).Take(2).ToList();
-    var gridPosts = Model.Skip(3).ToList();
-
-    // If there are 3 or fewer posts, display all in the grid as well for completeness
-    if (!gridPosts.Any() && Model.Any())
-    {
-        gridPosts = Model.ToList();
-    }
-
-    // Top 5 trending posts sorted by view count for the right sidebar
-    var trendingPosts = Model.OrderByDescending(p => p.ViewCount).Take(5).ToList();
+    // Feature cards are a partition of page one, never additional duplicates.
+    var features = Model.CurrentPage == 1 ? Model.Posts.Take(3).ToList() : new List<DevCoreBlog.Core.Entities.Post>();
+    var feed = Model.Posts.Skip(features.Count).ToList();
 }
-
-@* ============================================================================= *@
-@* MAIN CENTRAL COLUMN                                                           *@
-@* ============================================================================= *@
-<div class="flex-1 min-w-0">
-
-    @if (Model.Any())
-    {
-        @* --- 2. Asymmetric Hero Section (Tech Minimal Style) --- *@
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-10">
-            
-            @* Left: Main Feature Post (60% / col-span-7) *@
-            @if (mainHero != null)
+<div class="w-full min-w-0">
+    <header class="mb-6 border-b-2 border-gray-900 dark:border-zinc-700 pb-4">
+        <h1 class="font-mono font-bold text-2xl mb-2">DevCoreBlog</h1>
+        <p class="font-mono text-sm">@Model.TotalCount articles · @Model.Posts.Count on this page · Page @Model.CurrentPage of @Model.TotalPages</p>
+    </header>
+    <div class="flex flex-col xl:flex-row gap-8 min-w-0">
+        <div class="flex-1 min-w-0">
+            @if (features.Count > 0)
             {
-                <div class="lg:col-span-7">
-                    <partial name="_PostCard" model="new PostCardModel(mainHero, PostCardPresentation.Featured)" />
-                </div>
+                <section id="home-featured" aria-label="Latest featured articles" class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-10">
+                    <div class="@(features.Count > 1 ? "lg:col-span-7" : "lg:col-span-12")">
+                        <partial name="_PostCard" model="new PostCardModel(features[0], PostCardPresentation.Featured)" />
+                    </div>
+                    @if (features.Count > 1)
+                    {
+                        <div class="lg:col-span-5 flex flex-col gap-6">
+                            @foreach (var post in features.Skip(1))
+                            {
+                                <partial name="_PostCard" model="new PostCardModel(post, PostCardPresentation.Compact)" />
+                            }
+                        </div>
+                    }
+                </section>
             }
-
-            @* Right: 2 Stacked Sub-Features (40% / col-span-5) *@
-            <div class="lg:col-span-5 flex flex-col gap-6">
-                @foreach (var sub in subHeroes)
-                {
-                    <partial name="_PostCard" model="new PostCardModel(sub, PostCardPresentation.Compact)" />
-                }
-            </div>
-        </div>
-
-        @* --- 3. Articles Feed (Tech Minimal 3-Column Grid) --- *@
-        <div class="flex items-center justify-between border-b-2 border-gray-900 dark:border-zinc-700 pb-2 mb-6 mt-8">
-            <h2 class="text-xl font-mono font-black uppercase tracking-tight text-gray-900 dark:text-zinc-100">
-                Latest Articles
-            </h2>
-            <span class="text-xs font-mono font-bold text-gray-500 dark:text-zinc-400 uppercase">
-                [ Feed ]
-            </span>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
-            @foreach (var item in gridPosts)
+            @if (feed.Count > 0)
             {
-                <partial name="_PostCard" model="new PostCardModel(item, PostCardPresentation.Standard)" />
+                <section aria-labelledby="latest-heading">
+                    <h2 id="latest-heading" class="font-mono font-bold text-xl border-b-2 border-gray-900 dark:border-zinc-700 pb-2 mb-6">Latest Articles</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+                        @foreach (var post in feed)
+                        {
+                            <partial name="_PostCard" model="new PostCardModel(post, PostCardPresentation.Standard)" />
+                        }
+                    </div>
+                </section>
             }
-        </div>
-
+            @if (Model.TotalCount == 0)
+            {
+                <partial name="_PublicEmptyState" model='"No articles published yet."' />
+            }
         @* --- 4. Pagination Controls --- *@
-        @if (ViewBag.TotalPages > 1)
+        @if (Model.TotalPages > 1)
         {
-            <div class="flex justify-between items-center pt-6 border-t-2 border-gray-900 dark:border-zinc-700 font-mono text-xs font-bold">
-                @if (ViewBag.CurrentPage > 1)
+            <nav aria-label="Article pages" class="flex flex-wrap gap-3 justify-between items-center pt-6 border-t-2 border-gray-900 dark:border-zinc-700 font-mono text-xs font-bold">
+                @if (Model.CurrentPage > 1)
                 {
-                    <a href="?page=@(ViewBag.CurrentPage - 1)" class="px-4 py-2 border-2 border-gray-900 dark:border-zinc-700 text-gray-900 dark:text-zinc-100 hover:bg-gray-900 hover:text-white dark:hover:bg-primary dark:hover:text-white no-underline transition-none">
+                    <a href="?page=@(Model.CurrentPage - 1)" class="px-4 py-2 border-2 border-gray-900 dark:border-zinc-700 text-gray-900 dark:text-zinc-100 hover:bg-gray-900 hover:text-white dark:hover:bg-primary dark:hover:text-white no-underline transition-none">
                         &lt; Previous
                     </a>
                 }
@@ -92,12 +64,12 @@
                 }
 
                 <span class="text-gray-600 dark:text-zinc-400">
-                    Page @(ViewBag.CurrentPage) of @(ViewBag.TotalPages)
+                    Page @(Model.CurrentPage) of @(Model.TotalPages)
                 </span>
 
-                @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+                @if (Model.CurrentPage < Model.TotalPages)
                 {
-                    <a href="?page=@(ViewBag.CurrentPage + 1)" class="px-4 py-2 border-2 border-gray-900 dark:border-zinc-700 text-gray-900 dark:text-zinc-100 hover:bg-gray-900 hover:text-white dark:hover:bg-primary dark:hover:text-white no-underline transition-none">
+                    <a href="?page=@(Model.CurrentPage + 1)" class="px-4 py-2 border-2 border-gray-900 dark:border-zinc-700 text-gray-900 dark:text-zinc-100 hover:bg-gray-900 hover:text-white dark:hover:bg-primary dark:hover:text-white no-underline transition-none">
                         Next &gt;
                     </a>
                 }
@@ -107,118 +79,12 @@
                         Next &gt;
                     </span>
                 }
-            </div>
+            </nav>
         }
-    }
-    else
-    {
-        @* Empty State if no posts exist in the database *@
-        <partial name="_PublicEmptyState" model='"No articles published yet."' />
-    }
-
+        </div>
+        <aside aria-label="Discover articles" class="w-full xl:w-80 flex-shrink-0 flex flex-col gap-6">
+            <partial name="_MostRead" model="Model.MostRead" />
+            @await Component.InvokeAsync("PublicCategoryNavigation", new { featured = true })
+        </aside>
+    </div>
 </div>
-
-@* ============================================================================= *@
-@* RIGHT SIDEBAR COLUMN (Trending & Extra Widgets)                               *@
-@* ============================================================================= *@
-@* Fixed w-80 column displayed on desktop screens (hidden on smaller devices)    *@
-<aside class="w-80 flex-shrink-0 hidden xl:flex flex-col gap-6">
-
-    @* --- Widget 1: Trending Posts --- *@
-    <div class="bg-white dark:bg-[#121215] border-2 border-gray-900 dark:border-zinc-700 rounded-none p-4">
-        <div class="flex items-center justify-between border-b-2 border-gray-900 dark:border-zinc-700 pb-2 mb-4">
-            <h3 class="font-mono font-bold text-sm uppercase tracking-wider text-gray-900 dark:text-zinc-100 flex items-center gap-2 m-0">
-                <span class="w-2 h-2 bg-primary inline-block"></span>
-                Trending
-            </h3>
-            <span class="text-xs font-mono font-bold text-gray-600 dark:text-zinc-400 uppercase bg-gray-100 dark:bg-zinc-800 px-1.5 py-0.5 border border-gray-300 dark:border-zinc-700">
-                Popular
-            </span>
-        </div>
-
-        @if (trendingPosts.Any())
-        {
-            <div class="flex flex-col">
-                @for (int i = 0; i < trendingPosts.Count; i++)
-                {
-                    var post = trendingPosts[i];
-                    <a href="/yazi/@post.Slug" class="flex items-start gap-3 py-3 border-b border-gray-100 dark:border-zinc-800/80 last:border-b-0 group no-underline text-gray-900 dark:text-zinc-100">
-                        <span class="font-mono font-black text-lg text-primary w-6 flex-shrink-0 text-center">
-                            0@(i + 1)
-                        </span>
-                        <div class="flex-1 min-w-0">
-                            <div class="flex items-center gap-2 mb-1">
-                                @if (i == 0 || post.ViewCount > 50)
-                                {
-                                    <span class="bg-red-600 text-white text-xs font-mono font-bold px-1.5 py-0.5 uppercase">
-                                        Hot
-                                    </span>
-                                }
-                                else
-                                {
-                                    <span class="bg-primary text-white text-xs font-mono font-bold px-1.5 py-0.5 uppercase">
-                                        New
-                                    </span>
-                                }
-                                <span class="text-xs font-mono text-gray-500 dark:text-zinc-400">
-                                    👁 @post.ViewCount views
-                                </span>
-                            </div>
-                            <h4 class="font-bold text-sm leading-snug group-hover:text-primary transition-colors line-clamp-2 m-0">
-                                @post.Title
-                            </h4>
-                        </div>
-                    </a>
-                }
-            </div>
-        }
-        else
-        {
-            <p class="font-mono text-xs text-gray-400 dark:text-zinc-500 m-0">No trending content found.</p>
-        }
-    </div>
-
-    @* --- Widget 2: Philosophy Spotlight --- *@
-    <div class="bg-white dark:bg-[#121215] border-2 border-gray-900 dark:border-zinc-700 rounded-none p-4">
-        <div class="flex items-center gap-2 border-b-2 border-gray-900 dark:border-zinc-700 pb-2 mb-3">
-            <span class="w-2 h-2 bg-gray-900 dark:bg-zinc-200 inline-block"></span>
-            <h3 class="font-mono font-bold text-xs uppercase tracking-wider text-gray-900 dark:text-zinc-100 m-0">
-                Philosophy Spotlight
-            </h3>
-        </div>
-        <blockquote class="font-sans text-sm italic text-gray-700 dark:text-zinc-300 leading-relaxed border-l-2 border-primary pl-3 my-2">
-            "Simplicity is the ultimate sophistication."
-        </blockquote>
-        <p class="font-mono text-xs text-gray-500 dark:text-zinc-400 text-right m-0 font-bold">
-            — Leonardo da Vinci
-        </p>
-    </div>
-
-    @* --- Widget 3: Featured AI Tool --- *@
-    <div class="bg-white dark:bg-[#121215] border-2 border-gray-900 dark:border-zinc-700 rounded-none p-4">
-        <div class="flex items-center justify-between border-b-2 border-gray-900 dark:border-zinc-700 pb-2 mb-3">
-            <h3 class="font-mono font-bold text-xs uppercase tracking-wider text-gray-900 dark:text-zinc-100 flex items-center gap-2 m-0">
-                <span class="w-2 h-2 bg-primary inline-block"></span>
-                Featured AI Tool
-            </h3>
-            <span class="bg-primary text-white text-xs font-mono font-bold px-1.5 py-0.5 uppercase">
-                Spotlight
-            </span>
-        </div>
-        <div class="bg-gray-50 dark:bg-zinc-800/80 border border-gray-200 dark:border-zinc-700 p-3 mb-2">
-            <div class="font-mono font-bold text-xs text-gray-900 dark:text-zinc-100 mb-1">
-                Claude 3.7 Sonnet & Gemini 2.0
-            </div>
-            <p class="text-sm text-gray-600 dark:text-zinc-300 leading-relaxed m-0">
-                Next-generation hybrid reasoning models accelerating complex coding and software architecture workflows.
-            </p>
-        </div>
-        <div class="text-xs font-mono text-gray-500 dark:text-zinc-400 text-right">
-            #VibeCoding #LLM #DevCore
-        </div>
-    </div>
-
-    @* --- Widget 4: Active topics --- *@
-    @await Component.InvokeAsync("PublicCategoryNavigation", new { featured = true })
-
-</aside>

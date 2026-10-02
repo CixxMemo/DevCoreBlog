@@ -127,8 +127,36 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL19FcnJvckxheW91dC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
+[/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/Views/Shared/_Layout.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL19MYXlvdXQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/Views/Shared/_MostRead.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL19Nb3N0UmVhZC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/Views/Shared/_PostCard.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL19Qb3N0Q2FyZC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/Views/Shared/_PostCardMedia.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL19Qb3N0Q2FyZE1lZGlhLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
 [/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/Views/Shared/_PostContent.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL19Qb3N0Q29udGVudC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/Views/Shared/_PostMetadata.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL19Qb3N0TWV0YWRhdGEuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/Views/Shared/_PublicEmptyState.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL19QdWJsaWNFbXB0eVN0YXRlLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/Views/Shared/_PublicSearch.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL19QdWJsaWNTZWFyY2guY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
 [/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/Views/Shared/_ValidationScriptsPartial.cshtml]
@@ -142,7 +170,3 @@ build_metadata.AdditionalFiles.CssScope =
 [/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/Views/_ViewStart.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvX1ZpZXdTdGFydC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
-
-[/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/Views/Shared/_Layout.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL19MYXlvdXQuY3NodG1s
-build_metadata.AdditionalFiles.CssScope = b-eyzchysgzx

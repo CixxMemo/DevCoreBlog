@@ -20,6 +20,7 @@
 // =============================================================================
 
 using DevCoreBlog.Core.Entities;
+using DevCoreBlog.Core.ReadModels;
 using DevCoreBlog.Core.Validation;
 using DevCoreBlog.Services.Publishing;
 
@@ -34,6 +35,9 @@ public interface IPostService
 
     // Get all published posts with their Category (ordered by newest first)
     Task<IEnumerable<Post>> GetPublishedPostsAsync();
+    // All visible posts contribute to this fixed-size lifetime request ranking.
+    Task<IReadOnlyList<TopReadPost>> GetMostReadPublicPostsAsync(
+        CancellationToken cancellationToken = default);
 
     // Get a single post by its slug (only if published)
     Task<Post?> GetPostBySlugAsync(string slug);

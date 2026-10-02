@@ -96,6 +96,18 @@ public class PostRepository : GenericRepository<Post>, IPostRepository
             .OrderByDescending(post => post.CreatedDate)
             .ToListAsync();
 
+    // Visibility precedes ranking; SQL reads only the five displayed fields.
+    public async Task<IReadOnlyList<TopReadPost>> GetMostReadPublicPostsAsync(
+        DateTime utcNow, CancellationToken cancellationToken = default) =>
+        await PublicPosts(utcNow)
+            .OrderByDescending(post => post.ViewCount)
+            .ThenByDescending(post => post.PublishDate)
+            .ThenBy(post => post.Id)
+            .Take(5)
+            .Select(post => new TopReadPost(
+                post.Id, post.Title, post.Slug, post.Category.Name, post.ViewCount))
+            .ToListAsync(cancellationToken);
+
     public Task<Post?> GetPostBySlugAsync(string slug, DateTime utcNow) =>
         PublicPosts(utcNow)
             .Include(post => post.Category)
@@ -125,7 +137,8 @@ public class PostRepository : GenericRepository<Post>, IPostRepository
         var totalCount = await query.CountAsync();
         var posts = await query
             .Include(post => post.Category)
-            .OrderByDescending(post => post.CreatedDate)
+            .OrderByDescending(post => post.PublishDate)
+            .ThenBy(post => post.Id)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
@@ -140,7 +153,8 @@ public class PostRepository : GenericRepository<Post>, IPostRepository
         var totalCount = await query.CountAsync();
         var posts = await query
             .Include(post => post.Category)
-            .OrderByDescending(post => post.CreatedDate)
+            .OrderByDescending(post => post.PublishDate)
+            .ThenBy(post => post.Id)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();

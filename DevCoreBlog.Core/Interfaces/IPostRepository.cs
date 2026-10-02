@@ -12,6 +12,9 @@ public interface IPostRepository
     Task<DateTime?> GetNextScheduledPublicationAsync(
         DateTime utcNow, CancellationToken cancellationToken = default);
     Task<IEnumerable<Post>> GetPublishedPostsAsync(DateTime utcNow);
+    // Fixed five-row public ranking; full content is never projected.
+    Task<IReadOnlyList<TopReadPost>> GetMostReadPublicPostsAsync(
+        DateTime utcNow, CancellationToken cancellationToken = default);
     Task<Post?> GetPostBySlugAsync(string slug, DateTime utcNow);
     Task<IEnumerable<Post>> GetPostsByCategorySlugAsync(string categorySlug, DateTime utcNow);
     Task<IEnumerable<Post>> SearchPostsAsync(string query, DateTime utcNow);

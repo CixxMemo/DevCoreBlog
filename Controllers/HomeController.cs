@@ -18,6 +18,7 @@
 using Microsoft.AspNetCore.Mvc;
 // Import the ErrorViewModel used by the Error action
 using DevCoreBlog.Models;
+using DevCoreBlog.Models.Public;
 // Import the Service interfaces for business logic
 using DevCoreBlog.Services.Interfaces;
 // Import the Post entity (used in Search action return type)
@@ -55,14 +56,14 @@ public class HomeController : Controller
     // Only published posts are shown, ordered by creation date (newest first).
     // Each post includes its related Category for display in the view.
     [OutputCache(PolicyName = "PublicLists")]
-    public async Task<IActionResult> Index(int page = 1)
+    public async Task<IActionResult> Index(int page = 1, CancellationToken cancellationToken = default)
     {
         Response.Headers.CacheControl = "no-store";
-        int pageSize = 9;
+        const int pageSize = 9;
+        page = Math.Clamp(page, 1, int.MaxValue / pageSize);
         var result = await _postService.GetPublishedPostsPagedAsync(page, pageSize);
-
-        ViewBag.CurrentPage = page;
-        ViewBag.TotalPages = (int)Math.Ceiling((double)result.TotalCount / pageSize);
+        if (page > 1 && (long)(page - 1) * pageSize >= result.TotalCount) return NotFound();
+        var mostRead = await _postService.GetMostReadPublicPostsAsync(cancellationToken);
 
         // Set Open Graph (OG) meta tags for social media sharing (home page)
         ViewBag.OgTitle = "DevCoreBlog - ASP.NET Core and Modern Web Development";
@@ -71,7 +72,7 @@ public class HomeController : Controller
         ViewBag.OgUrl = "/";
 
         // Pass the list of posts to the view
-        return View(result.Posts.ToList());
+        return View(new HomePageModel(result.Posts.ToList(), mostRead, page, pageSize, result.TotalCount));
     }
 
     // GET: /yazi/{slug}
@@ -163,10 +164,13 @@ public class HomeController : Controller
             return NotFound();
         }
 
-        int pageSize = 9;
+        const int pageSize = 9;
+        page = Math.Clamp(page, 1, int.MaxValue / pageSize);
         var result = await _postService.GetPostsByCategorySlugPagedAsync(slug, page, pageSize);
+        if (page > 1 && (long)(page - 1) * pageSize >= result.TotalCount) return NotFound();
 
         // Pass the category name and slug to the view via ViewBag
+        ViewBag.TotalCount = result.TotalCount;
         ViewBag.CategoryName = category.Name;
         ViewBag.CategorySlug = category.Slug;
         ViewBag.CurrentPage = page;

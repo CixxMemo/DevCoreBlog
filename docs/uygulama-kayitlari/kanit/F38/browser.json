@@ -1,0 +1,41 @@
+[
+  {
+    "cards": 6,
+    "featured": 0,
+    "h1": 1,
+    "overflow": false,
+    "stage": "page2 desktop",
+    "width": 893,
+    "winner": "F38 Article 12"
+  },
+  {
+    "overflow": false,
+    "stage": "page2 mobile",
+    "width": 390
+  },
+  {
+    "active": "mobile-menu-btn",
+    "dark": true,
+    "overflow": false,
+    "stage": "dark mobile drawer escape"
+  },
+  {
+    "cards": 0,
+    "categoryLinks": 0,
+    "h1": 1,
+    "overflow": false,
+    "stage": "empty mobile",
+    "width": 390
+  },
+  {
+    "overflow": false,
+    "stage": "empty desktop",
+    "width": 893
+  },
+  {
+    "h1": 1,
+    "overflow": false,
+    "scenario": "empty-desktop",
+    "width": 1280
+  }
+]

@@ -140,6 +140,8 @@ Bu bölüm bir çalıştırma emri değildir. Her seferinde yalnızca **bir faz 
 
 **İzlenebilirlik:** G5; Rapor §8 keşif.
 
+**Uygulama kaydı:** [F38 — 2 Ekim 2026](../uygulama-kayitlari/F38-2026-10-02.md).
+
 **Durma noktası:** Kanıtı uygulama kaydına ve DURUM.md'ye işle; sonraki fazı başlatma.
 
 ---
