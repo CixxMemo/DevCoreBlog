@@ -5,6 +5,7 @@ using Markdig.Renderers;
 using Markdig.Renderers.Html;
 using Markdig.Renderers.Html.Inlines;
 using Markdig.Syntax.Inlines;
+using Markdig.Syntax;
 using DevCoreBlog.Services.Interfaces;
 
 namespace DevCoreBlog.Services.Rendering;
@@ -21,9 +22,25 @@ public sealed class SafeMarkdownRenderer : ISafeMarkdownRenderer
     /// </summary>
     public string ToSafeHtml(string? markdown)
     {
-        return string.IsNullOrWhiteSpace(markdown)
-            ? string.Empty
-            : Markdown.ToHtml(markdown, SafePipeline);
+        return RenderDocument(markdown).Html;
+    }
+
+    // One parsed snapshot supplies HTML, TOC targets and visible-text reading time.
+    public RenderedMarkdown RenderDocument(string? markdown)
+    {
+        var document = Markdown.Parse(markdown ?? string.Empty, SafePipeline);
+        var headings = new List<MarkdownHeading>();
+        foreach (var heading in document.Descendants<HeadingBlock>())
+        {
+            var id = $"markdown-section-{headings.Count + 1}";
+            var level = Math.Max(2, heading.Level);
+            headings.Add(new MarkdownHeading(id, VisibleMarkdownText.FromInline(heading.Inline).Trim(), level));
+            heading.Level = level; // The page title remains the only H1.
+            heading.GetAttributes().Id = id;
+        }
+
+        return new RenderedMarkdown(Markdown.ToHtml(document, SafePipeline), headings.AsReadOnly(),
+            VisibleMarkdownText.ReadingMinutes(document));
     }
 
     private static MarkdownPipeline CreatePipeline()

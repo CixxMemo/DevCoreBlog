@@ -83,7 +83,8 @@ public class HomeController : Controller
     // Anonymous public GETs count page requests, not unique people.
     [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public async Task<IActionResult> Detail(
-        string slug, CancellationToken cancellationToken)
+        string slug, CancellationToken cancellationToken,
+        [FromServices] ISafeMarkdownRenderer markdownRenderer)
     {
         // Step 1: Get the post by slug from service layer
         var post = await _postService.GetPostBySlugAsync(slug);
@@ -112,25 +113,8 @@ public class HomeController : Controller
         // Preserve the visible view count without replacing the filtered content snapshot.
         post.ViewCount = viewCount;
 
-        // Step 3: Calculate reading time based on word count
-        // Average reading speed: 200 words per minute (standard for technical content)
-        // Formula: ReadingTime = WordCount / 200 (rounded up to nearest minute)
-        // Render the public-filtered snapshot, not the administrative row reloaded for the counter.
-        var wordCount = post.Content.Split(
-            new[] { ' ', '\t', '\n', '\r' },
-            StringSplitOptions.RemoveEmptyEntries
-        ).Length;
-
-        // Calculate minutes (minimum 1 minute for very short posts)
-        var readingTimeMinutes = Math.Max(1, (int)Math.Ceiling(wordCount / 200.0));
-
-        // Step 4: Pass data to the view via ViewBag
-        // ViewBag is a dynamic container for passing extra data from Controller to View
-        ViewBag.ViewCount = viewCount;
-        ViewBag.ReadingTime = readingTimeMinutes;
-        
-        // Fetch related posts and pass to ViewBag
-        ViewBag.RelatedPosts = await _postService.GetRelatedPostsAsync(post.Id, post.CategoryId);
+        var content = markdownRenderer.RenderDocument(post.Content);
+        var relatedPosts = await _postService.GetRelatedPostsAsync(post.Id, post.CategoryId);
 
         // Step 5: Set Open Graph (OG) meta tags for social media sharing
         // These values are used by _Layout.cshtml to generate <meta property="og:..."> tags
@@ -144,7 +128,7 @@ public class HomeController : Controller
         ViewData["HideSidebar"] = true;
         ViewData["HideSearch"] = true;
         
-        return View(post);
+        return View(new PostDetailModel(post, content, relatedPosts.ToList()));
     }
 
     // GET: /kategori/{slug}

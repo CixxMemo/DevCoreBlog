@@ -126,7 +126,8 @@ public class PostRepository : GenericRepository<Post>, IPostRepository
         await PublicPosts(utcNow)
             .Include(post => post.Category)
             .Where(post => post.CategoryId == categoryId && post.Id != currentPostId)
-            .OrderByDescending(post => post.CreatedDate)
+            .OrderByDescending(post => post.PublishDate)
+            .ThenBy(post => post.Id)
             .Take(3)
             .ToListAsync();
 

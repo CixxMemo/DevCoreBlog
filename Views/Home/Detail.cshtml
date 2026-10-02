@@ -1,42 +1,54 @@
-@* ============================================================================= *@
-@* Home/Detail.cshtml — Single Blog Post Detail View (Tech Minimal)              *@
-@* ============================================================================= *@
-
-@using DevCoreBlog.Core.Entities
-@model Post
-
+@using DevCoreBlog.Models.Public
+@using System.Globalization
+@model PostDetailModel
 @{
-    ViewData["Title"] = Model.Title;
-    ViewData["TerminalPath"] = $"posts/{Model.Slug}";
+    var post = Model.Post;
+    ViewData["Title"] = post.Title;
+    ViewData["TerminalPath"] = $"posts/{post.Slug}";
 }
-
-<article class="max-w-4xl mx-auto w-full">
-    @* Post Title *@
-    <h1 class="text-2xl sm:text-4xl font-bold tracking-tight mb-6 font-sans text-gray-900 dark:text-zinc-100 leading-tight">
-        @Model.Title
-    </h1>
-
+<article class="reading-article">
+    <h1 class="text-2xl sm:text-4xl font-bold tracking-tight mb-6 font-sans leading-tight">@post.Title</h1>
     <div class="public-detail-meta">
-        <span class="post-category">@(Model.Category?.Name ?? "General")</span>
-        <span>@ViewBag.ReadingTime min read</span>
-        <partial name="_PostMetadata" model="Model" />
+        <a class="post-category" href="/kategori/@post.Category.Slug">@post.Category.Name</a>
+        <span>Published <time datetime="@post.PublishDate.ToString("O", CultureInfo.InvariantCulture)">@post.PublishDate.ToString("MMM dd, yyyy", CultureInfo.InvariantCulture)</time></span>
+        <span>@Model.Content.ReadingMinutes min read</span>
+        <span>@post.ViewCount views</span>
     </div>
-
-    @* Optional Hero Thumbnail on detail page *@
-    @if (!string.IsNullOrEmpty(Model.ThumbnailUrl))
+    @if (!string.IsNullOrEmpty(post.ThumbnailUrl))
     {
         <div class="mb-8 border-2 border-gray-900 dark:border-zinc-700 overflow-hidden">
-            <img src="@Model.ThumbnailUrl" alt="@Model.Title" class="public-detail-cover" />
+            <img src="@post.ThumbnailUrl" alt="" class="public-detail-cover" />
         </div>
     }
-
-    @* Post Content — Markdown Rendered *@
-    <partial name="_PostContent" model="Model.Content" />
-
-    @* Footer Navigation *@
-    <div class="mt-12 pt-6 border-t-2 border-gray-900 dark:border-zinc-700 flex justify-between items-center">
-        <a href="/" class="px-4 py-2 border-2 border-gray-900 dark:border-zinc-700 text-xs font-mono font-bold text-gray-900 dark:text-zinc-200 hover:bg-gray-900 hover:text-white dark:hover:bg-primary dark:hover:text-white no-underline transition-none">
-            ← Back to Home
-        </a>
+    @if (Model.Content.Headings.Count >= 3)
+    {
+        <nav class="article-toc" aria-label="Table of contents">
+            <h2 class="font-mono font-bold mb-3">On this page</h2>
+            <ol>
+                @foreach (var heading in Model.Content.Headings)
+                {
+                    <li class="@(heading.Level > 2 ? "toc-nested" : null)"><a href="#@heading.Id">@(string.IsNullOrWhiteSpace(heading.Title) ? "Section" : heading.Title)</a></li>
+                }
+            </ol>
+        </nav>
+    }
+    <partial name="_RenderedMarkdown" model="Model.Content" />
+    @if (Model.RelatedPosts.Count > 0)
+    {
+        <section class="mt-12" aria-labelledby="related-heading">
+            <h2 id="related-heading" class="font-mono font-bold text-xl mb-6">Related articles</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                @foreach (var related in Model.RelatedPosts)
+                {
+                    <partial name="_PostCard" model="new PostCardModel(related, PostCardPresentation.Standard)" />
+                }
+            </div>
+        </section>
+    }
+    <div class="mt-12 pt-6 border-t-2 border-gray-900 dark:border-zinc-700">
+        <a href="/" class="underline font-mono">← Back to Home</a>
     </div>
 </article>
+@section Scripts {
+    <script type="module" src="~/js/article-reading.js" asp-append-version="true"></script>
+}

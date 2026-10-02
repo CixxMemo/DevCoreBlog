@@ -1,0 +1,20 @@
+{
+  "baseline": false,
+  "checks": {
+    "single_page_h1": true,
+    "heading_ids_unique": true,
+    "toc_targets_exact": true,
+    "short_no_toc": true,
+    "reading_ignores_reference_metadata": true,
+    "long_reading_estimate": true,
+    "related_bounded": true,
+    "related_excludes_current": true,
+    "related_hides_draft_future_inactive": true,
+    "raw_html_encoded": true,
+    "unsafe_url_rejected": true,
+    "youtube_allowlist_preserved": true,
+    "code_text_preserved": true,
+    "copy_module_present": true,
+    "no_invented_updated_date": true
+  }
+}

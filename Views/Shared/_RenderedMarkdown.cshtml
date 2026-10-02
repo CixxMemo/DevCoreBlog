@@ -1,0 +1,5 @@
+@model DevCoreBlog.Services.Rendering.RenderedMarkdown
+@* Only the trusted renderer can supply HTML at this shared detail/preview boundary. *@
+<div class="markdown-content text-gray-800 dark:text-zinc-200 leading-relaxed text-base min-w-0">
+    @Html.Raw(Model.Html)
+</div>

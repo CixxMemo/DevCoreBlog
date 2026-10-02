@@ -471,3 +471,23 @@ html.dark .public-site .text-primary { color: var(--accent); }
   .public-navigation-ready .public-menu-control { display: none; }
   .public-search-shortcut { display: inline; }
 }
+
+/* Article text stays readable; wide technical content scrolls inside its own region. */
+.reading-article { width: 100%; max-width: 72ch; margin-inline: auto; }
+.markdown-content { overflow-wrap: anywhere; }
+.markdown-content :is(h1,h2,h3,h4,h5,h6) { scroll-margin-top: 6rem; }
+.markdown-content img { max-width: 100%; height: auto; }
+.markdown-content pre { max-width: 100%; overflow-x: auto; padding: 1rem; white-space: pre; }
+.markdown-content pre code { overflow-wrap: normal; white-space: pre; }
+.markdown-content table { display: block; max-width: 100%; overflow-x: auto; }
+.article-toc { border: var(--public-rule); padding: 1rem; margin-bottom: 2rem; }
+.article-toc ol { list-style: decimal; padding-left: 1.5rem; }
+.article-toc li { margin-bottom: 0.5rem; overflow-wrap: anywhere; }
+.article-toc a { text-decoration: underline; }
+.article-toc .toc-nested { margin-left: 1rem; }
+.code-copy-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; margin-top: 1.5rem; }
+.code-copy-controls button { border: var(--public-rule); padding: 0.5rem 0.75rem; font: 700 0.875rem var(--font-mono); cursor: pointer; }
+.code-copy-controls [role="status"] { font-size: 0.875rem; }
+
+.markdown-content :is(th, td) { min-width: 8rem; overflow-wrap: normal; }
+.markdown-content :is(pre, table):focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }

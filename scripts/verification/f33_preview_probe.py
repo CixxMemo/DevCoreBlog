@@ -38,7 +38,7 @@ fields = post_fields('F33 unsaved preview', '# F33_UNSAVED\n\n**Only in the prev
 fields['__RequestVerificationToken'] = token
 s, _, body, headers = request_with_headers(admin, base + '/AdminPost/Preview', data=fields)
 checks['unsaved_create_returns_html_without_receipt'] = (s == 200 and 'text/html' in headers.get('Content-Type', '')
-    and '<h1>F33_UNSAVED</h1>' in body and 'Private preview' in body and 'post-recovery-receipt' not in body)
+    and '<h2 id="markdown-section-1">F33_UNSAVED</h2>' in body and 'Private preview' in body and 'post-recovery-receipt' not in body)
 checks['no_store_and_no_index'] = ('no-store' in headers.get('Cache-Control', '')
     and 'noindex' in headers.get('X-Robots-Tag', ''))
 checks['button_is_native_separate_target_without_changing_save_form'] = ( 'formtarget="_blank"' in create
