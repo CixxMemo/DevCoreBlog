@@ -37,7 +37,7 @@ internal static class VisibilityProbe
         var paged = await service.GetPublishedPostsPagedAsync(1, 9);
         var categoryPosts = await service.GetPostsByCategorySlugAsync("f01-active");
         var categoryPaged = await service.GetPostsByCategorySlugPagedAsync("f01-active", 1, 9);
-        var search = await service.SearchPostsAsync("F01_");
+        var search = await service.SearchPostsPagedAsync("F01_", null, 1, 9);
         var related = await service.GetRelatedPostsAsync(2001, 1001);
         var latest = await service.GetLatestPublicPostsAsync();
         var admin = (await service.GetAllPostsAsync()).Select(post => post.Id).ToHashSet();
@@ -56,7 +56,7 @@ internal static class VisibilityProbe
         var publicLists = new IEnumerable<int>[]
         {
             paged.Posts.Select(post => post.Id), categoryPosts.Select(post => post.Id),
-            categoryPaged.Posts.Select(post => post.Id), search.Select(post => post.Id),
+            categoryPaged.Posts.Select(post => post.Id), search.Posts.Select(post => post.Id),
             related.Select(post => post.Id), latest.Select(post => post.Id)
         };
         var checks = new Dictionary<string, bool>

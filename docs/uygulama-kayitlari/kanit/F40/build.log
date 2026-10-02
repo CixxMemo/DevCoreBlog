@@ -1,0 +1,45 @@
+  Geri yüklenecek projeler belirleniyor...
+  /Users/mehmetcankocakurt/Documents/development/DevCoreBlog/DevCoreBlog.csproj geri yüklendi (1,04 sn içinde).
+  Geri yükleme için 4 proje içinden 3 tanesi güncel.
+  
+  > devcoreblog-assets@1.0.0 build
+  > node scripts/frontend/build.mjs
+  
+  Browserslist: caniuse-lite is outdated. Please run:
+    npx update-browserslist-db@latest
+    Why you should do it regularly: https://github.com/browserslist/update-db#readme
+  Browserslist: browsers data (caniuse-lite) is 9 months old. Please run:
+    npx update-browserslist-db@latest
+    Why you should do it regularly: https://github.com/browserslist/update-db#readme
+  
+  Rebuilding...
+  
+  Done in 328ms.
+  Browserslist: caniuse-lite is outdated. Please run:
+    npx update-browserslist-db@latest
+    Why you should do it regularly: https://github.com/browserslist/update-db#readme
+  Browserslist: browsers data (caniuse-lite) is 9 months old. Please run:
+    npx update-browserslist-db@latest
+    Why you should do it regularly: https://github.com/browserslist/update-db#readme
+  
+  Rebuilding...
+  
+  Done in 245ms.
+  Frontend assets built: Tailwind 3.4.17, Prism 1.30.0.
+  DevCoreBlog.Core -> /Users/mehmetcankocakurt/Documents/development/DevCoreBlog/DevCoreBlog.Core/bin/Debug/net10.0/DevCoreBlog.Core.dll
+/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/DevCoreBlog.Data/Repositories/PostRepository.cs(161,63): error CS1061: 'DbFunctions' bir 'ILike' tanımı içermiyor ve 'DbFunctions' türünde bir ilk bağımsız değişken kabul eden hiçbir erişilebilir 'ILike' genişletme yöntemi bulunamadı (bir kullanma yönergeniz veya derleme başvurunuz eksik olabilir mi?) [/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/DevCoreBlog.Data/DevCoreBlog.Data.csproj]
+/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/DevCoreBlog.Data/Repositories/PostRepository.cs(162,30): error CS1061: 'DbFunctions' bir 'ILike' tanımı içermiyor ve 'DbFunctions' türünde bir ilk bağımsız değişken kabul eden hiçbir erişilebilir 'ILike' genişletme yöntemi bulunamadı (bir kullanma yönergeniz veya derleme başvurunuz eksik olabilir mi?) [/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/DevCoreBlog.Data/DevCoreBlog.Data.csproj]
+/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/DevCoreBlog.Data/Repositories/PostRepository.cs(163,53): error CS1061: 'DbFunctions' bir 'ILike' tanımı içermiyor ve 'DbFunctions' türünde bir ilk bağımsız değişken kabul eden hiçbir erişilebilir 'ILike' genişletme yöntemi bulunamadı (bir kullanma yönergeniz veya derleme başvurunuz eksik olabilir mi?) [/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/DevCoreBlog.Data/DevCoreBlog.Data.csproj]
+/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/DevCoreBlog.Data/Repositories/PostRepository.cs(164,52): error CS1061: 'DbFunctions' bir 'ILike' tanımı içermiyor ve 'DbFunctions' türünde bir ilk bağımsız değişken kabul eden hiçbir erişilebilir 'ILike' genişletme yöntemi bulunamadı (bir kullanma yönergeniz veya derleme başvurunuz eksik olabilir mi?) [/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/DevCoreBlog.Data/DevCoreBlog.Data.csproj]
+  DevCoreBlog.Services -> /Users/mehmetcankocakurt/Documents/development/DevCoreBlog/DevCoreBlog.Services/bin/Debug/net10.0/DevCoreBlog.Services.dll
+
+Oluşturma BAŞARISIZ OLDU.
+
+/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/DevCoreBlog.Data/Repositories/PostRepository.cs(161,63): error CS1061: 'DbFunctions' bir 'ILike' tanımı içermiyor ve 'DbFunctions' türünde bir ilk bağımsız değişken kabul eden hiçbir erişilebilir 'ILike' genişletme yöntemi bulunamadı (bir kullanma yönergeniz veya derleme başvurunuz eksik olabilir mi?) [/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/DevCoreBlog.Data/DevCoreBlog.Data.csproj]
+/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/DevCoreBlog.Data/Repositories/PostRepository.cs(162,30): error CS1061: 'DbFunctions' bir 'ILike' tanımı içermiyor ve 'DbFunctions' türünde bir ilk bağımsız değişken kabul eden hiçbir erişilebilir 'ILike' genişletme yöntemi bulunamadı (bir kullanma yönergeniz veya derleme başvurunuz eksik olabilir mi?) [/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/DevCoreBlog.Data/DevCoreBlog.Data.csproj]
+/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/DevCoreBlog.Data/Repositories/PostRepository.cs(163,53): error CS1061: 'DbFunctions' bir 'ILike' tanımı içermiyor ve 'DbFunctions' türünde bir ilk bağımsız değişken kabul eden hiçbir erişilebilir 'ILike' genişletme yöntemi bulunamadı (bir kullanma yönergeniz veya derleme başvurunuz eksik olabilir mi?) [/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/DevCoreBlog.Data/DevCoreBlog.Data.csproj]
+/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/DevCoreBlog.Data/Repositories/PostRepository.cs(164,52): error CS1061: 'DbFunctions' bir 'ILike' tanımı içermiyor ve 'DbFunctions' türünde bir ilk bağımsız değişken kabul eden hiçbir erişilebilir 'ILike' genişletme yöntemi bulunamadı (bir kullanma yönergeniz veya derleme başvurunuz eksik olabilir mi?) [/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/DevCoreBlog.Data/DevCoreBlog.Data.csproj]
+    0 Uyarı
+    4 Hata
+
+Geçen Süre 00:00:06.72

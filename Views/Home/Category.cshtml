@@ -1,78 +1,39 @@
-@* ============================================================================= *@
-@* Home/Category.cshtml — Category Posts List View (Tech Minimal)                 *@
-@* ============================================================================= *@
-@* This view displays all published posts in a specific category.                *@
-@* Renders cleanly in the main canvas next to the fixed left sidebar.            *@
-@* ============================================================================= *@
-
-@using DevCoreBlog.Core.Entities
 @using DevCoreBlog.Models.Public
-@model List<Post>
-
+@model PublicListPageModel
 @{
-    ViewData["Title"] = ViewBag.CategoryName;
-    ViewData["TerminalPath"] = $"category/{ViewBag.CategorySlug}";
+    ViewData["Title"] = Model.CategoryName;
 }
-
 <div class="w-full max-w-5xl mx-auto">
-    @* Page heading — bold, high contrast, monospace *@
-    <div class="flex items-center justify-between border-b-2 border-gray-900 dark:border-zinc-700 pb-3 mb-8">
-        <h1 class="text-2xl font-mono font-black uppercase tracking-tight text-gray-900 dark:text-zinc-100 m-0">
-            # @ViewBag.CategoryName
-        </h1>
-        <span class="text-xs font-mono font-bold text-gray-500 dark:text-zinc-400 uppercase">
-            @ViewBag.TotalCount articles · @Model.Count on this page
-        </span>
-    </div>
-
-    @if (Model.Any())
+    <header class="border-b-2 border-gray-900 dark:border-zinc-700 pb-4 mb-6">
+        <h1 class="text-2xl font-mono font-bold mb-3 break-words"># @Model.CategoryName</h1>
+        <p>@Model.Result.TotalCount articles · @Model.Result.Posts.Count on this page · Page @Model.Paging.Page of @Model.Paging.TotalPages</p>
+    </header>
+    <form method="get" class="public-list-filters" aria-label="Category filters">
+        <div>
+            <label for="category-page-size">Articles per page</label>
+            <select id="category-page-size" name="pageSize">
+                @foreach (var size in DevCoreBlog.Core.Validation.PublicListBounds.PageSizes)
+                {
+                    <option value="@size" selected="@(size == Model.Paging.PageSize)">@size</option>
+                }
+            </select>
+        </div>
+        <button type="submit">Apply filters</button>
+        <a asp-controller="Home" asp-action="Search" asp-route-category="@Model.Paging.Slug" class="underline">Search this category</a>
+    </form>
+    @if (Model.Result.Posts.Count > 0)
     {
-        @* Articles Grid *@
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
-            @foreach (var item in Model)
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            @foreach (var item in Model.Result.Posts)
             {
-                <partial name="_PostCard" model="new PostCardModel(item, PostCardPresentation.Standard)" />
+                <partial name="_PostCard" model="new PostCardModel(item)" />
             }
         </div>
-
-        @* Pagination *@
-        @if (ViewBag.TotalPages > 1)
-        {
-            <div class="flex justify-between items-center pt-6 border-t-2 border-gray-900 dark:border-zinc-700 font-mono text-xs font-bold">
-                @if (ViewBag.CurrentPage > 1)
-                {
-                    <a href="?page=@(ViewBag.CurrentPage - 1)" class="px-4 py-2 border-2 border-gray-900 dark:border-zinc-700 text-gray-900 dark:text-zinc-100 hover:bg-gray-900 hover:text-white dark:hover:bg-primary dark:hover:text-white no-underline transition-none">
-                        &lt; Previous
-                    </a>
-                }
-                else
-                {
-                    <span class="px-4 py-2 border-2 border-gray-200 dark:border-zinc-800 text-gray-300 dark:text-zinc-600 cursor-not-allowed">
-                        &lt; Previous
-                    </span>
-                }
-
-                <span class="text-gray-600 dark:text-zinc-400">
-                    Page @(ViewBag.CurrentPage) of @(ViewBag.TotalPages)
-                </span>
-
-                @if (ViewBag.CurrentPage < ViewBag.TotalPages)
-                {
-                    <a href="?page=@(ViewBag.CurrentPage + 1)" class="px-4 py-2 border-2 border-gray-900 dark:border-zinc-700 text-gray-900 dark:text-zinc-100 hover:bg-gray-900 hover:text-white dark:hover:bg-primary dark:hover:text-white no-underline transition-none">
-                        Next &gt;
-                    </a>
-                }
-                else
-                {
-                    <span class="px-4 py-2 border-2 border-gray-200 dark:border-zinc-800 text-gray-300 dark:text-zinc-600 cursor-not-allowed">
-                        Next &gt;
-                    </span>
-                }
-            </div>
-        }
     }
     else
     {
         <partial name="_PublicEmptyState" model='"No articles published in this category yet."' />
+        <a href="/" class="underline">Back to Home</a>
     }
+    <partial name="_PublicPaging" model="Model.Paging" />
 </div>

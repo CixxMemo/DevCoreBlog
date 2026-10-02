@@ -35,7 +35,8 @@ def main() -> int:
     visitor, _ = cookie_opener()
     warm_home = request_with_headers(visitor, base + "/")
     warm_category = request_with_headers(visitor, base + "/kategori/f01-active")
-    sql('UPDATE "Posts" SET "Summary" = \'F18_DB_ONLY_CHANGED\' WHERE "Id" = 2001')
+    # Every card displays its title; compact featured cards intentionally omit summaries.
+    sql('UPDATE "Posts" SET "Title" = \'F18_DB_ONLY_CHANGED\' WHERE "Id" = 2001')
     cached_home = request_with_headers(visitor, base + "/")
     cached_category = request_with_headers(visitor, base + "/kategori/f01-active")
     uncached_variant = request(visitor, base + "/?unrecognized=1")

@@ -3,7 +3,7 @@
 @{
     ViewData["Title"] = "Home";
     // Feature cards are a partition of page one, never additional duplicates.
-    var features = Model.CurrentPage == 1 ? Model.Posts.Take(3).ToList() : new List<DevCoreBlog.Core.Entities.Post>();
+    var features = Model.CurrentPage == 1 ? Model.Posts.Take(3).ToList() : new List<DevCoreBlog.Core.ReadModels.PublicPostSummary>();
     var feed = Model.Posts.Skip(features.Count).ToList();
 }
 <div class="w-full min-w-0">
@@ -46,41 +46,7 @@
             {
                 <partial name="_PublicEmptyState" model='"No articles published yet."' />
             }
-        @* --- 4. Pagination Controls --- *@
-        @if (Model.TotalPages > 1)
-        {
-            <nav aria-label="Article pages" class="flex flex-wrap gap-3 justify-between items-center pt-6 border-t-2 border-gray-900 dark:border-zinc-700 font-mono text-xs font-bold">
-                @if (Model.CurrentPage > 1)
-                {
-                    <a href="?page=@(Model.CurrentPage - 1)" class="px-4 py-2 border-2 border-gray-900 dark:border-zinc-700 text-gray-900 dark:text-zinc-100 hover:bg-gray-900 hover:text-white dark:hover:bg-primary dark:hover:text-white no-underline transition-none">
-                        &lt; Previous
-                    </a>
-                }
-                else
-                {
-                    <span class="px-4 py-2 border-2 border-gray-200 dark:border-zinc-800 text-gray-300 dark:text-zinc-600 cursor-not-allowed">
-                        &lt; Previous
-                    </span>
-                }
-
-                <span class="text-gray-600 dark:text-zinc-400">
-                    Page @(Model.CurrentPage) of @(Model.TotalPages)
-                </span>
-
-                @if (Model.CurrentPage < Model.TotalPages)
-                {
-                    <a href="?page=@(Model.CurrentPage + 1)" class="px-4 py-2 border-2 border-gray-900 dark:border-zinc-700 text-gray-900 dark:text-zinc-100 hover:bg-gray-900 hover:text-white dark:hover:bg-primary dark:hover:text-white no-underline transition-none">
-                        Next &gt;
-                    </a>
-                }
-                else
-                {
-                    <span class="px-4 py-2 border-2 border-gray-200 dark:border-zinc-800 text-gray-300 dark:text-zinc-600 cursor-not-allowed">
-                        Next &gt;
-                    </span>
-                }
-            </nav>
-        }
+            <partial name="_PublicPaging" model='new PublicPagingModel("Index", null, null, null, Model.CurrentPage, Model.PageSize, Model.TotalCount)' />
         </div>
         <aside aria-label="Discover articles" class="w-full xl:w-80 flex-shrink-0 flex flex-col gap-6">
             <partial name="_MostRead" model="Model.MostRead" />

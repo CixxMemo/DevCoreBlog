@@ -1,0 +1,23 @@
+@model DevCoreBlog.Models.Public.PublicPagingModel
+@if (Model.TotalPages > 1)
+{
+    <nav aria-label="Article pages" class="flex flex-wrap gap-4 items-center justify-between border-t-2 border-gray-900 dark:border-zinc-700 pt-6 font-mono text-sm">
+        @if (Model.Page > 1)
+        {
+            <a asp-controller="Home" asp-action="@Model.Action" asp-route-slug="@Model.Slug"
+               asp-route-query="@Model.Query" asp-route-category="@Model.Category"
+               asp-route-page="@(Model.Page - 1)" asp-route-pageSize="@(Model.PageSize == 9 ? null : Model.PageSize)" class="underline">&lt; Previous</a>
+        }
+        <span>Page @Model.Page of @Model.TotalPages</span>
+        @if (Model.Page < Model.TotalPages)
+        {
+            <a asp-controller="Home" asp-action="@Model.Action" asp-route-slug="@Model.Slug"
+               asp-route-query="@Model.Query" asp-route-category="@Model.Category"
+               asp-route-page="@(Model.Page + 1)" asp-route-pageSize="@(Model.PageSize == 9 ? null : Model.PageSize)" class="underline">Next &gt;</a>
+        }
+    </nav>
+}
+@if (Model.ActualTotalPages > Model.TotalPages)
+{
+    <p class="mt-4">Only the first @Model.TotalPages pages are available. Refine your search or category to see more relevant articles.</p>
+}

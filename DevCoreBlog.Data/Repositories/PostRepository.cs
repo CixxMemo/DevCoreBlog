@@ -1,4 +1,5 @@
 using DevCoreBlog.Core.Publishing;
+using DevCoreBlog.Core.Validation;
 using System.Linq.Expressions;
 using DevCoreBlog.Core.Entities;
 using DevCoreBlog.Core.ReadModels;
@@ -131,48 +132,50 @@ public class PostRepository : GenericRepository<Post>, IPostRepository
             .Take(3)
             .ToListAsync();
 
-    public async Task<(IEnumerable<Post> Posts, int TotalCount)> GetPublishedPostsPagedAsync(
-        int page, int pageSize, DateTime utcNow)
+    public Task<PublicPostPage> GetPublishedPostsPagedAsync(int page, int pageSize, DateTime utcNow,
+        CancellationToken cancellationToken = default)
     {
-        var query = PublicPosts(utcNow);
-        var totalCount = await query.CountAsync();
-        var posts = await query
-            .Include(post => post.Category)
-            .OrderByDescending(post => post.PublishDate)
-            .ThenBy(post => post.Id)
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync();
-        return (posts, totalCount);
+        PublicListBounds.Validate(page, pageSize);
+        return ReadPageAsync(PublicPosts(utcNow).OrderByDescending(post => post.PublishDate)
+            .ThenBy(post => post.Id), page, pageSize, cancellationToken);
     }
 
-    public async Task<(IEnumerable<Post> Posts, int TotalCount)> GetPostsByCategorySlugPagedAsync(
-        string categorySlug, int page, int pageSize, DateTime utcNow)
+    public Task<PublicPostPage> GetPostsByCategorySlugPagedAsync(string categorySlug, int page, int pageSize,
+        DateTime utcNow, CancellationToken cancellationToken = default)
     {
-        var query = PublicPosts(utcNow)
-            .Where(post => post.Category.Slug == categorySlug);
-        var totalCount = await query.CountAsync();
-        var posts = await query
-            .Include(post => post.Category)
-            .OrderByDescending(post => post.PublishDate)
-            .ThenBy(post => post.Id)
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync();
-        return (posts, totalCount);
+        PublicListBounds.Validate(page, pageSize, category: categorySlug);
+        return ReadPageAsync(PublicPosts(utcNow).Where(post => post.Category.Slug == categorySlug)
+            .OrderByDescending(post => post.PublishDate).ThenBy(post => post.Id), page, pageSize, cancellationToken);
     }
 
-    public async Task<IEnumerable<Post>> SearchPostsAsync(string query, DateTime utcNow)
+    // Literal substring matching uses the database locale, with LIKE metacharacters escaped.
+    public Task<PublicPostPage> SearchPostsPagedAsync(string query, string? categorySlug, int page, int pageSize,
+        DateTime utcNow, CancellationToken cancellationToken = default)
     {
-        var lowerQuery = query.ToLower();
-        return await PublicPosts(utcNow)
-            .Include(post => post.Category)
-            .Where(post => post.Title.ToLower().Contains(lowerQuery) ||
-                           post.Content.ToLower().Contains(lowerQuery))
-            .OrderByDescending(post => post.Title.ToLower() == lowerQuery)
-            .ThenByDescending(post => post.Title.ToLower().Contains(lowerQuery))
-            .ThenByDescending(post => post.CreatedDate)
-            .ToListAsync();
+        PublicListBounds.Validate(page, pageSize, query, categorySlug);
+        if (string.IsNullOrWhiteSpace(query)) return Task.FromResult(new PublicPostPage([], 0));
+        var literal = query.Replace("\\", "\\\\").Replace("%", "\\%").Replace("_", "\\_");
+        var pattern = $"%{literal}%";
+        var posts = PublicPosts(utcNow);
+        if (!string.IsNullOrEmpty(categorySlug)) posts = posts.Where(post => post.Category.Slug == categorySlug);
+        return ReadPageAsync(posts.Where(post => EF.Functions.ILike(post.Title, pattern, "\\") ||
+                EF.Functions.ILike(post.Content, pattern, "\\"))
+            .OrderByDescending(post => EF.Functions.ILike(post.Title, literal, "\\"))
+            .ThenByDescending(post => EF.Functions.ILike(post.Title, pattern, "\\"))
+            .ThenByDescending(post => post.PublishDate).ThenBy(post => post.Id), page, pageSize, cancellationToken);
+    }
+
+    // Count and limited card projection share the already-filtered SQL query.
+    private static async Task<PublicPostPage> ReadPageAsync(IQueryable<Post> query, int page, int pageSize,
+        CancellationToken cancellationToken)
+    {
+        var count = await query.CountAsync(cancellationToken);
+        if (page > 1 && (page - 1) * pageSize >= count) return new PublicPostPage([], count);
+        var posts = await query.Skip((page - 1) * pageSize).Take(pageSize)
+            .Select(post => new PublicPostSummary(post.Id, post.Title, post.Slug, post.Summary,
+                post.ThumbnailUrl, post.Category.Name, post.PublishDate, post.ViewCount))
+            .ToListAsync(cancellationToken);
+        return new PublicPostPage(posts.AsReadOnly(), count);
     }
 
     // Project before materialization: full content and category graphs never leave PostgreSQL.

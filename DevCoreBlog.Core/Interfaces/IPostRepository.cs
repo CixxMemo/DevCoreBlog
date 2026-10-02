@@ -17,11 +17,12 @@ public interface IPostRepository
         DateTime utcNow, CancellationToken cancellationToken = default);
     Task<Post?> GetPostBySlugAsync(string slug, DateTime utcNow);
     Task<IEnumerable<Post>> GetPostsByCategorySlugAsync(string categorySlug, DateTime utcNow);
-    Task<IEnumerable<Post>> SearchPostsAsync(string query, DateTime utcNow);
-    Task<(IEnumerable<Post> Posts, int TotalCount)> GetPublishedPostsPagedAsync(
-        int page, int pageSize, DateTime utcNow);
-    Task<(IEnumerable<Post> Posts, int TotalCount)> GetPostsByCategorySlugPagedAsync(
-        string categorySlug, int page, int pageSize, DateTime utcNow);
+    Task<PublicPostPage> SearchPostsPagedAsync(string query, string? categorySlug, int page, int pageSize,
+        DateTime utcNow, CancellationToken cancellationToken = default);
+    Task<PublicPostPage> GetPublishedPostsPagedAsync(
+        int page, int pageSize, DateTime utcNow, CancellationToken cancellationToken = default);
+    Task<PublicPostPage> GetPostsByCategorySlugPagedAsync(
+        string categorySlug, int page, int pageSize, DateTime utcNow, CancellationToken cancellationToken = default);
     Task<IEnumerable<Post>> GetRelatedPostsAsync(
         int currentPostId, int categoryId, DateTime utcNow);
     Task<IReadOnlyList<PublicFeedPost>> GetLatestPublicPostsAsync(

@@ -12,7 +12,7 @@
 <a href="/yazi/@Model.Post.Slug" class="post-card @presentationClass">
     <partial name="_PostCardMedia" model="Model" />
     <div class="post-card-body">
-        <span class="post-category">@(Model.Post.Category?.Name ?? "General")</span>
+        <span class="post-category">@Model.Post.CategoryName</span>
         @if (Model.Presentation == PostCardPresentation.Featured)
         {
             <h2 class="post-card-title">@Model.Post.Title</h2>

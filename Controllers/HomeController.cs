@@ -56,13 +56,12 @@ public class HomeController : Controller
     // Only published posts are shown, ordered by creation date (newest first).
     // Each post includes its related Category for display in the view.
     [OutputCache(PolicyName = "PublicLists")]
-    public async Task<IActionResult> Index(int page = 1, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> Index([FromQuery] PublicListInput input, CancellationToken cancellationToken = default)
     {
         Response.Headers.CacheControl = "no-store";
-        const int pageSize = 9;
-        page = Math.Clamp(page, 1, int.MaxValue / pageSize);
-        var result = await _postService.GetPublishedPostsPagedAsync(page, pageSize);
-        if (page > 1 && (long)(page - 1) * pageSize >= result.TotalCount) return NotFound();
+        if (!ModelState.IsValid) return InvalidListRequest();
+        var result = await _postService.GetPublishedPostsPagedAsync(input.Page, input.PageSize, cancellationToken);
+        if (input.Page > 1 && result.Posts.Count == 0) return NotFound();
         var mostRead = await _postService.GetMostReadPublicPostsAsync(cancellationToken);
 
         // Set Open Graph (OG) meta tags for social media sharing (home page)
@@ -72,7 +71,7 @@ public class HomeController : Controller
         ViewBag.OgUrl = "/";
 
         // Pass the list of posts to the view
-        return View(new HomePageModel(result.Posts.ToList(), mostRead, page, pageSize, result.TotalCount));
+        return View(new HomePageModel(result.Posts, mostRead, input.Page, input.PageSize, result.TotalCount));
     }
 
     // GET: /yazi/{slug}
@@ -131,88 +130,50 @@ public class HomeController : Controller
         return View(new PostDetailModel(post, content, relatedPosts.ToList()));
     }
 
-    // GET: /kategori/{slug}
-    // Displays all published posts in a specific category (identified by slug).
-    // If the category doesn't exist, returns 404.
-    // The category name is passed via ViewBag for display in the view.
+    // Invalid filters are 400; a valid request for an absent category/page is 404.
     [OutputCache(PolicyName = "PublicLists")]
-    public async Task<IActionResult> Category(string slug, int page = 1)
+    public async Task<IActionResult> Category(string slug, [FromQuery] PublicListInput input,
+        CancellationToken cancellationToken = default)
     {
         Response.Headers.CacheControl = "no-store";
-        // First, get the category by slug from service layer
+        if (!ModelState.IsValid || slug.Length > 200) return InvalidListRequest();
         var category = await _categoryService.GetActiveCategoryBySlugAsync(slug);
-
-        // If category not found, return 404 Not Found
-        if (category == null)
-        {
-            return NotFound();
-        }
-
-        const int pageSize = 9;
-        page = Math.Clamp(page, 1, int.MaxValue / pageSize);
-        var result = await _postService.GetPostsByCategorySlugPagedAsync(slug, page, pageSize);
-        if (page > 1 && (long)(page - 1) * pageSize >= result.TotalCount) return NotFound();
-
-        // Pass the category name and slug to the view via ViewBag
-        ViewBag.TotalCount = result.TotalCount;
-        ViewBag.CategoryName = category.Name;
-        ViewBag.CategorySlug = category.Slug;
-        ViewBag.CurrentPage = page;
-        ViewBag.TotalPages = (int)Math.Ceiling((double)result.TotalCount / pageSize);
-
-        // Set Open Graph (OG) meta tags for social media sharing
+        if (category is null) return NotFound();
+        var result = await _postService.GetPostsByCategorySlugPagedAsync(slug, input.Page, input.PageSize, cancellationToken);
+        if (input.Page > 1 && result.Posts.Count == 0) return NotFound();
         ViewBag.OgTitle = $"{category.Name} Category - DevCoreBlog";
         ViewBag.OgDescription = $"All articles in the {category.Name} category on DevCoreBlog.";
         ViewBag.OgType = "website";
         ViewBag.OgUrl = $"/kategori/{category.Slug}";
-
-        // Pass the list of posts to the Category view
-        return View(result.Posts.ToList());
+        return View(new PublicListPageModel(result,
+            new PublicPagingModel("Category", slug, null, null, input.Page, input.PageSize, result.TotalCount), category.Name, []));
     }
 
-    // -------------------------------------------------------------------------
-    // SEARCH — Search posts by title or content
-    // -------------------------------------------------------------------------
-    // GET: /ara?query=aspnet
-    // Displays search results for posts matching the query string.
-    // Searches in both Title and Content fields (case-insensitive).
-    // Only published posts are returned.
-    //
-    // How it works:
-    //   1. User types in the search box (navbar)
-    //   2. Form submits to /ara?query=...
-    //   3. Controller calls PostService.SearchPostsAsync(query)
-    //   4. Service delegates to PostRepository.SearchPostsAsync(query)
-    //   5. Repository filters posts where Title OR Content contains the query
-    //   6. Results are displayed in Search.cshtml view
     [Route("ara")]
     [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
-    public async Task<IActionResult> Search(string query)
+    public async Task<IActionResult> Search([FromQuery] PublicListInput input, CancellationToken cancellationToken = default)
     {
-        // Guard clause: if query is empty or whitespace, return empty results
-        if (string.IsNullOrWhiteSpace(query))
-        {
-            ViewBag.SearchQuery = "";
-            ViewBag.OgTitle = "Search - DevCoreBlog";
-            ViewBag.OgDescription = "Search articles on DevCoreBlog.";
-            return View(Enumerable.Empty<Post>());
-        }
-
-        // Delegate to service layer — business logic is in PostService
-        var posts = await _postService.SearchPostsAsync(query);
-
-        // Pass the search query to the view for display ("Results for: ...")
-        ViewBag.SearchQuery = query;
-
-        // Set Open Graph (OG) meta tags for social media sharing
-        ViewBag.OgTitle = $"\"{query}\" Search Results - DevCoreBlog";
-        ViewBag.OgDescription = $"Search results for \"{query}\" on DevCoreBlog.";
+        if (!ModelState.IsValid) return InvalidListRequest();
+        var term = input.Query?.Trim() ?? string.Empty;
+        var categorySlug = string.IsNullOrWhiteSpace(input.Category) ? null : input.Category.Trim();
+        var category = categorySlug is null ? null : await _categoryService.GetActiveCategoryBySlugAsync(categorySlug);
+        if (categorySlug is not null && category is null) return NotFound();
+        var result = await _postService.SearchPostsPagedAsync(term, categorySlug, input.Page, input.PageSize, cancellationToken);
+        if (input.Page > 1 && result.Posts.Count == 0) return NotFound();
+        ViewData["SearchQuery"] = term;
+        ViewData["SearchCategory"] = categorySlug;
+        ViewData["SearchPageSize"] = input.PageSize;
+        var categories = await _categoryService.GetActiveCategoriesAsync();
+        ViewBag.OgTitle = "Search Results - DevCoreBlog";
+        ViewBag.OgDescription = $"Search results for \"{term}\" on DevCoreBlog.";
         ViewBag.OgType = "website";
-        ViewBag.OgUrl = $"/ara?query={Uri.EscapeDataString(query)}";
-
-        // Pass the list of matching posts to the Search view
-        return View(posts);
+        return View(new PublicListPageModel(result,
+            new PublicPagingModel("Search", null, term, categorySlug, input.Page, input.PageSize, result.TotalCount),
+            category?.Name, categories.ToList()));
     }
+
+    private BadRequestObjectResult InvalidListRequest() =>
+        BadRequest("Use a search term up to 100 characters, page 1–1000, and page size 9, 18, or 27.");
 
     // -------------------------------------------------------------------------
     // API ENDPOINTS (for Phase 3 Terminal CLI)

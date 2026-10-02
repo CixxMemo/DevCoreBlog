@@ -1,47 +1,53 @@
-@* ============================================================================= *@
-@* Home/Search.cshtml — Search Results View (Tech Minimal)                       *@
-@* ============================================================================= *@
-
-@using DevCoreBlog.Core.Entities
 @using DevCoreBlog.Models.Public
-@model IEnumerable<Post>
-
+@model PublicListPageModel
 @{
     ViewData["Title"] = "Search Results";
-    ViewData["TerminalPath"] = "search";
+    ViewData["SearchQuery"] = Model.Paging.Query;
 }
-
 <div class="w-full max-w-5xl mx-auto">
-    @* Page title with search query *@
-    <div class="border-b-2 border-gray-900 dark:border-zinc-700 pb-3 mb-8">
-        <h1 class="text-2xl font-mono font-black uppercase tracking-tight text-gray-900 dark:text-zinc-100 mb-2">
-            Search Results
-        </h1>
-        @if (!string.IsNullOrEmpty(ViewBag.SearchQuery))
-        {
-            <p class="font-mono text-xs text-gray-600 dark:text-zinc-400 m-0">
-                Search query: <span class="text-primary font-bold">"@ViewBag.SearchQuery"</span>
-            </p>
-        }
-    </div>
-
-    <p class="font-mono text-sm mb-6">@Model.Count() articles found</p>
-
-    @* Search Results *@
-    @if (Model.Any())
+    <header class="border-b-2 border-gray-900 dark:border-zinc-700 pb-4 mb-6">
+        <h1 class="text-2xl font-mono font-bold mb-3">Search Results</h1>
+        <p class="break-words">Search query: <strong>@Model.Paging.Query</strong></p>
+        <p>Category: @(Model.CategoryName ?? "All categories")</p>
+        <p>@Model.Result.TotalCount articles found · @Model.Result.Posts.Count on this page · Page @Model.Paging.Page of @Model.Paging.TotalPages</p>
+    </header>
+    <form action="/ara" method="get" aria-label="Search filters" class="public-list-filters">
+        <input type="hidden" name="query" value="@Model.Paging.Query" />
+        <div>
+            <label for="search-category">Category</label>
+            <select id="search-category" name="category">
+                <option value="">All categories</option>
+                @foreach (var category in Model.Categories)
+                {
+                    <option value="@category.Slug" selected="@(category.Slug == Model.Paging.Category)">@category.Name</option>
+                }
+            </select>
+        </div>
+        <div>
+            <label for="search-page-size">Articles per page</label>
+            <select id="search-page-size" name="pageSize">
+                @foreach (var size in DevCoreBlog.Core.Validation.PublicListBounds.PageSizes)
+                {
+                    <option value="@size" selected="@(size == Model.Paging.PageSize)">@size</option>
+                }
+            </select>
+        </div>
+        <button type="submit">Apply filters</button>
+    </form>
+    @if (Model.Result.Posts.Count > 0)
     {
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
-            @foreach (var item in Model)
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            @foreach (var item in Model.Result.Posts)
             {
-                <partial name="_PostCard" model="new PostCardModel(item, PostCardPresentation.Standard)" />
+                <partial name="_PostCard" model="new PostCardModel(item)" />
             }
         </div>
     }
     else
     {
-        <partial name="_PublicEmptyState" model='"No articles found matching your search criteria."' />
-        <a href="/" class="inline-block px-4 py-2 border-2 border-gray-900 dark:border-zinc-700 text-xs font-mono font-bold text-gray-900 dark:text-zinc-200 hover:bg-gray-900 hover:text-white dark:hover:bg-primary dark:hover:text-white no-underline">
-            [ Back to Home ]
-        </a>
+        <partial name="_PublicEmptyState" model='string.IsNullOrWhiteSpace(Model.Paging.Query) ? "Enter a search term to find articles." : "No articles match these filters. Try another term or category."' />
+        <a asp-controller="Home" asp-action="Search" asp-route-query="@Model.Paging.Query" asp-route-pageSize="@(Model.Paging.PageSize == 9 ? null : Model.Paging.PageSize)" class="underline">Clear category filter</a>
+        <a href="/" class="underline ml-4">Back to Home</a>
     }
+    <partial name="_PublicPaging" model="Model.Paging" />
 </div>

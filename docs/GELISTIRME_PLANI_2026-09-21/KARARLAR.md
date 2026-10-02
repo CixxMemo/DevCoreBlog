@@ -1,6 +1,6 @@
 # Güncel mimari ve çalışma kararları
 
-**Güncelleme:** 27 Eylül 2026 — F21 okunma sayacı tanımı.
+**Güncelleme:** 2 Ekim 2026 — F40 sınırlı okuyucu sorguları.
 
 Kullanıcı eski kuralların yenilenmesini, SOLID/temiz kod/güvenlik sınırlarının güçlendirilmesini, eski planların kaldırılabilmesini ve yeni geliştirme planının buna uyarlanmasını açıkça istedi. Aşağıdaki teknik seçimler bu yetki kapsamında mevcut ürün yapısını koruyarak yapıldı. Kullanıcının ayrıca eski A/B seçeneklerinden birini seçtiği iddia edilmiyor; o karar ağacı yeni kurallarla kaldırıldı.
 
@@ -143,6 +143,30 @@ F31 kurtarma biçimi korunur; kurtarılan eski yayın bayrağı yeniden yayınla
 Dashboard bayrak sayacı Publication enabled / Includes scheduled olarak gösterilir;
 public görünürlüğü kanıtlamayan sıralama satırlarında LIVE bağlantısı yoktur.
 **Durum:** F32 izole PostgreSQL/HTTP ve gerçek tarayıcı kanıtıyla doğrulandı.
+
+## D14 — Sınırlı okuyucu sorguları ve collation sözleşmesi
+
+F40 arama terimini100, kategori slug'ını200 karakterle; page'i1–1000 ve
+pageSize'ı9/18/27 ile sınırlar. Varsayılan page 1/size 9; boş terim liste getirmez.
+Geçersiz/model binding hatalı input400; geçerli ama bulunmayan sayfa veya
+aktif olmayan/bulunmayan kategori404 olur. Boş ilk sayfa200 ve yönlendirme gösterir.
+Sınırlar HTTP yanında service/repository tüketicilerine de uygulanır.
+
+Count, yayın/kategori filtresi, kararlı sıralama ve Skip/Take PostgreSQL'de çalışır.
+Kart projection'ı sekiz alanla sınırlıdır; içerik ve entity grafiği taşınmaz.
+Arama sırası tam başlık, başlıkta eşleşme, PublishDate DESC, Id ASC olur.
+Parametreli literal ILIKE, yüzde/alt çizgi/ters slash'ı escape eder. Harf katlama
+veritabanının gerçek collation'ına bağlıdır; uygulama culture'ı tahmin edilmez.
+Test PostgreSQL 16.14/C ortamında İSTANBUL eşleşirken istanbul eşleşmedi;
+IĞDIR/ığdır ve ğüşiöç/ĞÜŞİÖÇ farkları [F40 kaydında](../uygulama-kayitlari/F40-2026-10-02.md).
+Canlı ortamın collation'ı keşfedilmeden Türkçe eşleşme garantisi verilmez.
+Bu faz collation/migration/extension veya yeni arama altyapısı eklemez.
+
+Arama no-store'dur. pageSize ve diğer query varyantları mevcut F18 output cache'e
+alınmaz; varsayılan ana sayfa/kategori cache'inin sınırlı anahtarları, mutation
+invalidation'ı ve zamanlı yayın sınırı korunur. 1000'den fazla sayfa varsa UI
+filtreyi daraltmayı ister. İçerik arama/Count maliyeti F48 ölçümüne açıktır.
+**Durum:** F40 gerçek PostgreSQL/HTTP, SQL ve tarayıcı kanıtıyla doğrulandı.
 
 ## Gerektiğinde alınacak gerçek ürün/ortam bilgileri
 

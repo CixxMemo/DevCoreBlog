@@ -78,26 +78,29 @@ public class PostService : IPostService, IPublicationSchedule, IWebhookPostServi
             categorySlug, _timeProvider.GetUtcNow().UtcDateTime);
     }
 
-    // Search posts by title or content (only published posts)
-    // Business rule: Only return posts where IsActive = true
-    public async Task<IEnumerable<Post>> SearchPostsAsync(string query)
+    // Validate even non-HTTP callers before bounded persistence queries run.
+    public Task<PublicPostPage> SearchPostsPagedAsync(string query, string? categorySlug, int page, int pageSize,
+        CancellationToken cancellationToken = default)
     {
-        // Delegate to repository — no additional business logic needed
-        return await _postRepository.SearchPostsAsync(query, _timeProvider.GetUtcNow().UtcDateTime);
+        PublicListBounds.Validate(page, pageSize, query, categorySlug);
+        return _postRepository.SearchPostsPagedAsync(query.Trim(), categorySlug, page, pageSize,
+            _timeProvider.GetUtcNow().UtcDateTime, cancellationToken);
     }
 
-    // The repository applies visibility before the output-cache policy stores this list.
-    public async Task<(IEnumerable<Post> Posts, int TotalCount)> GetPublishedPostsPagedAsync(int page, int pageSize)
+    public Task<PublicPostPage> GetPublishedPostsPagedAsync(int page, int pageSize,
+        CancellationToken cancellationToken = default)
     {
-        return await _postRepository.GetPublishedPostsPagedAsync(
-            page, pageSize, _timeProvider.GetUtcNow().UtcDateTime);
+        PublicListBounds.Validate(page, pageSize);
+        return _postRepository.GetPublishedPostsPagedAsync(
+            page, pageSize, _timeProvider.GetUtcNow().UtcDateTime, cancellationToken);
     }
 
-    // Get published posts by category with pagination
-    public async Task<(IEnumerable<Post> Posts, int TotalCount)> GetPostsByCategorySlugPagedAsync(string categorySlug, int page, int pageSize)
+    public Task<PublicPostPage> GetPostsByCategorySlugPagedAsync(string categorySlug, int page, int pageSize,
+        CancellationToken cancellationToken = default)
     {
-        return await _postRepository.GetPostsByCategorySlugPagedAsync(
-            categorySlug, page, pageSize, _timeProvider.GetUtcNow().UtcDateTime);
+        PublicListBounds.Validate(page, pageSize, category: categorySlug);
+        return _postRepository.GetPostsByCategorySlugPagedAsync(
+            categorySlug, page, pageSize, _timeProvider.GetUtcNow().UtcDateTime, cancellationToken);
     }
 
     // Get related posts in the same category (excluding the current post)

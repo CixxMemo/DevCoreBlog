@@ -197,6 +197,8 @@ Bu bölüm bir çalıştırma emri değildir. Her seferinde yalnızca **bir faz 
 
 **İzlenebilirlik:** G9/G10 kaynak tüketimi; Rapor §10.
 
+**Uygulanan karar:** [D14](KARARLAR.md#d14--sınırlı-okuyucu-sorguları-ve-collation-sözleşmesi). 100 karakter, page 1–1000, size 9/18/27; 400/404 ayrımı ve DB collation kabulü. [F40 kanıtı](../uygulama-kayitlari/F40-2026-10-02.md).
+
 **Durma noktası:** Kanıtı uygulama kaydına ve DURUM.md'ye işle; sonraki fazı başlatma.
 
 ---

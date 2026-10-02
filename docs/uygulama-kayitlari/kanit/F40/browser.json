@@ -1,0 +1,55 @@
+{
+  "checks": [
+    {
+      "cards": 18,
+      "category": "f01-active",
+      "overflow": false,
+      "pageSize": "18",
+      "scenario": "desktop-filtered",
+      "term": "needle",
+      "width": 954
+    },
+    {
+      "case": "desktop-next-enter",
+      "url": "http://127.0.0.1:15171/ara?query=needle&category=f01-active&page=2&pageSize=18",
+      "paging": "< Previous\nPage 2 of 3\nNext >"
+    },
+    {
+      "case": "mobile-filtered",
+      "url": "http://127.0.0.1:15171/ara?query=needle&category=f01-active&page=1&pageSize=18",
+      "cards": 18,
+      "overflow": false,
+      "termMax": 100,
+      "width": 390
+    },
+    {
+      "case": "mobile-empty",
+      "url": "http://127.0.0.1:15171/ara?query=f40-no-match&category=f01-active&pageSize=18",
+      "overflow": false,
+      "text": "Search articles\nSearch\nSearch Results\n\nSearch query: f40-no-match\n\nCategory: F01 Active Category\n\n0 articles found · 0 on this page · Page 1 of 1\n\nCategory\nAll categories\nF01 Active Category\nF40 Second Category\nArticles per page\n9\n18\n27\nApply filters\n\nNo articles match these filters. Try another term or category.\n\nClear category filter Back to Home"
+    },
+    {
+      "case": "clear-filter-enter",
+      "url": "http://127.0.0.1:15171/ara?query=f40-no-match&pageSize=18"
+    },
+    {
+      "case": "mobile-dark-escape",
+      "dark": true,
+      "focus": "mobile-menu-btn",
+      "overflow": false
+    },
+    {
+      "case": "mobile-category-18",
+      "url": "http://127.0.0.1:15171/kategori/f01-active?pageSize=18",
+      "cards": 18,
+      "overflow": false,
+      "width": 390
+    },
+    {
+      "case": "mobile-category-next-enter",
+      "url": "http://127.0.0.1:15171/category/f01-active?page=2&pageSize=18",
+      "paging": "< Previous\nPage 2 of 3\nNext >"
+    }
+  ],
+  "console": []
+}
