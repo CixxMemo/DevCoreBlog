@@ -147,13 +147,19 @@ builder.Services.AddScoped<IAdminDashboardReadRepository, AdminDashboardReadRepo
 builder.Services.AddScoped<PostService>();
 builder.Services.AddScoped<IPostService>(serviceProvider =>
     serviceProvider.GetRequiredService<PostService>());
+builder.Services.AddScoped<ISitemapPostReader>(serviceProvider =>
+    serviceProvider.GetRequiredService<PostService>());
 builder.Services.AddScoped<IPublicFeedService>(serviceProvider =>
     serviceProvider.GetRequiredService<PostService>());
 builder.Services.AddScoped<IWebhookPostService>(serviceProvider =>
     serviceProvider.GetRequiredService<PostService>());
 builder.Services.AddScoped<IPublicationSchedule>(serviceProvider =>
     serviceProvider.GetRequiredService<PostService>());
-builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<CategoryService>();
+builder.Services.AddScoped<ICategoryService>(serviceProvider =>
+    serviceProvider.GetRequiredService<CategoryService>());
+builder.Services.AddScoped<ISitemapCategoryReader>(serviceProvider =>
+    serviceProvider.GetRequiredService<CategoryService>());
 builder.Services.AddScoped<IAdminDashboardService, AdminDashboardService>();
 builder.Services.AddSingleton<ISafeMarkdownRenderer, SafeMarkdownRenderer>();
 builder.Services.AddScoped<IImageService, ImageService>();

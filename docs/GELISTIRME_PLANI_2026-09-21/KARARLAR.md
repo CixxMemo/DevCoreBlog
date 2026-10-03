@@ -270,6 +270,38 @@ dönülebilir, nullable sütun silinmez. Generated Down veri kaybı nedeniyle ru
 çözüm olarak çalıştırılmaz. Sitemap encoding/lastmod ve robots F45'te kalır.
 **Durum:** [F44 migration/HTTP/PostgreSQL/gerçek tarayıcı kanıtı](../uygulama-kayitlari/F44-2026-10-03.md) ile doğrulandı.
 
+## D19 — UTF-8 crawler belgeleri ve güncel sitemap
+
+Sitemap MVC GET/HEAD çıktısıdır. XmlWriter gerçek byte stream'e BOM'suz
+UTF-8 yazar; XML bildirimi ve application/xml; charset=utf-8 yanıtı uyuşur.
+XML escaping serializer'dan, route escaping F43 PublicUrlBuilder'dan gelir.
+Adres kaynağı doğrulanmış SITE_URL'dir; Host/forwarding başlığı kullanılmaz.
+Sitemap yalnız ana sayfa, aktif kategori ve F17 görünür yazı adreslerini içerir.
+Slug ve tarih dışındaki yazı/kategori kolonları bu sorgulara yüklenmez;
+sıralama DB'de kararlıdır, her sorgu 50.001 satırla sınırlıdır.
+
+Yazı lastmod'u kayıtlı PublishDate ile varsa UpdatedDate'in daha geç olanıdır;
+taslak dönemindeki edit yayın tarihini geriye çekmez. Oluşturulma veya sitemap
+isteğinin saati kullanılmaz. UTC ISO tarih korunur. Güncellenme tarihi olmayan
+ana sayfa/kategoride lastmod üretilmez. changefreq/priority tahminleri çıkarılır.
+
+F18'in mevcut sitemap output-cache dışı sınırı korunur. Sitemap ve robots
+no-store'dur; saklanan kopya olmadığından ayrıca tag/generation eklenmez.
+Yazı/kategori servislerinin mevcut liste invalidation'ı korunur; sitemap yeni
+istekte DB'yi okur ve zamanlı yayın sınırında yeni write beklemez. Bu seçim
+her istekte sorgu/serialization maliyeti taşır; cache eklenirse yayın sınırı ve
+mutation kuralları gerçek DB ile yeniden kanıtlanmalıdır.
+
+robots.txt UTF-8 text/plain GET/HEAD ve yapılandırılmış mutlak sitemap adresi
+verir. Allow yönergesi erişim izni değildir; admin auth ve F44 private noindex
+aynı şekilde zorunludur. POST bu iki read endpoint'inde kabul edilmez.
+[Resmi sitemap protokolünün](https://www.sitemaps.org/protocol.html) tek belge
+sınırları 50.000 URL, 52.428.800 byte ve loc için 2.048 karakterden azdır.
+Aşımda uyarı logu ve 503 vardır; sessiz truncation veya geçersiz XML yoktur.
+Sitemap index eklenmedi. Canlı içerik büyüklüğü ölçülmedi; sınıra yaklaşılırsa
+ayrı kapsamla parçalama/index gerekir. Okuma tarih/sayaç/sürüm değiştirmez.
+**Durum:** [F45 ham HTTP/XML/PostgreSQL ve regresyon kanıtı](../uygulama-kayitlari/F45-2026-10-03.md) ile doğrulandı.
+
 ## Gerektiğinde alınacak gerçek ürün/ortam bilgileri
 
 Bunlar şimdi topluca sorulmaz. Mevcut kaynaktan doğrulanamıyorsa ilgili fazda sorulur; önceki tercih tekrar sorulmaz.

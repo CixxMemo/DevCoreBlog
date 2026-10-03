@@ -72,7 +72,7 @@ Bu bölüm bir çalıştırma emri değildir. Her seferinde yalnızca **bir faz 
 1. XML'i gerçekten gönderilen UTF-8 byte dizisiyle uyumlu üret; StringBuilder üzerinden UTF-16 bildirimi yazma. Doğru Content-Type ve XML escaping kullan.
 2. F17 yayın filtresi, F43 kanonik URL ve F44 gerçek UpdatedDate/PublishDate bilgisini kullan; private/future/alias URL ekleme.
 3. robots.txt içine doğru mutlak sitemap adresini koy; admin gizliliğini robots'a bağlama. URL sayısı mevcut protokol sınırına yaklaşmıyorsa gereksiz sitemap index mimarisi kurma.
-4. Yayın/tarih/kategori değişikliklerinde F18 cache geçersizleştirmesine dahil et.
+4. Yayın/tarih/kategori değişikliklerinde F18 cache geçersizleştirmesine dahil et. D19 ile mevcut output-cache dışı/no-store sınırı korunur; saklanan sitemap kopyası yoktur. Servis liste invalidation'ı korunur, mutation ve zamanlı yayın yeni HTTP isteğinde doğrulanır.
 
 **Kabul ve kanıt:** XML parser hatasız; encoding/header uyumlu; future/draft/pasif yok; doğru lastmod/canonical; robots sitemap adresi gerçek config'ten. Kod değiştiyse derleme sıfır hatayla tamamlanmalı; ilgili eski kontroller korunmalı.
 

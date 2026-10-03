@@ -8,7 +8,7 @@ using DevCoreBlog.Services.Publishing;
 namespace DevCoreBlog.Services;
 
 /// <summary>Coordinates category validation and safe writes through domain contracts.</summary>
-public class CategoryService : ICategoryService
+public class CategoryService : ICategoryService, ISitemapCategoryReader
 {
     private const int MaximumSlugAttempts = 100;
     // Category use cases depend on the domain persistence contract.
@@ -36,6 +36,10 @@ public class CategoryService : ICategoryService
         // Delegate to repository — no additional business logic needed
         return await _categoryRepository.GetAllAsync();
     }
+
+    public Task<IReadOnlyList<string>> GetSitemapCategorySlugsAsync(
+        CancellationToken cancellationToken = default) =>
+        _categoryRepository.GetSitemapCategorySlugsAsync(cancellationToken);
 
     public Task<IEnumerable<Category>> GetActiveCategoriesAsync() =>
         _categoryRepository.GetActiveCategoriesAsync();

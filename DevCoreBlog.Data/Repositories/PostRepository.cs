@@ -91,6 +91,13 @@ public class PostRepository : GenericRepository<Post>, IPostRepository
                 post.Category.IsActive && post.PublishDate > utcNow)
             .MinAsync(post => (DateTime?)post.PublishDate, cancellationToken);
 
+    // One extra row detects protocol overflow without loading article bodies.
+    public async Task<IReadOnlyList<SitemapPost>> GetSitemapPostsAsync(
+        DateTime utcNow, CancellationToken cancellationToken = default) =>
+        await PublicPosts(utcNow).OrderBy(post => post.Id).Take(50_001)
+            .Select(post => new SitemapPost(post.Slug, post.PublishDate, post.UpdatedDate))
+            .ToListAsync(cancellationToken);
+
     public async Task<IEnumerable<Post>> GetPublishedPostsAsync(DateTime utcNow) =>
         await PublicPosts(utcNow)
             .Include(post => post.Category)

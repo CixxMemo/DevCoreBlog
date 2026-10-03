@@ -1,0 +1,7 @@
+{
+  "initial_route_failure": "HEAD did not match HttpGet-only routes",
+  "code_repair": "Added explicit HttpHead to sitemap and robots; rebuilt and retested",
+  "test_harness_failure": "Edit probe omitted required PublishDate and received validation HTML",
+  "test_harness_repair": "Supplied saved publication date in site timezone; kept draft-removal assertion",
+  "final_status": "40/40 F45 acceptance checks passed against final source"
+}

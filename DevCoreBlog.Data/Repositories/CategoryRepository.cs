@@ -93,6 +93,12 @@ public class CategoryRepository : GenericRepository<Category>, ICategoryReposito
         _context.Categories.AsNoTracking()
             .FirstOrDefaultAsync(category => category.Slug == slug && category.IsActive);
 
+    public async Task<IReadOnlyList<string>> GetSitemapCategorySlugsAsync(
+        CancellationToken cancellationToken = default) =>
+        await _context.Categories.AsNoTracking().Where(category => category.IsActive)
+            .OrderBy(category => category.Id).Take(50_001)
+            .Select(category => category.Slug).ToListAsync(cancellationToken);
+
     public async Task<IEnumerable<Category>> GetActiveCategoriesAsync() =>
         await _context.Categories.AsNoTracking()
             .Where(category => category.IsActive)

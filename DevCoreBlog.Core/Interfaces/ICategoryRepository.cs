@@ -6,6 +6,8 @@ namespace DevCoreBlog.Core.Interfaces;
 public interface ICategoryRepository
 {
     Task<IEnumerable<Category>> GetAllAsync();
+    // Bounded slug-only read for the sitemap, including one overflow sentinel.
+    Task<IReadOnlyList<string>> GetSitemapCategorySlugsAsync(CancellationToken cancellationToken = default);
     Task<IEnumerable<Category>> GetActiveCategoriesAsync();
     Task<Category?> GetActiveCategoryBySlugAsync(string slug);
     Task<IEnumerable<Category>> GetAllCategoriesWithPostsAsync();

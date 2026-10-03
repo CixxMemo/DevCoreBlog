@@ -1,75 +1,52 @@
-using DevCoreBlog.Services.Interfaces;
+using DevCoreBlog.Models.Seo;
 using DevCoreBlog.Routing;
+using DevCoreBlog.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using System.Text;
-using System.Xml;
 
 namespace DevCoreBlog.Controllers;
 
+/// <summary>Serves fresh crawler documents; robots directives never grant access.</summary>
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
-public class SeoController : Controller
+public class SeoController(
+    ISitemapPostReader posts,
+    ISitemapCategoryReader categories,
+    PublicUrlBuilder publicUrls,
+    ILogger<SeoController> logger) : Controller
 {
-    private readonly IPostService _postService;
-    private readonly ICategoryService _categoryService;
-    private readonly PublicUrlBuilder _publicUrls;
-
-    public SeoController(IPostService postService, ICategoryService categoryService, PublicUrlBuilder publicUrls)
+    [HttpGet("sitemap.xml")]
+    [HttpHead("sitemap.xml")]
+    public async Task<IActionResult> Sitemap(CancellationToken cancellationToken)
     {
-        _postService = postService;
-        _categoryService = categoryService;
-        _publicUrls = publicUrls;
+        // Sequential reads share the request's scoped DbContext; no entities or HTML are loaded.
+        var categorySlugs = await categories.GetSitemapCategorySlugsAsync(cancellationToken);
+        var visiblePosts = await posts.GetSitemapPostsAsync(cancellationToken);
+        if (1 + categorySlugs.Count + visiblePosts.Count > SitemapDocumentWriter.MaximumUrls)
+            return SitemapOverflow();
+
+        var entries = new List<(string Url, DateTime? LastModified)>
+        {
+            (publicUrls.AbsolutePath("/"), null)
+        };
+        entries.AddRange(categorySlugs.Select(slug => (publicUrls.CategoryUrl(slug), (DateTime?)null)));
+        entries.AddRange(visiblePosts.Select(post =>
+            (publicUrls.PostUrl(post.Slug), (DateTime?)post.LastModifiedUtc)));
+        var bytes = SitemapDocumentWriter.Write(entries);
+        if (bytes.Length > SitemapDocumentWriter.MaximumBytes || entries.Any(entry => entry.Url.Length >= 2048))
+            return SitemapOverflow();
+        return File(bytes, "application/xml; charset=utf-8");
     }
 
-    [Route("sitemap.xml")]
-    public async Task<IActionResult> Sitemap()
+    [HttpGet("robots.txt")]
+    [HttpHead("robots.txt")]
+    public IActionResult Robots() => Content(
+        $"User-agent: *\nAllow: /\nSitemap: {publicUrls.AbsolutePath("/sitemap.xml")}\n",
+        "text/plain", Encoding.UTF8);
+
+    private IActionResult SitemapOverflow()
     {
-
-        var sb = new StringBuilder();
-        var xmlSettings = new XmlWriterSettings
-        {
-            Encoding = Encoding.UTF8,
-            Indent = true
-        };
-
-        using (var xml = XmlWriter.Create(sb, xmlSettings))
-        {
-            xml.WriteStartDocument();
-            xml.WriteStartElement("urlset", "http://www.sitemaps.org/schemas/sitemap/0.9");
-
-            // 1. Home Page
-            xml.WriteStartElement("url");
-            xml.WriteElementString("loc", _publicUrls.AbsolutePath("/"));
-            xml.WriteElementString("changefreq", "daily");
-            xml.WriteElementString("priority", "1.0");
-            xml.WriteEndElement();
-
-            // 2. Categories
-            var categories = await _categoryService.GetActiveCategoriesAsync();
-            foreach (var category in categories)
-            {
-                xml.WriteStartElement("url");
-                xml.WriteElementString("loc", _publicUrls.CategoryUrl(category.Slug));
-                xml.WriteElementString("changefreq", "weekly");
-                xml.WriteElementString("priority", "0.8");
-                xml.WriteEndElement();
-            }
-
-            // 3. Posts
-            var posts = await _postService.GetPublishedPostsAsync();
-            foreach (var post in posts)
-            {
-                xml.WriteStartElement("url");
-                xml.WriteElementString("loc", _publicUrls.PostUrl(post.Slug));
-                xml.WriteElementString("lastmod", post.CreatedDate.ToString("yyyy-MM-dd"));
-                xml.WriteElementString("changefreq", "monthly");
-                xml.WriteElementString("priority", "0.6");
-                xml.WriteEndElement();
-            }
-
-            xml.WriteEndElement(); // end urlset
-            xml.WriteEndDocument();
-        }
-
-        return Content(sb.ToString(), "application/xml", Encoding.UTF8);
+        // Fail visibly instead of publishing a silently truncated or invalid document.
+        logger.LogWarning("Sitemap exceeded single-document protocol limits; partitioning is required.");
+        return StatusCode(StatusCodes.Status503ServiceUnavailable);
     }
 }
