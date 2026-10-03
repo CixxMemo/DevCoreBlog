@@ -35,10 +35,12 @@ başlatmayı durdurur; hata metni ayar değerini yazmaz. Development'da yalnız
 loopback HTTP origin de kabul edilir; ayar yoksa `http://localhost:5000` kullanılır.
 Gerçek domain bu belgede tahmin edilmez. `.env.example` güvenli placeholder verir.
 
-URL, `LinkGenerator` ile mevcut `post-en` rotasından üretilir; istek Host, Scheme
-ve X-Forwarded-* değerleri mutlak link kaynağı değildir. Bu ayar mevcut feed ve
-Automations örneklerine uygulanır. Site genelindeki kanonik/SEO geçişi F43–F45
-kapsamındadır; bu faz bütün eski Host kullanımını kapattığını iddia etmez.
+URL, F43 ortak `PublicUrlBuilder` üzerinden `LinkGenerator` ve mevcut `post-en`
+rotasından üretilir; istek Host, Scheme ve X-Forwarded-* değerleri mutlak link
+kaynağı değildir. Aynı doğrulanmış origin mevcut OG URL ve sitemap loc alanlarına
+da uygulanır. Yazının kanonik yolu `/post/{slug}` olur; kayıtlı slug değişmez.
+Feed JSON alanları ve en çok üç kayıt sınırı korunur. Yeni meta/canonical etiketi
+F44; sitemap XML encoding/lastmod ve robots düzeltmesi F45 kapsamındadır.
 
 ## CORS, erişim, hız ve cache
 

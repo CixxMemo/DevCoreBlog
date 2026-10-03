@@ -19,6 +19,7 @@ using Microsoft.AspNetCore.Mvc;
 // Import the ErrorViewModel used by the Error action
 using DevCoreBlog.Models;
 using DevCoreBlog.Models.Public;
+using DevCoreBlog.Routing;
 // Import the Service interfaces for business logic
 using DevCoreBlog.Services.Interfaces;
 // Import the Post entity (used in Search action return type)
@@ -37,14 +38,16 @@ public class HomeController : Controller
     // These services handle all business logic for posts and categories.
     private readonly IPostService _postService;
     private readonly ICategoryService _categoryService;
+    private readonly PublicUrlBuilder _publicUrls;
 
     // Constructor receives services via dependency injection.
     // The DI container (configured in Program.cs) provides the instances.
-    public HomeController(IPostService postService, ICategoryService categoryService)
+    public HomeController(IPostService postService, ICategoryService categoryService, PublicUrlBuilder publicUrls)
     {
         // Store the injected services for use in action methods
         _postService = postService;
         _categoryService = categoryService;
+        _publicUrls = publicUrls;
     }
 
     // ---------------------------------------------------------------------------
@@ -68,13 +71,13 @@ public class HomeController : Controller
         ViewBag.OgTitle = "DevCoreBlog - ASP.NET Core and Modern Web Development";
         ViewBag.OgDescription = "DevCoreBlog - Technical articles on ASP.NET Core, C#, Entity Framework Core, and modern web development.";
         ViewBag.OgType = "website";
-        ViewBag.OgUrl = "/";
+        ViewBag.OgUrl = _publicUrls.AbsolutePath("/");
 
         // Pass the list of posts to the view
         return View(new HomePageModel(result.Posts, mostRead, input.Page, input.PageSize, result.TotalCount));
     }
 
-    // GET: /yazi/{slug}
+    // GET: /post/{slug}; visible aliases redirect without incrementing the counter.
     // Displays a single blog post identified by its slug.
     // Only published posts are accessible; unpublished or non-existent posts return 404.
     // The post's Category is eager-loaded for display in the view.
@@ -93,6 +96,9 @@ public class HomeController : Controller
         {
             return NotFound();
         }
+
+        var redirect = RedirectToCanonicalPath(_publicUrls.PostPath(post.Slug));
+        if (redirect is not null) return redirect;
 
         var viewCount = post.ViewCount;
         if (HttpMethods.IsGet(Request.Method) &&
@@ -121,7 +127,7 @@ public class HomeController : Controller
         ViewBag.OgTitle = post.Title;
         ViewBag.OgDescription = post.Summary;
         ViewBag.OgType = "article";
-        ViewBag.OgUrl = $"/yazi/{post.Slug}";
+        ViewBag.OgUrl = _publicUrls.PostUrl(post.Slug);
 
         // Pass the post to the Detail view
         ViewData["HideSidebar"] = true;
@@ -139,12 +145,14 @@ public class HomeController : Controller
         if (!ModelState.IsValid || slug.Length > 200) return InvalidListRequest();
         var category = await _categoryService.GetActiveCategoryBySlugAsync(slug);
         if (category is null) return NotFound();
+        var redirect = RedirectToCanonicalPath(_publicUrls.CategoryPath(category.Slug));
+        if (redirect is not null) return redirect;
         var result = await _postService.GetPostsByCategorySlugPagedAsync(slug, input.Page, input.PageSize, cancellationToken);
         if (input.Page > 1 && result.Posts.Count == 0) return NotFound();
         ViewBag.OgTitle = $"{category.Name} Category - DevCoreBlog";
         ViewBag.OgDescription = $"All articles in the {category.Name} category on DevCoreBlog.";
         ViewBag.OgType = "website";
-        ViewBag.OgUrl = $"/kategori/{category.Slug}";
+        ViewBag.OgUrl = _publicUrls.CategoryUrl(category.Slug);
         return View(new PublicListPageModel(result,
             new PublicPagingModel("Category", slug, null, null, input.Page, input.PageSize, result.TotalCount), category.Name, []));
     }
@@ -171,6 +179,11 @@ public class HomeController : Controller
             new PublicPagingModel("Search", null, term, categorySlug, input.Page, input.PageSize, result.TotalCount),
             category?.Name, categories.ToList()));
     }
+
+    // Check visibility first, preserve the raw query and use only an escaped local route target.
+    private IActionResult? RedirectToCanonicalPath(string path) =>
+        string.Equals(Request.Path.Value, PathString.FromUriComponent(path).Value, StringComparison.Ordinal)
+            ? null : LocalRedirectPermanent(path + Request.QueryString.ToUriComponent());
 
     private BadRequestObjectResult InvalidListRequest() =>
         BadRequest("Use a search term up to 100 characters, page 1–1000, and page size 9, 18, or 27.");

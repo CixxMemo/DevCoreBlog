@@ -84,7 +84,7 @@
                                     <a asp-action="Edit" asp-route-id="@post.Id" asp-route-returnUrl="@returnUrl" class="border border-black px-2 py-1 font-bold">EDIT</a>
                                     @if (item.State == PostPublicationState.Published)
                                     {
-                                        <a href="/post/@post.Slug" target="_blank" rel="noopener" class="live-link-btn border border-black px-2 py-1">LIVE ↗</a>
+                                        <a href="@PublicUrls.PostPath(post.Slug)" target="_blank" rel="noopener" class="live-link-btn border border-black px-2 py-1">LIVE ↗</a>
                                     }
                                     <form asp-action="TogglePublish" asp-route-id="@post.Id" method="post">
                                         <input type="hidden" name="returnUrl" value="@returnUrl" />

@@ -1,4 +1,5 @@
 using DevCoreBlog.Services.Interfaces;
+using DevCoreBlog.Routing;
 using Microsoft.AspNetCore.Mvc;
 using System.Text;
 using System.Xml;
@@ -10,17 +11,18 @@ public class SeoController : Controller
 {
     private readonly IPostService _postService;
     private readonly ICategoryService _categoryService;
+    private readonly PublicUrlBuilder _publicUrls;
 
-    public SeoController(IPostService postService, ICategoryService categoryService)
+    public SeoController(IPostService postService, ICategoryService categoryService, PublicUrlBuilder publicUrls)
     {
         _postService = postService;
         _categoryService = categoryService;
+        _publicUrls = publicUrls;
     }
 
     [Route("sitemap.xml")]
     public async Task<IActionResult> Sitemap()
     {
-        var baseUrl = $"{Request.Scheme}://{Request.Host}";
 
         var sb = new StringBuilder();
         var xmlSettings = new XmlWriterSettings
@@ -36,7 +38,7 @@ public class SeoController : Controller
 
             // 1. Home Page
             xml.WriteStartElement("url");
-            xml.WriteElementString("loc", $"{baseUrl}/");
+            xml.WriteElementString("loc", _publicUrls.AbsolutePath("/"));
             xml.WriteElementString("changefreq", "daily");
             xml.WriteElementString("priority", "1.0");
             xml.WriteEndElement();
@@ -46,7 +48,7 @@ public class SeoController : Controller
             foreach (var category in categories)
             {
                 xml.WriteStartElement("url");
-                xml.WriteElementString("loc", $"{baseUrl}/kategori/{category.Slug}");
+                xml.WriteElementString("loc", _publicUrls.CategoryUrl(category.Slug));
                 xml.WriteElementString("changefreq", "weekly");
                 xml.WriteElementString("priority", "0.8");
                 xml.WriteEndElement();
@@ -57,7 +59,7 @@ public class SeoController : Controller
             foreach (var post in posts)
             {
                 xml.WriteStartElement("url");
-                xml.WriteElementString("loc", $"{baseUrl}/yazi/{post.Slug}");
+                xml.WriteElementString("loc", _publicUrls.PostUrl(post.Slug));
                 xml.WriteElementString("lastmod", post.CreatedDate.ToString("yyyy-MM-dd"));
                 xml.WriteElementString("changefreq", "monthly");
                 xml.WriteElementString("priority", "0.6");

@@ -49,6 +49,7 @@ DotNetEnv.Env.Load(dotenvPath);
 var siteUrl = new SiteUrlOptions(
     Environment.GetEnvironmentVariable("SITE_URL"), builder.Environment.IsDevelopment());
 builder.Services.AddSingleton(siteUrl);
+builder.Services.AddSingleton<DevCoreBlog.Routing.PublicUrlBuilder>();
 
 // ---------------------------------------------------------------------------
 // SERVICE REGISTRATION (Dependency Injection Container)
@@ -472,7 +473,7 @@ app.MapStaticAssets();
 // ---------------------------------------------------------------------------
 // CUSTOM PUBLIC ROUTES (slug-based URLs for visitors)
 // ---------------------------------------------------------------------------
-// English and localized route mappings for blog post and category detail pages.
+// Named English paths are canonical; Home redirects visible aliases before rendering/counting.
 
 // Route for individual blog post pages: /post/{slug} and /yazi/{slug}
 app.MapControllerRoute(

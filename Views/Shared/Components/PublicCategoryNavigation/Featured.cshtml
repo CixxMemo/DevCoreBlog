@@ -10,7 +10,7 @@
     <div class="flex flex-wrap gap-1.5">
         @foreach (var category in Model)
         {
-            <a href="/kategori/@category.Slug" class="bg-gray-100 dark:bg-zinc-800 hover:bg-gray-900 hover:text-white dark:hover:bg-primary dark:hover:text-white border border-gray-300 dark:border-zinc-700 text-gray-800 dark:text-zinc-200 text-xs font-mono font-bold px-2 py-1 no-underline transition-none">
+            <a href="@PublicUrls.CategoryPath(category.Slug)" class="bg-gray-100 dark:bg-zinc-800 hover:bg-gray-900 hover:text-white dark:hover:bg-primary dark:hover:text-white border border-gray-300 dark:border-zinc-700 text-gray-800 dark:text-zinc-200 text-xs font-mono font-bold px-2 py-1 no-underline transition-none">
                 #@category.Name
             </a>
         }

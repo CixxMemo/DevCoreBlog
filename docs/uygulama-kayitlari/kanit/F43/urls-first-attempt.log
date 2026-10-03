@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/scripts/verification/f43_urls_probe.py", line 20, in <module>
+    assert '-p 55450' in (root/'postgres/postmaster.opts').read_text(), 'Named F43 PostgreSQL required'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Named F43 PostgreSQL required

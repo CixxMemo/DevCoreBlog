@@ -25,7 +25,7 @@ Bu bölüm bir çalıştırma emri değildir. Her seferinde yalnızca **bir faz 
 
 **Geri dönüş:** Eski URL'leri açık tut; yanlış 301 yayımlanmışsa kalıcı cache etkisini ayrıca değerlendir.
 
-**İzlenebilirlik:** F2; Rapor §9 SEO.
+**İzlenebilirlik:** F2; Rapor §9 SEO; [D17](KARARLAR.md#d17--kalıcı-adresler-ve-güvenilir-url-kaynağı) ve [F43 kanıtı](../uygulama-kayitlari/F43-2026-10-03.md).
 
 **Durma noktası:** Kanıtı uygulama kaydına ve DURUM.md'ye işle; sonraki fazı başlatma.
 

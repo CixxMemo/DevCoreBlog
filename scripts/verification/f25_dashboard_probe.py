@@ -65,14 +65,14 @@ def main() -> int:
     checks = {
         "visitor_home_responds": home_status == 200,
         "navigation_only_active_categories": (
-            'href="/kategori/f01-active"' in navigation and
-            'href="/kategori/f01-inactive"' not in navigation and
-            not any(f'href="/kategori/{slug}"' in navigation for slug in
+            'href="/category/f01-active"' in navigation and
+            'href="/category/f01-inactive"' not in navigation and
+            not any(f'href="/category/{slug}"' in navigation for slug in
                     ["haberler", "kesfet", "vibe-coding", "ai", "felsefe"])
         ),
         "home_topics_only_active_categories": (
             re.search(r'<h3[^>]*>\s*Topics\s*</h3>', home) is not None and
-            not any(f'href="/kategori/{slug}"' in home for slug in
+            not any(f'href="/category/{slug}"' in home for slug in
                     ["f01-inactive", "haberler", "kesfet", "vibe-coding", "ai", "felsefe"])
         ),
         "admin_pages_respond": token is not None and login_status == 200 and
@@ -97,7 +97,7 @@ def main() -> int:
     for name, passed in checks.items():
         print(f"f25_{name}={str(passed).lower()}")
     print("f25_navigation_category_links=" + repr(re.findall(
-        r'href="(/kategori/[^\"]+)"', navigation)))
+        r'href="(/category/[^\"]+)"', navigation)))
     print(f"f25_expected_metrics={total_posts},{published_posts},{draft_posts},"
           f"{total_views},{category_count}")
     print(f"f25_dashboard_sql_command_count={sql_count}")

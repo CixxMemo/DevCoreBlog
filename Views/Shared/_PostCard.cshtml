@@ -9,7 +9,7 @@
     };
 }
 @* Presentation never decides publication or queries persistence. *@
-<a href="/yazi/@Model.Post.Slug" class="post-card @presentationClass">
+<a href="@PublicUrls.PostPath(Model.Post.Slug)" class="post-card @presentationClass">
     <partial name="_PostCardMedia" model="Model" />
     <div class="post-card-body">
         <span class="post-category">@Model.Post.CategoryName</span>

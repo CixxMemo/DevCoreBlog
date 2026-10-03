@@ -1,0 +1,40 @@
+{
+  "home": {
+    "legacyLinks": 0,
+    "og": "https://blog.example.test/",
+    "overflow": false,
+    "width": 1280
+  },
+  "category": {
+    "current": "/category/f43-category-%C4%9F%C3%BC%C5%9F%20%25%3F%23",
+    "og": "https://blog.example.test/category/f43-category-%C4%9F%C3%BC%C5%9F%20%25%3F%23",
+    "overflow": false,
+    "url": "http://127.0.0.1:15178/category/f43-category-%C4%9F%C3%BC%C5%9F%20%25%3F%23"
+  },
+  "categoryPage2": "http://127.0.0.1:15178/category/f43-category-%C4%9F%C3%BC%C5%9F%20%25%3F%23?page=2",
+  "unicodeArticle": {
+    "og": "https://blog.example.test/post/f43-istanbul-%C4%9F%C3%BC%C5%9F%20%25%3F%23",
+    "overflow": false,
+    "url": "http://127.0.0.1:15178/post/f43-istanbul-%C4%9F%C3%BC%C5%9F%20%25%3F%23"
+  },
+  "oldURLResult": "http://127.0.0.1:15178/post/f43-istanbul-%C4%9F%C3%BC%C5%9F%20%25%3F%23?tag=%C4%B0stanbul%20%26%20C%23",
+  "mobile": {
+    "overflow": false,
+    "relatedLinks": [
+      "/post/f43-page-4302",
+      "/post/f43-page-4303",
+      "/post/f43-page-4304"
+    ],
+    "width": 390
+  },
+  "escape": {
+    "expanded": "false",
+    "focus": "mobile-menu-btn"
+  },
+  "search": {
+    "legacyLinks": 0,
+    "overflow": false,
+    "url": "http://127.0.0.1:15178/ara?query=F43"
+  },
+  "console": []
+}

@@ -10,7 +10,7 @@
                 var post = Model[index];
                 <li class="border-t border-gray-200 dark:border-zinc-700 py-3">
                     <span class="text-sm font-mono">@(index + 1). @post.ViewCount views</span>
-                    <a href="/yazi/@post.Slug" class="block font-bold underline mt-1 break-words">@post.Title</a>
+                    <a href="@PublicUrls.PostPath(post.Slug)" class="block font-bold underline mt-1 break-words">@post.Title</a>
                     <span class="text-sm">@post.CategoryName</span>
                 </li>
             }

@@ -9,7 +9,7 @@
 <article class="reading-article">
     <h1 class="text-2xl sm:text-4xl font-bold tracking-tight mb-6 font-sans leading-tight">@post.Title</h1>
     <div class="public-detail-meta">
-        <a class="post-category" href="/kategori/@post.Category.Slug">@post.Category.Name</a>
+        <a class="post-category" href="@PublicUrls.CategoryPath(post.Category.Slug)">@post.Category.Name</a>
         <span>Published <time datetime="@post.PublishDate.ToString("O", CultureInfo.InvariantCulture)">@SiteDates.Date(post.PublishDate)</time></span>
         <span>@Model.Content.ReadingMinutes min read</span>
         <span>@post.ViewCount views</span>

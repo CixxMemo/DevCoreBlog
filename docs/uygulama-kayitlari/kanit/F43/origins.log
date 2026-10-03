@@ -1,0 +1,17 @@
+production_HTTPS_normalizes_root=True
+development_missing_uses_known_localhost=True
+development_localhost_HTTP=True
+development_IPv4_HTTP=True
+development_IPv6_HTTP=True
+production_missing_rejected=True
+production_HTTP_rejected=True
+blank_rejected=True
+remote_HTTP_rejected=True
+credentials_rejected=True
+path_rejected=True
+query_rejected=True
+fragment_rejected=True
+wildcard_rejected=True
+control_rejected=True
+scheme_rejected=True
+count=16

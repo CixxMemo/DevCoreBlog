@@ -209,6 +209,31 @@ adı kültüre bağlı büyük harfe çevrilmeden gösterilir. Yeni localization
 altyapısı, paket, şema veya URL değişikliği yoktur.
 **Durum:** [F42 kültür/HTTP/PostgreSQL/tarayıcı kanıtı](../uygulama-kayitlari/F42-2026-10-03.md) ile doğrulandı.
 
+## D17 — Kalıcı adresler ve güvenilir URL kaynağı
+
+**Karar:** F43 mevcut `post-en` ve `category-en` adlı MVC rotalarını esas alır:
+`/post/{slug}` ve `/category/{slug}`. Kayıtlı slug ve sahipliği değiştirilmez.
+Görünür `/yazi/{slug}`, `/kategori/{slug}`, conventional Home action ve sondaki
+slash alternatifleri tek yerel 301 ile kanonik yola gider. Ham query korunur;
+Unicode, yüzde, boşluk, soru işareti ve fragment karakteri route generator ile
+path segmentinde encode edilir. Görünürlük/input kontrolü yönlendirmeden öncedir;
+gizli/bulunmayan içerik 404 olur. Sayaç yalnız yönlendirme sonrası uygun anonim
+kanonik GET'te artar; HEAD ve yönetici GET sayılmaz.
+
+Web sunumundaki küçük `PublicUrlBuilder` named route üretimini tek yerde tutar.
+Kart, ilgili/çok okunan yazı, kategori menüsü, admin LIVE, feed ve mevcut sitemap
+loc alanları bunu kullanır. Mutlak URL origin'i F29 doğrulanmış `SITE_URL` olur;
+Host/Scheme/X-Forwarded-* kaynağa dönüşmez. Production HTTPS zorunluluğu ve
+Development loopback HTTP/eksik ayarda bilinen localhost davranışı korunur.
+Feed alanları, limit, auth/CSRF ve cache sınırları değişmez; redirect output cache'e
+alınmaz. Arama `/ara` rotası korunur. Yeni paket, şema, slug göçü veya DNS yoktur.
+
+Bu karar `<link rel="canonical">` ve yeni meta/JSON-LD eklemez (F44).
+Mevcut sitemap XML encoding/lastmod ve robots düzenlemesi F45'te kalır;
+yalnız URL kaynağı bu fazda düzeltilmiştir. Yanlış yayımlanmış 301 browser/CDN
+cache'inde kalabileceğinden kod geri dönüşü tek başına yeterli olmayabilir.
+**Durum:** [F43 gerçek PostgreSQL/HTTP ve tarayıcı kanıtı](../uygulama-kayitlari/F43-2026-10-03.md) ile doğrulandı.
+
 ## Gerektiğinde alınacak gerçek ürün/ortam bilgileri
 
 Bunlar şimdi topluca sorulmaz. Mevcut kaynaktan doğrulanamıyorsa ilgili fazda sorulur; önceki tercih tekrar sorulmaz.

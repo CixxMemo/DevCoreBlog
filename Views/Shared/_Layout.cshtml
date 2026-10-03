@@ -70,7 +70,7 @@
     <meta property="og:title" content="@(ViewBag.OgTitle ?? ViewData["Title"])" />
     <meta property="og:description" content="@(ViewBag.OgDescription ?? "DevCoreBlog - Technical articles on ASP.NET Core, C#, and modern web development")" />
     <meta property="og:type" content="@(ViewBag.OgType ?? "website")" />
-    <meta property="og:url" content="@(ViewBag.OgUrl ?? Context.Request.Path)" />
+    <meta property="og:url" content="@(ViewBag.OgUrl ?? PublicUrls.AbsolutePath(Context.Request.Path.ToUriComponent()))" />
     <meta property="og:site_name" content="DevCoreBlog" />
     
     @* Twitter Card Meta Tags *@

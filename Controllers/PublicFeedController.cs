@@ -1,4 +1,4 @@
-using DevCoreBlog.Configuration;
+using DevCoreBlog.Routing;
 using DevCoreBlog.Services.Interfaces;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
@@ -13,8 +13,7 @@ namespace DevCoreBlog.Controllers;
 [EnableRateLimiting("PortfolioLimiter")]
 public sealed class PublicFeedController(
     IPublicFeedService feedService,
-    SiteUrlOptions siteUrl,
-    LinkGenerator links) : ControllerBase
+    PublicUrlBuilder publicUrls) : ControllerBase
 {
     [HttpGet("posts/latest")]
     [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
@@ -30,8 +29,7 @@ public sealed class PublicFeedController(
             excerpt = post.Excerpt,
             coverImageUrl = post.CoverImageUrl,
             publishDate = post.PublishDate,
-            url = siteUrl.Origin + (links.GetPathByRouteValues("post-en", new { slug = post.Slug })
-                ?? throw new InvalidOperationException("The public post route is required.")),
+            url = publicUrls.PostUrl(post.Slug),
             categoryName = post.CategoryName
         }).ToList();
         return Ok(latestPosts);

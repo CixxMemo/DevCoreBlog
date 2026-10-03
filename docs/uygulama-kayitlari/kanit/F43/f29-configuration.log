@@ -1,0 +1,10 @@
+f29_production_missing_site_rejected=true
+f29_production_http_site_rejected=true
+f29_site_path_rejected=true
+f29_site_query_rejected=true
+f29_site_fragment_rejected=true
+f29_site_credentials_rejected=true
+f29_site_bad_scheme_rejected=true
+f29_site_remote_http_rejected=true
+f29_cors_wildcard_rejected=true
+f29_cors_path_rejected=true
