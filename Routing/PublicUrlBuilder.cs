@@ -5,6 +5,9 @@ namespace DevCoreBlog.Routing;
 /// <summary>Builds escaped public paths from named routes and absolute links from trusted configuration.</summary>
 public sealed class PublicUrlBuilder(SiteUrlOptions siteUrl, LinkGenerator links)
 {
+    public const string RssPath = "/rss.xml";
+    public string RssUrl() => AbsolutePath(RssPath);
+
     public string PostPath(string slug) => RoutePath("post-en", slug);
     public string CategoryPath(string slug) => RoutePath("category-en", slug);
     public string PostUrl(string slug) => AbsolutePath(PostPath(slug));

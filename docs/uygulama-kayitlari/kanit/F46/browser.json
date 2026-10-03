@@ -1,0 +1,29 @@
+{
+  "desktop": {
+    "viewport": "1280x900",
+    "RSSFocused": true,
+    "outline": "3px solid",
+    "overflow": false,
+    "discovery": "https://blog.example.test/rss.xml",
+    "injected": false
+  },
+  "mobile": {
+    "viewport": "390x844",
+    "focus": {
+      "focused": true,
+      "outline": "solid",
+      "overflow": false,
+      "width": "3px"
+    },
+    "escape": {
+      "closed": true,
+      "focusReturned": true,
+      "overflow": false
+    }
+  },
+  "RSSOpened": "http://127.0.0.1:15180/rss.xml",
+  "RSSVisibleAsXML": true,
+  "RSSInjected": false,
+  "console": [],
+  "toolLimitation": "Download-event recording failed and restarted tool; reconnect confirmed RSS XML opened. No downloaded file path claimed."
+}

@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0">
+  <channel>
+    <title>DevCoreBlog</title>
+    <link>https://blog.example.test/</link>
+    <description>Latest articles from DevCoreBlog.</description>
+    <atom:link href="https://blog.example.test/rss.xml" rel="self" type="application/rss+xml" xmlns:atom="http://www.w3.org/2005/Atom" />
+    <item>
+      <title>F44 title revision</title>
+      <link>https://blog.example.test/post/f44-revision</link>
+      <guid isPermaLink="true">https://blog.example.test/post/f44-revision</guid>
+      <pubDate>Sat, 03 Oct 2026 17:13:41 GMT</pubDate>
+      <description>New summary</description>
+    </item>
+    <item>
+      <title>F45 draft revision</title>
+      <link>https://blog.example.test/post/f45-draft-revision</link>
+      <guid isPermaLink="true">https://blog.example.test/post/f45-draft-revision</guid>
+      <pubDate>Sat, 03 Oct 2026 17:13:38 GMT</pubDate>
+      <description>Summary</description>
+    </item>
+    <item>
+      <title>F45 revision</title>
+      <link>https://blog.example.test/post/f45-revision</link>
+      <guid isPermaLink="true">https://blog.example.test/post/f45-revision</guid>
+      <pubDate>Sat, 03 Oct 2026 17:13:35 GMT</pubDate>
+      <description>Summary</description>
+    </item>
+    <item>
+      <title>F46 &lt;/title&gt;&lt;script&gt;window.f46Injected=1&lt;/script&gt; ğüş &amp; "quoted"</title>
+      <link>https://blog.example.test/post/f46-rss-4601</link>
+      <guid isPermaLink="true">https://blog.example.test/post/f46-rss-4601</guid>
+      <pubDate>Sat, 03 Oct 2026 17:12:20 GMT</pubDate>
+      <description>New summary &amp;amp; &amp;#x1F600;</description>
+    </item>
+    <item>
+      <title>F32_ead905a9_PublishScheduledNow</title>
+      <link>https://blog.example.test/post/f32ead905a9published</link>
+      <guid isPermaLink="true">https://blog.example.test/post/f32ead905a9published</guid>
+      <pubDate>Sat, 03 Oct 2026 17:12:16 GMT</pubDate>
+      <description>F32_ead905a9_PublishScheduledNow summary</description>
+    </item>
+    <item>
+      <title>F46 Post 4602</title>
+      <link>https://blog.example.test/post/f46-rss-4602</link>
+      <guid isPermaLink="true">https://blog.example.test/post/f46-rss-4602</guid>
+      <pubDate>Sat, 03 Oct 2026 16:12:17 GMT</pubDate>
+      <description>Excerpt only</description>
+    </item>
+    <item>
+      <title>F46 Post 4603</title>
+      <link>https://blog.example.test/post/f46-rss-4603</link>
+      <guid isPermaLink="true">https://blog.example.test/post/f46-rss-4603</guid>
+      <pubDate>Sat, 03 Oct 2026 16:12:17 GMT</pubDate>
+      <description>&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;&amp;#x1F600;</description>
+    </item>
+    <item>
+      <title>F46 Post 4604</title>
+      <link>https://blog.example.test/post/f46-rss-4604</link>
+      <guid isPermaLink="true">https://blog.example.test/post/f46-rss-4604</guid>
+      <pubDate>Sat, 03 Oct 2026 16:12:17 GMT</pubDate>
+      <description />
+    </item>
+    <item>
+      <title>F46 emoji 😀</title>
+      <link>https://blog.example.test/post/f46-rss-4605</link>
+      <guid isPermaLink="true">https://blog.example.test/post/f46-rss-4605</guid>
+      <pubDate>Sat, 03 Oct 2026 16:12:17 GMT</pubDate>
+      <description>Summary</description>
+    </item>
+    <item>
+      <title>F46 Post 4606</title>
+      <link>https://blog.example.test/post/f46-rss-4606</link>
+      <guid isPermaLink="true">https://blog.example.test/post/f46-rss-4606</guid>
+      <pubDate>Sat, 03 Oct 2026 16:12:17 GMT</pubDate>
+      <description>Safe fallback</description>
+    </item>
+    <item>
+      <title>F46 Post 4607</title>
+      <link>https://blog.example.test/post/f46-rss-4607</link>
+      <guid isPermaLink="true">https://blog.example.test/post/f46-rss-4607</guid>
+      <pubDate>Sat, 03 Oct 2026 16:12:17 GMT</pubDate>
+      <description>Summary</description>
+    </item>
+    <item>
+      <title>F46 Post 4608</title>
+      <link>https://blog.example.test/post/f46-rss-4608</link>
+      <guid isPermaLink="true">https://blog.example.test/post/f46-rss-4608</guid>
+      <pubDate>Sat, 03 Oct 2026 16:12:17 GMT</pubDate>
+      <description>Summary</description>
+    </item>
+    <item>
+      <title>F46 Post 4609</title>
+      <link>https://blog.example.test/post/f46-rss-4609</link>
+      <guid isPermaLink="true">https://blog.example.test/post/f46-rss-4609</guid>
+      <pubDate>Sat, 03 Oct 2026 16:12:17 GMT</pubDate>
+      <description>Summary</description>
+    </item>
+    <item>
+      <title>F46 Post 4610</title>
+      <link>https://blog.example.test/post/f46-rss-4610</link>
+      <guid isPermaLink="true">https://blog.example.test/post/f46-rss-4610</guid>
+      <pubDate>Sat, 03 Oct 2026 16:12:17 GMT</pubDate>
+      <description>Summary</description>
+    </item>
+    <item>
+      <title>F46 Post 4611</title>
+      <link>https://blog.example.test/post/f46-rss-4611</link>
+      <guid isPermaLink="true">https://blog.example.test/post/f46-rss-4611</guid>
+      <pubDate>Sat, 03 Oct 2026 16:12:17 GMT</pubDate>
+      <description>Summary</description>
+    </item>
+    <item>
+      <title>F46 Post 4612</title>
+      <link>https://blog.example.test/post/f46-rss-4612</link>
+      <guid isPermaLink="true">https://blog.example.test/post/f46-rss-4612</guid>
+      <pubDate>Sat, 03 Oct 2026 16:12:17 GMT</pubDate>
+      <description>Summary</description>
+    </item>
+    <item>
+      <title>F46 Post 4613</title>
+      <link>https://blog.example.test/post/f46-rss-4613</link>
+      <guid isPermaLink="true">https://blog.example.test/post/f46-rss-4613</guid>
+      <pubDate>Sat, 03 Oct 2026 16:12:17 GMT</pubDate>
+      <description>Summary</description>
+    </item>
+    <item>
+      <title>F46 Post 4614</title>
+      <link>https://blog.example.test/post/f46-rss-4614</link>
+      <guid isPermaLink="true">https://blog.example.test/post/f46-rss-4614</guid>
+      <pubDate>Sat, 03 Oct 2026 16:12:17 GMT</pubDate>
+      <description>Summary</description>
+    </item>
+    <item>
+      <title>F46 Post 4615</title>
+      <link>https://blog.example.test/post/f46-rss-4615</link>
+      <guid isPermaLink="true">https://blog.example.test/post/f46-rss-4615</guid>
+      <pubDate>Sat, 03 Oct 2026 16:12:17 GMT</pubDate>
+      <description>Summary</description>
+    </item>
+    <item>
+      <title>F46 Post 4616</title>
+      <link>https://blog.example.test/post/f46-rss-4616</link>
+      <guid isPermaLink="true">https://blog.example.test/post/f46-rss-4616</guid>
+      <pubDate>Sat, 03 Oct 2026 16:12:17 GMT</pubDate>
+      <description>Summary</description>
+    </item>
+  </channel>
+</rss>

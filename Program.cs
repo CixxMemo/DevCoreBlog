@@ -147,6 +147,9 @@ builder.Services.AddScoped<IAdminDashboardReadRepository, AdminDashboardReadRepo
 builder.Services.AddScoped<PostService>();
 builder.Services.AddScoped<IPostService>(serviceProvider =>
     serviceProvider.GetRequiredService<PostService>());
+builder.Services.AddScoped<DevCoreBlog.Models.Seo.RssDocumentWriter>();
+builder.Services.AddScoped<IRssPostReader>(serviceProvider =>
+    serviceProvider.GetRequiredService<PostService>());
 builder.Services.AddScoped<ISitemapPostReader>(serviceProvider =>
     serviceProvider.GetRequiredService<PostService>());
 builder.Services.AddScoped<IPublicFeedService>(serviceProvider =>

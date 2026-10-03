@@ -185,6 +185,14 @@ public class PostRepository : GenericRepository<Post>, IPostRepository
         return new PublicPostPage(posts.AsReadOnly(), count);
     }
 
+    // Fixed-size RSS uses the same visibility predicate and stable publication ordering.
+    public async Task<IReadOnlyList<RssPost>> GetRssPostsAsync(
+        DateTime utcNow, CancellationToken cancellationToken = default) =>
+        await PublicPosts(utcNow).OrderByDescending(post => post.PublishDate).ThenBy(post => post.Id)
+            .Take(20).Select(post => new RssPost(
+                post.Title, post.Slug, post.Summary, post.Excerpt, post.PublishDate))
+            .ToListAsync(cancellationToken);
+
     // Project before materialization: full content and category graphs never leave PostgreSQL.
     public async Task<IReadOnlyList<PublicFeedPost>> GetLatestPublicPostsAsync(
         DateTime utcNow, CancellationToken cancellationToken = default) =>

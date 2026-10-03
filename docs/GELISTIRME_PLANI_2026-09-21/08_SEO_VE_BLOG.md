@@ -98,7 +98,7 @@ Bu bölüm bir çalıştırma emri değildir. Her seferinde yalnızca **bir faz 
 
 1. D05'te XML yayın belgesinin klasik MVC çıktısı olduğu tanımlıdır; yeni JSON/Web API, API projesi veya controller mimarisi kurma. D05'teki MVC XML sınırını doğrula; RSS için yeni API mimarisi kurma.
 2. Sınırlı sayıda son görünür yazıdan RSS 2.0 XML belgesi üret; sabit GUID, kanonik link, doğru tarih, güvenli metin özeti ve site başlığı kullan.
-3. Head'de RSS discovery ve uygun yerde takip bağlantısı ekle; cache/tag politikasını sitemap ile uyumlu tut.
+3. Head'de RSS discovery ve uygun yerde takip bağlantısı ekle; cache/tag politikasını sitemap ile uyumlu tut. D20: `/rss.xml`, son20 görünür yazı, kanonik permalink GUID, kayıtlı yayın tarihi ve 320-rune güvenli özet; D19 no-store/output-cache dışı sınırı ve mevcut mutation invalidation korunur.
 
 **Kabul ve kanıt:** XML okunur; entry kimlikleri edit sonrası değişmez; gizli yazı yok; yayın kaldırma güncellenir; encoding doğru. Kod değiştiyse derleme sıfır hatayla tamamlanmalı; ilgili eski kontroller korunmalı.
 

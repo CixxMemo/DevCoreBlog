@@ -46,7 +46,7 @@ Küçük gerekçeli test/build bağımlılığı yasak değil. Olmayan aracı va
 
 F33 yetkili HTML önizleme, F46 standart XML RSS üretir. Ayrı API mimarisi veya SPA gerekmez. Auth/no-store/yayın görünürlüğü/encoding kuralları çıktı formatından bağımsız uygulanır.
 
-**Durum:** F33 uygulandı. Native Preview in new tab düğmesi yalnız o POST için ayrı target ve URL kullanır; normal Save formu korunur. Detay/önizleme aynı güvenli içerik partial'ını kullanır. Önizleme upload yapmaz; kayıtlı kapağı gösterir. [F33 kanıtı](../uygulama-kayitlari/F33-2026-10-01.md). F46 kapsamda; kullanıcı RSS'i açıkça ertelerse gerekçesiyle kaydedilir, tamamlandı sayılmaz.
+**Durum:** F33 uygulandı. Native Preview in new tab düğmesi yalnız o POST için ayrı target ve URL kullanır; normal Save formu korunur. Detay/önizleme aynı güvenli içerik partial'ını kullanır. Önizleme upload yapmaz; kayıtlı kapağı gösterir. [F33 kanıtı](../uygulama-kayitlari/F33-2026-10-01.md). F46 uygulandı: sınırlı RSS2.0 MVC XML, güvenli özet ve reader discovery/takip. [F46 kanıtı](../uygulama-kayitlari/F46-2026-10-03.md).
 
 ## D06 — Küçük tipli sözleşmeler izinli, kontrolsüz aktarım yasak
 
@@ -301,6 +301,47 @@ Aşımda uyarı logu ve 503 vardır; sessiz truncation veya geçersiz XML yoktur
 Sitemap index eklenmedi. Canlı içerik büyüklüğü ölçülmedi; sınıra yaklaşılırsa
 ayrı kapsamla parçalama/index gerekir. Okuma tarih/sayaç/sürüm değiştirmez.
 **Durum:** [F45 ham HTTP/XML/PostgreSQL ve regresyon kanıtı](../uygulama-kayitlari/F45-2026-10-03.md) ile doğrulandı.
+
+## D20 — Sınırlı RSS 2.0 ve abonelik kimliği
+
+F46 `/rss.xml` için SeoController MVC GET/HEAD çıktısıdır; yeni API/controller
+projesi veya framework yoktur. [Resmi RSS2.0 sözleşmesi](https://www.rssboard.org/rss-specification)
+uygulanır: rss version=2.0, tek channel ve gerçek site adı DevCoreBlog,
+site link'i/açıklaması; item title/link/guid/pubDate/description; Atom self link.
+Makale dili, yazar/e-posta veya lastBuildDate uydurulmaz.
+
+IRssPostReader dar sözleşmesi mevcut PostService üzerinden TimeProvider'ın
+tek UTC anını repository'ye verir. Ortak F17 predicate, AsNoTracking,
+PublishDate DESC/Id ASC ve sabit Take(20) DB'de uygulanır. Sadece Title,
+Slug, Summary, Excerpt, PublishDate projection'ı alınır; body/kapak/entity graph
+ve sınırsız GetAll kullanılmaz. Query ile sayı/sayfalama genişletilmez.
+
+GUID, F19/F43'ün kararlı kanonik yazı URL'sidir (isPermaLink=true).
+Başlık/içerik/özet/yayın tarihi/aktiflik editleri veya yeniden yayın bunu
+değiştirmez. SITE_URL origin'i değişirse abonelik kimliğinin geçişi ayrıca
+planlanmalıdır; bu faz origin veya kayıtlı slug değiştirmez.
+PubDate kayıtlı PublishDate'ten invariant RFC1123 UTC/GMT olarak gelir;
+CreatedDate/UpdatedDate/istek saatiyle değiştirilmez.
+
+Özet mevcut Markdig plain-text sınırından gelir: Summary, boşsa Excerpt;
+ikisi de boşsa boş kalır. 320 Unicode rune ile sınırlanır. RSS description
+XML decode sonrasında HTML olarak yorumlanabildiğinden düz metin önce
+HtmlEncoder.Default ile kodlanır, sonra XmlWriter XML escaping uygular.
+Bu iki farklı sınır çift encoding gerektirir; raw HTML/CDATA/body yoktur.
+XML1.0 uyumsuz legacy control karakterleri çıktıda çıkarılır; geçerli emoji
+korunur. Veritabanındaki kullanıcı içeriği değiştirilmez.
+
+Byte stream'den BOM'suz UTF-8; application/rss+xml; charset=utf-8 ve no-store
+verilir. F45/D19 gibi output cache dışında kalır. Mutation veya zamanlı yayın
+sınırı yeni istekte okunur; servislerin mevcut liste invalidation'ı korunur.
+RSS okuma sayaç/sürüm/tarih yazmaz. Public layout tek absolute trusted discovery
+ve native local Follow via RSS bağlantısı içerir; mobil drawer/Tab/Escape/focus
+mevcut gezinme davranışını kullanır, yeni JS/CSS eklenmez.
+
+Akış son20 yazıdır, tam tarihsel arşiv değildir. Uzak RSS uygulamalarının zaten
+sakladığı eski öğeler geriye dönük silinemez; no-store sunucu çıktısının güncel
+kalmasını sağlar. Kapanış gerektiğinde aboneler için kontrollü geçiş gerekir.
+**Durum:** [F46 HTTP/XML/PostgreSQL ve gerçek tarayıcı kanıtı](../uygulama-kayitlari/F46-2026-10-03.md) ile doğrulandı.
 
 ## Gerektiğinde alınacak gerçek ürün/ortam bilgileri
 

@@ -66,6 +66,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <partial name="_SeoHead" model='@(ViewData["Metadata"] as DevCoreBlog.Models.Seo.PageMetadata ?? PageMetadata.Private(ViewData["Title"]?.ToString() ?? "Page", Context.Request.Path.ToUriComponent()))' />
 
+    <link rel="alternate" type="application/rss+xml" title="DevCoreBlog RSS" href="@PublicUrls.RssUrl()" />
+
     @* Google Fonts — JetBrains Mono for tech headings/UI, Inter for body text *@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -141,6 +143,9 @@
                     Home
                 </a>
                 @await Component.InvokeAsync("PublicCategoryNavigation")
+                <a id="rss-follow-link" href="@DevCoreBlog.Routing.PublicUrlBuilder.RssPath" class="block py-3 px-4 hover:bg-gray-900 hover:text-white dark:hover:bg-primary dark:hover:text-white rounded-none border-b border-gray-200 dark:border-zinc-800 transition-none font-bold text-sm text-gray-900 dark:text-zinc-200 no-underline">
+                    Follow via RSS
+                </a>
             </nav>
         </div>
 

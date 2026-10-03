@@ -12,6 +12,8 @@ public class SeoController(
     ISitemapPostReader posts,
     ISitemapCategoryReader categories,
     PublicUrlBuilder publicUrls,
+    IRssPostReader rssPosts,
+    RssDocumentWriter rssWriter,
     ILogger<SeoController> logger) : Controller
 {
     [HttpGet("sitemap.xml")]
@@ -36,6 +38,12 @@ public class SeoController(
             return SitemapOverflow();
         return File(bytes, "application/xml; charset=utf-8");
     }
+
+    [HttpGet(PublicUrlBuilder.RssPath)]
+    [HttpHead(PublicUrlBuilder.RssPath)]
+    public async Task<IActionResult> Rss(CancellationToken cancellationToken) =>
+        File(rssWriter.Write(await rssPosts.GetRssPostsAsync(cancellationToken)),
+            "application/rss+xml; charset=utf-8");
 
     [HttpGet("robots.txt")]
     [HttpHead("robots.txt")]

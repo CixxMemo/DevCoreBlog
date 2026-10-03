@@ -1,0 +1,13 @@
+{
+  "status": "passed",
+  "doc_links_exist": true,
+  "completed_rows": 47,
+  "next_phase": "F47 awaiting approval",
+  "raw_RSS_valid": true,
+  "review": "Only F46; HTTP/render/persistence separated; narrow read interface; shared visibility and trusted URL; no schema/package/secret change; keyboard/mobile/console verified",
+  "behavior_checks": 277,
+  "migration_prerequisites": 3,
+  "build_warnings": 0,
+  "build_errors": 0,
+  "git_diff_check": "passed"
+}
