@@ -1,278 +1,123 @@
-@* Publication states are computed before rendering; actions live in the editor. *@
-@model List<DevCoreBlog.Models.Admin.PostListItem>
-@using DevCoreBlog.Core.Entities
 @using DevCoreBlog.Core.Publishing
-
+@using DevCoreBlog.Core.ReadModels
+@model DevCoreBlog.Models.Admin.AdminPostIndexModel
 @{
     ViewData["Title"] = "Posts";
-    var categories = ViewBag.Categories as List<Category> ?? new List<Category>();
-    var totalPostsCount = Model.Count;
+    var returnUrl = Url.Action("Index", "AdminPost", Model.Input.RouteValues());
     var recoveryKey = TempData["SavedPostRecoveryKey"] as string;
-    // TempData restores GUID-shaped strings as Guid values after the redirect.
     var recoveryRevision = TempData["SavedPostRecoveryRevision"]?.ToString();
 }
-
 @if (recoveryKey is not null && recoveryRevision is not null)
 {
     <p id="post-recovery-receipt" role="status" class="mb-4 border-2 border-black p-3 font-mono text-xs"
        data-recovery-key="@recoveryKey" data-recovery-revision="@recoveryRevision">Post saved. Checking its local recovery copy…</p>
 }
-
-<div id="antiforgery-token" class="hidden" aria-hidden="true">
-    @Html.AntiForgeryToken()
-</div>
-
 <div class="space-y-6">
-    
-    @* ========================================================================= *@
-    @* HEADER & CONTROL TOOLBAR — Search, Category, Status Filter & Create CTA   *@
-    @* ========================================================================= *@
-    <div class="border-2 border-black bg-white p-6 space-y-4">
-        
-        @* Title Row *@
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-                <span class="font-mono text-xs font-bold text-neutral-500 uppercase tracking-widest leading-tight">
-                    // CONTENT INVENTORY & STATUS CONTROL
-                </span>
-                <h1 class="text-2xl md:text-3xl font-black uppercase tracking-tight text-black mt-1">
-                    Posts
-                </h1>
-            </div>
-            
-            @* Primary CTA Button *@
-            <a asp-action="Create" 
-               class="border-2 border-black bg-black text-white hover:bg-neutral-800 px-5 py-2.5 font-mono text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-none self-start md:self-auto">
-                <span>+</span>
-                <span>New Post</span>
-            </a>
+    <header class="border-2 border-black bg-white p-4 md:p-6">
+        <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+            <h1 class="text-2xl font-black text-black">Posts</h1>
+            <a asp-action="Create" class="border-2 border-black px-4 py-2 font-mono font-bold">+ New Post</a>
         </div>
-
-        @* Filter Toolbar (Instant Search, Category Dropdown, Status Selector) *@
-        <div class="border-t-2 border-black pt-4 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
-            
-            @* Left side: Search & Dropdowns *@
-            <div class="flex flex-wrap items-center gap-3">
-                @* Instant Text Search *@
-                <div class="relative w-full sm:w-64">
-                    <input id="post-search" 
-                           type="text" 
-                           placeholder="Search title or category..." 
-                           class="w-full border-2 border-black px-3 py-1.5 font-mono text-xs text-black placeholder-neutral-400 focus:outline-none focus:bg-neutral-50" />
-                </div>
-
-                @* Category Dropdown Filter *@
-                <select id="category-filter" 
-                        class="border-2 border-black px-3 py-1.5 font-mono text-xs bg-white text-black focus:outline-none cursor-pointer">
+        <form method="get" asp-action="Index" aria-label="Post filters" class="flex flex-wrap items-end gap-3">
+            <div class="min-w-0 w-full sm:w-64">
+                <label for="post-search" class="block text-xs font-mono mb-1">Search title or category</label>
+                <input id="post-search" name="query" value="@Model.Input.Query" maxlength="100" type="search" class="w-full border-2 border-black px-3 py-2" />
+            </div>
+            <div class="min-w-0 max-w-full">
+                <label for="category-filter" class="block text-xs font-mono mb-1">Category</label>
+                <select id="category-filter" name="categoryId" class="max-w-full border-2 border-black px-3 py-2">
                     <option value="">All Categories</option>
-                    @foreach (var cat in categories)
+                    @foreach (var category in Model.Categories)
                     {
-                        <option value="@cat.Name">@cat.Name</option>
+                        <option value="@category.Id" selected="@(Model.Input.CategoryId == category.Id)">@category.Name</option>
                     }
                 </select>
-
-                @* Status Selector *@
-                <select id="status-filter" 
-                        class="border-2 border-black px-3 py-1.5 font-mono text-xs bg-white text-black focus:outline-none cursor-pointer">
-                    <option value="all">All Statuses</option>
-                    <option value="published">Published Only</option>
-                    <option value="scheduled">Scheduled Only</option>
-                    <option value="draft">Drafts Only</option>
-                    <option value="inactive">Inactive Only</option>
+            </div>
+            <div>
+                <label for="status-filter" class="block text-xs font-mono mb-1">Publication status</label>
+                <select id="status-filter" name="status" class="border-2 border-black px-3 py-2">
+                    <option value="">All Statuses</option>
+                    @foreach (var state in Enum.GetValues<PostPublicationState>())
+                    {
+                        <option value="@state" selected="@(Model.Input.Status == state)">@state</option>
+                    }
                 </select>
             </div>
-
-            @* Right side: Filtered Count Badge *@
-            <div class="font-mono text-xs text-neutral-600 self-end md:self-auto">
-                <span id="filtered-count-badge" class="border border-black bg-neutral-100 px-2.5 py-1 font-bold">
-                    Showing @totalPostsCount of @totalPostsCount posts
-                </span>
+            <div>
+                <label for="page-size" class="block text-xs font-mono mb-1">Posts per page</label>
+                <select id="page-size" name="pageSize" class="border-2 border-black px-3 py-2">
+                    @foreach (var size in AdminPostQuery.PageSizes)
+                    {
+                        <option value="@size" selected="@(Model.Input.PageSize == size)">@size</option>
+                    }
+                </select>
             </div>
-        </div>
-    </div>
-
-    @* ========================================================================= *@
-    @* POST DATA TABLE — Tech Minimal Brutalist List View                        *@
-    @* ========================================================================= *@
-    <div class="border-2 border-black bg-white overflow-hidden">
-        @if (Model.Any())
+            <button type="submit" class="border-2 border-black bg-black text-white px-4 py-2">Apply filters</button>
+            <a asp-action="Index" class="underline px-2 py-2">Clear filters</a>
+        </form>
+        <p id="filtered-count-badge" class="font-mono text-sm mt-4">@Model.Result.TotalCount matching posts · @Model.Result.Posts.Count on this page · Page @Model.Input.Page of @Model.TotalPages</p>
+    </header>
+    <div class="border-2 border-black bg-white min-w-0">
+        @if (Model.Result.Posts.Count > 0)
         {
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse font-sans text-xs">
-                    <thead>
-                        <tr class="border-b-2 border-black bg-neutral-100 font-mono uppercase text-[11px] text-black">
-                            <th class="p-3.5">Title & Slug</th>
-                            <th class="p-3.5">Category</th>
-                            <th class="p-3.5 text-center">Status</th>
-                            <th class="p-3.5 text-right">Views</th>
-                            <th class="p-3.5">Created Date</th>
-                            <th class="p-3.5 text-right">Actions</th>
+            <div class="overflow-x-auto" tabindex="0" role="region" aria-label="Posts table, scroll horizontally for actions">
+                <table class="w-full min-w-[48rem] text-left text-xs">
+                    <thead><tr class="border-b-2 border-black bg-neutral-100 font-mono">
+                        <th class="p-3 whitespace-nowrap">Title &amp; Slug</th><th class="p-3 whitespace-nowrap">Category</th><th class="p-3 whitespace-nowrap">Status</th>
+                        <th class="p-3 whitespace-nowrap">Views</th><th class="p-3 whitespace-nowrap">Created Date</th><th class="p-3 whitespace-nowrap">Actions</th>
+                    </tr></thead>
+                    <tbody id="posts-table-body">
+                    @foreach (var item in Model.Result.Posts)
+                    {
+                        var post = item.Post;
+                        <tr id="post-row-@post.Id" data-status="@item.State.ToString().ToLowerInvariant()" class="post-row border-b border-neutral-200">
+                            <td class="p-3 min-w-48 max-w-xs break-words">
+                                <a asp-action="Edit" asp-route-id="@post.Id" asp-route-returnUrl="@returnUrl" class="font-bold underline">@post.Title</a>
+                                <span class="block font-mono text-neutral-600 break-all">/@post.Slug</span>
+                            </td>
+                            <td class="p-3 whitespace-nowrap">@post.CategoryName</td>
+                            <td class="p-3 font-mono whitespace-nowrap">@item.State</td>
+                            <td class="p-3 font-mono whitespace-nowrap">@post.ViewCount.ToString("N0")</td>
+                            <td class="p-3 whitespace-nowrap">@post.CreatedDate.ToString("dd MMM yyyy")</td>
+                            <td class="p-3">
+                                <div class="flex flex-wrap gap-2 min-w-48">
+                                    <a asp-action="Edit" asp-route-id="@post.Id" asp-route-returnUrl="@returnUrl" class="border border-black px-2 py-1 font-bold">EDIT</a>
+                                    @if (item.State == PostPublicationState.Published)
+                                    {
+                                        <a href="/post/@post.Slug" target="_blank" rel="noopener" class="live-link-btn border border-black px-2 py-1">LIVE ↗</a>
+                                    }
+                                    <form asp-action="TogglePublish" asp-route-id="@post.Id" method="post">
+                                        <input type="hidden" name="returnUrl" value="@returnUrl" />
+                                        <button type="submit" class="border border-black px-2 py-1">@(post.IsPublished ? "Save Draft" : "Enable publication")</button>
+                                    </form>
+                                    <form asp-action="Delete" asp-route-id="@post.Id" method="post" data-confirm-delete>
+                                        <button type="submit" class="border border-rose-700 text-rose-700 px-2 py-1">DEL</button>
+                                    </form>
+                                </div>
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody id="posts-table-body" class="divide-y divide-neutral-200 border-b border-black">
-                        @foreach (var item in Model)
-                        {
-                            var post = item.Post;
-                            var statusValue = item.State.ToString().ToLowerInvariant();
-                            var categoryName = post.Category?.Name ?? "Uncategorized";
-
-                            <tr class="post-row hover:bg-neutral-50 transition-none"
-                                data-title="@post.Title.ToLower()"
-                                data-category="@categoryName.ToLower()"
-                                data-status="@statusValue"
-                                id="post-row-@post.Id">
-                                
-                                @* 1. Title & Slug Preview *@
-                                <td class="p-3.5 font-bold text-black max-w-xs md:max-w-md">
-                                    <a asp-action="Edit" asp-route-id="@post.Id" class="hover:underline line-clamp-1">
-                                        @post.Title
-                                    </a>
-                                    <span class="font-mono text-[10px] text-neutral-500 block truncate mt-0.5">
-                                        /@post.Slug
-                                    </span>
-                                </td>
-
-                                @* 2. Category Badge *@
-                                <td class="p-3.5 whitespace-nowrap">
-                                    <span class="border border-black bg-neutral-100 px-2 py-0.5 font-mono text-[10px] font-bold uppercase text-black">
-                                        @categoryName
-                                    </span>
-                                </td>
-
-                                @* The state reflects activity, category, publication permission and UTC time. *@
-                                <td class="p-3.5 text-center whitespace-nowrap">
-                                    <span class="inline-block border border-black bg-neutral-100 px-2.5 py-1 font-mono text-xs font-bold">@item.State</span>
-                                </td>
-
-                                @* 4. Dedicated ViewCount Badge *@
-                                <td class="p-3.5 text-right whitespace-nowrap">
-                                    <span class="font-mono font-bold text-xs bg-neutral-100 border border-black px-2 py-1">
-                                        👁️ @post.ViewCount.ToString("N0")
-                                    </span>
-                                </td>
-
-                                @* 5. Formatted Creation Date *@
-                                <td class="p-3.5 font-mono text-[11px] text-neutral-600 whitespace-nowrap">
-                                    @post.CreatedDate.ToString("dd MMM yyyy")
-                                </td>
-
-                                @* 6. Quick Actions (Edit, Live Link, Delete) *@
-                                <td class="p-3.5 text-right whitespace-nowrap">
-                                    <div class="inline-flex items-center gap-2 font-mono text-xs">
-                                        @* Edit button *@
-                                        <a asp-action="Edit" asp-route-id="@post.Id"
-                                           class="border border-black bg-white hover:bg-black hover:text-white px-2.5 py-1 font-bold inline-block transition-none">
-                                            EDIT
-                                        </a>
-
-                                        @if (item.State == PostPublicationState.Published)
-                                        {
-                                            <a href="/post/@post.Slug" target="_blank"
-                                               class="live-link-btn border border-black bg-neutral-100 px-2.5 py-1 font-bold inline-block"
-                                               title="Open article in public view">LIVE ↗</a>
-                                        }
-
-                                        @* Delete form *@
-                                        <form asp-action="Delete" asp-route-id="@post.Id" method="post" class="inline m-0 p-0"
-                                              onsubmit="return confirm('Are you sure you want to permanently delete: \'@post.Title\'?');">
-                                            <button type="submit" 
-                                                    class="border border-rose-700 text-rose-700 bg-white hover:bg-rose-700 hover:text-white px-2.5 py-1 font-bold inline-block transition-none">
-                                                DEL
-                                            </button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-                        }
+                    }
                     </tbody>
                 </table>
-            </div>
-
-            @* Empty Filter Results Message *@
-            <div id="no-matching-posts" class="hidden p-8 text-center font-mono text-xs text-neutral-500">
-                // NO POSTS MATCHED YOUR SEARCH OR FILTER CRITERIA.
             </div>
         }
         else
         {
-            @* Zero Posts in Database State *@
-            <div class="p-12 text-center space-y-4">
-                <p class="font-mono text-xs text-neutral-500">// NO ARTICLES HAVE BEEN CREATED YET.</p>
-                <a asp-action="Create" 
-                   class="inline-block border-2 border-black bg-black text-white px-6 py-2.5 font-mono text-xs font-bold uppercase tracking-wider">
-                    Create Your First Post →
-                </a>
-            </div>
+            <p class="p-6 font-mono">No posts match these filters. Try another term, category, or status.</p>
         }
     </div>
+    <nav aria-label="Post pages" class="flex flex-wrap gap-4 items-center justify-between font-mono text-sm">
+        @if (Model.Input.Page > 1)
+        { <a href="@Url.Action("Index", Model.Input.RouteValues(Model.Input.Page - 1))" class="underline">&lt; Previous</a> }
+        <span>Page @Model.Input.Page of @Model.TotalPages</span>
+        @if (Model.Input.Page < Model.TotalPages)
+        { <a href="@Url.Action("Index", Model.Input.RouteValues(Model.Input.Page + 1))" class="underline">Next &gt;</a> }
+    </nav>
+    @if (Model.Result.TotalCount > AdminPostQuery.MaximumPage * Model.Input.PageSize)
+    { <p>Only the first @AdminPostQuery.MaximumPage pages are available. Refine your filters.</p> }
 </div>
-
-@* ============================================================================= *@
-@* CLIENT-SIDE ENGINE — Instant Search, Filter & AJAX Publish Toggle              *@
-@* ============================================================================= *@
 @section Scripts {
     @if (recoveryKey is not null && recoveryRevision is not null)
-    {
-        <script type="module" src="~/js/post-recovery-complete.js" asp-append-version="true"></script>
-    }
-    <script>
-        // =========================================================================
-        // Client-Side Search & Filter Engine
-        // Evaluates search queries, category selections, and status filters instantly.
-        // =========================================================================
-        const searchInput = document.getElementById('post-search');
-        const categoryFilter = document.getElementById('category-filter');
-        const statusFilter = document.getElementById('status-filter');
-        const rows = document.querySelectorAll('.post-row');
-        const countBadge = document.getElementById('filtered-count-badge');
-        const noMatchingBox = document.getElementById('no-matching-posts');
-        const totalCount = @totalPostsCount;
-
-        function applyFilters() {
-            if (!rows.length) return;
-
-            const query = (searchInput?.value || '').toLowerCase().trim();
-            const selectedCategory = (categoryFilter?.value || '').toLowerCase().trim();
-            const selectedStatus = (statusFilter?.value || 'all').toLowerCase();
-
-            let visibleCount = 0;
-
-            rows.forEach(row => {
-                const title = row.getAttribute('data-title') || '';
-                const category = row.getAttribute('data-category') || '';
-                const status = row.getAttribute('data-status') || '';
-
-                // Matching conditions
-                const matchesQuery = !query || title.includes(query) || category.includes(query);
-                const matchesCategory = !selectedCategory || category === selectedCategory;
-                const matchesStatus = (selectedStatus === 'all') || (status === selectedStatus);
-
-                if (matchesQuery && matchesCategory && matchesStatus) {
-                    row.style.display = '';
-                    visibleCount++;
-                } else {
-                    row.style.display = 'none';
-                }
-            });
-
-            // Update badge text
-            if (countBadge) {
-                countBadge.textContent = `Showing ${visibleCount} of ${totalCount} posts`;
-            }
-
-            // Show or hide "No matching posts" banner
-            if (noMatchingBox) {
-                if (visibleCount === 0 && totalCount > 0) {
-                    noMatchingBox.classList.remove('hidden');
-                } else {
-                    noMatchingBox.classList.add('hidden');
-                }
-            }
-        }
-
-        // Attach event listeners
-        if (searchInput) searchInput.addEventListener('input', applyFilters);
-        if (categoryFilter) categoryFilter.addEventListener('change', applyFilters);
-        if (statusFilter) statusFilter.addEventListener('change', applyFilters);
-    </script>
+    { <script type="module" src="~/js/post-recovery-complete.js" asp-append-version="true"></script> }
+    <script type="module" src="~/js/admin-post-list.js" asp-append-version="true"></script>
 }

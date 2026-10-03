@@ -29,6 +29,7 @@ public interface IPostRepository
         DateTime utcNow, CancellationToken cancellationToken = default);
     Task<int?> IncrementVisibleViewCountAsync(
         int id, DateTime utcNow, CancellationToken cancellationToken = default);
+    Task<AdminPostPage> GetAdminPostsPagedAsync(AdminPostQuery query, DateTime utcNow, CancellationToken cancellationToken = default);
     Task<IEnumerable<Post>> GetAllPostsWithCategoryAsync();
     Task<Post?> GetByIdAsync(int id);
     Task<bool> SlugExistsAsync(string slug, CancellationToken cancellationToken);

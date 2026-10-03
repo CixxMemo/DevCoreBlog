@@ -1,0 +1,18 @@
+{
+  "baseline": true,
+  "checks": {
+    "only_one_page": false,
+    "all_filters_and_total": false,
+    "no_overlap_and_stable_secondary_id": false,
+    "body_not_transferred": true,
+    "invalid_query_xxxxx_400": false,
+    "invalid_page_0_400": false,
+    "invalid_page_1001_400": false,
+    "invalid_page_bad_400": false,
+    "invalid_pageSize_999_400": false,
+    "invalid_categoryId_0_400": false,
+    "invalid_status_Bogus_400": false,
+    "invalid_status_99_400": false,
+    "external_edit_return_rejected": false
+  }
+}

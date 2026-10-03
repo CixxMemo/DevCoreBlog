@@ -57,7 +57,7 @@ def main() -> int:
     totals, category_count = result.stdout.strip().splitlines()
     total_posts, published_posts, draft_posts, total_views = map(int, totals.split("|"))
     category_count = int(category_count)
-    sidebar = re.search(r'<aside[^>]*id="main-sidebar".*?<nav[^>]*>(.*?)</nav>',
+    sidebar = re.search(r'<nav[^>]*aria-label="Main navigation"[^>]*>(.*?)</nav>',
                         home, re.DOTALL)
     navigation = sidebar.group(1) if sidebar else ""
 
@@ -71,7 +71,7 @@ def main() -> int:
                     ["haberler", "kesfet", "vibe-coding", "ai", "felsefe"])
         ),
         "home_topics_only_active_categories": (
-            "Featured Topics" in home and
+            re.search(r'<h3[^>]*>\s*Topics\s*</h3>', home) is not None and
             not any(f'href="/kategori/{slug}"' in home for slug in
                     ["f01-inactive", "haberler", "kesfet", "vibe-coding", "ai", "felsefe"])
         ),
@@ -79,7 +79,7 @@ def main() -> int:
             dashboard_status == 200 and automation_status == 200,
         "dashboard_metrics": all([
             metric(dashboard, "Total Posts", total_posts),
-            metric(dashboard, "Published", published_posts),
+            metric(dashboard, "Publication enabled", published_posts),
             metric(dashboard, "Drafts", draft_posts),
             metric(dashboard, "Total Views", total_views),
             metric(dashboard, "Categories", category_count),

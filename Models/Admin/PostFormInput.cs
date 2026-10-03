@@ -11,6 +11,9 @@ namespace DevCoreBlog.Models.Admin;
 /// </summary>
 public sealed class PostFormInput
 {
+    [BindNever]
+    public string? ReturnUrl { get; set; }
+
     public int Id { get; set; }
 
     public long EditVersion { get; set; }

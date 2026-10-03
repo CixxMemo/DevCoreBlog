@@ -66,22 +66,18 @@ public class AdminPostController : Controller
         _timeProvider = timeProvider;
     }
 
-    // -------------------------------------------------------------------------
-    // INDEX — List all posts
-    // -------------------------------------------------------------------------
-    // GET: /AdminPost
-    // Fetches all posts ordered by creation date (newest first),
-    // including their related Category for display in the table.
-    public async Task<IActionResult> Index()
+    // Filter and paginate in persistence; clamp stale pages after edits without losing context.
+    [HttpGet]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
+    public async Task<IActionResult> Index([FromQuery] AdminPostListInput input, CancellationToken cancellationToken)
     {
-        // Fetch all categories for the client-side filter dropdown
-        ViewBag.Categories = await _categoryService.GetAllCategoriesAsync();
-
-        // Delegate to service layer — business logic is in PostService
-        var posts = await _postService.GetAllPostsAsync();
-        var utcNow = _timeProvider.GetUtcNow().UtcDateTime;
-        return View(posts.Select(post => new PostListItem(post,
-            PostPublication.StateAt(post, post.Category?.IsActive == true, utcNow))).ToList());
+        if (!ModelState.IsValid) return BadRequest("Invalid inventory filters. Use page 1–1000 and size 10, 25, or 50.");
+        var result = await _postService.GetAdminPostsPagedAsync(input.ToQuery(), cancellationToken);
+        var categories = (await _categoryService.GetAllCategoriesAsync()).ToList();
+        if (input.CategoryId is { } id && !categories.Any(category => category.Id == id)) return NotFound();
+        var model = new AdminPostIndexModel(result, input, categories);
+        if (input.Page > model.TotalPages) return RedirectToAction(nameof(Index), input.RouteValues(model.TotalPages));
+        return View(model);
     }
 
     // -------------------------------------------------------------------------
@@ -90,8 +86,9 @@ public class AdminPostController : Controller
     // POST: /AdminPost/TogglePublish/5
     // Toggles the IsPublished boolean flag on the post and returns JSON.
     [HttpPost]
-    public async Task<IActionResult> TogglePublish(int id)
+    public async Task<IActionResult> TogglePublish(int id, string? returnUrl = null)
     {
+        if (!IsSafeListReturnUrl(returnUrl)) return BadRequest("Invalid return URL.");
         var post = await _postService.GetPostByIdAsync(id);
         if (post == null)
         {
@@ -112,6 +109,8 @@ public class AdminPostController : Controller
                 errors = updateResult.Errors
             });
         }
+
+        if (returnUrl is not null) return LocalRedirect(returnUrl);
 
         return Json(new
         {
@@ -232,8 +231,9 @@ public class AdminPostController : Controller
     // GET: /AdminPost/Edit/5
     // Finds the post by Id and populates the category dropdown with the
     // current category pre-selected.
-    public async Task<IActionResult> Edit(int id)
+    public async Task<IActionResult> Edit(int id, string? returnUrl = null)
     {
+        if (!IsSafeListReturnUrl(returnUrl)) return BadRequest("Invalid return URL.");
         // Get post from service layer
         var post = await _postService.GetPostByIdAsync(id);
         if (post == null)
@@ -242,6 +242,7 @@ public class AdminPostController : Controller
         // Get all categories for the dropdown
         var categoryIsActive = await PopulateCategorySelectAsync(post.CategoryId);
         var input = MapToInput(post);
+        input.ReturnUrl = returnUrl;
         input.PublicationState = PostPublication.StateAt(post, categoryIsActive,
             _timeProvider.GetUtcNow().UtcDateTime);
         return View(input);
@@ -261,8 +262,11 @@ public class AdminPostController : Controller
         [Bind("Id,EditVersion,Title,Content,CategoryId,Summary,Excerpt,SaveAction,IsActive,PublishDate")] PostFormInput input,
         IFormFile? thumbnailFile,
         Guid? recoveryRevision,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        string? returnUrl = null)
     {
+        if (!IsSafeListReturnUrl(returnUrl)) return BadRequest("Invalid return URL.");
+        input.ReturnUrl = returnUrl;
         // Safety check: URL Id must match the form's hidden Id field
         if (id != input.Id)
             return NotFound();
@@ -325,7 +329,7 @@ public class AdminPostController : Controller
             }
             if (updateResult.IsValid)
             {
-                return RedirectAfterSave($"devcore_editor_draft_edit_{id}", recoveryRevision);
+                return RedirectAfterSave($"devcore_editor_draft_edit_{id}", recoveryRevision, returnUrl);
             }
         }
 
@@ -385,14 +389,25 @@ public class AdminPostController : Controller
 
     // Emit a protected, one-use receipt only after persistence reports success.
     // The browser compares the exact local revision before clearing recovery text.
-    private RedirectToActionResult RedirectAfterSave(string recoveryKey, Guid? revision)
+    private IActionResult RedirectAfterSave(string recoveryKey, Guid? revision, string? returnUrl = null)
     {
         if (revision is { } savedRevision && savedRevision != Guid.Empty)
         {
             TempData["SavedPostRecoveryKey"] = recoveryKey;
             TempData["SavedPostRecoveryRevision"] = savedRevision.ToString("D");
         }
+        if (returnUrl is not null) return LocalRedirect(returnUrl);
         return RedirectToAction(nameof(Index));
+    }
+
+    // Only a bounded local inventory URL may influence navigation; reject before side effects.
+    private bool IsSafeListReturnUrl(string? returnUrl)
+    {
+        if (returnUrl is null) return true;
+        if (returnUrl.Length > 2048 || !Url.IsLocalUrl(returnUrl) || returnUrl.Any(char.IsControl)) return false;
+        var path = returnUrl.Split('?')[0];
+        return path.Equals("/AdminPost", StringComparison.OrdinalIgnoreCase) ||
+            path.Equals("/AdminPost/", StringComparison.OrdinalIgnoreCase);
     }
 
     private async Task<bool> TrySetThumbnailAsync(

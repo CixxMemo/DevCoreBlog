@@ -1,6 +1,6 @@
 # Güncel mimari ve çalışma kararları
 
-**Güncelleme:** 2 Ekim 2026 — F40 sınırlı okuyucu sorguları.
+**Güncelleme:** 3 Ekim 2026 — F41 sınırlı yönetici envanteri ve dönüş bağlamı.
 
 Kullanıcı eski kuralların yenilenmesini, SOLID/temiz kod/güvenlik sınırlarının güçlendirilmesini, eski planların kaldırılabilmesini ve yeni geliştirme planının buna uyarlanmasını açıkça istedi. Aşağıdaki teknik seçimler bu yetki kapsamında mevcut ürün yapısını koruyarak yapıldı. Kullanıcının ayrıca eski A/B seçeneklerinden birini seçtiği iddia edilmiyor; o karar ağacı yeni kurallarla kaldırıldı.
 
@@ -167,6 +167,30 @@ alınmaz; varsayılan ana sayfa/kategori cache'inin sınırlı anahtarları, mut
 invalidation'ı ve zamanlı yayın sınırı korunur. 1000'den fazla sayfa varsa UI
 filtreyi daraltmayı ister. İçerik arama/Count maliyeti F48 ölçümüne açıktır.
 **Durum:** F40 gerçek PostgreSQL/HTTP, SQL ve tarayıcı kanıtıyla doğrulandı.
+
+## D15 — Yönetici envanteri ve güvenli dönüş bağlamı
+
+F41 başlık/kategori adı aramasını, kategori ID ve yayın durumunu GET filtreleri
+olarak sunucuda işler. Arama 100 karakter; page 1–1000; size 10/25/50, varsayılan25.
+Count, tüm filtreler, CreatedDate DESC/Id ASC ve Skip/Take DB'de çalışır.
+Liste Content/medya/summary/entity grafiği taşımaz; yalnız kullanılan kolonlar ve
+ortak domain durum hesabının gereken skaler girdileri döner. HTTP yanında
+service/repository de sınırları doğrular. Geçersiz input400; bilinmeyen kategori404.
+Bulunmayan/stale sayfa aynı filtrelerle son geçerli sayfaya, boş sonuç ilk sayfaya döner.
+
+F32 durum sözlüğü tek skaler expression'da tutulur; aynı expression SQL'e inline
+edilir ve aynı delegate gösterimde değerlendirilir. Scheduled gelecekteki UTC
+PublishDate'e bağlıdır; pasif post/kategori Inactive'tir. Sorgu ve etikette aynı
+TimeProvider anı kullanılır. Public VisibleAt SQL sınırı değişmedi.
+
+Liste edit ve native antiforgery POST toggle'a kanonik filtreli returnUrl verir.
+Yalnız yerel /AdminPost veya /AdminPost/ yolu kabul edilir; URL2048 karakterle
+sınırlıdır, control karakter/dış URL/başka local action işlemden önce400 olur.
+Save/Cancel/Reload filtre bağlamını korur. Eski returnUrl'siz toggle JSON yanıtı
+ve F31 doğrulanmış kayıt makbuzu korunur. Liste no-store; private cache eklenmez.
+Delete confirmation kullanıcı başlığını executable inline event'e eklemez.
+Yeni bağımlılık/şema/API/tablolu framework/toplu mutation yok.
+**Durum:** [F41 gerçek PostgreSQL/HTTP/SQL ve tarayıcı kanıtı](../uygulama-kayitlari/F41-2026-10-03.md) ile doğrulandı.
 
 ## Gerektiğinde alınacak gerçek ürün/ortam bilgileri
 

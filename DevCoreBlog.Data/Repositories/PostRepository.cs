@@ -190,6 +190,31 @@ public class PostRepository : GenericRepository<Post>, IPostRepository
                 post.ThumbnailUrl, post.PublishDate, post.Category.Name))
             .ToListAsync(cancellationToken);
 
+    // Inventory filters/count/order/paging all execute before materializing a narrow projection.
+    public async Task<AdminPostPage> GetAdminPostsPagedAsync(AdminPostQuery input, DateTime utcNow,
+        CancellationToken cancellationToken = default)
+    {
+        input.Validate();
+        var query = _context.Posts.AsNoTracking();
+        if (input.CategoryId is { } categoryId) query = query.Where(post => post.CategoryId == categoryId);
+        if (input.Status is { } state) query = query.Where(PostPublication.InStateAt(state, utcNow));
+        if (!string.IsNullOrWhiteSpace(input.Query))
+        {
+            var literal = input.Query.Trim().Replace("\\", "\\\\").Replace("%", "\\%").Replace("_", "\\_");
+            var pattern = $"%{literal}%";
+            query = query.Where(post => EF.Functions.ILike(post.Title, pattern, "\\") ||
+                EF.Functions.ILike(post.Category.Name, pattern, "\\"));
+        }
+        var count = await query.CountAsync(cancellationToken);
+        if (input.Page > 1 && (input.Page - 1) * input.PageSize >= count) return new AdminPostPage([], count);
+        var posts = await query.OrderByDescending(post => post.CreatedDate).ThenBy(post => post.Id)
+            .Skip((input.Page - 1) * input.PageSize).Take(input.PageSize)
+            .Select(post => new AdminPostSummary(post.Id, post.Title, post.Slug, post.CategoryId, post.Category.Name,
+                post.IsActive, post.Category.IsActive, post.IsPublished, post.PublishDate, post.CreatedDate, post.ViewCount))
+            .ToListAsync(cancellationToken);
+        return new AdminPostPage(posts.AsReadOnly(), count);
+    }
+
     // Administrative queries intentionally include drafts, future and inactive rows.
     public async Task<IEnumerable<Post>> GetAllPostsWithCategoryAsync() =>
         await _context.Posts

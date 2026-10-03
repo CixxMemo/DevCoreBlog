@@ -1,0 +1,33 @@
+SELECT count(*)::int
+      FROM "Posts" AS p
+      INNER JOIN "Categories" AS c ON p."CategoryId" = c."Id"
+      WHERE p."CategoryId" = @categoryId AND CASE
+          WHEN NOT (p."IsActive") OR NOT (c."IsActive") THEN 3
+          WHEN NOT (p."IsPublished") THEN 0
+          WHEN p."PublishDate" > TIMESTAMPTZ '2026-10-03T10:10:22.845942Z' THEN 1
+          ELSE 2
+      END = 2 AND (p."Title" ILIKE @pattern ESCAPE '\' OR c."Name" ILIKE @pattern ESCAPE '\')
+
+SELECT p."Id", p."Title", p."Slug", p."CategoryId", c."Name", p."IsActive", c."IsActive", p."IsPublished", p."PublishDate", p."CreatedDate", p."ViewCount"
+      FROM "Posts" AS p
+      INNER JOIN "Categories" AS c ON p."CategoryId" = c."Id"
+      WHERE p."CategoryId" = @categoryId AND CASE
+          WHEN NOT (p."IsActive") OR NOT (c."IsActive") THEN 3
+          WHEN NOT (p."IsPublished") THEN 0
+          WHEN p."PublishDate" > TIMESTAMPTZ '2026-10-03T10:10:22.845942Z' THEN 1
+          ELSE 2
+      END = 2 AND (p."Title" ILIKE @pattern ESCAPE '\' OR c."Name" ILIKE @pattern ESCAPE '\')
+      ORDER BY p."CreatedDate" DESC, p."Id"
+      LIMIT @p6 OFFSET @p
+
+SELECT p."Id", p."Title", p."Slug", p."CategoryId", c."Name", p."IsActive", c."IsActive", p."IsPublished", p."PublishDate", p."CreatedDate", p."ViewCount"
+      FROM "Posts" AS p
+      INNER JOIN "Categories" AS c ON p."CategoryId" = c."Id"
+      WHERE p."CategoryId" = @categoryId AND CASE
+          WHEN NOT (p."IsActive") OR NOT (c."IsActive") THEN 3
+          WHEN NOT (p."IsPublished") THEN 0
+          WHEN p."PublishDate" > TIMESTAMPTZ '2026-10-03T10:10:22.869891Z' THEN 1
+          ELSE 2
+      END = 2 AND (p."Title" ILIKE @pattern ESCAPE '\' OR c."Name" ILIKE @pattern ESCAPE '\')
+      ORDER BY p."CreatedDate" DESC, p."Id"
+      LIMIT @p OFFSET @p

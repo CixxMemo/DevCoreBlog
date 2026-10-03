@@ -225,6 +225,8 @@ Bu bölüm bir çalıştırma emri değildir. Her seferinde yalnızca **bir faz 
 
 **İzlenebilirlik:** Rapor §8 yönetici ve §10.
 
+**Uygulanan karar:** [D15](KARARLAR.md#d15--yönetici-envanteri-ve-güvenli-dönüş-bağlamı): 100 karakter, page1–1000/size10/25/50, ortak domain durum expression'ı ve dar yerel dönüş URL'si. [F41 kanıtı](../uygulama-kayitlari/F41-2026-10-03.md).
+
 **Durma noktası:** Kanıtı uygulama kaydına ve DURUM.md'ye işle; sonraki fazı başlatma.
 
 ---

@@ -67,6 +67,7 @@ public interface IPostService
     // -------------------------------------------------------------------------
 
     // Get all posts (including unpublished) for admin listing
+    Task<AdminPostListPage> GetAdminPostsPagedAsync(AdminPostQuery query, CancellationToken cancellationToken = default);
     Task<IEnumerable<Post>> GetAllPostsAsync();
 
     // Get a single post by its Id (for admin edit form)

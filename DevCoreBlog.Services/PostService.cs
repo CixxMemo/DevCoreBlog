@@ -1,3 +1,4 @@
+using DevCoreBlog.Core.Publishing;
 using DevCoreBlog.Core.Entities;
 using DevCoreBlog.Core.ReadModels;
 using DevCoreBlog.Core.Interfaces;
@@ -133,6 +134,17 @@ public class PostService : IPostService, IPublicationSchedule, IWebhookPostServi
     // -------------------------------------------------------------------------
     // ADMIN METHODS (for admin panel CRUD operations)
     // -------------------------------------------------------------------------
+
+    // Capture the same UTC instant for SQL status filtering and displayed state.
+    public async Task<AdminPostListPage> GetAdminPostsPagedAsync(AdminPostQuery query, CancellationToken cancellationToken = default)
+    {
+        query.Validate();
+        var now = _timeProvider.GetUtcNow().UtcDateTime;
+        var page = await _postRepository.GetAdminPostsPagedAsync(query with { Query = query.Query?.Trim() }, now, cancellationToken);
+        var rows = page.Posts.Select(post => new AdminPostListItem(post,
+            PostPublication.StateAt(post.IsActive, post.CategoryIsActive, post.IsPublished, post.PublishDate, now))).ToList().AsReadOnly();
+        return new AdminPostListPage(rows, page.TotalCount);
+    }
 
     // Get all posts (including unpublished) for admin listing
     // Business rule: Return all posts regardless of IsActive status

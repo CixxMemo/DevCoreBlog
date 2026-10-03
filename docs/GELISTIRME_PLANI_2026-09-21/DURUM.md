@@ -1,10 +1,10 @@
 # İlerleme çizelgesi
 
-- **Son kayıt:** 2 Ekim 2026 — F40 okuyucu sorgu sınırları, SQL sayfalama, filtre bağlamı ve collation kabulü doğrulandı.
-- **Tamamlanan plan fazı:** 41/58 (F00–F40).
-- **Tamamlanan uygulama kodu fazı:** 39.
+- **Son kayıt:** 3 Ekim 2026 — F41 yönetici DB sayfalama, ortak durum filtresi ve güvenli dönüş bağlamı doğrulandı.
+- **Tamamlanan plan fazı:** 42/58 (F00–F41).
+- **Tamamlanan uygulama kodu fazı:** 40.
 - **Aktif faz:** Yok.
-- **Sıradaki faz:** F41 — kullanıcı onayı bekleniyor.
+- **Sıradaki faz:** F42 — kullanıcı onayı bekleniyor.
 - **Uygulama kodu:** F02–F09 güvenlik fazları tamamlandı. F10 migration zincirini doğruladı. F11–F13 form/içerik güvenliğini tamamladı. F14 kategori update'ini güvenli alanlara daralttı. F15 kategori silmesini DB constraint'i ve yarış yönetimiyle veri kaybına karşı korudu. F16 yayın zamanını açık saat dilimiyle UTC'ye bağladı. F17 public görünürlüğü tek kurala bağladı. F18 tek süreçli liste cache'ini yayın sınırı ve mutation invalidation'ıyla doğruladı. F19 düzenlemede kayıtlı slug'ı korudu. F20 benzersiz slug indekslerini ve geçmiş çakışma göçünü ekledi. F21 yalnızca uygun public GET'leri atomik sayıyor. F22 eski edit sekmelerinin içerik ezmesini sürüm karşılaştırmasıyla önlüyor. F23 hata akışında gerçek 404/500 ve JSON durumlarını koruyor. F24 servislerin somut Data repository bağımlılığını Core sözleşmelerine taşıdı. F25 dashboard sorgularını servis/repository sınırına ve kategori menülerini asenkron bileşene taşıdı. F26 güvenli Markdown renderer'ını Services'e taşıyıp Cloudinary istemcisini composition root'tan enjekte etti. F27 webhook'u secret-önce, sınırlı JSON kabulüne ve açık yayın yetkisine bağladı. F28 anahtarlı gönderimleri kalıcı işlem kaydı ve tek transaction ile tekrar korumasına bağladı. F29 portföyü dar DB projection, kararlı sıralama ve yapılandırılmış site URL'sine bağladı. F30 Create/Edit ortak formunu ve editör davranışlarını tek partial/modülde topladı. F31 Create/Edit kurtarmayı yazı kimliği, açık Restore/Discard, sekme koordinasyonu ve doğrulanmış başarılı kayıt bilgisine bağladı. F32 açık kayıt eylemlerini, normal Save korumasını ve doğru yayın durumunu uyguladı. F33 aynı güvenli render sınırından, DB yazısı/sayaç/yayın yan etkisi olmayan özel HTML önizleme üretiyor. F34 yönetim panelini mobil drawer, kontrollü tablo kaydırma ve dar ekranda kullanılabilir form/editörle düzenledi; gerçek %200 Chrome yakınlaştırmasında yatay taşma olmadığını doğruladı. F35 Tailwind CLI/lockfile ile yerel CSS ve sabit lisanslı editör/Prism varlıklarını build/publish akışına bağladı.
 
 ## Kullanım
@@ -61,7 +61,7 @@
 | [x] | F38 | Ana sayfada içerik keşfini gerçek veriye bağla | TAMAMLANDI — KOD | [F38 kanıtı](../uygulama-kayitlari/F38-2026-10-02.md) |
 | [x] | F39 | Yazı okuma deneyimini tamamla | TAMAMLANDI — KOD | [F39 kanıtı](../uygulama-kayitlari/F39-2026-10-02.md) |
 | [x] | F40 | Okuyucu aramasını ve sayfalamayı sınırlandır | TAMAMLANDI — KOD | [F40 kanıtı](../uygulama-kayitlari/F40-2026-10-02.md) |
-| [ ] | F41 | Yönetici yazı listesini sunucuda sayfala | BAŞLAMADI | — |
+| [x] | F41 | Yönetici yazı listesini sunucuda sayfala | TAMAMLANDI — KOD | [F41 kanıtı](../uygulama-kayitlari/F41-2026-10-03.md) |
 | [ ] | F42 | Arayüz dili ve tarih biçimini tutarlı yap | BAŞLAMADI | — |
 | [ ] | F43 | Kalıcı ve kanonik URL sözleşmesini uygula | BAŞLAMADI | — |
 | [ ] | F44 | Sayfa meta verilerini ve makale şemasını ekle | BAŞLAMADI | — |
@@ -81,10 +81,10 @@
 
 ## Son agent teslimi
 
-- Bu turdaki faz: F40 — arama100 karakter, page 1–1000, size 9/18/27; tutarlı400/404, DB Count/kararlı sıralama/Skip/Take/dar kart projection, filtre ve boş sonuç bağlamı.
-- Kontroller: Build 0 uyarı/0 hata; F40 HTTP/SQL/locale52, F17/F12 direct/F29 toplam 50, F35 asset30, F33 preview30, F18 cache7 ve ayrı workflow F11/F12 HTTP14 geçti. Gerçek IAB masaüstü954 ve mobil390px, açık/koyu, native seçim/Enter ve Escape/odak geri dönüşü doğrulandı. Yatay taşma/console warn-error yok. [Kanıt](../uygulama-kayitlari/F40-2026-10-02.md).
-- Sınırlama: PostgreSQL 16.14/C locale'ında İSTANBUL eşleşirken istanbul eşleşmedi; Türkçe harf katlama ortamdan bağımsız garanti edilmiyor. Canlı collation/yük ve tüm cihazlar test edilmedi. İçerik ILIKE/Count ölçümü F48'de; genel tarih biçimi F42'de. Cache testinin F38'de görünmeyen özet varsayımı görünür başlıkla düzeltildi, assertion'lar korundu. Geçici ortamlar kapatıldı; bin/obj kaynak diff'ine eklenmedi.
-- Aktif faz: Yok. Sıradaki tek faz: F41 — Yönetici yazı listesini sunucuda sayfala.
-- Kullanıcıdan gereken: F41 için açık onay.
+- Bu turdaki faz: F41 — yönetici envanterinde 100 karakter arama, page1–1000/size10/25/50; DB filtre/Count/kararlı sıra/dar projection; ortak Draft/Scheduled/Published/Inactive kuralı; edit/toggle/Cancel/Reload için güvenli filtreli dönüş.
+- Kontroller: Son build0 uyarı/0 hata; F41 HTTP/SQL45, F17/F12 direct25, güncellenmiş F25 dashboard/navigation8, F32 yayın eylemi22, F33 preview30 ve F35 asset30 geçti. Ayrı genel form workflow F11/F12 HTTP14 geçti. Gerçek IAB masaüstü1280 ve mobil390px; native filtre/Enter, tablo ArrowRight (scrollLeft40), edit/save receipt, toggle, Cancel ve Escape/odak geri dönüşü doğrulandı. Sayfa yatay taşması/console warn-error yok. [Kanıt](../uygulama-kayitlari/F41-2026-10-03.md).
+- Sınırlama: DB test PostgreSQL16.14/C; locale'a bağlı arama değişmedi. Offset pagination eşzamanlı yeni kayıtlarla kayabilir; production yükü/collation/tüm cihazlar/ekran okuyucu ölçülmedi. Genel tarih biçimi F42, performans F48'de. Eski F25 probe'ın üç markup/etiket varsayımı güncel kaynakla düzeltildi; assertion'lar korundu. Geçici ortamlar kapatıldı; bin/obj kaynak diff'ine eklenmedi.
+- Aktif faz: Yok. Sıradaki tek faz: F42 — Arayüz dili ve tarih biçimini tutarlı yap.
+- Kullanıcıdan gereken: F42 için açık onay.
 
 [Ana plan](/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/docs/GELISTIRME_PLANI_2026-09-21/README.md) · [Hazır mesajlar](/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/docs/GELISTIRME_PLANI_2026-09-21/AGENT_PROMPTLARI.md)
