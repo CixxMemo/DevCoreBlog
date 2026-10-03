@@ -192,6 +192,23 @@ Delete confirmation kullanıcı başlığını executable inline event'e eklemez
 Yeni bağımlılık/şema/API/tablolu framework/toplu mutation yok.
 **Durum:** [F41 gerçek PostgreSQL/HTTP/SQL ve tarayıcı kanıtı](../uygulama-kayitlari/F41-2026-10-03.md) ile doğrulandı.
 
+## D16 — İngilizce arayüz tarihi ve açık site saat dilimi
+
+**Karar:** F42 görünür yayın/oluşturma tarihleri Web sunumundaki `SiteDateFormatter`
+ile mevcut F16 `PublicationTimeZone` dönüşümünden geçer. Kültür `en-US`, biçim
+`MMM dd, yyyy` olur. Aynı kart partial'ı ana sayfa, arama, kategori ve ilgili
+makalelere uygulanır; detay ve yönetici listesi aynı biçimleyiciyi kullanır.
+Kurtarma kaydının UTC `savedAt` değeri browser locale/cihaz saatine bırakılmaz;
+aynı tarih yanında `HH:mm (site timezone)` gösterilir. Windows saat dilimi adı
+browser için IANA adına çevrilir. UTC saklama, yayın kararı, formun
+`yyyy-MM-ddTHH:mm:ss` değeri, ISO time attribute ve API sözleşmeleri korunur.
+
+Layout'lar mevcut `lang="en"` değerini korur. Makale dili için kayıtlı alan
+yoktur; içerik çevrilmez ve makaleye tahmini dil eklenmez. Yönetici kullanıcı
+adı kültüre bağlı büyük harfe çevrilmeden gösterilir. Yeni localization
+altyapısı, paket, şema veya URL değişikliği yoktur.
+**Durum:** [F42 kültür/HTTP/PostgreSQL/tarayıcı kanıtı](../uygulama-kayitlari/F42-2026-10-03.md) ile doğrulandı.
+
 ## Gerektiğinde alınacak gerçek ürün/ortam bilgileri
 
 Bunlar şimdi topluca sorulmaz. Mevcut kaynaktan doğrulanamıyorsa ilgili fazda sorulur; önceki tercih tekrar sorulmaz.

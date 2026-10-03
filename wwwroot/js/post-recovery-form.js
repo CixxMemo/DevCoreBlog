@@ -1,3 +1,4 @@
+import { formatRecoveryDate } from './site-date.js';
 import { createRecoverySession, recoveryKey, fieldNames } from './post-recovery.js';
 
 // Bind the persistence contract to one MVC form, including the textarea fallback.
@@ -33,8 +34,7 @@ export function initializeRecoveryForm({ form, setMarkdown, updatePreview }) {
             message.textContent = kind === 'conflict'
                 ? 'Another tab changed the recovery copy. Your current text is unchanged. Choose Restore or Discard before local saving resumes.'
                 : 'A different recovery copy is available. Your current text is unchanged.';
-            timestamp.textContent = record?.savedAt && Number.isFinite(Date.parse(record.savedAt))
-                ? new Date(record.savedAt).toLocaleString() : 'unknown time';
+            timestamp.textContent = formatRecoveryDate(record?.savedAt, form.dataset.siteTimeZone);
             restore.disabled = !record;
             status.textContent = 'LOCAL SAVE PAUSED';
             return;

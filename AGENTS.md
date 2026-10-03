@@ -129,7 +129,7 @@ SOLID “her sınıfa interface”, “her metoda factory” veya puan uğruna i
 - Razor partial/ViewComponent ve küçük yerel JS modülleri kullan. Büyük kopya Create/Edit script'leri, inline iş mantığı ve global mutable UI durumu ekleme.
 - Tech Minimal korunur: keskin kenar, yüksek kontrast, okunur font/boşluk. Neon gradient, glass/backdrop-blur, shadow-2xl ve rounded-3xl benzeri aşırı dekoratif stil yasaktır.
 - Responsive/klavye erişimi zorunlu: semantik HTML, label/validation ilişkisi, görünür focus, drawer Escape/odak geri dönüşü, mobil taşma kontrolü. Renk tek durum göstergesi olamaz.
-- UI/validation İngilizce; kullanıcı içeriklerini tercüme etme. Tarih kültürü/saat dilimi açık olsun. Taslak kurtarma kaydı başarılı server save doğrulanmadan silinmez.
+- UI/validation İngilizce; kullanıcı içeriklerini tercüme etme. F42 görünür yazı/kart/yönetici tarihlerini açık en-US kültürü ve F16 site saat dilimiyle `MMM dd, yyyy` gösterir. Kurtarma tarihi aynı günü, HH:mm ve saat dilimi etiketini taşır; browser için Windows adı IANA adına çevrilir. Form datetime-local ve makine/API UTC tarih sözleşmeleri gösterim metninden ayrıdır. İçerik dili kayıtlı değilse makaleye dil uydurma. Taslak kurtarma kaydı başarılı server save doğrulanmadan silinmez.
 - Üretimde Play CDN veya `latest` asset'e dayanma; F35 yerel ve kilitli asset build sınırını koru. Gereksiz global CSS override ve !important zinciri ekleme.
 - Canonical/site URL doğrulanmış config'ten üretilir; Host header'dan güvenilmez mutlak link üretme. SEO için sahte yazar/tarih/istatistik ve görünmeyen içerik uydurma.
 

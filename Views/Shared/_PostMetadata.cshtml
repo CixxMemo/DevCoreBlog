@@ -1,7 +1,6 @@
 @model DevCoreBlog.Core.ReadModels.PublicPostSummary
 @using System.Globalization
-@* Preserve the existing display culture; site timezone formatting belongs to F42. *@
 <div class="post-metadata">
-    <time datetime="@Model.PublishDate.ToString("O", CultureInfo.InvariantCulture)">@Model.PublishDate.ToString("MMM dd, yyyy")</time>
+    <time datetime="@Model.PublishDate.ToString("O", CultureInfo.InvariantCulture)">@SiteDates.Date(Model.PublishDate)</time>
     <span>@Model.ViewCount views</span>
 </div>

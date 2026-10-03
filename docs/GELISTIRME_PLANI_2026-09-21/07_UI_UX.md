@@ -251,7 +251,7 @@ Bu bölüm bir çalıştırma emri değildir. Her seferinde yalnızca **bir faz 
 
 **Geri dönüş:** Metin farkını geri al; veritabanı metinlerini değiştirme.
 
-**İzlenebilirlik:** Kök AGENTS.md UI/dil kuralları; F8; Rapor §8.
+**İzlenebilirlik:** Kök AGENTS.md UI/dil kuralları; D16; F8; Rapor §8.
 
 **Durma noktası:** Kanıtı uygulama kaydına ve DURUM.md'ye işle; sonraki fazı başlatma.
 

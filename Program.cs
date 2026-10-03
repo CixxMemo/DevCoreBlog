@@ -221,6 +221,7 @@ catch (Exception exception) when (exception is TimeZoneNotFoundException or Inva
 }
 
 builder.Services.AddSingleton(new PublicationTimeZone(siteTimeZone));
+builder.Services.AddSingleton<DevCoreBlog.Models.Presentation.SiteDateFormatter>();
 
 var dataProtectionBuilder = builder.Services
     .AddDataProtection()
