@@ -343,6 +343,20 @@ sakladığı eski öğeler geriye dönük silinemez; no-store sunucu çıktısı
 kalmasını sağlar. Kapanış gerektiğinde aboneler için kontrollü geçiş gerekir.
 **Durum:** [F46 HTTP/XML/PostgreSQL ve gerçek tarayıcı kanıtı](../uygulama-kayitlari/F46-2026-10-03.md) ile doğrulandı.
 
+## D21 — Doğrulanmış kamuya açık site kimliği
+
+F47 site sahibi Mehmet Can, kullanıcının verdiği GitHub profili ve kamuya açık
+iletişim e-postasını merkezi `SiteIdentity` içinde sunar. Kısa biyografi kullanıcının
+yazma isteğine dayanır; unvan/başarı uydurulmaz. Bu kimlik tüm makalelerin yazarına
+otomatik uygulanmaz. About/Contact salt okunur MVC GET/HEAD/no-store sayfalarıdır;
+trusted SITE_URL canonical/website metadata kullanır. Footer bağlantıları mevcut
+mobil drawer/klavye akışından erişilir. Native mailto mesaj toplamaz/göndermez.
+
+Mevcut cookie/localStorage, IP güvenlik logu ve dış font/medya/embed davranışları
+[envanter/taslakta](../F47_VERI_KULLANIMI_TASLAGI.md) kullanıcı değerlendirmesine
+sunulur. Hosting/log retention doğrulanmadan hukuki politika/uygunluk iddiası yoktur;
+yeni analytics/newsletter/veri toplama eklenmez. [F47 kanıtı](../uygulama-kayitlari/F47-2026-10-03.md).
+
 ## Gerektiğinde alınacak gerçek ürün/ortam bilgileri
 
 Bunlar şimdi topluca sorulmaz. Mevcut kaynaktan doğrulanamıyorsa ilgili fazda sorulur; önceki tercih tekrar sorulmaz.

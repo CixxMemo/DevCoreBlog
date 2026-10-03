@@ -151,6 +151,10 @@
 
         @* Sidebar Footer — Authentication links & Dark mode toggle button *@
         <div class="p-4 border-t-2 border-gray-900 dark:border-zinc-800 bg-gray-50 dark:bg-[#121215] flex flex-col gap-3 transition-colors duration-150">
+            <nav aria-label="Site information" class="flex flex-wrap gap-4 text-sm font-bold">
+                <a href="/about" aria-current="@(Context.Request.Path == "/about" ? "page" : null)" class="text-primary underline">About</a>
+                <a href="/contact" aria-current="@(Context.Request.Path == "/contact" ? "page" : null)" class="text-primary underline">Contact</a>
+            </nav>
             <div class="flex items-center justify-between">
                 <a href="/Account/Login" class="text-xs font-mono font-bold text-primary hover:underline no-underline">
                     [Sign In]

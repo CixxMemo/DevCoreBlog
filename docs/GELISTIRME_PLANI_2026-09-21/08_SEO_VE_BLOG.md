@@ -136,3 +136,5 @@ Bu bölüm bir çalıştırma emri değildir. Her seferinde yalnızca **bir faz 
 
 **Durma noktası:** Kanıtı uygulama kaydına ve DURUM.md'ye işle; sonraki fazı başlatma.
 
+
+**F47 sonucu:** [3 Ekim 2026 kaydı](../uygulama-kayitlari/F47-2026-10-03.md) ile About/Contact, doğrulanmış kimlik, footer ve kabul kontrolleri tamamlandı. D21 uygulanır; veri envanteri/politika metni kullanıcı değerlendirmesi için taslak olarak bırakıldı.

@@ -52,6 +52,10 @@ public sealed class PageMetadataFactory(PublicUrlBuilder urls, ISafeMarkdownRend
             urls.AbsolutePath("/ara" + QueryString.Create(fields).ToUriComponent()), NoIndex: true);
     }
 
+    // Information pages use the same trusted origin as articles and feeds.
+    public PageMetadata Information(string title, string description, string path) => new(
+        $"{title} — DevCoreBlog", Description(description), urls.AbsolutePath(path));
+
     public PageMetadata Private(string title, string path) => new(
         $"{title} — DevCoreBlog", "Private DevCoreBlog page.", urls.AbsolutePath(path), NoIndex: true);
 
