@@ -64,20 +64,8 @@
     </script>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - DevCoreBlog</title>
-    
-    @* Open Graph (OG) Meta Tags for Social Previews *@
-    <meta property="og:title" content="@(ViewBag.OgTitle ?? ViewData["Title"])" />
-    <meta property="og:description" content="@(ViewBag.OgDescription ?? "DevCoreBlog - Technical articles on ASP.NET Core, C#, and modern web development")" />
-    <meta property="og:type" content="@(ViewBag.OgType ?? "website")" />
-    <meta property="og:url" content="@(ViewBag.OgUrl ?? PublicUrls.AbsolutePath(Context.Request.Path.ToUriComponent()))" />
-    <meta property="og:site_name" content="DevCoreBlog" />
-    
-    @* Twitter Card Meta Tags *@
-    <meta name="twitter:card" content="summary" />
-    <meta name="twitter:title" content="@(ViewBag.OgTitle ?? ViewData["Title"])" />
-    <meta name="twitter:description" content="@(ViewBag.OgDescription ?? "DevCoreBlog - Technical articles on ASP.NET Core, C#, and modern web development")" />
-    
+    <partial name="_SeoHead" model='@(ViewData["Metadata"] as DevCoreBlog.Models.Seo.PageMetadata ?? PageMetadata.Private(ViewData["Title"]?.ToString() ?? "Page", Context.Request.Path.ToUriComponent()))' />
+
     @* Google Fonts — JetBrains Mono for tech headings/UI, Inter for body text *@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

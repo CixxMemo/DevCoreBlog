@@ -1,0 +1,26 @@
+@model DevCoreBlog.Models.Seo.PageMetadata
+<title>@Model.Title</title>
+<meta name="description" content="@Model.Description" />
+<link rel="canonical" href="@Model.CanonicalUrl" />
+@if (Model.NoIndex)
+{
+    <meta name="robots" content="noindex, nofollow, noarchive" />
+}
+<meta property="og:title" content="@Model.Title" />
+<meta property="og:description" content="@Model.Description" />
+<meta property="og:type" content="@Model.Type" />
+<meta property="og:url" content="@Model.CanonicalUrl" />
+<meta property="og:site_name" content="DevCoreBlog" />
+<meta name="twitter:card" content="@(Model.ImageUrl is null ? "summary" : "summary_large_image")" />
+<meta name="twitter:title" content="@Model.Title" />
+<meta name="twitter:description" content="@Model.Description" />
+@if (Model.ImageUrl is not null)
+{
+    <meta property="og:image" content="@Model.ImageUrl" />
+    <meta name="twitter:image" content="@Model.ImageUrl" />
+}
+@if (Model.ArticleJson is not null)
+{
+    @* Raw output is restricted to the factory's default-encoded JSON serializer result. *@
+    <script type="application/ld+json">@Html.Raw(Model.ArticleJson)</script>
+}

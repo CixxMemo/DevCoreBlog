@@ -5,6 +5,7 @@ import argparse
 from concurrent.futures import ThreadPoolExecutor
 import html
 import os
+from pathlib import Path
 import re
 import subprocess
 import threading
@@ -41,8 +42,10 @@ def main() -> int:
         admin, base, os.environ["DEVCORE_TEST_ADMIN_USERNAME"],
         os.environ["DEVCORE_TEST_ADMIN_PASSWORD"])
     checks = {"admin_session": token is not None and status == 200 and "/Admin/Dashboard" in url}
-    checks["empty_and_prior_migrations"] = all(
-        sql('SELECT COUNT(*) FROM "__EFMigrationsHistory"', database) == "8"
+    expected_migrations = sorted(p.stem for p in (Path(__file__).resolve().parents[2] / "Migrations").glob("*.cs")
+        if re.fullmatch(r"[0-9]{14}_.+", p.stem) and not p.name.endswith(".Designer.cs"))
+    checks["empty_and_prior_migrations"] = bool(expected_migrations) and all(
+        sql('SELECT "MigrationId" FROM "__EFMigrationsHistory" ORDER BY "MigrationId"', database).splitlines() == expected_migrations
         for database in ("f22_empty", "f22_prior"))
     checks["existing_rows_start_at_version_one"] = (
         sql('SELECT "EditVersion" FROM "Posts" WHERE "Id"=2001') == "1" and
@@ -72,7 +75,7 @@ def main() -> int:
     post_version = field(first_post[2], "EditVersion")
     post_base = {"Id": "2001", "Content": "F22 changed body", "CategoryId": "1001",
                  "Summary": "old owner", "Excerpt": "", "IsPublished": "true",
-                 "IsActive": "true", "PublishDate": field(first_post[2], "PublishDate"),
+                 "IsActive": "true", "SaveAction": "Save", "PublishDate": field(first_post[2], "PublishDate"),
                  "EditVersion": post_version, "__RequestVerificationToken": post_token}
     post_save = request(admin, post_url, data={**post_base, "Title": "F22 first post"})
     post_conflict = request(admin, post_url, data={**post_base, "Title": "F22 second post"})

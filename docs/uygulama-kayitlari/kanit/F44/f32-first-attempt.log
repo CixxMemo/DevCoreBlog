@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/scripts/verification/f32_publication_actions_probe.py", line 131, in <module>
+    checks['inactive_category_state_and_hidden_link'] = row_state({'id': 2008}, 'Inactive', False)
+                                                        ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/scripts/verification/f32_publication_actions_probe.py", line 55, in row_state
+    assert row, 'Saved row missing'
+           ^^^
+AssertionError: Saved row missing

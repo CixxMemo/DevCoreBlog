@@ -56,6 +56,9 @@ public class Post : BaseEntity
     // Content edits advance this token; visitor counter writes leave it unchanged.
     public long EditVersion { get; set; } = 1;
 
+    // Last meaningful content edit in UTC; historical and newly created posts remain null.
+    public DateTime? UpdatedDate { get; set; }
+
     // -----------------------------------------------------------------------
     // SCHEDULED PUBLISHING
     // -----------------------------------------------------------------------

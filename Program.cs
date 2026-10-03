@@ -50,6 +50,7 @@ var siteUrl = new SiteUrlOptions(
     Environment.GetEnvironmentVariable("SITE_URL"), builder.Environment.IsDevelopment());
 builder.Services.AddSingleton(siteUrl);
 builder.Services.AddSingleton<DevCoreBlog.Routing.PublicUrlBuilder>();
+builder.Services.AddScoped<DevCoreBlog.Models.Seo.PageMetadataFactory>();
 
 // ---------------------------------------------------------------------------
 // SERVICE REGISTRATION (Dependency Injection Container)

@@ -16,6 +16,7 @@ namespace DevCoreBlog.Services.Rendering;
 public sealed class SafeMarkdownRenderer : ISafeMarkdownRenderer
 {
     private static readonly MarkdownPipeline SafePipeline = CreatePipeline();
+    private static readonly MarkdownPipeline PlainTextPipeline = CreatePipeline(disableHtml: false);
 
     /// <summary>
     /// Renders Markdown with raw HTML disabled and all link targets validated.
@@ -43,15 +44,29 @@ public sealed class SafeMarkdownRenderer : ISafeMarkdownRenderer
             VisibleMarkdownText.ReadingMinutes(document));
     }
 
-    private static MarkdownPipeline CreatePipeline()
+    // Parse HTML as syntax to exclude it rather than exposing tags in metadata descriptions.
+    public string ToPlainText(string? markdown)
+    {
+        var document = Markdown.Parse(markdown ?? string.Empty, PlainTextPipeline);
+        var text = new StringBuilder();
+        foreach (var block in document.Descendants<LeafBlock>())
+        {
+            if (block is HtmlBlock) continue;
+            text.Append(block is CodeBlock ? block.Lines.ToString() : VisibleMarkdownText.FromInline(block.Inline));
+            text.Append(' ');
+        }
+        return string.Join(" ", text.ToString().Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
+    }
+
+    private static MarkdownPipeline CreatePipeline(bool disableHtml = true)
     {
         var builder = new MarkdownPipelineBuilder()
-            .DisableHtml()
             .UseAutoLinks()
             .UseEmphasisExtras()
             .UsePipeTables()
             .UseTaskLists();
 
+        if (disableHtml) builder.DisableHtml();
         builder.Extensions.Add(new SafeLinkRenderingExtension());
         return builder.Build();
     }

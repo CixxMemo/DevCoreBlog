@@ -1,0 +1,10 @@
+{
+  "diff_check": "passed",
+  "completed_phase_rows": 45,
+  "next_phase": "F45 awaiting approval",
+  "scope_review": "F44 only; F45 not started",
+  "new_dependency": false,
+  "live_database_migration": false,
+  "generated_tracked_diff_at_review": 0,
+  "evidence_sensitive_value_scan": "passed"
+}

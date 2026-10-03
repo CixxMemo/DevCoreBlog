@@ -55,7 +55,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - DevCoreBlog Admin</title>
+    <partial name="_SeoHead" model="@PageMetadata.Private(ViewData["Title"]?.ToString() ?? "Admin", Context.Request.Path.ToUriComponent())" />
 
     @* ========================================================================= *@
     @* Google Fonts — Inter (UI Sans) & JetBrains Mono (Technical Accents)       *@

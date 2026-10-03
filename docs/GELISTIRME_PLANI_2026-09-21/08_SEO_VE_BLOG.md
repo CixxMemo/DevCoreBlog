@@ -53,7 +53,7 @@ Bu bölüm bir çalıştırma emri değildir. Her seferinde yalnızca **bir faz 
 
 **Geri dönüş:** Yeni nullable alanı veri kaybettiren down migration ile silmek yerine uyumlu kod geri dönüşü kullan.
 
-**İzlenebilirlik:** G2; Rapor §9.
+**İzlenebilirlik:** G2; Rapor §9; [D18](KARARLAR.md#d18--güvenli-meta-verisi-ve-gerçek-içerik-güncelleme-tarihi) ve [F44 kanıtı](../uygulama-kayitlari/F44-2026-10-03.md).
 
 **Durma noktası:** Kanıtı uygulama kaydına ve DURUM.md'ye işle; sonraki fazı başlatma.
 

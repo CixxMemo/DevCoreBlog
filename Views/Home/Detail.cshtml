@@ -11,6 +11,10 @@
     <div class="public-detail-meta">
         <a class="post-category" href="@PublicUrls.CategoryPath(post.Category.Slug)">@post.Category.Name</a>
         <span>Published <time datetime="@post.PublishDate.ToString("O", CultureInfo.InvariantCulture)">@SiteDates.Date(post.PublishDate)</time></span>
+        @if (post.UpdatedDate is { } updated)
+        {
+            <span>Updated <time datetime="@updated.ToString("O", CultureInfo.InvariantCulture)">@SiteDates.Date(updated)</time></span>
+        }
         <span>@Model.Content.ReadingMinutes min read</span>
         <span>@post.ViewCount views</span>
     </div>

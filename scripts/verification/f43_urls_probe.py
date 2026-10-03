@@ -15,12 +15,15 @@ from http_probe_support import cookie_opener, request, submit_login
 
 parser=argparse.ArgumentParser()
 parser.add_argument('--fixture-root',required=True)
+parser.add_argument('--pg-port',default='55450')
+parser.add_argument('--base-url',default='http://127.0.0.1:15178')
 args=parser.parse_args()
 root=Path(args.fixture_root).resolve()
 assert str(root).startswith('/private/tmp/devcoreblog-f17.') and (root/'postgres/PG_VERSION').exists() and (root/'source/.env').read_text()=='', 'Owned empty-env fixture required'
 pg_options=shlex.split((root/'postgres/postmaster.opts').read_text())
-assert pg_options[pg_options.index('-p')+1]=='55450', 'Named F43 PostgreSQL required'
-base='http://127.0.0.1:15178'
+assert pg_options[pg_options.index('-p')+1]==args.pg_port, 'Named owned PostgreSQL required'
+base=args.base_url.rstrip('/')
+assert urllib.parse.urlsplit(base).hostname=='127.0.0.1', 'Loopback fixture required'
 class NoRedirect(urllib.request.HTTPRedirectHandler):
     def redirect_request(self,req,fp,code,msg,headers,newurl): return None
 visitor=urllib.request.build_opener(NoRedirect())
@@ -30,7 +33,7 @@ def get(path,method='GET',headers=None):
     except urllib.error.HTTPError as error: response=error
     with response: return response.code,response.headers,response.read().decode('utf8','replace')
 def sql(statement):
-    return subprocess.check_output(['psql','-X','-h','127.0.0.1','-p','55450','-U',os.environ['USER'],'-d','devcoreblog_f01_test','-At','-v','ON_ERROR_STOP=1','-c',statement]).decode().strip()
+    return subprocess.check_output(['psql','-X','-h','127.0.0.1','-p',args.pg_port,'-U',os.environ['USER'],'-d','devcoreblog_f01_test','-At','-v','ON_ERROR_STOP=1','-c',statement]).decode().strip()
 assert sql('SELECT "Slug" FROM "Posts" WHERE "Id"=2001')=='f01-visible'
 assert sql('SELECT count(*) FROM "Posts" WHERE "Id" BETWEEN 4301 AND 4312')=='0','Fresh fixture required'
 slug='f43-istanbul-ğüş %?#'

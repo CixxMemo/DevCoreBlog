@@ -276,6 +276,7 @@ public class PostService : IPostService, IPublicationSchedule, IWebhookPostServi
         Post post, string? key, string? payloadHash, CancellationToken cancellationToken)
     {
         post.CreatedDate = _timeProvider.GetUtcNow().UtcDateTime;
+        post.UpdatedDate = null;
         var baseSlug = SlugGenerator.GenerateBase(post.Title, "post");
         for (var attempt = 0; attempt < MaximumSlugAttempts; attempt++)
         {
@@ -360,6 +361,12 @@ public class PostService : IPostService, IPublicationSchedule, IWebhookPostServi
             return ContentValidationResult.Conflict(
                 "This post changed since you opened it. Your edits are still here. Reload the current post before trying again.");
         }
+
+        // Publication flags/dates and counters do not represent an editorial content revision.
+        if (existingPost.Title != post.Title || existingPost.Summary != post.Summary ||
+            existingPost.Content != post.Content || existingPost.Excerpt != post.Excerpt ||
+            existingPost.ThumbnailUrl != post.ThumbnailUrl || existingPost.CategoryId != post.CategoryId)
+            existingPost.UpdatedDate = _timeProvider.GetUtcNow().UtcDateTime;
 
         existingPost.Title = post.Title;
         existingPost.Summary = post.Summary;

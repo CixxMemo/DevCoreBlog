@@ -1,10 +1,10 @@
 # İlerleme çizelgesi
 
-- **Son kayıt:** 3 Ekim 2026 — F43 kanonik yollar, tek yerel301, güvenilir site URL ve slug/sayaç koruması doğrulandı.
-- **Tamamlanan plan fazı:** 44/58 (F00–F43).
-- **Tamamlanan uygulama kodu fazı:** 42.
+- **Son kayıt:** 3 Ekim 2026 — F44 güvenli meta/JSON-LD, gerçek güncellenme tarihi ve boş/önceki şema yükseltmesi doğrulandı.
+- **Tamamlanan plan fazı:** 45/58 (F00–F44).
+- **Tamamlanan uygulama kodu fazı:** 43.
 - **Aktif faz:** Yok.
-- **Sıradaki faz:** F44 — kullanıcı onayı bekleniyor.
+- **Sıradaki faz:** F45 — kullanıcı onayı bekleniyor.
 - **Uygulama kodu:** F02–F09 güvenlik fazları tamamlandı. F10 migration zincirini doğruladı. F11–F13 form/içerik güvenliğini tamamladı. F14 kategori update'ini güvenli alanlara daralttı. F15 kategori silmesini DB constraint'i ve yarış yönetimiyle veri kaybına karşı korudu. F16 yayın zamanını açık saat dilimiyle UTC'ye bağladı. F17 public görünürlüğü tek kurala bağladı. F18 tek süreçli liste cache'ini yayın sınırı ve mutation invalidation'ıyla doğruladı. F19 düzenlemede kayıtlı slug'ı korudu. F20 benzersiz slug indekslerini ve geçmiş çakışma göçünü ekledi. F21 yalnızca uygun public GET'leri atomik sayıyor. F22 eski edit sekmelerinin içerik ezmesini sürüm karşılaştırmasıyla önlüyor. F23 hata akışında gerçek 404/500 ve JSON durumlarını koruyor. F24 servislerin somut Data repository bağımlılığını Core sözleşmelerine taşıdı. F25 dashboard sorgularını servis/repository sınırına ve kategori menülerini asenkron bileşene taşıdı. F26 güvenli Markdown renderer'ını Services'e taşıyıp Cloudinary istemcisini composition root'tan enjekte etti. F27 webhook'u secret-önce, sınırlı JSON kabulüne ve açık yayın yetkisine bağladı. F28 anahtarlı gönderimleri kalıcı işlem kaydı ve tek transaction ile tekrar korumasına bağladı. F29 portföyü dar DB projection, kararlı sıralama ve yapılandırılmış site URL'sine bağladı. F30 Create/Edit ortak formunu ve editör davranışlarını tek partial/modülde topladı. F31 Create/Edit kurtarmayı yazı kimliği, açık Restore/Discard, sekme koordinasyonu ve doğrulanmış başarılı kayıt bilgisine bağladı. F32 açık kayıt eylemlerini, normal Save korumasını ve doğru yayın durumunu uyguladı. F33 aynı güvenli render sınırından, DB yazısı/sayaç/yayın yan etkisi olmayan özel HTML önizleme üretiyor. F34 yönetim panelini mobil drawer, kontrollü tablo kaydırma ve dar ekranda kullanılabilir form/editörle düzenledi; gerçek %200 Chrome yakınlaştırmasında yatay taşma olmadığını doğruladı. F35 Tailwind CLI/lockfile ile yerel CSS ve sabit lisanslı editör/Prism varlıklarını build/publish akışına bağladı.
 
 ## Kullanım
@@ -64,7 +64,7 @@
 | [x] | F41 | Yönetici yazı listesini sunucuda sayfala | TAMAMLANDI — KOD | [F41 kanıtı](../uygulama-kayitlari/F41-2026-10-03.md) |
 | [x] | F42 | Arayüz dili ve tarih biçimini tutarlı yap | TAMAMLANDI — KOD | [F42 kanıtı](../uygulama-kayitlari/F42-2026-10-03.md) |
 | [x] | F43 | Kalıcı ve kanonik URL sözleşmesini uygula | TAMAMLANDI — KOD | [F43 kanıtı](../uygulama-kayitlari/F43-2026-10-03.md) |
-| [ ] | F44 | Sayfa meta verilerini ve makale şemasını ekle | BAŞLAMADI | — |
+| [x] | F44 | Sayfa meta verilerini ve makale şemasını ekle | TAMAMLANDI — KOD | [F44 kanıtı](../uygulama-kayitlari/F44-2026-10-03.md) |
 | [ ] | F45 | Sitemap ve robots çıktısını düzelt | BAŞLAMADI | — |
 | [ ] | F46 | Standart RSS ile takip edilebilirlik sağla | BAŞLAMADI | — |
 | [ ] | F47 | Gerçek site kimliğini ve temel bilgi sayfalarını tamamla | BAŞLAMADI | — |
@@ -81,10 +81,10 @@
 
 ## Son agent teslimi
 
-- Bu turdaki faz: F43 — `/post/{slug}` ve `/category/{slug}` kanonik; görünür eski/MVC/slash yolları query koruyan tek yerel301; gizli içerik404, slug sahipliği ve sayaç sınırı korunur. Ortak URL helper, SITE_URL origin ve D17 uygulandı.
-- Kontroller: build0 uyarı/0 hata; F4349, origin16, F17/F1225, F258, F29 startup10, F3222, F3330, F42 tarih15 (toplam175) geçti. Gerçek IAB1280/390px; Unicode link/paging, eski URL/query, arama Enter, menü Escape/odak ve boş console doğrulandı. [Kanıt](../uygulama-kayitlari/F43-2026-10-03.md).
-- Sınırlama: PostgreSQL16.14/C ve IAB sentetik ortamı; production/tüm browser ölçülmedi. Tam F29 rate/CORS probe'u çalıştırılmadı. Sitemap URL'leri düzeldi; XML encoding/lastmod F45'te, canonical etiketi/meta/JSON-LD F44'te kalır. İlk fixture guard'ının tırnaklı argv okuması düzeltilip49 kontrol geçti. Geçici ortamlar kapatıldı; bin/obj kaynak değişikliği bırakılmadı.
-- Aktif faz: Yok. Sıradaki tek faz: F44 — Sayfa meta verilerini ve makale şemasını ekle.
-- Kullanıcıdan gereken: F44 için açık onay.
+- Bu turdaki faz: F44 — ortak tipli head, tek canonical, düz/bounded açıklama, güvenli BlogPosting ve gerçek UTC UpdatedDate; private/arama noindex. Yeni nullable sütun eski kayıtları değiştirmeden eklenir. D18 uygulandı.
+- Kontroller: son build0 uyarı/0 hata; F4459, düz metin9, F17/F1225, F4349, F3222, F3330, F22 eşzamanlılık8, F42 tarih15 (217 programatik kontrol) geçti. Boş/önceki PostgreSQL migration, veri koruması/null backfill ve model uyumu doğrulandı. Gerçek IAB1280/390px: saldırgan başlık script çalıştırmadı, tarih/schema/arama noindex, Escape/odak, Enter ve boş console doğrulandı. [Kanıt](../uygulama-kayitlari/F44-2026-10-03.md).
+- Sınırlama: PostgreSQL16.14/C ve IAB sentetik ortamı; production/tüm browser veya uzak kapak dosyasının erişilebilirliği ölçülmedi. Gerçek DB migration/deploy yapılmadı; ileri migration dağıtımda gerekir. İlk fixture sayfa2/veri yoğunluğu ve eski F22 sabit beklentileri düzeltilip assertion'lar korunarak yeniden geçti. Sitemap XML/lastmod/robots F45'te kalır. Geçici ortamlar kapatıldı; bin/obj kaynak değişikliği bırakılmadı.
+- Aktif faz: Yok. Sıradaki tek faz: F45 — Sitemap ve robots çıktısını düzelt.
+- Kullanıcıdan gereken: F45 için açık onay.
 
 [Ana plan](/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/docs/GELISTIRME_PLANI_2026-09-21/README.md) · [Hazır mesajlar](/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/docs/GELISTIRME_PLANI_2026-09-21/AGENT_PROMPTLARI.md)

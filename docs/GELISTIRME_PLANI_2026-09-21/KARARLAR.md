@@ -234,6 +234,42 @@ yalnız URL kaynağı bu fazda düzeltilmiştir. Yanlış yayımlanmış 301 bro
 cache'inde kalabileceğinden kod geri dönüşü tek başına yeterli olmayabilir.
 **Durum:** [F43 gerçek PostgreSQL/HTTP ve tarayıcı kanıtı](../uygulama-kayitlari/F43-2026-10-03.md) ile doğrulandı.
 
+## D18 — Güvenli meta verisi ve gerçek içerik güncelleme tarihi
+
+**Karar:** F44 Web sunumundaki tipli `PageMetadata` ve `PageMetadataFactory`
+ile tek `_SeoHead` partial'ından title, description, canonical, OG ve Twitter
+çıktısı üretir. Home/kategori liste sayfaları kendi page/pageSize bağlamını
+korur; default page1/size9 ve izleme query'leri canonical'a eklenmez. Makalenin
+canonical'ı kayıtlı slug'ın F43 URL'sidir. Başlıklar Razor ile encode edilir.
+Özet, yoksa alıntı, yoksa kısa okuma açıklaması mevcut Markdig parser'ıyla düz
+metne çevrilir; HTML syntax ve link hedefleri meta'ya taşınmaz, 160 rune sınırı
+Unicode karakterlerini parçalamaz. İçerik body metni meta'ya kopyalanmaz.
+
+BlogPosting JSON-LD yalnız public görünür yazıda üretilir; varsayılan güvenli
+System.Text.Json encoder çıktısı dar script sınırında yazılır. Gerçek başlık,
+yayın tarihi, URL ve varsa güncellenme tarihi/credential'sız HTTPS kapak kullanılır.
+Eksik görsel alanı çıkarılır; yazar, yayıncı, dil veya rating uydurulmaz.
+Görsel URL syntax kontrolü yapılır; uzak dosyanın erişilebilirliğini doğrulayan
+sunucu fetch/SSRF yüzeyi eklenmez. Google zengin sonuç garantisi verilmez.
+
+`Post.UpdatedDate` nullable UTC sütunudur; migration yalnız sütun ekler, geçmişe
+sahte tarih doldurmaz. Oluşturma null'dur. Update use case başlık, Markdown,
+özet, alıntı, kapak veya kategori ID değiştiyse TimeProvider UTC anını yazar.
+Yayın/tarih/aktiflik eylemi, değişikliksiz Save ve sayaç artışı bunu değiştirmez.
+Çakışma ve başarısız validation kalıcı tarihi değiştirmez. Makalede aynı tarih
+F42 site saat dilimi/en-US sunumuyla görünür; JSON-LD UTC ISO biçimini korur.
+
+Arama noindex meta ve X-Robots-Tag taşır. Login/admin/preview head'i noindex,
+nofollow/noarchive ve şemasızdır; preview mevcut header/no-store/auth/CSRF
+sınırını korur. Noindex erişim kontrolü değildir. 404/500 mevcut HTTP ve error
+layout sınırını korur; hata sayfalarına makale metadata'sı eklenmez.
+Yeni paket, API/framework veya sahte site kimliği yoktur.
+
+Canlı dağıtım öncesinde ileri migration gerekir; rollback'te uyumlu eski koda
+dönülebilir, nullable sütun silinmez. Generated Down veri kaybı nedeniyle rutin
+çözüm olarak çalıştırılmaz. Sitemap encoding/lastmod ve robots F45'te kalır.
+**Durum:** [F44 migration/HTTP/PostgreSQL/gerçek tarayıcı kanıtı](../uygulama-kayitlari/F44-2026-10-03.md) ile doğrulandı.
+
 ## Gerektiğinde alınacak gerçek ürün/ortam bilgileri
 
 Bunlar şimdi topluca sorulmaz. Mevcut kaynaktan doğrulanamıyorsa ilgili fazda sorulur; önceki tercih tekrar sorulmaz.

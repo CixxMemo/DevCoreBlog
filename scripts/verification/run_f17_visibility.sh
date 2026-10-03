@@ -149,7 +149,46 @@ pg_ctl -D "$task_pgdata" -l "$task_tmp/postgres.log" \
     -o "-p $task_pg_port -h 127.0.0.1 -k $task_socket" -w start >/dev/null
 task_pg_started=1
 createdb -h 127.0.0.1 -p "$task_pg_port" -U "$task_pg_user" "$task_db"
-if [ "${DEVCORE_F28_PROBE:-0}" = 1 ]; then
+if [ "${DEVCORE_F44_PROBE:-0}" = 1 ]; then
+    # Verify both a clean migration chain and the immediately preceding schema with synthetic rows.
+    createdb -h 127.0.0.1 -p "$task_pg_port" -U "$task_pg_user" f44_empty
+    (
+        cd "$task_source"
+        for task_migration_db in f44_empty "$task_db"; do
+            task_connection="Host=127.0.0.1;Port=$task_pg_port;Database=$task_migration_db;Username=$task_pg_user"
+            task_target=
+            if [ "$task_migration_db" = "$task_db" ]; then task_target=20260930094820_WebhookReceipts; fi
+            DB_CONNECTION_STRING="$task_connection" dotnet ef database update $task_target \
+                --no-build --project DevCoreBlog.csproj --startup-project DevCoreBlog.csproj \
+                --context ApplicationDbContext --connection "$task_connection" --no-color
+        done
+    )
+    sed -n '/^INSERT INTO "Categories"/,$p' "$task_source/scripts/verification/f01_fixture.sql" > "$task_tmp/seed.sql"
+    psql -X -h 127.0.0.1 -p "$task_pg_port" -U "$task_pg_user" -d "$task_db" \
+        -v ON_ERROR_STOP=1 -f "$task_tmp/seed.sql" >/dev/null
+    task_snapshot_sql='SELECT to_jsonb(p) - $$UpdatedDate$$ FROM "Posts" p ORDER BY "Id"; SELECT to_jsonb(c) FROM "Categories" c ORDER BY "Id";'
+    psql -X -h 127.0.0.1 -p "$task_pg_port" -U "$task_pg_user" -d "$task_db" \
+        -At -c "$task_snapshot_sql" > "$task_tmp/prior-data.txt"
+    (
+        cd "$task_source"
+        task_connection="Host=127.0.0.1;Port=$task_pg_port;Database=$task_db;Username=$task_pg_user"
+        DB_CONNECTION_STRING="$task_connection" dotnet ef database update --no-build \
+            --project DevCoreBlog.csproj --startup-project DevCoreBlog.csproj \
+            --context ApplicationDbContext --connection "$task_connection" --no-color
+        DB_CONNECTION_STRING="$task_connection" dotnet ef migrations has-pending-model-changes \
+            --no-build --project DevCoreBlog.csproj --startup-project DevCoreBlog.csproj --context ApplicationDbContext
+    )
+    psql -X -h 127.0.0.1 -p "$task_pg_port" -U "$task_pg_user" -d "$task_db" \
+        -At -c "$task_snapshot_sql" > "$task_tmp/upgraded-data.txt"
+    cmp "$task_tmp/prior-data.txt" "$task_tmp/upgraded-data.txt"
+    task_backfill_count=$(psql -X -h 127.0.0.1 -p "$task_pg_port" -U "$task_pg_user" -d "$task_db" \
+        -At -c 'SELECT count(*) FROM "Posts" WHERE "UpdatedDate" IS NOT NULL;')
+    [ "$task_backfill_count" = 0 ]
+    task_empty_count=$(psql -X -h 127.0.0.1 -p "$task_pg_port" -U "$task_pg_user" -d f44_empty \
+        -At -c 'SELECT count(*) FROM "Posts";')
+    [ "$task_empty_count" = 0 ]
+    printf 'f44_empty_database_migration=true\nf44_prior_data_preserved=true\nf44_no_invented_backfill=true\n'
+elif [ "${DEVCORE_F28_PROBE:-0}" = 1 ]; then
     createdb -h 127.0.0.1 -p "$task_pg_port" -U "$task_pg_user" f28_empty
     (
         cd "$task_source"

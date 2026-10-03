@@ -1,0 +1,3 @@
+/usr/local/share/dotnet/sdk/10.0.302/Microsoft.Common.CurrentVersion.targets(1846,5): error MSB3202: "../../Users/mehmetcankocakurt/Documents/development/DevCoreBlog/DevCoreBlog.Core/DevCoreBlog.Core.csproj" proje dosyası bulunamadı. [/tmp/devcoreblog-f44-text.gVY0ZC/probe.csproj]
+
+Derleme başarısız oldu. Derleme hatalarını düzeltip yeniden çalıştırın.

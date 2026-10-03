@@ -20,6 +20,7 @@ using Microsoft.AspNetCore.Mvc;
 using DevCoreBlog.Models;
 using DevCoreBlog.Models.Public;
 using DevCoreBlog.Routing;
+using DevCoreBlog.Models.Seo;
 // Import the Service interfaces for business logic
 using DevCoreBlog.Services.Interfaces;
 // Import the Post entity (used in Search action return type)
@@ -39,15 +40,17 @@ public class HomeController : Controller
     private readonly IPostService _postService;
     private readonly ICategoryService _categoryService;
     private readonly PublicUrlBuilder _publicUrls;
+    private readonly PageMetadataFactory _metadata;
 
     // Constructor receives services via dependency injection.
     // The DI container (configured in Program.cs) provides the instances.
-    public HomeController(IPostService postService, ICategoryService categoryService, PublicUrlBuilder publicUrls)
+    public HomeController(IPostService postService, ICategoryService categoryService, PublicUrlBuilder publicUrls, PageMetadataFactory metadata)
     {
         // Store the injected services for use in action methods
         _postService = postService;
         _categoryService = categoryService;
         _publicUrls = publicUrls;
+        _metadata = metadata;
     }
 
     // ---------------------------------------------------------------------------
@@ -67,11 +70,7 @@ public class HomeController : Controller
         if (input.Page > 1 && result.Posts.Count == 0) return NotFound();
         var mostRead = await _postService.GetMostReadPublicPostsAsync(cancellationToken);
 
-        // Set Open Graph (OG) meta tags for social media sharing (home page)
-        ViewBag.OgTitle = "DevCoreBlog - ASP.NET Core and Modern Web Development";
-        ViewBag.OgDescription = "DevCoreBlog - Technical articles on ASP.NET Core, C#, Entity Framework Core, and modern web development.";
-        ViewBag.OgType = "website";
-        ViewBag.OgUrl = _publicUrls.AbsolutePath("/");
+        ViewData["Metadata"] = _metadata.Home(input.Page, input.PageSize);
 
         // Pass the list of posts to the view
         return View(new HomePageModel(result.Posts, mostRead, input.Page, input.PageSize, result.TotalCount));
@@ -121,13 +120,7 @@ public class HomeController : Controller
         var content = markdownRenderer.RenderDocument(post.Content);
         var relatedPosts = await _postService.GetRelatedPostsAsync(post.Id, post.CategoryId);
 
-        // Step 5: Set Open Graph (OG) meta tags for social media sharing
-        // These values are used by _Layout.cshtml to generate <meta property="og:..."> tags
-        // When someone shares this post on Facebook/Twitter/LinkedIn, these values appear
-        ViewBag.OgTitle = post.Title;
-        ViewBag.OgDescription = post.Summary;
-        ViewBag.OgType = "article";
-        ViewBag.OgUrl = _publicUrls.PostUrl(post.Slug);
+        ViewData["Metadata"] = _metadata.Article(post);
 
         // Pass the post to the Detail view
         ViewData["HideSidebar"] = true;
@@ -149,10 +142,7 @@ public class HomeController : Controller
         if (redirect is not null) return redirect;
         var result = await _postService.GetPostsByCategorySlugPagedAsync(slug, input.Page, input.PageSize, cancellationToken);
         if (input.Page > 1 && result.Posts.Count == 0) return NotFound();
-        ViewBag.OgTitle = $"{category.Name} Category - DevCoreBlog";
-        ViewBag.OgDescription = $"All articles in the {category.Name} category on DevCoreBlog.";
-        ViewBag.OgType = "website";
-        ViewBag.OgUrl = _publicUrls.CategoryUrl(category.Slug);
+        ViewData["Metadata"] = _metadata.Category(category, input.Page, input.PageSize);
         return View(new PublicListPageModel(result,
             new PublicPagingModel("Category", slug, null, null, input.Page, input.PageSize, result.TotalCount), category.Name, []));
     }
@@ -172,9 +162,8 @@ public class HomeController : Controller
         ViewData["SearchCategory"] = categorySlug;
         ViewData["SearchPageSize"] = input.PageSize;
         var categories = await _categoryService.GetActiveCategoriesAsync();
-        ViewBag.OgTitle = "Search Results - DevCoreBlog";
-        ViewBag.OgDescription = $"Search results for \"{term}\" on DevCoreBlog.";
-        ViewBag.OgType = "website";
+        ViewData["Metadata"] = _metadata.Search(term, categorySlug, input.Page, input.PageSize);
+        Response.Headers["X-Robots-Tag"] = "noindex, nofollow, noarchive";
         return View(new PublicListPageModel(result,
             new PublicPagingModel("Search", null, term, categorySlug, input.Page, input.PageSize, result.TotalCount),
             category?.Name, categories.ToList()));
