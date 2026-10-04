@@ -56,7 +56,8 @@ public interface IPostService
     Task<PublicPostPage> GetPostsByCategorySlugPagedAsync(string categorySlug, int page, int pageSize, CancellationToken cancellationToken = default);
 
     // Get related posts in the same category (excluding the current post)
-    Task<IEnumerable<Post>> GetRelatedPostsAsync(int currentPostId, int categoryId);
+    Task<IReadOnlyList<PublicPostSummary>> GetRelatedPostsAsync(int currentPostId, int categoryId,
+        CancellationToken cancellationToken = default);
 
     // Atomically count an eligible public detail GET; null means no visible row.
     Task<int?> IncrementViewCountAsync(

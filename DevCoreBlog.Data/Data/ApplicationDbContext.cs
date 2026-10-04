@@ -62,6 +62,17 @@ public class ApplicationDbContext : DbContext
             .HasIndex(category => category.Slug)
             .IsUnique();
 
+        // Measured public top-N reads share publication order; inactive/draft rows need no entry.
+        modelBuilder.Entity<Post>()
+            .HasIndex(post => new { post.PublishDate, post.Id })
+            .IsDescending(true, false)
+            .HasFilter("\"IsActive\" AND \"IsPublished\"");
+
+        // Inventory paging uses creation order independently of publication state.
+        modelBuilder.Entity<Post>()
+            .HasIndex(post => new { post.CreatedDate, post.Id })
+            .IsDescending(true, false);
+
         modelBuilder.Entity<Post>()
             .Property(post => post.EditVersion)
             .IsConcurrencyToken();

@@ -129,15 +129,17 @@ public class PostRepository : GenericRepository<Post>, IPostRepository
             .OrderByDescending(post => post.CreatedDate)
             .ToListAsync();
 
-    public async Task<IEnumerable<Post>> GetRelatedPostsAsync(
-        int currentPostId, int categoryId, DateTime utcNow) =>
+    // Related articles need only card fields, not three complete Markdown bodies.
+    public async Task<IReadOnlyList<PublicPostSummary>> GetRelatedPostsAsync(
+        int currentPostId, int categoryId, DateTime utcNow, CancellationToken cancellationToken = default) =>
         await PublicPosts(utcNow)
-            .Include(post => post.Category)
             .Where(post => post.CategoryId == categoryId && post.Id != currentPostId)
             .OrderByDescending(post => post.PublishDate)
             .ThenBy(post => post.Id)
             .Take(3)
-            .ToListAsync();
+            .Select(post => new PublicPostSummary(post.Id, post.Title, post.Slug, post.Summary,
+                post.ThumbnailUrl, post.Category.Name, post.PublishDate, post.ViewCount))
+            .ToListAsync(cancellationToken);
 
     public Task<PublicPostPage> GetPublishedPostsPagedAsync(int page, int pageSize, DateTime utcNow,
         CancellationToken cancellationToken = default)

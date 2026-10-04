@@ -1,10 +1,10 @@
 # İlerleme çizelgesi
 
-- **Son kayıt:** 3 Ekim 2026 — F46 bounded/güvenli RSS2.0, kararlı GUID ve public discovery/takip doğrulandı.
-- **Tamamlanan plan fazı:** 48/58 (F00–F47).
-- **Tamamlanan uygulama kodu fazı:** 46.
+- **Son kayıt:** 4 Ekim 2026 — F48 ölçülmüş sorgu performansı, indeksler ve dar ilgili kartlar doğrulandı.
+- **Tamamlanan plan fazı:** 49/58 (F00–F48).
+- **Tamamlanan uygulama kodu fazı:** 47.
 - **Aktif faz:** Yok.
-- **Sıradaki faz:** F48 — kullanıcı onayı bekleniyor.
+- **Sıradaki faz:** F49 — kullanıcı onayı bekleniyor.
 - **Uygulama kodu:** F02–F09 güvenlik fazları tamamlandı. F10 migration zincirini doğruladı. F11–F13 form/içerik güvenliğini tamamladı. F14 kategori update'ini güvenli alanlara daralttı. F15 kategori silmesini DB constraint'i ve yarış yönetimiyle veri kaybına karşı korudu. F16 yayın zamanını açık saat dilimiyle UTC'ye bağladı. F17 public görünürlüğü tek kurala bağladı. F18 tek süreçli liste cache'ini yayın sınırı ve mutation invalidation'ıyla doğruladı. F19 düzenlemede kayıtlı slug'ı korudu. F20 benzersiz slug indekslerini ve geçmiş çakışma göçünü ekledi. F21 yalnızca uygun public GET'leri atomik sayıyor. F22 eski edit sekmelerinin içerik ezmesini sürüm karşılaştırmasıyla önlüyor. F23 hata akışında gerçek 404/500 ve JSON durumlarını koruyor. F24 servislerin somut Data repository bağımlılığını Core sözleşmelerine taşıdı. F25 dashboard sorgularını servis/repository sınırına ve kategori menülerini asenkron bileşene taşıdı. F26 güvenli Markdown renderer'ını Services'e taşıyıp Cloudinary istemcisini composition root'tan enjekte etti. F27 webhook'u secret-önce, sınırlı JSON kabulüne ve açık yayın yetkisine bağladı. F28 anahtarlı gönderimleri kalıcı işlem kaydı ve tek transaction ile tekrar korumasına bağladı. F29 portföyü dar DB projection, kararlı sıralama ve yapılandırılmış site URL'sine bağladı. F30 Create/Edit ortak formunu ve editör davranışlarını tek partial/modülde topladı. F31 Create/Edit kurtarmayı yazı kimliği, açık Restore/Discard, sekme koordinasyonu ve doğrulanmış başarılı kayıt bilgisine bağladı. F32 açık kayıt eylemlerini, normal Save korumasını ve doğru yayın durumunu uyguladı. F33 aynı güvenli render sınırından, DB yazısı/sayaç/yayın yan etkisi olmayan özel HTML önizleme üretiyor. F34 yönetim panelini mobil drawer, kontrollü tablo kaydırma ve dar ekranda kullanılabilir form/editörle düzenledi; gerçek %200 Chrome yakınlaştırmasında yatay taşma olmadığını doğruladı. F35 Tailwind CLI/lockfile ile yerel CSS ve sabit lisanslı editör/Prism varlıklarını build/publish akışına bağladı.
 
 ## Kullanım
@@ -68,7 +68,7 @@
 | [x] | F45 | Sitemap ve robots çıktısını düzelt | TAMAMLANDI — KOD | [F45 kanıtı](../uygulama-kayitlari/F45-2026-10-03.md) |
 | [x] | F46 | Standart RSS ile takip edilebilirlik sağla | TAMAMLANDI — KOD | [F46 kanıtı](../uygulama-kayitlari/F46-2026-10-03.md) |
 | [x] | F47 | Gerçek site kimliğini ve temel bilgi sayfalarını tamamla | TAMAMLANDI — KOD | [F47 kanıtı](../uygulama-kayitlari/F47-2026-10-03.md) |
-| [ ] | F48 | Ölçülmüş sorgu ve sayfa performansını iyileştir | BAŞLAMADI | — |
+| [x] | F48 | Ölçülmüş sorgu ve sayfa performansını iyileştir | TAMAMLANDI — KOD | [F48 kanıtı](../uygulama-kayitlari/F48-2026-10-04.md) |
 | [ ] | F49 | Medya kayıtlarını bakım yapılabilir hale getir | BAŞLAMADI | — |
 | [ ] | F50 | Dağıtım sınırlarını ve reverse proxy güvenini tanımla | BAŞLAMADI | — |
 | [ ] | F51 | CSP uyumluluğunu raporlama modunda hazırla | BAŞLAMADI | — |
@@ -81,10 +81,10 @@
 
 ## Son agent teslimi
 
-- Bu turdaki faz: F47 — gerçek kullanıcı kimliğiyle About/Contact, footer bağlantıları ve trusted metadata. D21 uygulanır.
-- Kontroller: build0 uyarı/0 hata; F4722, RSS52, metadata59 ve mevcut fixture25 kontrolü geçti. Gerçek masaüstü/mobil tarayıcıda klavye, focus, Escape ve taşma kontrolü; konsol temiz. [Kanıt](../uygulama-kayitlari/F47-2026-10-03.md).
-- Sınırlama: Veri kullanımı/politika belgesi kullanıcı değerlendirmesi için taslaktır; hosting/log saklama bilgileri doğrulanmadı. E-posta gönderilmedi; canlı ortam kullanılmadı. Yeni migration yok.
-- Aktif faz: Yok. Sıradaki tek faz: F48 — Ölçülmüş sorgu ve sayfa performansını iyileştir.
-- Kullanıcıdan gereken: F48 için açık onay; [veri kullanımı taslağı](../F47_VERI_KULLANIMI_TASLAGI.md) değerlendirmesi.
+- Bu turdaki faz: F48 — aynı temsilî veriyle önce/sonra ölçüm; gerçek EXPLAIN kullanımına dayanan iki indeks, dar ilgili kartlar ve kapak boyutu/önceliği. D22 uygulanır.
+- Kontroller: build 0 uyarı/0 hata; karşılaştırma31, okuyucu52, admin45, görünürlük11, sayaç6, eşzamanlı edit/migration8 kontrolü geçti. Gerçek masaüstü/mobil tarayıcıda klavye/focus/Escape/taşma; konsol temiz. [Kanıt](../uygulama-kayitlari/F48-2026-10-04.md).
+- Sınırlama: Laboratuvar ölçümü gerçek kullanıcı CWV değildir; aramada belirgin kazanç veya ölçülmüş CLS azalması iddia edilmez. Canlı indeks migration'ı uygulanmadı. F47 veri kullanımı taslağının hosting/log bilgileri hâlâ doğrulanmadı.
+- Aktif faz: Yok. Sıradaki tek faz: F49 — Medya kayıtlarını bakım yapılabilir hale getir.
+- Kullanıcıdan gereken: F49 için açık onay; [veri kullanımı taslağı](../F47_VERI_KULLANIMI_TASLAGI.md) değerlendirmesi.
 
 [Ana plan](README.md) · [Hazır mesajlar](AGENT_PROMPTLARI.md)

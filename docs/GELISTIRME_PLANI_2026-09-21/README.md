@@ -1,7 +1,7 @@
 # DevCoreBlog — AI agent ile atomik geliştirme planı
 
 **Tarih:** 21 Eylül 2026  
-**Durum:** F00 kural/dokümantasyon yenilemesi tamamlandı; uygulama kodu fazları başlamadı. Sıradaki faz F01.  
+**Durum:** F00–F48 tamamlandı; sıradaki tek faz F49, kullanıcı onayı bekleniyor. Güncel kanıt ve durum kaynağı DURUM.md'dir.
 **Temel:** [19 Eylül inceleme raporu](/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/docs/PROJE_INCELEME_RAPORU_2026-09-19.md) ve repository kökündeki güncel AGENTS.md (v2).  
 **Kapsam:** 10 çalışma grubu, F00–F57 arasında 58 faz. Eski koşullu tek proje yolu yürürlükten kaldırıldı. Bunlar 58 gün veya 58 ayrı proje anlamına gelmez. Bir faz tek bir doğrulanabilir sonuçtur.
 
@@ -9,7 +9,7 @@
 
 Kod yazman, terminal komutu çalıştırman veya dosya taşıman gerekmiyor. Agent seçilen fazın araştırma, kodlama ve doğrulamasını yapacak; sana sonucu ve sıradaki fazı söyleyecek. Senden yalnızca ürün tercihi, eksik gerçek bilgi veya henüz yetkilendirilmemiş canlı işlem kararı istenir.
 
-1. Önce [güncel karar kaydını](/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/docs/GELISTIRME_PLANI_2026-09-21/KARARLAR.md) incele. Kurallar bu kullanıcı talebiyle yenilendi; F00 tamamlandı, sıradaki uygulama hazırlığı F01.
+1. Önce [güncel karar kaydını](/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/docs/GELISTIRME_PLANI_2026-09-21/KARARLAR.md) incele; seçilecek tek fazı DURUM.md'den doğrula.
 2. [hazır agent mesajlarından](/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/docs/GELISTIRME_PLANI_2026-09-21/AGENT_PROMPTLARI.md) başlangıç metnini kullan.
 3. Bir faz bitince sonucu kontrol et. Devam etmek istediğinde aynı dosyadaki “sıradaki tek faz” mesajını gönder.
 4. [ilerleme çizelgesi](/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/docs/GELISTIRME_PLANI_2026-09-21/DURUM.md) tek durum kaynağıdır. Agent geçmiş sohbeti hatırlamasa bile buradan devam edebilir.
@@ -50,7 +50,7 @@ Bu planı oluşturma talebi uygulama kodunu değiştirme veya bütün fazları �
 | [SEO, RSS ve site kimliği](/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/docs/GELISTIRME_PLANI_2026-09-21/08_SEO_VE_BLOG.md) | F43–F47 | Site kalıcı adreslerle bulunabilir ve takip edilebilir olur. |
 | [Performans, işletim ve kabul](/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/docs/GELISTIRME_PLANI_2026-09-21/09_KALITE_VE_ISLETIM.md) | F48–F57 | Sonuç ölçülür, tekrar kurulabilir ve geri yüklenebilir olur. |
 
-**Varsayılan uygulama sırası:** F00 → F01 → … → F57. Numaralı sırayı atlayıp UI çalışmasına başlanmaz. F00 tamamlandı; uygulama F01 ile başlar. F27–F29 mevcut entegrasyonları iyileştiren normal fazlardır. RSS ertelenirse F46 açık gerekçeyle ertelenir; tamamlandı sayılmaz.
+**Varsayılan uygulama sırası:** F00 → F01 → … → F57. Numaralı sıra korunur; güncel sıradaki faz DURUM.md'den alınır. F27–F29 mevcut entegrasyonları iyileştiren normal fazlardır. RSS ertelenirse F46 açık gerekçeyle ertelenir; tamamlandı sayılmaz.
 
 **Geçiş eşikleri:**
 

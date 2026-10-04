@@ -1,6 +1,6 @@
 # Güncel mimari ve çalışma kararları
 
-**Güncelleme:** 3 Ekim 2026 — F41 sınırlı yönetici envanteri ve dönüş bağlamı.
+**Güncelleme:** 4 Ekim 2026 — F48 ölçülmüş okuma performansı ve dar ilgili kartlar.
 
 Kullanıcı eski kuralların yenilenmesini, SOLID/temiz kod/güvenlik sınırlarının güçlendirilmesini, eski planların kaldırılabilmesini ve yeni geliştirme planının buna uyarlanmasını açıkça istedi. Aşağıdaki teknik seçimler bu yetki kapsamında mevcut ürün yapısını koruyarak yapıldı. Kullanıcının ayrıca eski A/B seçeneklerinden birini seçtiği iddia edilmiyor; o karar ağacı yeni kurallarla kaldırıldı.
 
@@ -356,6 +356,31 @@ Mevcut cookie/localStorage, IP güvenlik logu ve dış font/medya/embed davranı
 [envanter/taslakta](../F47_VERI_KULLANIMI_TASLAGI.md) kullanıcı değerlendirmesine
 sunulur. Hosting/log retention doğrulanmadan hukuki politika/uygunluk iddiası yoktur;
 yeni analytics/newsletter/veri toplama eklenmez. [F47 kanıtı](../uygulama-kayitlari/F47-2026-10-03.md).
+
+## D22 — Ölçülmüş okuma sırası ve dar ilgili kartlar
+
+F48 gerçek PostgreSQL 16.14/C üzerinde 20.000 ek sentetik yazıyla public/admin
+top-N sorgularında sıralama maliyetini ölçtü. Public `(PublishDate DESC, Id ASC)`
+indeksi yalnız aktif/yayın izni olan postları kapsar; kategori aktifliği ve UTC
+yayın zamanı ortak sorgu predicate'inde kalır. Admin `(CreatedDate DESC, Id ASC)`
+indeksi yayın durumundan bağımsızdır. Son EXPLAIN planında ikisi gerçekten
+kullanıldı; ölçüm yapılmadan başka indeks/extension/arama motoru eklenmedi.
+İleri migration yalnız indeks ekler, Down yalnız indeks düşürür; izole DB'de
+veri korunarak doğrulandı. Canlı indeks oluşturma kilit/süre/disk değerlendirmesi
+ayrı staging/deploy adımıdır.
+
+İlgili yazılar mevcut PublicPostSummary ile en çok üç dar karttır; body/Excerpt/
+entity grafiği materialize edilmez. Yayın filtresi, kararlı sıra ve exclusion
+korunur; bu yol CancellationToken geçirir. Yazma/tracking davranışı değişmez.
+Ölçülmüş sorgularda kayıt/komut sayısı değişmedi; aramada belirgin kazanç yoktur.
+COUNT/substring taraması sınırsız entity materialization ile aynı şey değildir.
+
+Kapak width1600/height900 mevcut 16:9 kırpma alanını belirtir; provider'ın gerçek
+boyutu değildir (F49 metadata ayrı). Featured ana kapak ve detay kapağı eager/high,
+diğer kartlar lazy/auto'dur. Önceki CSS alanı zaten ayırdığı için ölçülmüş CLS
+azalması veya gerçek kullanıcı CWV başarısı iddia edilmez; mevcut yerleşim korunur.
+Yeni cache/CDN/paket yok; canlı ortam ve Cloudinary hesabı kullanılmadı.
+**Durum:** [F48 ölçüm, SQL, migration, regresyon ve tarayıcı kanıtı](../uygulama-kayitlari/F48-2026-10-04.md) ile doğrulandı.
 
 ## Gerektiğinde alınacak gerçek ürün/ortam bilgileri
 

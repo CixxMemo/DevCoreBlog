@@ -4,6 +4,7 @@
 import argparse
 import json
 import os
+from urllib.parse import urlencode
 
 from http_probe_support import (
     cookie_opener,
@@ -50,7 +51,12 @@ def main() -> int:
         os.environ["DEVCORE_TEST_ADMIN_USERNAME"],
         os.environ["DEVCORE_TEST_ADMIN_PASSWORD"],
     )
-    admin_status, _, admin_body = request(admin, f"{base_url}/AdminPost")
+    admin_status, _, _ = request(admin, f"{base_url}/AdminPost")
+    # F41 pages the inventory; locate each publication case instead of expecting
+    # every legacy row on page one when the performance fixture has grown.
+    admin_markers = ["F01 Future Post", "F01 Draft Post", "F01 Inactive Post", "F01 Visible Post"]
+    admin_cases = [request(admin, base_url + '/AdminPost?' + urlencode({'query': marker}))
+                   for marker in admin_markers]
 
     checks = {
         "public_routes_respond": all(result[0] == 200 for result in responses.values()),
@@ -82,8 +88,8 @@ def main() -> int:
         "admin_keeps_all_rows": login_get == 200 and token is not None and
             login_status == 200 and "/Admin/Dashboard" in login_url and
             has_authentication_cookie(cookies) and admin_status == 200 and
-            all(marker in admin_body for marker in ["F01 Future Post", "F01 Draft Post",
-                                                "F01 Inactive Post", "F01 Visible Post"]),
+            all(case[0] == 200 and marker in case[2]
+                for marker, case in zip(admin_markers, admin_cases)),
     }
     for name, passed in checks.items():
         print(f"f17_http_{name}={str(passed).lower()}")

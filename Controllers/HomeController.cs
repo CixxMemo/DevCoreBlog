@@ -118,7 +118,7 @@ public class HomeController : Controller
         post.ViewCount = viewCount;
 
         var content = markdownRenderer.RenderDocument(post.Content);
-        var relatedPosts = await _postService.GetRelatedPostsAsync(post.Id, post.CategoryId);
+        var relatedPosts = await _postService.GetRelatedPostsAsync(post.Id, post.CategoryId, cancellationToken);
 
         ViewData["Metadata"] = _metadata.Article(post);
 
@@ -126,7 +126,7 @@ public class HomeController : Controller
         ViewData["HideSidebar"] = true;
         ViewData["HideSearch"] = true;
         
-        return View(new PostDetailModel(post, content, relatedPosts.ToList()));
+        return View(new PostDetailModel(post, content, relatedPosts));
     }
 
     // Invalid filters are 400; a valid request for an absent category/page is 404.

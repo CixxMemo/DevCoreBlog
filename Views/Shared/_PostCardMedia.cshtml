@@ -3,7 +3,10 @@
 <div class="post-card-media">
     @if (!string.IsNullOrEmpty(Model.Post.ThumbnailUrl))
     {
-        <img src="@Model.Post.ThumbnailUrl" alt="" loading="lazy" decoding="async" />
+        @* Dimensions reserve the existing 16:9 crop, not provider metadata. *@
+        <img src="@Model.Post.ThumbnailUrl" alt="" width="1600" height="900"
+             loading="@(Model.Presentation == DevCoreBlog.Models.Public.PostCardPresentation.Featured ? "eager" : "lazy")"
+             fetchpriority="@(Model.Presentation == DevCoreBlog.Models.Public.PostCardPresentation.Featured ? "high" : "auto")" decoding="async" />
     }
     else
     {

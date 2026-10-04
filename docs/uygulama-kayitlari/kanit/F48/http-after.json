@@ -1,0 +1,102 @@
+{
+  "home": {
+    "medianMs": 10.124583030119538,
+    "samples": [
+      10.703583946451545,
+      10.058832936920226,
+      10.072665987536311,
+      10.124583030119538,
+      9.864374995231628,
+      10.091249947436154,
+      11.197666986845434,
+      13.989500002935529,
+      23.224208038300276,
+      19.342166953720152,
+      42.73720795754343,
+      11.83204201515764,
+      9.713832987472415,
+      9.334500064142048,
+      9.66320896986872
+    ],
+    "queryCount": 5,
+    "responseBytes": 22319,
+    "cardRows": 9,
+    "adminRows": 0,
+    "sql": "info: Microsoft.EntityFrameworkCore.Database.Command[20101]\n      Executed DbCommand (3ms) [Parameters=[@utcNow='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']\n      SELECT count(*)::int\n      FROM \"Posts\" AS p\n      INNER JOIN \"Categories\" AS c ON p.\"CategoryId\" = c.\"Id\"\n      WHERE p.\"IsActive\" AND p.\"IsPublished\" AND p.\"PublishDate\" <= @utcNow AND c.\"IsActive\"\ninfo: Microsoft.EntityFrameworkCore.Database.Command[20101]\n      Executed DbCommand (0ms) [Parameters=[@utcNow='?' (DbType = DateTime), @p2='?' (DbType = Int32), @p='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']\n      SELECT p.\"Id\", p.\"Title\", p.\"Slug\", p.\"Summary\", p.\"ThumbnailUrl\", c.\"Name\", p.\"PublishDate\", p.\"ViewCount\"\n      FROM \"Posts\" AS p\n      INNER JOIN \"Categories\" AS c ON p.\"CategoryId\" = c.\"Id\"\n      WHERE p.\"IsActive\" AND p.\"IsPublished\" AND p.\"PublishDate\" <= @utcNow AND c.\"IsActive\"\n      ORDER BY p.\"PublishDate\" DESC, p.\"Id\"\n      LIMIT @p2 OFFSET @p\ninfo: Microsoft.EntityFrameworkCore.Database.Command[20101]\n      Executed DbCommand (4ms) [Parameters=[@utcNow='?' (DbType = DateTime), @p='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']\n      SELECT p.\"Id\", p.\"Title\", p.\"Slug\", c.\"Name\", p.\"ViewCount\"\n      FROM \"Posts\" AS p\n      INNER JOIN \"Categories\" AS c ON p.\"CategoryId\" = c.\"Id\"\n      WHERE p.\"IsActive\" AND p.\"IsPublished\" AND p.\"PublishDate\" <= @utcNow AND c.\"IsActive\"\n      ORDER BY p.\"ViewCount\" DESC, p.\"PublishDate\" DESC, p.\"Id\"\n      LIMIT @p\ninfo: Microsoft.EntityFrameworkCore.Database.Command[20101]\n      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']\n      SELECT c.\"Id\", c.\"CreatedDate\", c.\"EditVersion\", c.\"IsActive\", c.\"Name\", c.\"Slug\"\n      FROM \"Categories\" AS c\n      WHERE c.\"IsActive\"\n      ORDER BY c.\"Name\"\ninfo: Microsoft.EntityFrameworkCore.Database.Command[20101]\n      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']\n      SELECT c.\"Id\", c.\"CreatedDate\", c.\"EditVersion\", c.\"IsActive\", c.\"Name\", c.\"Slug\"\n      FROM \"Categories\" AS c\n      WHERE c.\"IsActive\"\n      ORDER BY c.\"Name\"\n"
+  },
+  "detail": {
+    "medianMs": 2.874666010029614,
+    "samples": [
+      7.558499928563833,
+      3.032166976481676,
+      2.9792500426992774,
+      2.892332966439426,
+      2.874666010029614,
+      4.134166985750198,
+      2.8756250394508243,
+      2.7839168906211853,
+      2.6740829925984144,
+      2.7630419936031103,
+      2.854667021892965,
+      2.7058750856667757,
+      2.729209023527801,
+      2.775374916382134,
+      2.887333044782281
+    ],
+    "queryCount": 5,
+    "responseBytes": 22775,
+    "cardRows": 3,
+    "adminRows": 0,
+    "sql": "info: Microsoft.EntityFrameworkCore.Database.Command[20101]\n      Executed DbCommand (0ms) [Parameters=[@utcNow='?' (DbType = DateTime), @slug='?'], CommandType='Text', CommandTimeout='30']\n      SELECT p.\"Id\", p.\"CategoryId\", p.\"Content\", p.\"CreatedDate\", p.\"EditVersion\", p.\"Excerpt\", p.\"IsActive\", p.\"IsPublished\", p.\"PublishDate\", p.\"Slug\", p.\"Summary\", p.\"ThumbnailUrl\", p.\"Title\", p.\"UpdatedDate\", p.\"ViewCount\", c.\"Id\", c.\"CreatedDate\", c.\"EditVersion\", c.\"IsActive\", c.\"Name\", c.\"Slug\"\n      FROM \"Posts\" AS p\n      INNER JOIN \"Categories\" AS c ON p.\"CategoryId\" = c.\"Id\"\n      WHERE p.\"IsActive\" AND p.\"IsPublished\" AND p.\"PublishDate\" <= @utcNow AND c.\"IsActive\" AND p.\"Slug\" = @slug\n      LIMIT 1\ninfo: Microsoft.EntityFrameworkCore.Database.Command[20101]\n      Executed DbCommand (0ms) [Parameters=[@utcNow='?' (DbType = DateTime), @id='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']\n      UPDATE \"Posts\" AS p\n      SET \"ViewCount\" = p.\"ViewCount\" + 1\n      FROM \"Categories\" AS c\n      WHERE p.\"CategoryId\" = c.\"Id\" AND p.\"IsActive\" AND p.\"IsPublished\" AND p.\"PublishDate\" <= @utcNow AND c.\"IsActive\" AND p.\"Id\" = @id\ninfo: Microsoft.EntityFrameworkCore.Database.Command[20101]\n      Executed DbCommand (0ms) [Parameters=[@utcNow='?' (DbType = DateTime), @id='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']\n      SELECT p.\"ViewCount\"\n      FROM \"Posts\" AS p\n      INNER JOIN \"Categories\" AS c ON p.\"CategoryId\" = c.\"Id\"\n      WHERE p.\"IsActive\" AND p.\"IsPublished\" AND p.\"PublishDate\" <= @utcNow AND c.\"IsActive\" AND p.\"Id\" = @id\n      LIMIT 2\ninfo: Microsoft.EntityFrameworkCore.Database.Command[20101]\n      Executed DbCommand (0ms) [Parameters=[@utcNow='?' (DbType = DateTime), @categoryId='?' (DbType = Int32), @currentPostId='?' (DbType = Int32), @p='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']\n      SELECT p.\"Id\", p.\"Title\", p.\"Slug\", p.\"Summary\", p.\"ThumbnailUrl\", c.\"Name\", p.\"PublishDate\", p.\"ViewCount\"\n      FROM \"Posts\" AS p\n      INNER JOIN \"Categories\" AS c ON p.\"CategoryId\" = c.\"Id\"\n      WHERE p.\"IsActive\" AND p.\"IsPublished\" AND p.\"PublishDate\" <= @utcNow AND c.\"IsActive\" AND p.\"CategoryId\" = @categoryId AND p.\"Id\" <> @currentPostId\n      ORDER BY p.\"PublishDate\" DESC, p.\"Id\"\n      LIMIT @p\ninfo: Microsoft.EntityFrameworkCore.Database.Command[20101]\n      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']\n      SELECT c.\"Id\", c.\"CreatedDate\", c.\"EditVersion\", c.\"IsActive\", c.\"Name\", c.\"Slug\"\n      FROM \"Categories\" AS c\n      WHERE c.\"IsActive\"\n      ORDER BY c.\"Name\"\n"
+  },
+  "search": {
+    "medianMs": 18.938915920443833,
+    "samples": [
+      22.448667092248797,
+      18.855500034987926,
+      19.542707945220172,
+      24.313499918207526,
+      19.606875022873282,
+      19.53720801975578,
+      19.069749978370965,
+      17.89287501014769,
+      17.727375030517578,
+      17.48179190326482,
+      20.58037498500198,
+      18.938915920443833,
+      18.120291060768068,
+      17.847959068603814,
+      17.55516603589058
+    ],
+    "queryCount": 4,
+    "responseBytes": 19481,
+    "cardRows": 9,
+    "adminRows": 0,
+    "sql": "info: Microsoft.EntityFrameworkCore.Database.Command[20101]\n      Executed DbCommand (4ms) [Parameters=[@utcNow='?' (DbType = DateTime), @pattern='?'], CommandType='Text', CommandTimeout='30']\n      SELECT count(*)::int\n      FROM \"Posts\" AS p\n      INNER JOIN \"Categories\" AS c ON p.\"CategoryId\" = c.\"Id\"\n      WHERE p.\"IsActive\" AND p.\"IsPublished\" AND p.\"PublishDate\" <= @utcNow AND c.\"IsActive\" AND (p.\"Title\" ILIKE @pattern ESCAPE '\\' OR p.\"Content\" ILIKE @pattern ESCAPE '\\')\ninfo: Microsoft.EntityFrameworkCore.Database.Command[20101]\n      Executed DbCommand (11ms) [Parameters=[@utcNow='?' (DbType = DateTime), @pattern='?', @literal='?', @p10='?' (DbType = Int32), @p='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']\n      SELECT p.\"Id\", p.\"Title\", p.\"Slug\", p.\"Summary\", p.\"ThumbnailUrl\", c.\"Name\", p.\"PublishDate\", p.\"ViewCount\"\n      FROM \"Posts\" AS p\n      INNER JOIN \"Categories\" AS c ON p.\"CategoryId\" = c.\"Id\"\n      WHERE p.\"IsActive\" AND p.\"IsPublished\" AND p.\"PublishDate\" <= @utcNow AND c.\"IsActive\" AND (p.\"Title\" ILIKE @pattern ESCAPE '\\' OR p.\"Content\" ILIKE @pattern ESCAPE '\\')\n      ORDER BY p.\"Title\" ILIKE @literal ESCAPE '\\' DESC, p.\"Title\" ILIKE @pattern ESCAPE '\\' DESC, p.\"PublishDate\" DESC, p.\"Id\"\n      LIMIT @p10 OFFSET @p\ninfo: Microsoft.EntityFrameworkCore.Database.Command[20101]\n      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']\n      SELECT c.\"Id\", c.\"CreatedDate\", c.\"EditVersion\", c.\"IsActive\", c.\"Name\", c.\"Slug\"\n      FROM \"Categories\" AS c\n      WHERE c.\"IsActive\"\n      ORDER BY c.\"Name\"\ninfo: Microsoft.EntityFrameworkCore.Database.Command[20101]\n      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']\n      SELECT c.\"Id\", c.\"CreatedDate\", c.\"EditVersion\", c.\"IsActive\", c.\"Name\", c.\"Slug\"\n      FROM \"Categories\" AS c\n      WHERE c.\"IsActive\"\n      ORDER BY c.\"Name\"\n"
+  },
+  "admin": {
+    "medianMs": 3.3517919946461916,
+    "samples": [
+      7.2439160430803895,
+      3.674041945487261,
+      3.3437920501455665,
+      3.5142089473083615,
+      11.670749983750284,
+      3.6189580569043756,
+      3.759582992643118,
+      3.3517919946461916,
+      3.255459014326334,
+      3.3100409200415015,
+      3.2256670529022813,
+      3.2842500368133187,
+      3.223167033866048,
+      3.2565000001341105,
+      3.6558329593390226
+    ],
+    "queryCount": 3,
+    "responseBytes": 80961,
+    "cardRows": 0,
+    "adminRows": 25,
+    "sql": "info: Microsoft.EntityFrameworkCore.Database.Command[20101]\n      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']\n      SELECT count(*)::int\n      FROM \"Posts\" AS p\ninfo: Microsoft.EntityFrameworkCore.Database.Command[20101]\n      Executed DbCommand (0ms) [Parameters=[@p1='?' (DbType = Int32), @p='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']\n      SELECT p0.\"Id\", p0.\"Title\", p0.\"Slug\", p0.\"CategoryId\", c.\"Name\", p0.\"IsActive\", c.\"IsActive\", p0.\"IsPublished\", p0.\"PublishDate\", p0.\"CreatedDate\", p0.\"ViewCount\"\n      FROM (\n          SELECT p.\"Id\", p.\"CategoryId\", p.\"CreatedDate\", p.\"IsActive\", p.\"IsPublished\", p.\"PublishDate\", p.\"Slug\", p.\"Title\", p.\"ViewCount\"\n          FROM \"Posts\" AS p\n          ORDER BY p.\"CreatedDate\" DESC, p.\"Id\"\n          LIMIT @p1 OFFSET @p\n      ) AS p0\n      INNER JOIN \"Categories\" AS c ON p0.\"CategoryId\" = c.\"Id\"\n      ORDER BY p0.\"CreatedDate\" DESC, p0.\"Id\"\ninfo: Microsoft.EntityFrameworkCore.Database.Command[20101]\n      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']\n      SELECT c.\"Id\", c.\"CreatedDate\", c.\"EditVersion\", c.\"IsActive\", c.\"Name\", c.\"Slug\"\n      FROM \"Categories\" AS c\n"
+  }
+}

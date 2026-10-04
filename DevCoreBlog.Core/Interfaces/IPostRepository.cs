@@ -27,8 +27,8 @@ public interface IPostRepository
         int page, int pageSize, DateTime utcNow, CancellationToken cancellationToken = default);
     Task<PublicPostPage> GetPostsByCategorySlugPagedAsync(
         string categorySlug, int page, int pageSize, DateTime utcNow, CancellationToken cancellationToken = default);
-    Task<IEnumerable<Post>> GetRelatedPostsAsync(
-        int currentPostId, int categoryId, DateTime utcNow);
+    Task<IReadOnlyList<PublicPostSummary>> GetRelatedPostsAsync(
+        int currentPostId, int categoryId, DateTime utcNow, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<PublicFeedPost>> GetLatestPublicPostsAsync(
         DateTime utcNow, CancellationToken cancellationToken = default);
     Task<int?> IncrementVisibleViewCountAsync(

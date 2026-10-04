@@ -109,10 +109,11 @@ public class PostService : IPostService, IPublicationSchedule, IWebhookPostServi
     }
 
     // Get related posts in the same category (excluding the current post)
-    public async Task<IEnumerable<Post>> GetRelatedPostsAsync(int currentPostId, int categoryId)
+    public Task<IReadOnlyList<PublicPostSummary>> GetRelatedPostsAsync(int currentPostId, int categoryId,
+        CancellationToken cancellationToken = default)
     {
-        return await _postRepository.GetRelatedPostsAsync(
-            currentPostId, categoryId, _timeProvider.GetUtcNow().UtcDateTime);
+        return _postRepository.GetRelatedPostsAsync(
+            currentPostId, categoryId, _timeProvider.GetUtcNow().UtcDateTime, cancellationToken);
     }
 
     public Task<IReadOnlyList<RssPost>> GetRssPostsAsync(

@@ -103,6 +103,14 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvSG9tZS9TZWFyY2guY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
+[/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/Views/Information/About.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvSW5mb3JtYXRpb24vQWJvdXQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/Views/Information/Contact.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvSW5mb3JtYXRpb24vQ29udGFjdC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
 [/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/Views/Shared/Components/PublicCategoryNavigation/Default.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL0NvbXBvbmVudHMvUHVibGljQ2F0ZWdvcnlOYXZpZ2F0aW9uL0RlZmF1bHQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 

@@ -27,6 +27,8 @@ Bu bölüm bir çalıştırma emri değildir. Her seferinde yalnızca **bir faz 
 
 **İzlenebilirlik:** Rapor §10; ISP/SRP.
 
+**Uygulama:** [F48 kaydı](../uygulama-kayitlari/F48-2026-10-04.md) ile tamamlandı. 20.000 ek sentetik yazıda gerçek EXPLAIN planına dayanan iki sıralama indeksi ve dar ilgili kart projection'ı doğrulandı. Aramada belirgin hızlanma yok; mevcut kapak yerleşim oranı korundu, HTML boyutları/hero önceliği açıklandı. Laboratuvar ölçümleri gerçek kullanıcı CWV veya ölçülmüş CLS azalması değildir. D22 uygulanır.
+
 **Durma noktası:** Kanıtı uygulama kaydına ve DURUM.md'ye işle; sonraki fazı başlatma.
 
 ---
@@ -272,4 +274,3 @@ Bu bölüm bir çalıştırma emri değildir. Her seferinde yalnızca **bir faz 
 **İzlenebilirlik:** Raporun tümü; nihai kabul.
 
 **Durma noktası:** Kanıtı uygulama kaydına ve DURUM.md'ye işle; sonraki fazı başlatma.
-

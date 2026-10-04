@@ -21,7 +21,7 @@
     @if (!string.IsNullOrEmpty(post.ThumbnailUrl))
     {
         <div class="mb-8 border-2 border-gray-900 dark:border-zinc-700 overflow-hidden">
-            <img src="@post.ThumbnailUrl" alt="" class="public-detail-cover" />
+            <img src="@post.ThumbnailUrl" alt="" class="public-detail-cover" width="1600" height="900" loading="eager" fetchpriority="high" decoding="async" />
         </div>
     }
     @if (Model.Content.Headings.Count >= 3)
