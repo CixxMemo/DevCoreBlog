@@ -86,3 +86,15 @@ dotnet run --project DevCoreBlog.csproj
 ```
 
 Bu komutların belgelenmesi çalıştırıldıkları anlamına gelmez. Build/test/tarayıcı kanıtları ilgili faz kaydında tutulur. CSRF, cache, XSS veya SOLID açısından kusursuzluk iddia edilmez; inceleme raporu ve ilerleme çizelgesi güncel durumu ayırır.
+
+## Git ve yerel doğrulama dosyaları (F54)
+
+`bin/`, `obj/`, `node_modules/`, `wwwroot/generated/` ve yerel cookie/auth
+kayıtları takip edilmez. Derleme çıktıları build ile yeniden üretilir; migration,
+lockfile ve lisanslı frontend kaynakları korunur. `git rm --cached` yerel dosyayı
+silmez; F54 index kaldırmaları commit yapılana kadar staged görünür.
+
+Gerçek `.env`, cookie ve Data Protection anahtarlarını eklemeyin.
+[Oturum ve geçmiş riski](docs/DEPLOYMENT_SECURITY.md#f54--git-takibi-ve-geçmişteki-oturum-kayıtları)
+Git takibinden çıkarmanın geçmişi temizlemediğini ve gerektiğinde oturum iptalini
+açıklar.

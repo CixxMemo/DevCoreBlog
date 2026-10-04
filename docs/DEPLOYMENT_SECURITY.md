@@ -105,3 +105,25 @@ Kaynaklar: [.NET 10 reverse proxy sınırı](https://learn.microsoft.com/en-us/a
 ## F53 işletim ve log sınırı
 
 [Operasyon sözleşmesi](OPERASYON_VE_LOG_SOZLESMESI.md) güvenli JSON scope/event, yetkili servis durumu, journal hedefi ve gerçek sunucuda doğrulanacak retention/erişim yollarını tanımlar. Systemd örneğinde stdout/stderr journal’a açıkça yönlendirilir; bu örnek canlı log saklama/rotation kurulumu değildir. Eksik medya credential’ında admin teşhis açık, upload fail-closed kalır; kimlik zorunluluğu korunur.
+
+## F54 — Git takibi ve geçmişteki oturum kayıtları
+
+F54, doğrulanmış 245 root bin/obj çıktısını ve `cookies.txt` kaydını yalnız Git
+index’inden çıkardı; yerel dosyalar korunur. Cookie jar localhost’a ait tek,
+değeri bulunan session kaydı içeriyordu; kalıcı expiry alanı yoktu. Bu bilgi
+oturumun bugün geçerli olduğunu veya üretim hesabına ait olduğunu kanıtlamaz.
+Cookie değeri çözülmedi, sunucuya gönderilmedi, rapora/loga yazılmadı.
+
+F08 güncel kimlik bilgileri ve `ADMIN_SESSION_VERSION` damgasını her istekte
+kontrol eder; eksik/eski damga reddedilir. Tarihsel cookie’nin iç damgası ve
+üretildiği ortam doğrulanmadığından canlı iptal yapıldığı iddia edilmez. Önceden
+paylaşılan ortam hâlâ kullanılıyorsa o ortamın operatörü mevcut sürümü farklı
+kararlı bir değerle değiştirip uygulamayı yeniden başlatmalı ve eski oturumun
+reddini doğrulamalıdır. Bu bütün admin oturumlarını kapatır; gerçek `.env`,
+production EnvironmentFile veya key ring F54’te değiştirilmedi. Canlı ortamda
+iptal/rotasyon gerektiği değerlendirmesi ve uygulaması ayrı kaydedilir.
+
+Index kaldırması eski commit/blob/clone kopyalarını temizlemez. Cookie geçmişte
+kalır; history rewrite ve force-push yapılmadı. Secret geçmişini genel olarak
+temizlenmiş saymayın. Gerçek secret tespitinde ilgili credential rotasyonu ayrıca
+planlanır; dosyayı yeniden takip etmek geri dönüş yöntemi değildir.

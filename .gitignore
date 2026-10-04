@@ -4,7 +4,20 @@ obj/
 
 ## Environment variables (secrets — NEVER commit)
 .env
+.env.*
+!.env.example
 
 ## Reproducible frontend dependencies and build output
 node_modules/
 wwwroot/generated/
+
+## Local verification state (never commit authentication material)
+cookies.txt
+cookies*.txt
+*.cookies.txt
+.auth/
+playwright/.auth/
+
+## Python verification bytecode
+__pycache__/
+*.py[cod]

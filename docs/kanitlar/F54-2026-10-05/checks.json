@@ -1,0 +1,27 @@
+{
+  "baseline_head": "b524e217cf03caa8a1a52d71ec23e608a86578cd",
+  "counts": {
+    "bin": 144,
+    "obj": 101,
+    "cookies": 1
+  },
+  "checks": {
+    "local_246_files_preserved_byte_for_byte": true,
+    "exact_246_index_deletions_only": true,
+    "tracked_bin_obj_cookie_zero": true,
+    "ignore_14_examples": true,
+    "env_example_not_ignored": true,
+    "source_csproj_migrations_lockfile_unchanged": true,
+    "real_env_not_tracked": true,
+    "root_build_zero_error_warning": true,
+    "clean_source_build_zero_error_warning": true
+  },
+  "cookie_metadata": {
+    "records": 1,
+    "loopback": true,
+    "session_cookie_no_persistent_expiry": true,
+    "value_not_exported": true,
+    "active_session_not_verified": true,
+    "live_revocation_performed": false
+  }
+}
