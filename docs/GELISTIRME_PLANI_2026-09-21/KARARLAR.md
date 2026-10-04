@@ -455,3 +455,36 @@ sözleşmesi korunur; seçilmeyen sağlayıcının şifrelemesi kanıtlanmış s
 [Dağıtım güvenliği](../DEPLOYMENT_SECURITY.md) Nginx/systemd/environment örneklerinin,
 uyarlama ve gerçek host kabul kontrollerinin ayrıntılı kaynağıdır. Yerel TLS proxy
 fixture gerçek Nginx kurulumu değildir; canlı işlem ve restore F56’ya kalır.
+
+
+## D25 — Yerel CSP raporlama ve ölçülmüş editör istisnası
+
+F51 Development/test HTML’de Content-Security-Policy-Report-Only üretir;
+Production’da varsayılan kapalıdır, yanlışlıkla açık hazırlık başlangıçta reddedilir.
+Gerçek enforcement F52 onayı ve ayrı browser kabulü ister. Yeni public rapor
+endpoint’i/üçüncü taraf raporlama/veri toplama yoktur. OnStarting 404/500 HTML’yi
+kapsar; statik asset/XML/JSON’a HTML politikası yazılmaz.
+
+Executable inline script/handler’lar yerel küçük modüllere, shell/error stilleri
+CSS dosyalarına taşındı. TempData ve kategori adı Razor-encoded data attribute
+olarak okunur; metin textContent ile gösterilir, JS string’i/HTML’e dönüştürülmez.
+JSON-LD inert veri ve F44 default serializer sınırında kalır. Nonce gerekmediği
+için static aday public output cache body/header ile aynı kalır.
+
+Script self/attribute none; unsafe-inline/eval/wildcard yoktur. Mevcut Google
+Fonts stylesheet/font origin’leri ve renderer’ın YouTube nocookie frame origin’i
+listelidir. Önceki kaynakta Toast UI Create için 31 style-src-attr ihlali ölçüldü;
+yalnız başarılı Create/Edit HTML’de bu öznitelik için unsafe-inline gerekir.
+Genel style-src veya script izni genişletilmez. Diğer sayfalarda style-src-attr
+none, bütün sayfalarda inline style element yoktur.
+
+Image self/HTTPS/data sınırı mevcut keyfî HTTPS legacy kapak/Markdown sözleşmesini
+ve editor CSS data ikonlarını korur; yalnız Cloudinary’ye daraltıp eski içeriği
+sessizce kırmaz. Data Markdown hedefleri hâlâ renderer’da reddedilir. F35 vendor
+bakım borcu kapanmadı; CSP dependency/sanitizer sertifikası değildir.
+
+Gerçek Chrome/PostgreSQL fixture’da normal kritik akışlarda CSP ihlali yoktur.
+Kasıtlı inline probe çalışırken report olayı verdi; Report-Only koruma sağlamaz.
+Gerçek YouTube iframe HTTP 200 gördü; video playback/hesap veya Cloudinary hesabı
+sınanmadı. [CSP sözleşmesi](../CSP_RAPORLAMA_SOZLESMESI.md) kaynak izinlerini,
+ölçümü, beklenen sentetik src=x 404 ve süreç ayarlarını açıklar.

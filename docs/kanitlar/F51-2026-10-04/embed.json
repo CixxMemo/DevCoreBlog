@@ -1,0 +1,7 @@
+{
+  "allowlisted_frame_document_http_statuses": [
+    200
+  ],
+  "frame_document_loaded": true,
+  "scope": "Actual YouTube nocookie frame navigation; video playback/account not tested"
+}

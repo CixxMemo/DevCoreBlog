@@ -92,7 +92,7 @@
 
                                         @* Delete button with relationship warning *@
                                         <form asp-action="Delete" asp-route-id="@item.Id" method="post" class="inline m-0 p-0"
-                                              onsubmit="return confirm('Are you sure you want to delete category: \'@item.Name\'?');">
+                                              data-confirm-category="@item.Name">
                                             <button type="submit" 
                                                     class="border border-rose-700 text-rose-700 bg-white hover:bg-rose-700 hover:text-white px-2.5 py-1 font-bold inline-block transition-none">
                                                 DEL
@@ -123,3 +123,7 @@
         }
     </div>
 </div>
+
+@section Scripts {
+    <script src="~/js/category-delete-confirmation.js" asp-append-version="true"></script>
+}

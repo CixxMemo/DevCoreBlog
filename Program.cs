@@ -42,6 +42,9 @@ using Microsoft.AspNetCore.HostFiltering;
 // Create the application builder, which loads configuration from appsettings.json,
 // environment variables, and command-line arguments
 var builder = WebApplication.CreateBuilder(args);
+var cspReportOnlyEnabled = builder.Configuration.GetValue<bool>("Security:Csp:ReportOnlyEnabled");
+if (cspReportOnlyEnabled && !builder.Environment.IsDevelopment())
+    throw new InvalidOperationException("CSP report-only preparation is supported only in local Development/test environments.");
 
 // Development dotenv values fill missing variables only; production uses the service environment.
 var dotenvPath = Path.Combine(builder.Environment.ContentRootPath, ".env");
@@ -473,6 +476,9 @@ var app = builder.Build();
 // Resolve trusted ingress information before HTTPS, authentication and IP-based limits.
 app.UseForwardedHeaders();
 app.UseHostFiltering();
+
+// F51 observes local HTML only; production enforcement belongs to the next approved phase.
+if (cspReportOnlyEnabled) app.UseMiddleware<CspReportOnlyMiddleware>();
 
 // Global Error Handling Middleware
 app.UseMiddleware<ExceptionHandlingMiddleware>();

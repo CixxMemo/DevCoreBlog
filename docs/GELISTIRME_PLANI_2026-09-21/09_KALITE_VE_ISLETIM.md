@@ -114,6 +114,8 @@ Bu bölüm bir çalıştırma emri değildir. Her seferinde yalnızca **bir faz 
 
 **İzlenebilirlik:** G2, G3, G10. CSP için OWASP kaynağı: https://cheatsheetseries.owasp.org/cheatsheets/Content_Security_Policy_Cheat_Sheet.html
 
+**Uygulama:** [F51 kaydı](../uygulama-kayitlari/F51-2026-10-04.md) ile tamamlandı. Önceki inline ihlaller ölçülüp script/CSS dışarı taşındı; gerçek Chrome kritik akışlarında normal CSP ihlali kalmadı. Yalnız editörün ölçülmüş dynamic style attribute ihtiyacı dar istisnadır; script wildcard/unsafe izinleri yoktur. Report-Only koruma değildir; F52 enforcement kabulü ayrı kalır. D25 ve [CSP sözleşmesi](../CSP_RAPORLAMA_SOZLESMESI.md) uygulanır.
+
 **Durma noktası:** Kanıtı uygulama kaydına ve DURUM.md'ye işle; sonraki fazı başlatma.
 
 ---

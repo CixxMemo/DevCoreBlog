@@ -1,10 +1,10 @@
 # İlerleme çizelgesi
 
-- **Son kayıt:** 4 Ekim 2026 — F50 tek sunucu Nginx/loopback proxy güveni ve üretim oturum/limit davranışı doğrulandı.
-- **Tamamlanan plan fazı:** 51/58 (F00–F50).
-- **Tamamlanan uygulama kodu fazı:** 49.
+- **Son kayıt:** 4 Ekim 2026 — F51 yerel CSP Report-Only, inline kod taşıma ve kritik akış kabulü doğrulandı.
+- **Tamamlanan plan fazı:** 52/58 (F00–F51).
+- **Tamamlanan uygulama kodu fazı:** 50.
 - **Aktif faz:** Yok.
-- **Sıradaki faz:** F51 — kullanıcı onayı bekleniyor.
+- **Sıradaki faz:** F52 — kullanıcı onayı bekleniyor.
 - **Uygulama kodu:** F02–F09 güvenlik fazları tamamlandı. F10 migration zincirini doğruladı. F11–F13 form/içerik güvenliğini tamamladı. F14 kategori update'ini güvenli alanlara daralttı. F15 kategori silmesini DB constraint'i ve yarış yönetimiyle veri kaybına karşı korudu. F16 yayın zamanını açık saat dilimiyle UTC'ye bağladı. F17 public görünürlüğü tek kurala bağladı. F18 tek süreçli liste cache'ini yayın sınırı ve mutation invalidation'ıyla doğruladı. F19 düzenlemede kayıtlı slug'ı korudu. F20 benzersiz slug indekslerini ve geçmiş çakışma göçünü ekledi. F21 yalnızca uygun public GET'leri atomik sayıyor. F22 eski edit sekmelerinin içerik ezmesini sürüm karşılaştırmasıyla önlüyor. F23 hata akışında gerçek 404/500 ve JSON durumlarını koruyor. F24 servislerin somut Data repository bağımlılığını Core sözleşmelerine taşıdı. F25 dashboard sorgularını servis/repository sınırına ve kategori menülerini asenkron bileşene taşıdı. F26 güvenli Markdown renderer'ını Services'e taşıyıp Cloudinary istemcisini composition root'tan enjekte etti. F27 webhook'u secret-önce, sınırlı JSON kabulüne ve açık yayın yetkisine bağladı. F28 anahtarlı gönderimleri kalıcı işlem kaydı ve tek transaction ile tekrar korumasına bağladı. F29 portföyü dar DB projection, kararlı sıralama ve yapılandırılmış site URL'sine bağladı. F30 Create/Edit ortak formunu ve editör davranışlarını tek partial/modülde topladı. F31 Create/Edit kurtarmayı yazı kimliği, açık Restore/Discard, sekme koordinasyonu ve doğrulanmış başarılı kayıt bilgisine bağladı. F32 açık kayıt eylemlerini, normal Save korumasını ve doğru yayın durumunu uyguladı. F33 aynı güvenli render sınırından, DB yazısı/sayaç/yayın yan etkisi olmayan özel HTML önizleme üretiyor. F34 yönetim panelini mobil drawer, kontrollü tablo kaydırma ve dar ekranda kullanılabilir form/editörle düzenledi; gerçek %200 Chrome yakınlaştırmasında yatay taşma olmadığını doğruladı. F35 Tailwind CLI/lockfile ile yerel CSS ve sabit lisanslı editör/Prism varlıklarını build/publish akışına bağladı.
 
 ## Kullanım
@@ -71,7 +71,7 @@
 | [x] | F48 | Ölçülmüş sorgu ve sayfa performansını iyileştir | TAMAMLANDI — KOD | [F48 kanıtı](../uygulama-kayitlari/F48-2026-10-04.md) |
 | [x] | F49 | Medya kayıtlarını bakım yapılabilir hale getir | TAMAMLANDI — KOD | [F49 kanıtı](../uygulama-kayitlari/F49-2026-10-04.md) |
 | [x] | F50 | Dağıtım sınırlarını ve reverse proxy güvenini tanımla | TAMAMLANDI — KOD | [F50 kanıtı](../uygulama-kayitlari/F50-2026-10-04.md) |
-| [ ] | F51 | CSP uyumluluğunu raporlama modunda hazırla | BAŞLAMADI | — |
+| [x] | F51 | CSP uyumluluğunu raporlama modunda hazırla | TAMAMLANDI — KOD | [F51 kanıtı](../uygulama-kayitlari/F51-2026-10-04.md) |
 | [ ] | F52 | Doğrulanmış CSP ve güvenlik başlıklarını uygula | BAŞLAMADI | — |
 | [ ] | F53 | Gerçek hata ve servis durumlarını görünür yap | BAŞLAMADI | — |
 | [ ] | F54 | Git deposundaki üretilmiş dosyaları temizle | BAŞLAMADI | — |
@@ -81,10 +81,10 @@
 
 ## Son agent teslimi
 
-- Bu turdaki faz: F50 — kullanıcının onayladığı tek Linux VPS/sunucu, Nginx ve IPv4 loopback tek Kestrel süreci; dar forwarding/host sınırı ve dış bind/bypass reddi. Production servis environment’ı kullanır. D24 uygulanır.
-- Kontroller: uygulama ve sınır tool build 0 uyarı/0 hata; 25 configuration/gerçek framework forwarding kontrolü, 16 gerçek Production/yerel TLS proxy kabulü geçti. Önceki kaynakta HTTPS proxy döngüsü ve wildcard Host yönlendirmesi gösterildi. F17 yayın görünürlüğü, F11/F12 form/sözleşme ve F49 boş/önceki DB yükseltme regresyonları izole runner’da geçti. [Kanıt](../uygulama-kayitlari/F50-2026-10-04.md).
-- Sınırlama: Proxy fixture Nginx sözleşmesini taklit eder; gerçek Linux/Nginx/systemd, nginx -t, DNS/sertifika/şifreli volume ve canlı dağıtım doğrulanmadı. Sağlayıcı seçilmedi. Rate limit/cache tek süreçlidir; çok instance toplam garantisi yoktur. F47 veri kullanımı taslağı hâlâ kullanıcı değerlendirmesi ve gerçek hosting/log bilgisi bekler.
-- Aktif faz: Yok. Sıradaki tek faz: F51 — CSP uyumluluğunu raporlama modunda hazırla.
-- Kullanıcıdan gereken: F51 için açık onay; [veri kullanımı taslağı](../F47_VERI_KULLANIMI_TASLAGI.md) değerlendirmesi.
+- Bu turdaki faz: F51 — Development HTML’de Report-Only, yerel script/CSS, encode edilen TempData/kategori data attribute ve yalnız Create/Edit için ölçülmüş stil özniteliği istisnası. Static politika nonce gerektirmez; D25 uygulanır.
+- Kontroller: build 0 uyarı/0 hata; Chrome’da 32 kontrol ve 27 normal ziyaret, sıfır normal CSP ihlali; HTTP/header/cache32, gerçek 500/error CSS5, production başlangıç koruması1, preview/XSS30, assets30, F50 Production/TLS16 geçti. Gerçek YouTube nocookie frame HTTP200; mobil/masaüstü, keyboard Escape/focus ve clipboard doğrulandı. [Kanıt](../uygulama-kayitlari/F51-2026-10-04.md).
+- Sınırlama: Report-Only saldırıyı engellemez; production enforcement yapılmadı. Sentetik image/provider fixture gerçek Cloudinary upload değildir; YouTube playback/hesap testi yoktur. Src=x XSS fixture görseli beklenen 404’tür, handler çalışmaz; sayfa terk edilirken child fetch abort’u ayrıca kayıtlıdır. F35 vendor bakım borcu ve F47 veri kullanımı taslağı açık kalır; gerçek Linux/Nginx/canlı hosting hâlâ doğrulanmadı.
+- Aktif faz: Yok. Sıradaki tek faz: F52 — Doğrulanmış CSP ve güvenlik başlıklarını uygula.
+- Kullanıcıdan gereken: F52 için açık onay; [veri kullanımı taslağı](../F47_VERI_KULLANIMI_TASLAGI.md) değerlendirmesi.
 
 [Ana plan](README.md) · [Hazır mesajlar](AGENT_PROMPTLARI.md)

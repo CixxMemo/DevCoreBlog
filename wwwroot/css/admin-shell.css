@@ -1,0 +1,52 @@
+:root {
+    --admin-bg: #f4f4f0;
+    --admin-surface: #ffffff;
+    --admin-border: #000000;
+    --admin-text: #000000;
+}
+
+/* Enforce sharp tech minimal design */
+body {
+    background-color: var(--admin-bg);
+    color: var(--admin-text);
+    font-family: 'Inter', sans-serif;
+}
+
+/* Sidebar Navigation Item Base */
+.admin-nav-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 16px;
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #000000;
+    background-color: #ffffff;
+    border-bottom: 1px solid #e5e5e5;
+    text-decoration: none;
+    transition: none;
+    cursor: pointer;
+}
+
+/* Hover: Instant black background inversion */
+.admin-nav-item:hover {
+    background-color: #000000;
+    color: #ffffff;
+}
+
+/* Active: Solid black background with white text */
+.admin-nav-item.active {
+    background-color: #000000;
+    color: #ffffff;
+}
+
+/* High contrast scrollbar for admin sidebar & content */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: #f4f4f0;
+}
+::-webkit-scrollbar-thumb {
+    background: #000000;
+}

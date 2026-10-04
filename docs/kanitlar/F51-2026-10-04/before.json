@@ -1,0 +1,68 @@
+{
+  "baseline_commit": "2b52a67c8e77ad8eeee1e3734f3a52aaf4945335",
+  "scope": "Original source + browser-injected stricter report-only policy, not production enforcement",
+  "pages": [
+    {
+      "path": "/",
+      "violationCounts": {
+        "script-src-elem": 1
+      },
+      "inlineStyleElements": 0,
+      "styleAttributes": 0
+    },
+    {
+      "path": "/Admin/Dashboard",
+      "violationCounts": {
+        "style-src-elem": 1,
+        "script-src-elem": 2
+      },
+      "inlineStyleElements": 1,
+      "styleAttributes": 0
+    },
+    {
+      "path": "/AdminPost/Create",
+      "violationCounts": {
+        "style-src-elem": 1,
+        "script-src-elem": 2,
+        "style-src-attr": 31
+      },
+      "inlineStyleElements": 1,
+      "styleAttributes": 19
+    },
+    {
+      "path": "/AdminCategory/Create",
+      "violationCounts": {
+        "style-src-elem": 1,
+        "script-src-elem": 3
+      },
+      "inlineStyleElements": 1,
+      "styleAttributes": 0
+    },
+    {
+      "path": "/Admin/Automations",
+      "violationCounts": {
+        "style-src-elem": 1,
+        "script-src-elem": 2
+      },
+      "inlineStyleElements": 1,
+      "styleAttributes": 0
+    },
+    {
+      "path": "/AdminCategory",
+      "violationCounts": {
+        "style-src-elem": 1,
+        "script-src-elem": 1
+      },
+      "inlineStyleElements": 1,
+      "styleAttributes": 0
+    },
+    {
+      "path": "/does-not-exist",
+      "violationCounts": {
+        "style-src-elem": 1
+      },
+      "inlineStyleElements": 1,
+      "styleAttributes": 0
+    }
+  ]
+}

@@ -97,7 +97,7 @@
                 <div class="flex items-center justify-between font-mono text-xs">
                     <span class="font-bold uppercase text-neutral-600">// n8n / Make.com JSON Payload Template:</span>
                     <button type="button" 
-                            onclick="copySnippet('webhook-payload-snippet', this)"
+                            data-copy-snippet="webhook-payload-snippet"
                             class="border border-black bg-white hover:bg-black hover:text-white px-2.5 py-1 font-mono text-xs font-bold uppercase transition-none">
                         Copy JSON
                     </button>
@@ -119,7 +119,7 @@
                 <div class="flex items-center justify-between font-mono text-xs">
                     <span class="font-bold uppercase text-neutral-600">// cURL Terminal Test Command:</span>
                     <button type="button" 
-                            onclick="copySnippet('curl-snippet', this)"
+                            data-copy-snippet="curl-snippet"
                             class="border border-black bg-white hover:bg-black hover:text-white px-2.5 py-1 font-mono text-xs font-bold uppercase transition-none">
                         Copy cURL
                     </button>
@@ -220,7 +220,7 @@
                 <div class="flex items-center justify-between font-mono text-xs">
                     <span class="font-bold uppercase text-neutral-600">// React / Next.js Fetch Integration Example:</span>
                     <button type="button" 
-                            onclick="copySnippet('react-snippet', this)"
+                            data-copy-snippet="react-snippet"
                             class="border border-black bg-white hover:bg-black hover:text-white px-2.5 py-1 font-mono text-xs font-bold uppercase transition-none">
                         Copy Code
                     </button>
@@ -256,34 +256,5 @@ async function getLatestArticles() {
 </div>
 
 @section Scripts {
-    <script>
-        // =========================================================================
-        // Copy Code Snippet to Clipboard Helper
-        // =========================================================================
-        function copySnippet(elementId, buttonElement) {
-            const pre = document.getElementById(elementId);
-            if (!pre) return;
-
-            const text = pre.innerText || pre.textContent;
-            navigator.clipboard.writeText(text).then(() => {
-                const originalText = buttonElement.textContent;
-                buttonElement.textContent = 'COPIED!';
-                buttonElement.classList.add('bg-black', 'text-white');
-                
-                if (window.showToast) {
-                    window.showToast('Snippet copied to clipboard.', 'success');
-                }
-
-                setTimeout(() => {
-                    buttonElement.textContent = originalText;
-                    buttonElement.classList.remove('bg-black', 'text-white');
-                }, 2000);
-            }).catch(err => {
-                console.error('Copy error:', err);
-                if (window.showToast) {
-                    window.showToast('Failed to copy snippet.', 'error');
-                }
-            });
-        }
-    </script>
+    <script src="~/js/automation-copy.js" asp-append-version="true"></script>
 }

@@ -1,0 +1,287 @@
+{
+  "checks": {
+    "theme_toggle": true,
+    "theme_survives_reload": true,
+    "public_mobile_keyboard_focus": true,
+    "public_mobile_no_overflow": true,
+    "json_ld_is_inert_and_valid": true,
+    "prism_highlights_code": true,
+    "code_copy": true,
+    "youtube_embed_origin": true,
+    "article_no_script_execution": true,
+    "scratchpad_survives_reload": true,
+    "scratchpad_does_not_overwrite_without_restore": true,
+    "scratchpad_transfer": true,
+    "automation_copy": true,
+    "category_slug_preview": true,
+    "category_name_is_inert_data": true,
+    "category_cancel_keeps_encoded_name": true,
+    "category_confirm_deletes_only_fixture": true,
+    "real_tempdata_notification": true,
+    "toast_renders_html_as_text": true,
+    "editor_video_insertion": true,
+    "editor_real_upload_request_fixture_storage": true,
+    "preview_is_private_unsaved": true,
+    "admin_mobile_keyboard_focus": true,
+    "admin_mobile_no_overflow": true,
+    "edit_rich_editor_works": true,
+    "logout_returns_home": true,
+    "report_only_observes_but_does_not_block": true,
+    "no_browser_runtime_errors": true,
+    "no_unexplained_console_errors": true,
+    "expected_xss_probe_image_is_missing": true,
+    "no_unexpected_asset_failures": true,
+    "no_local_asset_network_failures": true
+  },
+  "visits": [
+    {
+      "label": "/",
+      "violations": [],
+      "inlineExecutableScripts": 0,
+      "inlineHandlers": 0,
+      "inlineStyleElements": 0,
+      "xssExecuted": false
+    },
+    {
+      "label": "/category/f01-active",
+      "violations": [],
+      "inlineExecutableScripts": 0,
+      "inlineHandlers": 0,
+      "inlineStyleElements": 0,
+      "xssExecuted": false
+    },
+    {
+      "label": "/ara?query=F01",
+      "violations": [],
+      "inlineExecutableScripts": 0,
+      "inlineHandlers": 0,
+      "inlineStyleElements": 0,
+      "xssExecuted": false
+    },
+    {
+      "label": "/about",
+      "violations": [],
+      "inlineExecutableScripts": 0,
+      "inlineHandlers": 0,
+      "inlineStyleElements": 0,
+      "xssExecuted": false
+    },
+    {
+      "label": "/contact",
+      "violations": [],
+      "inlineExecutableScripts": 0,
+      "inlineHandlers": 0,
+      "inlineStyleElements": 0,
+      "xssExecuted": false
+    },
+    {
+      "label": "/Account/Login",
+      "violations": [],
+      "inlineExecutableScripts": 0,
+      "inlineHandlers": 0,
+      "inlineStyleElements": 0,
+      "xssExecuted": false
+    },
+    {
+      "label": "/does-not-exist",
+      "violations": [],
+      "inlineExecutableScripts": 0,
+      "inlineHandlers": 0,
+      "inlineStyleElements": 0,
+      "xssExecuted": false
+    },
+    {
+      "label": "/",
+      "violations": [],
+      "inlineExecutableScripts": 0,
+      "inlineHandlers": 0,
+      "inlineStyleElements": 0,
+      "xssExecuted": false
+    },
+    {
+      "label": "public mobile theme/drawer",
+      "violations": [],
+      "inlineExecutableScripts": 0,
+      "inlineHandlers": 0,
+      "inlineStyleElements": 0,
+      "xssExecuted": false
+    },
+    {
+      "label": "/post/f01-markdown-xss",
+      "violations": [],
+      "inlineExecutableScripts": 0,
+      "inlineHandlers": 0,
+      "inlineStyleElements": 0,
+      "xssExecuted": false
+    },
+    {
+      "label": "article code/YouTube",
+      "violations": [],
+      "inlineExecutableScripts": 0,
+      "inlineHandlers": 0,
+      "inlineStyleElements": 0,
+      "xssExecuted": false
+    },
+    {
+      "label": "/Account/Login",
+      "violations": [],
+      "inlineExecutableScripts": 0,
+      "inlineHandlers": 0,
+      "inlineStyleElements": 0,
+      "xssExecuted": false
+    },
+    {
+      "label": "login/dashboard",
+      "violations": [],
+      "inlineExecutableScripts": 0,
+      "inlineHandlers": 0,
+      "inlineStyleElements": 0,
+      "xssExecuted": false
+    },
+    {
+      "label": "scratchpad transfer/editor",
+      "violations": [],
+      "inlineExecutableScripts": 0,
+      "inlineHandlers": 0,
+      "inlineStyleElements": 0,
+      "xssExecuted": false
+    },
+    {
+      "label": "/Admin/Automations",
+      "violations": [],
+      "inlineExecutableScripts": 0,
+      "inlineHandlers": 0,
+      "inlineStyleElements": 0,
+      "xssExecuted": false
+    },
+    {
+      "label": "automation clipboard",
+      "violations": [],
+      "inlineExecutableScripts": 0,
+      "inlineHandlers": 0,
+      "inlineStyleElements": 0,
+      "xssExecuted": false
+    },
+    {
+      "label": "/AdminCategory/Create",
+      "violations": [],
+      "inlineExecutableScripts": 0,
+      "inlineHandlers": 0,
+      "inlineStyleElements": 0,
+      "xssExecuted": false
+    },
+    {
+      "label": "category saved/toast",
+      "violations": [],
+      "inlineExecutableScripts": 0,
+      "inlineHandlers": 0,
+      "inlineStyleElements": 0,
+      "xssExecuted": false
+    },
+    {
+      "label": "category cancel/confirm",
+      "violations": [],
+      "inlineExecutableScripts": 0,
+      "inlineHandlers": 0,
+      "inlineStyleElements": 0,
+      "xssExecuted": false
+    },
+    {
+      "label": "real TempData and hostile toast text",
+      "violations": [],
+      "inlineExecutableScripts": 0,
+      "inlineHandlers": 0,
+      "inlineStyleElements": 0,
+      "xssExecuted": false
+    },
+    {
+      "label": "/AdminPost/Create",
+      "violations": [],
+      "inlineExecutableScripts": 0,
+      "inlineHandlers": 0,
+      "inlineStyleElements": 0,
+      "xssExecuted": false
+    },
+    {
+      "label": "native POST preview/image/video",
+      "violations": [],
+      "inlineExecutableScripts": 0,
+      "inlineHandlers": 0,
+      "inlineStyleElements": 0,
+      "xssExecuted": false
+    },
+    {
+      "label": "editor image/video insertion",
+      "violations": [],
+      "inlineExecutableScripts": 0,
+      "inlineHandlers": 0,
+      "inlineStyleElements": 0,
+      "xssExecuted": false
+    },
+    {
+      "label": "mobile editor/drawer",
+      "violations": [],
+      "inlineExecutableScripts": 0,
+      "inlineHandlers": 0,
+      "inlineStyleElements": 0,
+      "xssExecuted": false
+    },
+    {
+      "label": "/AdminPost/Edit/2005",
+      "violations": [],
+      "inlineExecutableScripts": 0,
+      "inlineHandlers": 0,
+      "inlineStyleElements": 0,
+      "xssExecuted": false
+    },
+    {
+      "label": "/AdminPost",
+      "violations": [],
+      "inlineExecutableScripts": 0,
+      "inlineHandlers": 0,
+      "inlineStyleElements": 0,
+      "xssExecuted": false
+    },
+    {
+      "label": "antiforgery logout",
+      "violations": [],
+      "inlineExecutableScripts": 0,
+      "inlineHandlers": 0,
+      "inlineStyleElements": 0,
+      "xssExecuted": false
+    }
+  ],
+  "externalResources": [
+    "stylesheet https://fonts.googleapis.com",
+    "font https://fonts.gstatic.com",
+    "image https://images.example.test"
+  ],
+  "errors": [],
+  "consoleErrors": [],
+  "networkFailures": [
+    {
+      "origin": "https://www.youtube-nocookie.com",
+      "type": "fetch",
+      "failure": "net::ERR_ABORTED"
+    }
+  ],
+  "failedAssets": [
+    {
+      "origin": "http://127.0.0.1:15192",
+      "path": "/AdminPost/Edit/x",
+      "status": 404,
+      "type": "image"
+    }
+  ],
+  "deliberateReportOnlyObservation": {
+    "ran": true,
+    "violations": [
+      {
+        "directive": "script-src-elem",
+        "blocked": "inline",
+        "disposition": "report"
+      }
+    ]
+  },
+  "scope": "Real Chrome, disposable PostgreSQL, synthetic storage/HTTPS image response; no Cloudinary upload or public deployment"
+}

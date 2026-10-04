@@ -3,65 +3,13 @@
 @* ============================================================================= *@
 @* This layout structures the site with a fixed left sidebar (Tech Minimal)      *@
 @* and a flexible main content area for the middle feed and right trending bar.  *@
-@* Supports seamless Dark and Light theme switching via global toggleTheme().   *@
+@* Supports seamless Dark and Light theme switching via the local theme module.   *@
 @* ============================================================================= *@
 
 <!DOCTYPE html>
 <html lang="en" class="public-root">
 <head>
-    <script>
-        // =====================================================================
-        // Theme Engine — Zero Flash & Global Toggle
-        // =====================================================================
-        (function() {
-            var savedTheme = localStorage.getItem('theme');
-            var systemDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-            if (savedTheme === 'dark' || (!savedTheme && systemDark)) {
-                document.documentElement.classList.add('dark');
-            } else {
-                document.documentElement.classList.remove('dark');
-            }
-        })();
-
-        // Global function called directly by onclick="toggleTheme()"
-        function toggleTheme() {
-            var html = document.documentElement;
-            var isDark = html.classList.contains('dark');
-            if (isDark) {
-                html.classList.remove('dark');
-                localStorage.setItem('theme', 'light');
-            } else {
-                html.classList.add('dark');
-                localStorage.setItem('theme', 'dark');
-            }
-            updateThemeIcons();
-        }
-
-        // Synchronize Sun/Moon icon visibility with current theme state
-        function updateThemeIcons() {
-            var isDark = document.documentElement.classList.contains('dark');
-            var darkIcons = document.querySelectorAll('.theme-icon-dark');
-            var lightIcons = document.querySelectorAll('.theme-icon-light');
-
-            darkIcons.forEach(function(el) {
-                if (isDark) {
-                    el.classList.add('hidden');
-                } else {
-                    el.classList.remove('hidden');
-                }
-            });
-
-            lightIcons.forEach(function(el) {
-                if (isDark) {
-                    el.classList.remove('hidden');
-                } else {
-                    el.classList.add('hidden');
-                }
-            });
-        }
-
-        document.addEventListener('DOMContentLoaded', updateThemeIcons);
-    </script>
+    <script src="~/js/public-theme.js" asp-append-version="true"></script>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <partial name="_SeoHead" model='@(ViewData["Metadata"] as DevCoreBlog.Models.Seo.PageMetadata ?? PageMetadata.Private(ViewData["Title"]?.ToString() ?? "Page", Context.Request.Path.ToUriComponent()))' />
@@ -164,10 +112,9 @@
                 </span>
             </div>
 
-            @* Theme Toggle Action Button with Direct onclick *@
+            @* Theme Toggle Action Button *@
             <button type="button" 
                     id="theme-toggle-btn"
-                    onclick="toggleTheme()" 
                     aria-label="Toggle dark/light theme" 
                     class="flex items-center justify-center gap-2 py-2 px-3 w-full border-2 border-gray-900 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-900 dark:text-zinc-100 hover:bg-gray-900 hover:text-white dark:hover:bg-primary dark:hover:text-white font-mono text-xs font-bold cursor-pointer transition-none rounded-none">
                 <svg class="theme-icon-dark w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
