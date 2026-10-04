@@ -1,30 +1,32 @@
-# F51 CSP raporlama sözleşmesi ve kaynak envanteri
+# CSP sözleşmesi ve kaynak envanteri — F52
 
-F51 yalnız **Content-Security-Policy-Report-Only** hazırlığıdır. Bu mod ihlali
-bildirir, saldırıyı engellemez; F03/F04 encoding ve güvenli Markdown sınırını
-ikame etmez. F52 onayı olmadan enforcement başlığı veya canlı politika eklenmez.
+F52 ile **Content-Security-Policy engelleme modunda bütün ortamlarda** etkindir.
+F51 Report-Only hazırlığı tarihsel [kayıttadır](uygulama-kayitlari/F51-2026-10-04.md).
+Encoding ve güvenli Markdown sınırları ayrı zorunlu korumalardır.
 
 ## Etkinleşme ve yanıt sınırı
 
-`appsettings.Development.json` içindeki `Security:Csp:ReportOnlyEnabled=true`
-yerel geliştirmede etkindir. Başlangıçtan önce process environment’a
-`Security__Csp__ReportOnlyEnabled=false` verilerek kapatılabilir; bu setting
-dotenv’ten yüklenmez. Development dışında açık report-only hazırlığı başlangıçta
-reddedilir. Production varsayılanı kapalıdır; F50 servis düzeni korunur.
+`SecurityHeadersMiddleware` koşulsuz kullanılır; kapatma/report-only configuration
+anahtarı yoktur. Eski `Security:Csp:ReportOnlyEnabled` setting’i kaldırıldı.
+HTML 200/404/500 yanıtında OnStarting ile enforcing policy yazılır; Response.Clear
+başlıkları kaybettirmez. JS/CSS/JSON/XML/RSS’ye HTML politikası yazılmaz.
+Uygulama hattındaki yanıtlar ayrıca `X-Content-Type-Options: nosniff`,
+`Referrer-Policy: strict-origin-when-cross-origin`, `X-Frame-Options: DENY` taşır.
+HTML’de frame-ancestors none da uygulanır. Framework startup Host filtresinin
+uygulamaya ulaşmadan verdiği boş 400 bu başlık hattının dışındadır; host reddi korunur.
 
-Middleware yalnız HTML yanıtta, OnStarting sırasında başlık üretir. 404/500
-HTML hata akışları da bu sınırdadır; JSON/XML/RSS/statik JS/CSS’ye HTML politikası
-konmaz. Public liste output cache’iyle politika sabittir. Nonce veya kullanıcı
-metninden hash üretilmez; farklı cache body/header nonce eşleşmesi sorunu yoktur.
+HSTS F50’deki yerleşik UseHsts üzerinden tek yerde, Development dışında HTTPS’te
+30 gün olarak yönetilir; Nginx’e ikinci HSTS/CSP kopyası konmaz. Gerçek Production
+500/TLS fixture’ında HSTS ve CSP birlikte doğrulandı. Public output cache ve HEAD
+aynı statik policy’yi taşır. Nonce gerekmez; header/body eşleşmesi değişmez.
 
-Public rapor endpoint’i, report-uri/report-to, analytics veya üçüncü taraf
-raporlama servisi yoktur. Tarayıcıdaki securitypolicyviolation ve konsol gözlemi
-geçici testte tutulur; gerçek içerik/token/cookie/ham rapor depolanmaz. Rapor
-hedefi olmadığına ilişkin tarayıcı uyarısı açıklanmıştır, koruma iddiası değildir.
+Public report endpoint’i, üçüncü taraf raporlama ve veri toplama eklenmedi.
+Gerçek sunucuya dağıtım yapılmadı. Geri dönüş report-only’a düşerse engelleme
+kaybı açıkça kaydedilmelidir; encoding/renderer düzeltmeleri geri alınmaz.
 
 ## Gerçek kaynak envanteri
 
-| Sınır | Mevcut kullanım | Aday izin |
+| Sınır | Mevcut kullanım | Uygulanan izin |
 |---|---|---|
 | Script | F35 yerel Toast UI 3.2.2, Prism 1.30.0 ve yerel autoload grammars; jQuery 3.7.1/Validation 1.21.0/Unobtrusive 4.0.0; küçük site/admin modülleri | `'self'`; script öznitelikleri `'none'`; unsafe-inline/unsafe-eval/wildcard yok |
 | Style element/link | F35 Tailwind 3.4.17, Prism, Toast UI, site/admin/error CSS; mevcut Google Fonts stylesheet | `'self' https://fonts.googleapis.com`; inline style element yok |
@@ -47,7 +49,7 @@ politikasıdır; parent sayfaya ek Google/video CDN script izinleri eklenmedi.
 Vendor bundle’daki new Function yalnız globalThis bulunmayan eski runtime
 fallback’idir; gerçek Chrome akışında eval ihlali olmadı. unsafe-eval eklenmedi.
 F35’te kaydedilmiş eski vendored DOMPurify bakım borcu kapanmış sayılmaz;
-F51 dependency güvenlik sertifikası veya sanitizer sürüm yükseltmesi değildir.
+F51/F52 dependency güvenlik sertifikası veya sanitizer sürüm yükseltmesi değildir.
 
 ## Inline kodun taşınması
 
@@ -81,8 +83,15 @@ ile yüklendi; video playback veya bir kullanıcı hesabı testi yapılmadı.
 Ayrı sentetik inline probe, Report-Only’nin scripti çalıştırıp ihlal bildirdiğini
 kanıtlar. Normal akışların sıfır ihlal sonucuna bu kasıtlı probe dahil edilmez.
 Mobil/masaüstü, klavye drawer Escape/odak geri dönüşü, pano işlemi ve açık Restore
-sözleşmesi korunur. Şema/canlı veri değişmez. F52’de aday **enforce** edilerek
-bütün akışlar yeniden doğrulanmalıdır; Report-Only başarısı enforce kabulü değildir.
+sözleşmesi korunur. Şema/canlı veri değişmez. F52’de aynı politika enforce edilerek 27 normal ziyaret
+ve 36 browser kontrolü geçti; normal CSP ihlali sıfırdı. Kasıtlı inline script,
+event handler, eval, dış script ve base injection engellendi. Eval kontrolü
+automation evaluate yerine browser fixture’ının yerelden yüklediği script içinde
+çalışır; automation kanalının CSP bypass’ı koruma başarısı sayılmaz.
+[F52 kanıtı](uygulama-kayitlari/F52-2026-10-04.md) header/cache/error ve Production
+regresyonunu açıklar.
 
 Kaynaklar: [OWASP CSP](https://cheatsheetseries.owasp.org/cheatsheets/Content_Security_Policy_Cheat_Sheet.html),
 [MDN style-src-attr ve CSSOM farkı](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Content-Security-Policy/style-src-attr).
+
+Başlık kaynakları: [MDN Referrer-Policy](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Referrer-Policy), [ASP.NET Core 10.0.10 HSTS middleware](https://github.com/dotnet/aspnetcore/blob/v10.0.10/src/Middleware/HttpsPolicy/src/HstsMiddleware.cs).

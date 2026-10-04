@@ -488,3 +488,23 @@ Kasıtlı inline probe çalışırken report olayı verdi; Report-Only koruma sa
 Gerçek YouTube iframe HTTP 200 gördü; video playback/hesap veya Cloudinary hesabı
 sınanmadı. [CSP sözleşmesi](../CSP_RAPORLAMA_SOZLESMESI.md) kaynak izinlerini,
 ölçümü, beklenen sentetik src=x 404 ve süreç ayarlarını açıklar.
+
+
+## D26 — Engelleyici CSP ve tutarlı güvenlik başlıkları
+
+F52, D25’in ölçülmüş izinlerini bütün ortamlarda enforcing CSP’ye taşır. D25’in
+Development Report-Only etkinleşme düzeni tarihsel kalır; yeni report-only/kapatma
+anahtarı yoktur. Nonce gerekmez; static politika output cache ve HEAD ile eşleşir.
+Yalnız HTML’ye CSP; uygulama yanıtlarına nosniff, strict-origin-when-cross-origin
+ve DENY yazılır. HTML’de frame-ancestors none bulunur. Başlıklar OnStarting’da
+üretildiği için Response.Clear sonrası 500’de korunur; hata Create/Edit olsa bile
+stil istisnası 200 dışına taşmaz. Framework erken Host filtresi uygulamadan önce
+boş 400 üretir; bunun dışında bir HTML hata sayfası/başlık başarısı iddia edilmez.
+HSTS F50 UseHsts üzerinden tek yerde kalır; HTTPS Production 500’de doğrulanır.
+
+Chrome normal akışlarında sıfır ihlal; kasıtlı script/handler/eval/dış script/base
+injection engellendi. Eval automation evaluate içinde sınanmaz: o kanal CSP’yi
+bypass eder; gerçek yüklenen script fixture’ı kullanılır. Script izinleri veya
+genel style-src genişletilmedi. Sanitization, CSRF/auth ve visibility ayrı kalır.
+Gerçek Nginx/hosting/canlı dağıtım ve Cloudinary hesabı doğrulanmış sayılmaz.
+Report-only’a geri dönüş açık koruma kaybıdır. [F52 kaydı](../uygulama-kayitlari/F52-2026-10-04.md).

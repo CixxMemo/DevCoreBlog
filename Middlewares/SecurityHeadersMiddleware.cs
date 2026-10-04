@@ -2,8 +2,8 @@ using Microsoft.AspNetCore.Mvc.Controllers;
 
 namespace DevCoreBlog.Middlewares;
 
-/// <summary>Observes the candidate policy on local HTML without enforcing it or collecting reports.</summary>
-public sealed class CspReportOnlyMiddleware(RequestDelegate next)
+/// <summary>Enforces the proven HTML policy and restores response headers after error handling.</summary>
+public sealed class SecurityHeadersMiddleware(RequestDelegate next)
 {
     private const string CommonPolicy =
         "default-src 'none'; script-src 'self'; script-src-attr 'none'; " +
@@ -18,13 +18,16 @@ public sealed class CspReportOnlyMiddleware(RequestDelegate next)
     {
         context.Response.OnStarting(() =>
         {
+            context.Response.Headers["X-Content-Type-Options"] = "nosniff";
+            context.Response.Headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
+            context.Response.Headers["X-Frame-Options"] = "DENY";
             if (context.Response.ContentType?.StartsWith("text/html", StringComparison.OrdinalIgnoreCase) == true)
             {
                 var action = context.GetEndpoint()?.Metadata.GetMetadata<ControllerActionDescriptor>();
                 // The pinned editor sets dynamic sizing/position style attributes; other pages need none.
                 var isEditor = context.Response.StatusCode == StatusCodes.Status200OK &&
                     action?.ControllerName == "AdminPost" && action.ActionName is "Create" or "Edit";
-                context.Response.Headers["Content-Security-Policy-Report-Only"] = CommonPolicy +
+                context.Response.Headers["Content-Security-Policy"] = CommonPolicy +
                     (isEditor ? "style-src-attr 'unsafe-inline'" : "style-src-attr 'none'");
             }
             return Task.CompletedTask;

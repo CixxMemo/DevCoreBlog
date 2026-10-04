@@ -142,6 +142,8 @@ Bu bölüm bir çalıştırma emri değildir. Her seferinde yalnızca **bir faz 
 
 **İzlenebilirlik:** G10; savunma katmanı.
 
+**Uygulama:** [F52 kaydı](../uygulama-kayitlari/F52-2026-10-04.md) ile tamamlandı. Bütün ortamlarda enforce CSP; script izinleri genişletilmedi, dar editor stil istisnası korundu. Gerçek Chrome kritik akışları, kasıtlı saldırı engelleme, cache/HEAD, HTML404/500 ve Production/TLS/HSTS kontrolleri geçti. D26 uygulanır; canlı dağıtım yapılmadı.
+
 **Durma noktası:** Kanıtı uygulama kaydına ve DURUM.md'ye işle; sonraki fazı başlatma.
 
 ---

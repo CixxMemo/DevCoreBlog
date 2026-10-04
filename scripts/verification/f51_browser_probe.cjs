@@ -9,6 +9,9 @@ const output = process.env.DEVCORE_F51_REPORT_DIR || '/tmp/devcoreblog-f51-brows
 fs.mkdirSync(output, { recursive: true });
 const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=', 'base64');
 const checks = {}, visits = [], externalResources = new Set(), errors = [], consoleErrors = [], networkFailures = [], failedAssets = [];
+const enforcing = process.env.DEVCORE_CSP_MODE === 'enforce';
+let deliberate = false;
+const deliberateConsole = [], deliberateNetwork = [];
 let browser;
 (async () => {
     browser = await chromium.launch({ headless: true, executablePath: process.env.DEVCORE_BROWSER_EXECUTABLE });
@@ -30,7 +33,7 @@ let browser;
     });
     context.on('requestfailed', request => {
         const url = new URL(request.url());
-        networkFailures.push({ origin: url.origin, type: request.resourceType(), failure: request.failure()?.errorText });
+        (deliberate ? deliberateNetwork : networkFailures).push({ origin: url.origin, type: request.resourceType(), failure: request.failure()?.errorText });
     });
     context.on('response', response => {
         if (response.status() >= 400 && response.request().resourceType() !== 'document')
@@ -40,7 +43,7 @@ let browser;
         page.on('pageerror', error => errors.push(error.name));
         page.on('console', message => {
             if (message.type() === 'error' && !message.text().includes('Failed to load resource:'))
-                consoleErrors.push(message.text().slice(0, 180));
+                (deliberate ? deliberateConsole : consoleErrors).push(message.text().slice(0, 180));
         });
     });
     const page = await context.newPage();
@@ -63,9 +66,9 @@ let browser;
     async function visit(route, status = 200) {
         const response = await page.goto(base + route, { waitUntil: 'domcontentloaded' });
         assert.equal(response.status(), status, route);
-        const policy = response.headers()['content-security-policy-report-only'];
+        const policy = response.headers()[enforcing ? 'content-security-policy' : 'content-security-policy-report-only'];
         assert.ok(policy?.includes("script-src 'self'; script-src-attr 'none'"), route);
-        assert.equal(response.headers()['content-security-policy'], undefined, 'F51 must not enforce');
+        assert.equal(response.headers()[enforcing ? 'content-security-policy-report-only' : 'content-security-policy'], undefined, 'Only the selected policy mode is allowed');
         assert.equal(policy.includes('unsafe-eval'), false);
         assert.equal(policy.includes('*'), false);
         const editor = /^\/AdminPost\/(Create|Edit)/.test(route);
@@ -191,12 +194,34 @@ let browser;
     await page.waitForURL(base + '/', { waitUntil: 'domcontentloaded' });
     await audit(page, 'antiforgery logout');
     checks.logout_returns_home = new URL(page.url()).pathname === '/';
+    deliberate = true;
     const probe = await context.newPage();
     await probe.goto(base + '/', { waitUntil: 'domcontentloaded' });
     await probe.evaluate(() => { const script = document.createElement('script'); script.textContent = 'window.f51ReportOnlyProbeRan = true'; document.body.append(script); });
     await probe.waitForTimeout(200);
     const observation = await probe.evaluate(() => ({ ran: window.f51ReportOnlyProbeRan === true, violations: window.f51Violations }));
-    checks.report_only_observes_but_does_not_block = observation.ran && observation.violations.some(v => v.directive === 'script-src-elem' && v.disposition === 'report');
+    if (enforcing) {
+        checks.inline_script_is_blocked = !observation.ran && observation.violations.some(v => v.directive === 'script-src-elem' && v.disposition === 'enforce');
+        await context.route(base + '/f52-eval-probe.js', route => route.fulfill({ contentType: 'text/javascript', body: "try { window.eval('window.f52EvalRan = true'); } catch { window.f52EvalRejected = true; }" }));
+        await probe.evaluate(() => {
+            const button = document.createElement('button');
+            button.setAttribute('onclick', 'window.f52HandlerRan = true');
+            document.body.append(button); button.click();
+            // Automation evaluate bypasses CSP; eval must run from a normally loaded script.
+            const trusted = document.createElement('script'); trusted.src = '/f52-eval-probe.js'; document.body.append(trusted);
+            const external = document.createElement('script'); external.src = 'https://blocked.example.test/probe.js'; document.body.append(external);
+            const base = document.createElement('base'); base.href = 'https://blocked.example.test/'; document.head.append(base);
+        });
+        await probe.waitForTimeout(250);
+        const blocked = await probe.evaluate(() => ({ handler: !!window.f52HandlerRan, eval: !!window.f52EvalRan, baseUnchanged: document.baseURI.startsWith(location.origin), violations: window.f51Violations }));
+        checks.inline_handler_is_blocked = !blocked.handler && blocked.violations.some(v => v.directive === 'script-src-attr' && v.disposition === 'enforce');
+        checks.eval_is_blocked = !blocked.eval && blocked.violations.some(v => v.blocked === 'eval' && v.disposition === 'enforce');
+        checks.external_script_is_blocked = blocked.violations.some(v => v.blocked === 'https://blocked.example.test' && v.directive === 'script-src-elem' && v.disposition === 'enforce');
+        checks.base_injection_is_blocked = blocked.baseUnchanged && blocked.violations.some(v => v.directive === 'base-uri' && v.disposition === 'enforce');
+        observation.blocked = blocked;
+    } else {
+        checks.report_only_observes_but_does_not_block = observation.ran && observation.violations.some(v => v.directive === 'script-src-elem' && v.disposition === 'report');
+    }
     await probe.close();
     checks.no_browser_runtime_errors = errors.length === 0;
     checks.no_unexplained_console_errors = consoleErrors.length === 0;
@@ -204,7 +229,7 @@ let browser;
     checks.expected_xss_probe_image_is_missing = failedAssets.some(missingXssProbeImage);
     checks.no_unexpected_asset_failures = failedAssets.every(missingXssProbeImage);
     checks.no_local_asset_network_failures = !networkFailures.some(f => f.origin === base && f.type !== 'document' && f.failure !== 'net::ERR_ABORTED');
-    const result = { checks, visits, externalResources: [...externalResources], errors, consoleErrors, networkFailures, failedAssets, deliberateReportOnlyObservation: observation,
+    const result = { checks, visits, externalResources: [...externalResources], errors, consoleErrors, networkFailures, failedAssets, policyMode: enforcing ? 'enforce' : 'report-only', deliberateObservation: observation, deliberateConsole, deliberateNetwork,
         scope: 'Real Chrome, disposable PostgreSQL, synthetic storage/HTTPS image response; no Cloudinary upload or public deployment' };
     fs.writeFileSync(path.join(output, 'browser.json'), JSON.stringify(result, null, 2));
     console.log(JSON.stringify({ checks, normalVisits: visits.length, externalResources: [...externalResources], errors, consoleErrors, networkFailures, failedAssets }, null, 2));

@@ -1,0 +1,11 @@
+{
+  "checks": {
+    "database_failure_preserves_real_500": true,
+    "error_security_headers": true,
+    "error_500_keeps_enforced_header_after_response_clear": true,
+    "error_500_remains_no_store": true,
+    "error_500_has_no_stack_or_sql": true,
+    "error_css_loads_without_database_or_inline_style": true
+  },
+  "count": 6
+}

@@ -6,6 +6,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from http_probe_support import extract_antiforgery_token
 p=argparse.ArgumentParser()
+p.add_argument('--security-headers', action='store_true', help='Run F52 header acceptance, including stopping the owned fixture database')
 p.add_argument('--source',type=Path,required=True)
 p.add_argument('--report',type=Path,required=True)
 p.add_argument('--database-port',type=int,default=55452)
@@ -99,6 +100,12 @@ try:
     status,headers,body,cookies=admin.call(headers={'X-Forwarded-For':'203.0.113.99','X-Forwarded-Proto':'http','X-Forwarded-Host':'evil.example'})
     checks['trusted_https_proxy_has_no_redirect_loop']=status==200 and 'Admin Sign In' in body
     checks['production_hsts_on_forwarded_https']='max-age=2592000' in headers.get('strict-transport-security','')
+    if a.security_headers:
+        for route in ['/Account/Login', '/does-not-exist-f52', '/js/public-theme.js', '/rss.xml']:
+            s,h,b,c=Client().call(route)
+            checks[route + '_production_security_headers'] = h.get('x-content-type-options') == 'nosniff' and h.get('referrer-policy') == 'strict-origin-when-cross-origin' and h.get('x-frame-options') == 'DENY'
+            html = route in ('/Account/Login', '/does-not-exist-f52')
+            checks[route + '_production_csp_scope'] = bool(h.get('content-security-policy')) == html and 'content-security-policy-report-only' not in h
     checks['antiforgery_cookie_is_secure_httponly']=any('Antiforgery' in c and '; secure' in c.lower() and '; httponly' in c.lower() for c in cookies)
     token=extract_antiforgery_token(body);assert token
     status,h,b,cookies=admin.call(fields={'username':'f50-admin','password':password,'__RequestVerificationToken':token})
@@ -130,6 +137,12 @@ try:
     s,h,b,c=expiry.call(fields={'username':'f50-admin','password':password,'__RequestVerificationToken':t});assert s==302
     time.sleep(2)
     checks['session_expires_without_sliding_renewal']=expiry.call('/AdminPost')[0]==302
+    if a.security_headers:
+        subprocess.run(['pg_ctl', '-D', str(tmp/'postgres'), '-m', 'fast', '-w', 'stop'], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        s,h,b,c=Client().call('/post/f01-markdown-xss')
+        checks['production_database_outage_preserves_500'] = s == 500 and 'no-store' in h.get('cache-control','')
+        checks['production_500_keeps_csp_and_hsts'] = "style-src-attr 'none'" in h.get('content-security-policy','') and h.get('strict-transport-security') == 'max-age=2592000' and 'content-security-policy-report-only' not in h
+        checks['production_500_keeps_other_security_headers'] = h.get('x-content-type-options') == 'nosniff' and h.get('referrer-policy') == 'strict-origin-when-cross-origin' and h.get('x-frame-options') == 'DENY'
     a.report.write_text(json.dumps({'checks':checks,'count':len(checks),'scope':'Production app + verified local TLS + Python Nginx-protocol fixture; not a real Nginx installation'},indent=2))
     print(json.dumps(checks,indent=2));assert all(checks.values())
 finally:
