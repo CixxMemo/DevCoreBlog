@@ -104,6 +104,7 @@ SOLID “her sınıfa interface”, “her metoda factory” veya puan uğruna i
 - `.env`, token, auth cookie, DB bağlantı parolası ve gerçek credential'ları commit/sohbet/log/test fixture'a yazmak yasaktır. `.env.example` yalnızca güvenli placeholder içerir. Secret gerektiren doğrulamada değerleri çıktılamadan varlık/başarıyı kontrol et.
 - Gerçek 4xx/5xx kodlarını koru; hatayı 200 veya redirect döngüsüyle gizleme. Production response'ta stack trace, SQL ve secret yok; loglarda korelasyon ID ve gerekli en az teşhis bulunur.
 - HTTPS, uygun güvenlik başlıkları ve test edilmiş CSP kullan. CSP önce gerekli akışlarla doğrulanır; ihlali kapatmak için wildcard/unsafe izinleri rastgele genişletme.
+- F50 onaylı hedef tek Linux sunucu, Nginx ve tek IPv4 loopback Kestrel sürecidir. Development dışında `nginx-loopback` profili, tek `http://127.0.0.1:<port>` listener ve SITE_URL’den dar host listesi zorunludur. Yalnız açık loopback proxy ve tek hop X-Forwarded-For/Proto işlenir; Nginx istemci başlıklarını yeniden yazar. Otomatik trust-all forwarding yasaktır. Production `.env` okumaz; limit/cache tek süreçlidir. Gerçek hosting/CDN/çok instance değişimi ayrıca doğrulanır. [D24](docs/GELISTIRME_PLANI_2026-09-21/KARARLAR.md#d24--tek-sunucu-nginx-ve-loopback-güven-sınırı) ve [dağıtım sözleşmesi](docs/DEPLOYMENT_SECURITY.md) uygulanır.
 - Gerçek production verisi/hesabı üzerinde açık testi yapma. Sentetik veri ve izole test ortamı kullan. Dependency güvenliğini gerçek sürüm/advisory ile doğrula; ağ hatasını “açık yok” diye raporlama.
 
 ## 7. Veri bütünlüğü, yayın ve cache

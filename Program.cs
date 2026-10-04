@@ -36,19 +36,42 @@ using Microsoft.AspNetCore.DataProtection;
 using System.Globalization;
 using DevCoreBlog.Core.Interfaces;
 using DevCoreBlog.Caching;
+using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.HostFiltering;
 
 // Create the application builder, which loads configuration from appsettings.json,
 // environment variables, and command-line arguments
 var builder = WebApplication.CreateBuilder(args);
 
-// Load environment variables from the .env file in the project root.
-// We use builder.Environment.ContentRootPath to ensure it finds the file regardless of where it's run from.
+// Development dotenv values fill missing variables only; production uses the service environment.
 var dotenvPath = Path.Combine(builder.Environment.ContentRootPath, ".env");
-DotNetEnv.Env.Load(dotenvPath);
+if (builder.Environment.IsDevelopment())
+    DotNetEnv.Env.NoClobber().Load(dotenvPath);
 
 var siteUrl = new SiteUrlOptions(
     Environment.GetEnvironmentVariable("SITE_URL"), builder.Environment.IsDevelopment());
 builder.Services.AddSingleton(siteUrl);
+var deploymentBoundary = new DeploymentBoundary(builder.Environment.IsDevelopment(), siteUrl,
+    Environment.GetEnvironmentVariable("DEPLOYMENT_PROFILE"),
+    Environment.GetEnvironmentVariable("ASPNETCORE_URLS") ?? builder.Configuration["urls"],
+    builder.Configuration.GetSection("Kestrel:Endpoints").GetChildren().Any(),
+    Environment.GetEnvironmentVariable("ASPNETCORE_FORWARDEDHEADERS_ENABLED"));
+builder.Services.AddSingleton(deploymentBoundary);
+if (deploymentBoundary.ListenUrl is not null) builder.WebHost.UseUrls(deploymentBoundary.ListenUrl);
+builder.Configuration["AllowedHosts"] = string.Join(';', deploymentBoundary.AllowedHosts);
+builder.Services.PostConfigure<HostFilteringOptions>(options =>
+{
+    options.AllowedHosts = deploymentBoundary.AllowedHosts.ToArray();
+    options.AllowEmptyHosts = false;
+    options.IncludeFailureMessage = false;
+});
+builder.Services.PostConfigure<ForwardedHeadersOptions>(deploymentBoundary.ConfigureForwarding);
+if (!builder.Environment.IsDevelopment())
+    builder.Services.AddHttpsRedirection(options =>
+    {
+        options.HttpsPort = 443;
+        options.RedirectStatusCode = StatusCodes.Status308PermanentRedirect;
+    });
 builder.Services.AddSingleton<DevCoreBlog.Routing.PublicUrlBuilder>();
 builder.Services.AddScoped<DevCoreBlog.Models.Seo.PageMetadataFactory>();
 
@@ -279,7 +302,11 @@ builder.Services.AddControllersWithViews(options =>
 // AJAX callers send the request token in this header. Standard Razor forms keep
 // using the generated __RequestVerificationToken form field.
 builder.Services.AddAntiforgery(options =>
-    options.HeaderName = "X-CSRF-TOKEN");
+{
+    options.HeaderName = "X-CSRF-TOKEN";
+    options.Cookie.SecurePolicy = builder.Environment.IsDevelopment()
+        ? CookieSecurePolicy.SameAsRequest : CookieSecurePolicy.Always;
+});
 
 
 // ---------------------------------------------------------------------------
@@ -315,9 +342,7 @@ if (webhookRateLimitPermitLimit is < 1 or > 20)
 
 builder.Services.AddRateLimiter(options =>
 {
-    // Login Limiter: keep the partition key tied to the direct connection IP.
-    // Forwarded headers are intentionally ignored until trusted proxy handling
-    // is introduced in a later phase. The fallback is a single bounded bucket.
+    // Partition by the client IP resolved only through the explicit ingress trust boundary.
     options.AddPolicy("LoginLimiter", httpContext =>
         RateLimitPartition.GetFixedWindowLimiter(
             partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown-login-client",
@@ -329,7 +354,7 @@ builder.Services.AddRateLimiter(options =>
                 Window = TimeSpan.FromSeconds(loginRateLimitWindowSeconds)
             }));
 
-    // Webhook limiter uses only the direct connection IP until trusted proxies are configured.
+    // Webhook and portfolio use the same trusted client-IP boundary as login.
     options.AddPolicy("WebhookLimiter", httpContext =>
         RateLimitPartition.GetFixedWindowLimiter(
             partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "anonymous-webhook",
@@ -381,7 +406,7 @@ builder.Services.AddRateLimiter(options =>
             .GetRequiredService<ILoggerFactory>()
             .CreateLogger("DevCoreBlog.Security.LoginRateLimit");
         logger.LogWarning(
-            "Admin sign-in rate limit rejected a request from direct connection IP {RemoteIpAddress}.",
+            "Admin sign-in rate limit rejected a request from resolved client IP {RemoteIpAddress}.",
             context.HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown");
 
         context.HttpContext.Response.ContentType = "text/plain; charset=utf-8";
@@ -444,6 +469,10 @@ var app = builder.Build();
 // ---------------------------------------------------------------------------
 // MIDDLEWARE PIPELINE (order matters — top to bottom)
 // ---------------------------------------------------------------------------
+
+// Resolve trusted ingress information before HTTPS, authentication and IP-based limits.
+app.UseForwardedHeaders();
+app.UseHostFiltering();
 
 // Global Error Handling Middleware
 app.UseMiddleware<ExceptionHandlingMiddleware>();

@@ -1,0 +1,30 @@
+{
+  "checks": {
+    "missing_production_profile": true,
+    "unknown_profile": true,
+    "public_listener": true,
+    "wildcard_listener": true,
+    "multiple_listeners": true,
+    "implicit_localhost_listener": true,
+    "overriding_kestrel_endpoints": true,
+    "automatic_forwarding_bypass": true,
+    "malformed_automatic_forwarding": true,
+    "nonstandard_public_https_port": true,
+    "production_loopback_origin": true,
+    "listener_credentials": true,
+    "listener_path": true,
+    "legacy_trust_bypass": true,
+    "single_listener_and_exact_host": true,
+    "development_allows_local_connections": true,
+    "trusted_proxy_resolves_ip_and_https_but_never_host": true,
+    "unknown_proxy_cannot_change_ip_scheme_host": true,
+    "one_hop_ignores_client_supplied_chain_prefix": true,
+    "asymmetric_headers_are_not_consumed": true,
+    "scheme_only_is_not_trusted": true,
+    "invalid_ip_does_not_upgrade_scheme": true,
+    "ipv4_mapped_loopback_is_supported": true,
+    "entire_loopback_network_is_not_trusted": true,
+    "ordinary_development_ignores_forwarded_headers": true
+  },
+  "count": 25
+}

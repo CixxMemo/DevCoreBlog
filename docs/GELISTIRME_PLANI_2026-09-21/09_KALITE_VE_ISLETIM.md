@@ -85,6 +85,8 @@ Bu bölüm bir çalıştırma emri değildir. Her seferinde yalnızca **bir faz 
 
 **İzlenebilirlik:** G6, G10.
 
+**Uygulama:** [F50 kaydı](../uygulama-kayitlari/F50-2026-10-04.md) ile tamamlandı. Kullanıcının onayladığı tek Linux/Nginx/loopback Kestrel hedefi, dar proxy/host başlangıç kontrolü ve servis örnekleri hazırlandı. Gerçek Production uygulamasında doğrulanan yerel TLS proxy fixture ile HTTPS/cookie/CSRF/limit/oturum kabulü geçti; gerçek Nginx/systemd veya canlı hosting kurulumu doğrulanmadı. D24 ve [dağıtım sözleşmesi](../DEPLOYMENT_SECURITY.md) uygulanır.
+
 **Durma noktası:** Kanıtı uygulama kaydına ve DURUM.md'ye işle; sonraki fazı başlatma.
 
 ---

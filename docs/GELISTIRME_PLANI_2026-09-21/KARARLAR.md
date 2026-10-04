@@ -425,3 +425,33 @@ ayrı somut liste ve kullanıcı onayıyla bakım işlemidir. Üretim export/mig
 Cloudinary silme F49 kabul testinde yapılmaz; sentetik provider kanıtı gerçek
 hesap erişimini doğrulamaz. [Medya bakım sözleşmesi](../MEDYA_BAKIM_SOZLESMESI.md)
 sahiplik, hata, işletim ve nullable kolonları bırakan geri dönüşün ayrıntılı kaynağıdır.
+
+
+## D24 — Tek sunucu Nginx ve loopback güven sınırı
+
+F50’de kaynakta gerçek hosting düzeni bulunmadı. Kullanıcı tek Linux VPS/sunucu,
+Nginx ve localhost’a bağlı tek Kestrel sürecini açıkça onayladı: “Evet, bu düzeni
+esas al”. Bu hedef kararı canlı sağlayıcı, DNS, sertifika veya kurulum kanıtı değildir.
+
+Development dışındaki bütün ortamlarda `DEPLOYMENT_PROFILE=nginx-loopback`,
+tek IPv4 loopback HTTP listener ve public HTTPS/443 DNS SITE_URL gerekir.
+Kestrel endpoint override, dış bind, otomatik unrestricted forwarding ve eski
+trust-bypass anahtarı fail-closed reddedilir. Host listesi SITE_URL’den türetilir;
+configuration wildcard’ı bunu genişletemez. Development ayrıca yerel host’ları
+kabul eder, normal forwarding kapalıdır. Production dotenv okumaz; Development
+yalnız eksik environment değerini doldurur.
+
+Yalnız 127.0.0.1 ve onun IPv4-mapped karşılığı proxy olarak bilinir. ForwardLimit=1,
+header symmetry ve sadece X-Forwarded-For/Proto HTTPS/auth/rate middleware’lerinden
+önce uygulanır. Nginx değerleri gerçek bağlantı IP’si/$scheme ile yeniden yazar,
+istemin forwarding chain’ini eklemez; Host/Prefix forwarded başlıklarına güvenilmez.
+Cookie/CSRF ve yayın URL sınırları korunur; HTTP yönlendirmesi HTTPS 443’e 308’dir.
+Yerel süreç erişimi sunucu güven sınırının parçasıdır.
+
+F06 limiter ve F18 cache tek süreçlidir; toplam dağıtık limit veya süreçler arası
+invalidation garantisi verilmez. CDN/container/çok instance ayrı doğrulama ister.
+Yeni Redis/KMS/servis yoktur. F08 kalıcı şifreli depolama ve 700 anahtar dizini
+sözleşmesi korunur; seçilmeyen sağlayıcının şifrelemesi kanıtlanmış sayılmaz.
+[Dağıtım güvenliği](../DEPLOYMENT_SECURITY.md) Nginx/systemd/environment örneklerinin,
+uyarlama ve gerçek host kabul kontrollerinin ayrıntılı kaynağıdır. Yerel TLS proxy
+fixture gerçek Nginx kurulumu değildir; canlı işlem ve restore F56’ya kalır.

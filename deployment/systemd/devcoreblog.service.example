@@ -1,0 +1,24 @@
+# Adapt paths after verifying the chosen Linux host. This file does not install anything.
+[Unit]
+Description=DevCoreBlog MVC application
+After=network.target
+
+[Service]
+Type=simple
+User=devcoreblog
+Group=devcoreblog
+WorkingDirectory=/srv/devcoreblog/current
+ExecStart=/usr/bin/dotnet /srv/devcoreblog/current/DevCoreBlog.dll
+EnvironmentFile=/etc/devcoreblog/devcoreblog.env
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=30
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/var/lib/devcoreblog/keys
+
+[Install]
+WantedBy=multi-user.target
