@@ -56,6 +56,8 @@ Bu bölüm bir çalıştırma emri değildir. Her seferinde yalnızca **bir faz 
 
 **İzlenebilirlik:** G7; Rapor §9 ve §10.
 
+**Uygulama:** [F49 kaydı](../uygulama-kayitlari/F49-2026-10-04.md) ile tamamlandı. Nullable kapak metadata, gerçek açıklama, upload/DB/geç çakışma koruması ve provider export ile salt okunur dry-run doğrulandı. Gerçek Cloudinary hesabına veya canlı DB’ye işlem yapılmadı; referans yokluğu silme yetkisi değildir. D23 ve [medya bakım sözleşmesi](../MEDYA_BAKIM_SOZLESMESI.md) uygulanır.
+
 **Durma noktası:** Kanıtı uygulama kaydına ve DURUM.md'ye işle; sonraki fazı başlatma.
 
 ---

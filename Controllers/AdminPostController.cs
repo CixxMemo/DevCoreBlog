@@ -148,7 +148,7 @@ public class AdminPostController : Controller
     [RequestSizeLimit(MaximumPreviewRequestBytes)]
     [RequestFormLimits(ValueLengthLimit = 800_000, MultipartBodyLengthLimit = MaximumPreviewRequestBytes)]
     public async Task<IActionResult> Preview(
-        [Bind("Id,Title,Content,CategoryId,Summary,Excerpt,PublishDate")] PostFormInput? input,
+        [Bind("Id,Title,Content,CategoryId,Summary,Excerpt,ThumbnailAlt,PublishDate")] PostFormInput? input,
         CancellationToken cancellationToken)
     {
         Response.Headers["X-Robots-Tag"] = "noindex, nofollow, noarchive";
@@ -160,7 +160,7 @@ public class AdminPostController : Controller
         var storedPost = input.Id > 0 ? await _postService.GetPostByIdAsync(input.Id) : null;
         if (input.Id < 0 || (input.Id > 0 && storedPost is null)) return NotFound();
 
-        var post = MapToPost(input, storedPost?.ThumbnailUrl ?? string.Empty);
+        var post = MapToPost(input, storedPost);
         if (ModelState.IsValid)
             ModelState.AddContentErrors(await _postService.ValidatePostAsync(post, cancellationToken));
 
@@ -171,7 +171,7 @@ public class AdminPostController : Controller
 
         if (!ModelState.IsValid) Response.StatusCode = StatusCodes.Status400BadRequest;
         return View(new PostPreviewModel(post.Title, post.Content, category?.Name ?? string.Empty,
-            post.ThumbnailUrl));
+            post.ThumbnailUrl, post.ThumbnailAlt));
     }
 
     // -------------------------------------------------------------------------
@@ -185,12 +185,12 @@ public class AdminPostController : Controller
     [RequestSizeLimit(ImageUploadPolicy.MaximumRequestBytes)]
     [RequestFormLimits(MultipartBodyLengthLimit = ImageUploadPolicy.MaximumRequestBytes)]
     public async Task<IActionResult> Create(
-        [Bind("Title,Content,CategoryId,Summary,Excerpt,SaveAction,IsActive,PublishDate")] PostFormInput input,
+        [Bind("Title,Content,CategoryId,Summary,Excerpt,ThumbnailAlt,SaveAction,IsActive,PublishDate")] PostFormInput input,
         IFormFile? thumbnailFile,
         Guid? recoveryRevision,
         CancellationToken cancellationToken)
     {
-        var post = MapToPost(input, string.Empty);
+        var post = MapToPost(input, null);
 
         if (ModelState.IsValid)
         {
@@ -259,7 +259,7 @@ public class AdminPostController : Controller
     [RequestFormLimits(MultipartBodyLengthLimit = ImageUploadPolicy.MaximumRequestBytes)]
     public async Task<IActionResult> Edit(
         int id,
-        [Bind("Id,EditVersion,Title,Content,CategoryId,Summary,Excerpt,SaveAction,IsActive,PublishDate")] PostFormInput input,
+        [Bind("Id,EditVersion,Title,Content,CategoryId,Summary,Excerpt,ThumbnailAlt,SaveAction,IsActive,PublishDate")] PostFormInput input,
         IFormFile? thumbnailFile,
         Guid? recoveryRevision,
         CancellationToken cancellationToken,
@@ -288,7 +288,9 @@ public class AdminPostController : Controller
             Response.StatusCode = StatusCodes.Status409Conflict;
         }
 
-        var post = MapToPost(input, existingPost.ThumbnailUrl);
+        // The tracked entity may change before a late DB conflict; retain the committed cover URL.
+        var persistedThumbnailUrl = existingPost.ThumbnailUrl;
+        var post = MapToPost(input, existingPost);
         // The browser edits seconds; retain the stored subsecond instant when
         // the displayed date was left unchanged.
         var displayedDate = _publicationTimeZone.ToSiteTime(existingPost.PublishDate);
@@ -334,7 +336,7 @@ public class AdminPostController : Controller
         }
 
         // If validation failed, re-populate the dropdown and re-show the form
-        input.ThumbnailUrl = post.ThumbnailUrl;
+        input.ThumbnailUrl = persistedThumbnailUrl;
         input.SiteTimeZoneId = _publicationTimeZone.Id;
         var categoryIsActive = await PopulateCategorySelectAsync(input.CategoryId, existingPost.CategoryId);
         input.PublicationState = PostPublication.StateAt(existingPost, categoryIsActive,
@@ -425,6 +427,9 @@ public class AdminPostController : Controller
         }
 
         post.ThumbnailUrl = outcome.Url;
+        post.ThumbnailPublicId = outcome.PublicId;
+        post.ThumbnailWidth = outcome.Width;
+        post.ThumbnailHeight = outcome.Height;
         return true;
     }
 
@@ -467,7 +472,7 @@ public class AdminPostController : Controller
         return categories.Any(category => category.Id == (stateCategoryId ?? selectedCategoryId) && category.IsActive);
     }
 
-    private static Post MapToPost(PostFormInput input, string thumbnailUrl)
+    private static Post MapToPost(PostFormInput input, Post? storedPost)
     {
         return new Post
         {
@@ -480,7 +485,11 @@ public class AdminPostController : Controller
             IsPublished = input.IsPublished,
             IsActive = input.IsActive,
             PublishDate = input.PublishDate,
-            ThumbnailUrl = thumbnailUrl
+            ThumbnailUrl = storedPost?.ThumbnailUrl ?? string.Empty,
+            ThumbnailPublicId = storedPost?.ThumbnailPublicId,
+            ThumbnailWidth = storedPost?.ThumbnailWidth,
+            ThumbnailHeight = storedPost?.ThumbnailHeight,
+            ThumbnailAlt = input.ThumbnailAlt
         };
     }
 
@@ -501,7 +510,8 @@ public class AdminPostController : Controller
             PublishDate = _publicationTimeZone.ToSiteTime(post.PublishDate),
             SiteTimeZoneId = _publicationTimeZone.Id,
             Slug = post.Slug,
-            ThumbnailUrl = post.ThumbnailUrl
+            ThumbnailUrl = post.ThumbnailUrl,
+            ThumbnailAlt = post.ThumbnailAlt
         };
     }
 }

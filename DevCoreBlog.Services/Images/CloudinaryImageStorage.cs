@@ -41,7 +41,8 @@ public sealed class CloudinaryImageStorage : IImageStorage
                 uploadResult.SecureUrl.ToString(),
                 uploadResult.Format,
                 uploadResult.Width,
-                uploadResult.Height);
+                uploadResult.Height,
+                uploadResult.PublicId);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {

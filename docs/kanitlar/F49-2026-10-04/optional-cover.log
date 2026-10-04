@@ -1,0 +1,17 @@
+F11 isolated optional cover and validation verification
+{
+  "checks": {
+    "create_form_has_optional_cover_and_hides_empty_summary": true,
+    "create_without_cover_persists": true,
+    "edit_form_does_not_post_stored_cover": true,
+    "edit_without_file_preserves_server_cover": true,
+    "validation_failure_retains_inputs_and_does_not_persist": true,
+    "upload_failure_retains_inputs_cover_and_database_state": true
+  },
+  "statuses": {
+    "create_without_cover_final": 200,
+    "edit_without_file_final": 200,
+    "validation_failure_final": 200,
+    "failed_upload_final": 200
+  }
+}

@@ -42,7 +42,8 @@ var successfulStorage = new StubImageStorage(
         "https://res.cloudinary.com/test/image/upload/f09.png",
         "png",
         1,
-        1));
+        1,
+        "DevCoreBlog/f09"));
 var successfulService = new ImageService(
     policy,
     successfulStorage,
@@ -61,7 +62,8 @@ var oversizedStorageResult = new StubImageStorage(
         "https://res.cloudinary.com/test/image/upload/f09.png",
         "png",
         ImageUploadPolicy.MaximumDimension + 1,
-        1));
+        1,
+        "DevCoreBlog/f09"));
 var guardedService = new ImageService(
     policy,
     oversizedStorageResult,
@@ -77,8 +79,19 @@ var providerStorage = new CloudinaryImageStorage(
 var providerUpload = await providerStorage.UploadAsync(
     new MemoryStream(pngBytes, writable: false), "png");
 
+uploadProxy.Result = new ImageUploadResult { SecureUrl = new Uri("https://res.cloudinary.com/test/image/upload/f49.png"),
+    PublicId = "DevCoreBlog/f49", Format = "png", Width = 123, Height = 456 };
+var metadataUpload = await providerStorage.UploadAsync(new MemoryStream(pngBytes, false), "png");
+var blankIdService = new ImageService(policy, new StubImageStorage(
+    ImageStorageOutcome.Success("https://images.example.test/a.png", "png", 1, 1, "")), NullLogger<ImageService>.Instance);
+var blankIdUpload = await blankIdService.UploadImageAsync(validPng);
+
 var checks = new Dictionary<string, bool>
 {
+    ["provider_metadata_is_carried_exactly"] = metadataUpload.PublicId == "DevCoreBlog/f49" &&
+        metadataUpload.Width == 123 && metadataUpload.Height == 456 &&
+        successfulUpload.PublicId == "DevCoreBlog/f09" && successfulUpload.Width == 1,
+    ["missing_provider_identity_is_rejected"] = !blankIdUpload.Succeeded,
     ["missing_file_is_rejected"] =
         !missing.IsValid && missing.FailureKind == ImageUploadFailureKind.MissingFile,
     ["empty_file_is_rejected"] =
@@ -125,7 +138,7 @@ var checks = new Dictionary<string, bool>
         !guardedUpload.Succeeded &&
         guardedUpload.FailureKind == ImageUploadFailureKind.StorageUnavailable,
     ["upload_client_is_replaceable_without_network"] =
-        uploadProxy.CallCount == 1 && !providerUpload.Succeeded
+        uploadProxy.CallCount == 2 && !providerUpload.Succeeded
 };
 
 foreach (var check in checks)
@@ -169,6 +182,7 @@ internal sealed class StubImageStorage : IImageStorage
 /// <summary>Records SDK calls without contacting the image provider.</summary>
 public class FailingCloudinaryUploadProxy : DispatchProxy
 {
+    public ImageUploadResult? Result { get; set; }
     public int CallCount { get; private set; }
 
     protected override object? Invoke(MethodInfo? targetMethod, object?[]? args)
@@ -180,6 +194,7 @@ public class FailingCloudinaryUploadProxy : DispatchProxy
         }
 
         CallCount++;
+        if (Result is not null) return Task.FromResult(Result);
         return Task.FromException<ImageUploadResult>(
             new InvalidOperationException("Synthetic provider failure."));
     }

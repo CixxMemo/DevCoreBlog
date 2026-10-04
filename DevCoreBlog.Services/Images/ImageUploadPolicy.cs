@@ -1,3 +1,4 @@
+using DevCoreBlog.Core.Validation;
 using Microsoft.AspNetCore.Http;
 
 namespace DevCoreBlog.Services.Images;
@@ -6,7 +7,7 @@ public sealed class ImageUploadPolicy
 {
     public const long MaximumFileBytes = 8L * 1024 * 1024;
     public const long MaximumRequestBytes = MaximumFileBytes + (2L * 1024 * 1024);
-    public const int MaximumDimension = 4096;
+    public const int MaximumDimension = PostContentRules.MaximumThumbnailDimension;
 
     private const int SignatureBufferLength = 12;
 

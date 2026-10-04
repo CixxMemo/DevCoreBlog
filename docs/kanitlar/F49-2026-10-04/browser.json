@@ -1,0 +1,20 @@
+{
+  "desktop": {
+    "width": 1280,
+    "scrollWidth": 1280
+  },
+  "mobile": {
+    "width": 390,
+    "scrollWidth": 390,
+    "fieldWidth": 324
+  },
+  "keyboard": {
+    "next": "IsActive",
+    "previous": "ThumbnailAlt",
+    "outlineWidth": "3px",
+    "outlineStyle": "solid"
+  },
+  "descriptionHelp": "cover-description-help ThumbnailAlt-error",
+  "consoleErrors": [],
+  "scope": "Create form, new optional field; synthetic local fixture"
+}

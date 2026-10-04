@@ -258,6 +258,13 @@
                     <p class="font-mono text-[10px] text-neutral-500 mt-1">JPG, PNG, GIF or WEBP · max 8 MB · stored at up to 4096×4096.</p>
                 </div>
 
+                <div>
+                    <label asp-for="ThumbnailAlt" class="block font-mono text-xs font-bold uppercase text-black mb-1">Cover description (optional)</label>
+                    <input asp-for="ThumbnailAlt" maxlength="300" aria-describedby="cover-description-help" class="w-full border-2 border-black p-2 font-mono text-xs text-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2" />
+                    <p id="cover-description-help" class="font-mono text-xs text-neutral-600 mt-1">Describe what the cover conveys. Leave empty for a decorative image.</p>
+                    <span asp-validation-for="ThumbnailAlt" class="font-mono text-xs text-rose-600 block mt-1"></span>
+                </div>
+
                 @* Status Flags *@
                 <div class="border-t border-black pt-3 space-y-2 font-mono text-xs">
                     <label class="flex items-center gap-2 cursor-pointer">

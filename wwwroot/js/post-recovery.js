@@ -2,7 +2,7 @@
 const prefix = 'devcore_editor_draft_';
 export const scratchKey = 'devcore_editor_scratch_transfer';
 export const fieldNames = Object.freeze([
-    'Title', 'Content', 'CategoryId', 'Summary', 'Excerpt', 'PublishDate', 'IsPublished', 'IsActive'
+    'Title', 'Content', 'CategoryId', 'Summary', 'Excerpt', 'ThumbnailAlt', 'PublishDate', 'IsPublished', 'IsActive'
 ]);
 const booleanFields = new Set(['IsPublished', 'IsActive']);
 const revisionPattern = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
@@ -17,6 +17,9 @@ function decode(raw, baseline) {
     if (!raw) return null;
     try {
         const record = JSON.parse(raw);
+        // Older revision-1 copies have no description; preserve the current server baseline.
+        if (record?.version === 1 && record.fields && record.fields.ThumbnailAlt === undefined)
+            record.fields.ThumbnailAlt = baseline?.ThumbnailAlt ?? '';
         if (record?.version === 1 && revisionPattern.test(record.revision) &&
             typeof record.savedAt === 'string' && record.fields &&
             fieldNames.every(name => typeof record.fields[name] ===

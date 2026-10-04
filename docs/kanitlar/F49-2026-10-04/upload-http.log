@@ -1,0 +1,22 @@
+F09 isolated image upload HTTP verification
+{
+  "checks": {
+    "editor_rejects_fake_extension": true,
+    "editor_rejects_svg": true,
+    "editor_rejects_corrupt_image": true,
+    "editor_rejects_oversized_image": true,
+    "legacy_endpoint_uses_same_policy_and_json_error": true,
+    "create_cover_failure_is_visible_and_not_persisted": true,
+    "edit_cover_failure_is_visible_and_not_persisted": true,
+    "forms_advertise_the_server_allowlist_and_limits": true
+  },
+  "statuses": {
+    "editor_fake_extension": 400,
+    "editor_svg": 400,
+    "editor_corrupt": 400,
+    "editor_oversized": 413,
+    "legacy_fake_extension": 400,
+    "create_invalid_cover_final": 200,
+    "edit_invalid_cover_final": 200
+  }
+}

@@ -6,7 +6,7 @@ import { createRecoverySession, clearConfirmedRecovery, recoveryKey, scratchKey,
 
 import { initializeRecoveryForm } from '../../wwwroot/js/post-recovery-form.js';
 
-const baseline = { Title: '', Content: '', CategoryId: '', Summary: '', Excerpt: '',
+const baseline = { Title: '', Content: '', CategoryId: '', Summary: '', Excerpt: '', ThumbnailAlt: '',
     PublishDate: '2026-09-30T12:00', IsPublished: false, IsActive: true };
 const data = new Map();
 const storage = { getItem: key => data.get(key) ?? null,
@@ -149,3 +149,20 @@ await check('storage_failure_does_not_block_native_form_submission', async () =>
     }
 });
 console.log(JSON.stringify({ checks, count: Object.keys(checks).length }, null, 2));
+
+// A pre-F49 revision must remain recoverable and must not erase the server description.
+{
+    const key = recoveryKey('edit', 4901);
+    const fields = { ...baseline, Content: 'Older local copy' };
+    delete fields.ThumbnailAlt;
+    const raw = JSON.stringify({ version: 1, revision: randomUUID(), savedAt: '2026-10-04T12:00:00Z', fields });
+    data.set(key, raw);
+    const copy = session(key, { ...baseline, ThumbnailAlt: 'Saved cover description' });
+    assert.equal(data.get(key), raw);
+    const restored = await copy.engine.restore();
+    assert.equal(restored.ThumbnailAlt, 'Saved cover description');
+    copy.set({ ...restored, ThumbnailAlt: 'Recovered description' });
+    await copy.engine.save();
+    assert.equal(JSON.parse(data.get(key)).fields.ThumbnailAlt, 'Recovered description');
+    console.log('f49_description_and_legacy_recovery=true');
+}

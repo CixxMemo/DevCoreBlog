@@ -1,3 +1,4 @@
+using DevCoreBlog.Core.Validation;
 using DevCoreBlog.Services.Images;
 using DevCoreBlog.Services.Interfaces;
 using Microsoft.AspNetCore.Http;
@@ -50,14 +51,19 @@ public sealed class ImageService : IImageService
                 StorageFailureMessage);
         }
 
-        return ImageUploadOutcome.Success(storedImage.Url!);
+        return ImageUploadOutcome.Success(storedImage.Url!, storedImage.PublicId!,
+            storedImage.Width, storedImage.Height);
     }
 
     private bool IsSafeStorageResult(ImageStorageOutcome result)
     {
         return result.Succeeded &&
             Uri.TryCreate(result.Url, UriKind.Absolute, out var uri) &&
-            uri.Scheme == Uri.UriSchemeHttps &&
+            uri.Scheme == Uri.UriSchemeHttps && string.IsNullOrEmpty(uri.UserInfo) &&
+            result.Url?.Length <= PostContentRules.MaximumThumbnailUrlLength &&
+            !string.IsNullOrWhiteSpace(result.PublicId) &&
+            result.PublicId.Length <= PostContentRules.MaximumThumbnailPublicIdLength &&
+            !result.PublicId.Any(char.IsControl) &&
             _policy.IsAllowedProviderFormat(result.Format) &&
             result.Width is > 0 and <= ImageUploadPolicy.MaximumDimension &&
             result.Height is > 0 and <= ImageUploadPolicy.MaximumDimension;

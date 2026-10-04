@@ -28,7 +28,7 @@ else
         @if (!string.IsNullOrEmpty(Model.ThumbnailUrl))
         {
             <div class="mb-8 border-2 border-gray-900 dark:border-zinc-700 overflow-hidden">
-                <img src="@Model.ThumbnailUrl" alt="@Model.Title" class="w-full max-h-96 object-cover" />
+                <img src="@Model.ThumbnailUrl" alt="@Model.ThumbnailAlt" class="w-full max-h-96 object-cover" />
             </div>
         }
         <partial name="_PostContent" model="Model.Content" />

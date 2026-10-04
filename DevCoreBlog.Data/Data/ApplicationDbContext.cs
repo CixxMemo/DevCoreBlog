@@ -73,6 +73,9 @@ public class ApplicationDbContext : DbContext
             .HasIndex(post => new { post.CreatedDate, post.Id })
             .IsDescending(true, false);
 
+        modelBuilder.Entity<Post>().Property(post => post.ThumbnailPublicId).HasMaxLength(255);
+        modelBuilder.Entity<Post>().Property(post => post.ThumbnailAlt).HasMaxLength(300);
+
         modelBuilder.Entity<Post>()
             .Property(post => post.EditVersion)
             .IsConcurrencyToken();

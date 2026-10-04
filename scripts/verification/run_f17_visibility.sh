@@ -149,7 +149,7 @@ pg_ctl -D "$task_pgdata" -l "$task_tmp/postgres.log" \
     -o "-p $task_pg_port -h 127.0.0.1 -k $task_socket" -w start >/dev/null
 task_pg_started=1
 createdb -h 127.0.0.1 -p "$task_pg_port" -U "$task_pg_user" "$task_db"
-if [ "${DEVCORE_F44_PROBE:-0}" = 1 ]; then
+if [ "${DEVCORE_F44_PROBE:-0}" = 1 ] || [ "${DEVCORE_F49_PROBE:-0}" = 1 ]; then
     # Verify both a clean migration chain and the immediately preceding schema with synthetic rows.
     createdb -h 127.0.0.1 -p "$task_pg_port" -U "$task_pg_user" f44_empty
     (
@@ -157,7 +157,10 @@ if [ "${DEVCORE_F44_PROBE:-0}" = 1 ]; then
         for task_migration_db in f44_empty "$task_db"; do
             task_connection="Host=127.0.0.1;Port=$task_pg_port;Database=$task_migration_db;Username=$task_pg_user"
             task_target=
-            if [ "$task_migration_db" = "$task_db" ]; then task_target=20260930094820_WebhookReceipts; fi
+            if [ "$task_migration_db" = "$task_db" ]; then
+                task_target=20260930094820_WebhookReceipts
+                if [ "${DEVCORE_F49_PROBE:-0}" = 1 ]; then task_target=20261004180016_ReadOrderingIndexes; fi
+            fi
             DB_CONNECTION_STRING="$task_connection" dotnet ef database update $task_target \
                 --no-build --project DevCoreBlog.csproj --startup-project DevCoreBlog.csproj \
                 --context ApplicationDbContext --connection "$task_connection" --no-color
@@ -166,7 +169,7 @@ if [ "${DEVCORE_F44_PROBE:-0}" = 1 ]; then
     sed -n '/^INSERT INTO "Categories"/,$p' "$task_source/scripts/verification/f01_fixture.sql" > "$task_tmp/seed.sql"
     psql -X -h 127.0.0.1 -p "$task_pg_port" -U "$task_pg_user" -d "$task_db" \
         -v ON_ERROR_STOP=1 -f "$task_tmp/seed.sql" >/dev/null
-    task_snapshot_sql='SELECT to_jsonb(p) - $$UpdatedDate$$ FROM "Posts" p ORDER BY "Id"; SELECT to_jsonb(c) FROM "Categories" c ORDER BY "Id";'
+    task_snapshot_sql='SELECT to_jsonb(p) - $$UpdatedDate$$ - $$ThumbnailAlt$$ - $$ThumbnailPublicId$$ - $$ThumbnailWidth$$ - $$ThumbnailHeight$$ FROM "Posts" p ORDER BY "Id"; SELECT to_jsonb(c) FROM "Categories" c ORDER BY "Id";'
     psql -X -h 127.0.0.1 -p "$task_pg_port" -U "$task_pg_user" -d "$task_db" \
         -At -c "$task_snapshot_sql" > "$task_tmp/prior-data.txt"
     (
@@ -187,6 +190,11 @@ if [ "${DEVCORE_F44_PROBE:-0}" = 1 ]; then
     task_empty_count=$(psql -X -h 127.0.0.1 -p "$task_pg_port" -U "$task_pg_user" -d f44_empty \
         -At -c 'SELECT count(*) FROM "Posts";')
     [ "$task_empty_count" = 0 ]
+    if [ "${DEVCORE_F49_PROBE:-0}" = 1 ]; then
+        task_media_count=$(psql -X -h 127.0.0.1 -p "$task_pg_port" -U "$task_pg_user" -d "$task_db" -At -c 'SELECT count(*) FROM "Posts" WHERE "ThumbnailPublicId" IS NOT NULL OR "ThumbnailWidth" IS NOT NULL OR "ThumbnailHeight" IS NOT NULL OR "ThumbnailAlt" IS NOT NULL;')
+        [ "$task_media_count" = 0 ]
+        printf 'f49_empty_and_immediate_prior_migration=true\nf49_nullable_legacy_metadata=true\n'
+    fi
     printf 'f44_empty_database_migration=true\nf44_prior_data_preserved=true\nf44_no_invented_backfill=true\n'
 elif [ "${DEVCORE_F28_PROBE:-0}" = 1 ]; then
     createdb -h 127.0.0.1 -p "$task_pg_port" -U "$task_pg_user" f28_empty
@@ -227,7 +235,7 @@ else
 psql -h 127.0.0.1 -p "$task_pg_port" -U "$task_pg_user" -d "$task_db" \
     -v ON_ERROR_STOP=1 -f "$task_source/scripts/verification/f01_fixture.sql" >/dev/null
 psql -X -h 127.0.0.1 -p "$task_pg_port" -U "$task_pg_user" -d "$task_db" \
-    -v ON_ERROR_STOP=1 -c 'ALTER TABLE "Posts" ADD COLUMN "EditVersion" bigint NOT NULL DEFAULT 1; ALTER TABLE "Categories" ADD COLUMN "EditVersion" bigint NOT NULL DEFAULT 1;' >/dev/null
+    -v ON_ERROR_STOP=1 -c 'ALTER TABLE "Posts" ADD COLUMN "EditVersion" bigint NOT NULL DEFAULT 1; ALTER TABLE "Posts" ADD COLUMN "ThumbnailPublicId" varchar(255), ADD COLUMN "ThumbnailWidth" integer, ADD COLUMN "ThumbnailHeight" integer, ADD COLUMN "ThumbnailAlt" varchar(300); ALTER TABLE "Categories" ADD COLUMN "EditVersion" bigint NOT NULL DEFAULT 1;' >/dev/null
 
 fi
 

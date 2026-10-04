@@ -13,10 +13,13 @@ public sealed record ImageUploadOutcome(
     bool Succeeded,
     string? Url,
     ImageUploadFailureKind FailureKind,
-    string Message)
+    string Message,
+    string? PublicId = null,
+    int? Width = null,
+    int? Height = null)
 {
-    public static ImageUploadOutcome Success(string url) =>
-        new(true, url, ImageUploadFailureKind.None, string.Empty);
+    public static ImageUploadOutcome Success(string url, string publicId, int width, int height) =>
+        new(true, url, ImageUploadFailureKind.None, string.Empty, publicId, width, height);
 
     public static ImageUploadOutcome Failure(
         ImageUploadFailureKind failureKind,

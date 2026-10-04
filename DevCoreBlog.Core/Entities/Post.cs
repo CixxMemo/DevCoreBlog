@@ -35,6 +35,14 @@ public class Post : BaseEntity
     // The thumbnail URL for the post image
     public string ThumbnailUrl { get; set; } = string.Empty;
 
+    // Server-owned upload metadata; legacy URL-only covers remain nullable.
+    public string? ThumbnailPublicId { get; set; }
+    public int? ThumbnailWidth { get; set; }
+    public int? ThumbnailHeight { get; set; }
+
+    // Empty means decorative; never derive a description from the title.
+    public string? ThumbnailAlt { get; set; }
+
     // A short excerpt for the post (can be used instead of Summary if needed)
     public string Excerpt { get; set; } = string.Empty;
 

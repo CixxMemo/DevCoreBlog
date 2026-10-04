@@ -374,13 +374,18 @@ public class PostService : IPostService, IPublicationSchedule, IWebhookPostServi
         // Publication flags/dates and counters do not represent an editorial content revision.
         if (existingPost.Title != post.Title || existingPost.Summary != post.Summary ||
             existingPost.Content != post.Content || existingPost.Excerpt != post.Excerpt ||
-            existingPost.ThumbnailUrl != post.ThumbnailUrl || existingPost.CategoryId != post.CategoryId)
+            existingPost.ThumbnailUrl != post.ThumbnailUrl || existingPost.ThumbnailAlt != post.ThumbnailAlt ||
+            existingPost.CategoryId != post.CategoryId)
             existingPost.UpdatedDate = _timeProvider.GetUtcNow().UtcDateTime;
 
         existingPost.Title = post.Title;
         existingPost.Summary = post.Summary;
         existingPost.Content = post.Content;
         existingPost.ThumbnailUrl = post.ThumbnailUrl;
+        existingPost.ThumbnailPublicId = post.ThumbnailPublicId;
+        existingPost.ThumbnailWidth = post.ThumbnailWidth;
+        existingPost.ThumbnailHeight = post.ThumbnailHeight;
+        existingPost.ThumbnailAlt = post.ThumbnailAlt;
         existingPost.Excerpt = post.Excerpt;
         existingPost.IsPublished = post.IsPublished;
         existingPost.CategoryId = post.CategoryId;

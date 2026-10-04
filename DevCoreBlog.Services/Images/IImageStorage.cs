@@ -13,14 +13,16 @@ public sealed record ImageStorageOutcome(
     string? Url,
     string? Format,
     int Width,
-    int Height)
+    int Height,
+    string? PublicId)
 {
     public static ImageStorageOutcome Success(
         string url,
         string format,
         int width,
-        int height) =>
-        new(true, url, format, width, height);
+        int height,
+        string publicId) =>
+        new(true, url, format, width, height, publicId);
 
-    public static ImageStorageOutcome Failure() => new(false, null, null, 0, 0);
+    public static ImageStorageOutcome Failure() => new(false, null, null, 0, 0, null);
 }

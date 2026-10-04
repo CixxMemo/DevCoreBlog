@@ -12,6 +12,9 @@ public static class PostContentRules
     public const int MaximumExcerptLength = 1_000;
     public const int MaximumContentLength = 200_000;
     public const int MaximumThumbnailUrlLength = 2_048;
+    public const int MaximumThumbnailAltLength = 300;
+    public const int MaximumThumbnailPublicIdLength = 255;
+    public const int MaximumThumbnailDimension = 4096;
 
     public static void Normalize(Post post)
     {
@@ -22,6 +25,7 @@ public static class PostContentRules
         post.Summary = post.Summary?.Trim() ?? string.Empty;
         post.Excerpt = post.Excerpt?.Trim() ?? string.Empty;
         post.ThumbnailUrl = post.ThumbnailUrl?.Trim() ?? string.Empty;
+        post.ThumbnailAlt = string.IsNullOrWhiteSpace(post.ThumbnailAlt) ? null : post.ThumbnailAlt.Trim();
     }
 
     public static ContentValidationResult Validate(Post post)
@@ -59,6 +63,17 @@ public static class PostContentRules
             errors.Add(new(nameof(Post.CategoryId), "Select an active category."));
         }
 
+        ValidateOptionalText(errors, nameof(Post.ThumbnailAlt), post.ThumbnailAlt,
+            MaximumThumbnailAltLength, "Cover description");
+        // An upload identity and its actual dimensions form one server-owned group.
+        if (post.ThumbnailPublicId is not null || post.ThumbnailWidth is not null || post.ThumbnailHeight is not null)
+        {
+            if (string.IsNullOrWhiteSpace(post.ThumbnailPublicId) ||
+                post.ThumbnailPublicId.Length > MaximumThumbnailPublicIdLength ||
+                post.ThumbnailPublicId.Any(char.IsControl) || string.IsNullOrEmpty(post.ThumbnailUrl) ||
+                post.ThumbnailWidth is not (> 0 and <= MaximumThumbnailDimension) || post.ThumbnailHeight is not (> 0 and <= MaximumThumbnailDimension))
+                errors.Add(new(nameof(Post.ThumbnailUrl), "Cover metadata is invalid."));
+        }
         ValidateThumbnailUrl(errors, post.ThumbnailUrl);
         return ContentValidationResult.FromErrors(errors);
     }

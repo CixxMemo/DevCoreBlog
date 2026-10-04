@@ -1,6 +1,6 @@
 # Güncel mimari ve çalışma kararları
 
-**Güncelleme:** 4 Ekim 2026 — F48 ölçülmüş okuma performansı ve dar ilgili kartlar.
+**Güncelleme:** 4 Ekim 2026 — F49 doğrulanmış kapak metadata/açıklaması ve salt okunur medya bakımı.
 
 Kullanıcı eski kuralların yenilenmesini, SOLID/temiz kod/güvenlik sınırlarının güçlendirilmesini, eski planların kaldırılabilmesini ve yeni geliştirme planının buna uyarlanmasını açıkça istedi. Aşağıdaki teknik seçimler bu yetki kapsamında mevcut ürün yapısını koruyarak yapıldı. Kullanıcının ayrıca eski A/B seçeneklerinden birini seçtiği iddia edilmiyor; o karar ağacı yeni kurallarla kaldırıldı.
 
@@ -254,7 +254,7 @@ sunucu fetch/SSRF yüzeyi eklenmez. Google zengin sonuç garantisi verilmez.
 
 `Post.UpdatedDate` nullable UTC sütunudur; migration yalnız sütun ekler, geçmişe
 sahte tarih doldurmaz. Oluşturma null'dur. Update use case başlık, Markdown,
-özet, alıntı, kapak veya kategori ID değiştiyse TimeProvider UTC anını yazar.
+özet, alıntı, kapak, kapak açıklaması (F49/D23) veya kategori ID değiştiyse TimeProvider UTC anını yazar.
 Yayın/tarih/aktiflik eylemi, değişikliksiz Save ve sayaç artışı bunu değiştirmez.
 Çakışma ve başarısız validation kalıcı tarihi değiştirmez. Makalede aynı tarih
 F42 site saat dilimi/en-US sunumuyla görünür; JSON-LD UTC ISO biçimini korur.
@@ -396,3 +396,32 @@ Bunlar şimdi topluca sorulmaz. Mevcut kaynaktan doğrulanamıyorsa ilgili fazda
 | F56 | Sonradan istenecek canlı dağıtım yetkisi | Staging kanıtı ve geri dönüş planı. |
 
 F00 yalnızca dokümantasyon geçişini tamamlar. Güvenlik bulguları ve mevcut 56/100 SOLID değerlendirmesi kod fazları uygulanmadan değişmiş sayılmaz. Sıradaki faz F01'dir.
+
+## D23 — Kapak kimliği, açıklama ve salt okunur bakım
+
+F49 yeni kapak için yalnız doğrulanmış upload sonucundan URL, PublicId (255), gerçek
+width/height (1–4096) saklar. Dört yeni kolon nullable; eski kimlik/boyut/açıklama
+tahmin edilmez. Açıklama isteğe bağlı 300 karakter; boş dekoratif, Razor encoding
+zorunludur. Detay/önizlemede gerçek açıklama kullanılır; kartlar dekoratif kalır.
+Açıklama edit'i D18 içerik güncellemesidir. Form metadata kabul etmez; normal edit
+kayıtlı metadata'yı korur. F31 metin kurtarması açıklamayı ve eski revision-1 uyumunu taşır.
+
+Upload DB transaction'ına katılamaz. Upload başarısı DB başarısı değildir; hata/geç
+çakışma eski kalıcı kapağı korur, yeni upload provider'da inceleme için kalabilir.
+Replacement ve post silme eski uzak varlığı silmez; başka yazı/Markdown kullanabilir.
+No-overwrite upload politikası sürer. Gerçek DB hata 500, edit çakışması 409 kalır.
+
+Bakım, doğrulanmış provider export PublicId ve açık URL alias'larıyla yerel dry-run
+aracıdır. Yeni provider/MediaAsset tablosu veya public endpoint yoktur. En fazla
+4 MiB/1000 varlık/10 alias; bütün post'ların dar projection'ı no-tracking stream
+ve read-only repeatable-read transaction kullanır. Kapak, Markdown, Summary/Excerpt,
+HTML entity/percent encoding ve diğer gizli yazı referansları incelenir. Yalnız
+kimlik metni olası referanstır; bilinmeyen legacy URL'den kimlik üretilmez.
+
+Referenced/Review required/No stored reference found sonuçları silme yetkisi vermez.
+Eksik alias, harici kullanımlar, kaydedilmemiş taslaklar ve eşzamanlı upload'lar ayrıca
+incelenir. Araç uzak sağlayıcıya bağlanmaz, deletion komutu üretmez. Gerçek silme
+ayrı somut liste ve kullanıcı onayıyla bakım işlemidir. Üretim export/migration/
+Cloudinary silme F49 kabul testinde yapılmaz; sentetik provider kanıtı gerçek
+hesap erişimini doğrulamaz. [Medya bakım sözleşmesi](../MEDYA_BAKIM_SOZLESMESI.md)
+sahiplik, hata, işletim ve nullable kolonları bırakan geri dönüşün ayrıntılı kaynağıdır.

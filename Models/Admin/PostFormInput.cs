@@ -62,6 +62,10 @@ public sealed class PostFormInput
     [BindNever]
     public string Slug { get; set; } = string.Empty;
 
+    [StringLength(PostContentRules.MaximumThumbnailAltLength,
+        ErrorMessage = "Cover description cannot exceed {1} characters.")]
+    public string? ThumbnailAlt { get; set; }
+
     [BindNever]
     public string ThumbnailUrl { get; set; } = string.Empty;
 }
