@@ -1,4 +1,5 @@
 using DevCoreBlog.Core.Validation;
+using DevCoreBlog.Services.Operations;
 using DevCoreBlog.Services.Images;
 using DevCoreBlog.Services.Interfaces;
 using Microsoft.AspNetCore.Http;
@@ -6,11 +7,13 @@ using Microsoft.Extensions.Logging;
 
 namespace DevCoreBlog.Services;
 
+/// <summary>Validates uploads and records only safe completed storage outcomes.</summary>
 public sealed class ImageService : IImageService
 {
     private const string StorageFailureMessage =
         "Image storage is temporarily unavailable. Try again.";
 
+    private readonly MediaOperationStatus _status;
     private readonly ImageUploadPolicy _policy;
     private readonly IImageStorage _storage;
     private readonly ILogger<ImageService> _logger;
@@ -18,13 +21,16 @@ public sealed class ImageService : IImageService
     public ImageService(
         ImageUploadPolicy policy,
         IImageStorage storage,
-        ILogger<ImageService> logger)
+        ILogger<ImageService> logger,
+        MediaOperationStatus status)
     {
+        _status = status;
         _policy = policy;
         _storage = storage;
         _logger = logger;
     }
 
+    /// <summary>Rejects invalid input before storage; operation observations do not imply a successful post save.</summary>
     public async Task<ImageUploadOutcome> UploadImageAsync(
         IFormFile? file,
         CancellationToken cancellationToken = default)
@@ -45,12 +51,14 @@ public sealed class ImageService : IImageService
 
         if (!IsSafeStorageResult(storedImage))
         {
+            _status.Record(false);
             _logger.LogWarning("Image storage returned an unsuccessful or invalid result.");
             return ImageUploadOutcome.Failure(
                 ImageUploadFailureKind.StorageUnavailable,
                 StorageFailureMessage);
         }
 
+        _status.Record(true);
         return ImageUploadOutcome.Success(storedImage.Url!, storedImage.PublicId!,
             storedImage.Width, storedImage.Height);
     }

@@ -508,3 +508,35 @@ bypass eder; gerçek yüklenen script fixture’ı kullanılır. Script izinleri
 genel style-src genişletilmedi. Sanitization, CSRF/auth ve visibility ayrı kalır.
 Gerçek Nginx/hosting/canlı dağıtım ve Cloudinary hesabı doğrulanmış sayılmaz.
 Report-only’a geri dönüş açık koruma kaybıdır. [F52 kaydı](../uygulama-kayitlari/F52-2026-10-04.md).
+
+
+## D27 — Ölçülmüş yönetici durumu ve güvenli teşhis
+
+F53 sabit DB Connected/Cloudinary Active/Webhook Ready etiketlerini kaldırır.
+Yetkili dashboard, Core IDatabaseConnectionProbe/Data implementasyonu ve Services
+use-case üzerinden SELECT1 + bounded metrik sorguları çalıştırır. 2 saniye ortak
+cancellation deadline’a ek olarak scoped driver bağlantı/komut timeout2 ve
+cancellation grace500ms vardır; metric sorguları aynı açık scoped bağlantıyı
+kullanır. Sonuç yoksa null metrik/Unavailable veya Timed out ve gerçek503; sıfır
+rakam uydurulmaz. DbContext scope bağlantıyı kapatır; controller EF kullanmaz.
+
+Medya Configured sadece üç environment değeridir; mevcut erişim doğrulanmadı.
+Eksik durumda istemci kurulmaz, UnavailableImageStorage geçerli upload’u da
+reddeder. F26’nın bütün uygulamayı durduran eksik medya guard’ı yerini işlemde
+fail-closed sınırına bırakır; admin/webhook/auth güvenliği açılmaz. F26 regression
+bu yeni işlem sınırını test eder, eski kaynakta eski startup guard korunur.
+Son tamamlanan doğrulanmış upload ve son başarı, UTC/süreç içi gözlemdir;
+restart sıfırlar, başarısızlık eski başarıyı silmez. DB save veya canlı sağlık
+iddiası yoktur; yeni Cloudinary Admin API/harici check yapılmaz.
+
+Server-assigned X-Request-ID ve TraceId scope güvenli JSON console’a gider.
+Auth/upload/webhook rejection Warning, beklenmeyen sunucu hatası Error, client
+abort normal cancellation’dır. Provider error/SQL canary’si, özel logging config
+verilse de EF/Npgsql loguna çıkmaz. Başlamış yanıt artık güvenli type-only event ve
+abort ile kapanır; raw exception host’a fırlatılmaz. Public health endpoint’i,
+analytics/polling ve yeni dependency yoktur. Kimlik ayarları zorunlu kalır.
+
+[Operasyon sözleşmesi](../OPERASYON_VE_LOG_SOZLESMESI.md) journal hedefini, erişim/
+retention ve gerçek host’ta henüz ölçülmeyenleri ayırır. Canlı host/log retention
+uygulanmış sayılmaz; sistem genelinde log ayarı/deploy yapılmadı.
+[F53 gerçek DB/driver/HTTP/Chrome kaydı](../uygulama-kayitlari/F53-2026-10-05.md).

@@ -1,0 +1,18 @@
+{
+  "checks": {
+    "database_verified": true,
+    "credentials_are_not_availability": true,
+    "completed_upload_is_historical": true,
+    "no_hardcoded_active_badge": true,
+    "drawer_returns_focus": true,
+    "mobile_has_no_horizontal_overflow": true,
+    "no_csp_violation": true,
+    "no_runtime_error": true,
+    "actual_outage_page_keeps_503": true,
+    "outage_has_no_fabricated_statistics": true,
+    "outage_shows_unavailable_database": true,
+    "outage_csp_and_runtime_remain_valid": true
+  },
+  "count": 12,
+  "errors": []
+}

@@ -34,14 +34,15 @@ public sealed class ExceptionHandlingMiddleware
         }
         catch (Exception exception)
         {
-            if (context.Response.HasStarted)
-            {
-                throw;
-            }
-
             _logger.LogError(
                 "Request failed. TraceId: {TraceId}; ExceptionType: {ExceptionType}",
                 context.TraceIdentifier, exception.GetType().Name);
+            if (context.Response.HasStarted)
+            {
+                // Status/headers cannot be rewritten; abort partial output without leaking the exception to host logs.
+                context.Abort();
+                return;
+            }
             context.Response.Clear();
             context.Response.Headers.CacheControl = "no-store";
             if (IsJsonEndpoint(context.Request.Path))

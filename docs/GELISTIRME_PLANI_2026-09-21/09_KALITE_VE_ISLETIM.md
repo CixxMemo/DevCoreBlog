@@ -171,6 +171,8 @@ Bu bölüm bir çalıştırma emri değildir. Her seferinde yalnızca **bir faz 
 
 **İzlenebilirlik:** G10; Rapor §10.
 
+**Uygulama:** [F53 kaydı](../uygulama-kayitlari/F53-2026-10-05.md) ile tamamlandı. Yetkili gerçek DB/status, unavailable503/null metrics, bounded actual driver/query, media config/son işlem ayrımı ve redacted correlated JSON log kabulü doğrulandı. Public health/polling eklenmedi; canlı retention/hosting ayrı kalır. D27 ve [operasyon sözleşmesi](../OPERASYON_VE_LOG_SOZLESMESI.md) uygulanır.
+
 **Durma noktası:** Kanıtı uygulama kaydına ve DURUM.md'ye işle; sonraki fazı başlatma.
 
 ---

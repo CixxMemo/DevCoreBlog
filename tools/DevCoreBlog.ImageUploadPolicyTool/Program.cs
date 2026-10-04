@@ -47,14 +47,14 @@ var successfulStorage = new StubImageStorage(
 var successfulService = new ImageService(
     policy,
     successfulStorage,
-    NullLogger<ImageService>.Instance);
+    NullLogger<ImageService>.Instance, new DevCoreBlog.Services.Operations.MediaOperationStatus(true, TimeProvider.System));
 var successfulUpload = await successfulService.UploadImageAsync(validPng);
 
 var failedStorage = new StubImageStorage(ImageStorageOutcome.Failure());
 var failedService = new ImageService(
     policy,
     failedStorage,
-    NullLogger<ImageService>.Instance);
+    NullLogger<ImageService>.Instance, new DevCoreBlog.Services.Operations.MediaOperationStatus(true, TimeProvider.System));
 var failedUpload = await failedService.UploadImageAsync(validPng);
 
 var oversizedStorageResult = new StubImageStorage(
@@ -67,7 +67,7 @@ var oversizedStorageResult = new StubImageStorage(
 var guardedService = new ImageService(
     policy,
     oversizedStorageResult,
-    NullLogger<ImageService>.Instance);
+    NullLogger<ImageService>.Instance, new DevCoreBlog.Services.Operations.MediaOperationStatus(true, TimeProvider.System));
 var guardedUpload = await guardedService.UploadImageAsync(validPng);
 
 var uploadClient = DispatchProxy.Create<ICloudinaryUploadApi, FailingCloudinaryUploadProxy>();
@@ -83,11 +83,16 @@ uploadProxy.Result = new ImageUploadResult { SecureUrl = new Uri("https://res.cl
     PublicId = "DevCoreBlog/f49", Format = "png", Width = 123, Height = 456 };
 var metadataUpload = await providerStorage.UploadAsync(new MemoryStream(pngBytes, false), "png");
 var blankIdService = new ImageService(policy, new StubImageStorage(
-    ImageStorageOutcome.Success("https://images.example.test/a.png", "png", 1, 1, "")), NullLogger<ImageService>.Instance);
+    ImageStorageOutcome.Success("https://images.example.test/a.png", "png", 1, 1, "")), NullLogger<ImageService>.Instance, new DevCoreBlog.Services.Operations.MediaOperationStatus(true, TimeProvider.System));
 var blankIdUpload = await blankIdService.UploadImageAsync(validPng);
+
+var unavailableService = new ImageService(policy, new UnavailableImageStorage(), NullLogger<ImageService>.Instance,
+    new DevCoreBlog.Services.Operations.MediaOperationStatus(false, TimeProvider.System));
+var unavailableUpload = await unavailableService.UploadImageAsync(validPng);
 
 var checks = new Dictionary<string, bool>
 {
+    ["missing_media_configuration_rejects_valid_upload_without_network"] = !unavailableUpload.Succeeded && unavailableUpload.FailureKind == ImageUploadFailureKind.StorageUnavailable,
     ["provider_metadata_is_carried_exactly"] = metadataUpload.PublicId == "DevCoreBlog/f49" &&
         metadataUpload.Width == 123 && metadataUpload.Height == 456 &&
         successfulUpload.PublicId == "DevCoreBlog/f09" && successfulUpload.Width == 1,

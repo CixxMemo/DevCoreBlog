@@ -112,6 +112,10 @@ if [ "${DEVCORE_F29_PROBE:-0}" = 1 ]; then
 fi
 
 if [ "${DEVCORE_F26_PROBE:-0}" = 1 ]; then
+    if rg -q 'UnavailableImageStorage' "$task_source/Program.cs"; then
+        # F53 keeps diagnostics online; the valid-upload rejection now proves fail-closed storage.
+        dotnet "$task_source/tools/DevCoreBlog.ImageUploadPolicyTool/bin/Debug/net10.0/DevCoreBlog.ImageUploadPolicyTool.dll"
+    else
     if (
         cd "$task_source"
         env -u CLOUDINARY_API_SECRET \
@@ -134,6 +138,7 @@ if [ "${DEVCORE_F26_PROBE:-0}" = 1 ]; then
     fi
     printf 'f26_missing_cloudinary_config_fails_closed=true\n'
     printf 'f26_cloudinary_config_error_hides_credentials=true\n'
+    fi
 fi
 
 task_admin_password_hash=$(

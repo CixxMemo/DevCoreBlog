@@ -42,6 +42,19 @@ using Microsoft.AspNetCore.HostFiltering;
 // Create the application builder, which loads configuration from appsettings.json,
 // environment variables, and command-line arguments
 var builder = WebApplication.CreateBuilder(args);
+builder.Logging.ClearProviders();
+builder.Logging.AddJsonConsole(options => { options.IncludeScopes = true; options.UseUtcTimestamp = true; options.TimestampFormat = "yyyy-MM-ddTHH:mm:ss.fffZ"; });
+// Provider diagnostics can contain SQL/connection details; application events use safe summaries.
+builder.Services.PostConfigure<LoggerFilterOptions>(options =>
+{
+    // Even a more-specific environment override must not print provider errors containing input/SQL.
+    for (var i = options.Rules.Count - 1; i >= 0; i--)
+        if (options.Rules[i].CategoryName is { } category &&
+            (category.StartsWith("Microsoft.EntityFrameworkCore", StringComparison.Ordinal) || category.StartsWith("Npgsql", StringComparison.Ordinal)))
+            options.Rules.RemoveAt(i);
+    options.Rules.Add(new LoggerFilterRule(null, "Microsoft.EntityFrameworkCore", LogLevel.None, null));
+    options.Rules.Add(new LoggerFilterRule(null, "Npgsql", LogLevel.None, null));
+});
 // Development dotenv values fill missing variables only; production uses the service environment.
 var dotenvPath = Path.Combine(builder.Environment.ContentRootPath, ".env");
 if (builder.Environment.IsDevelopment())
@@ -186,6 +199,8 @@ builder.Services.AddScoped<ICategoryService>(serviceProvider =>
 builder.Services.AddScoped<ISitemapCategoryReader>(serviceProvider =>
     serviceProvider.GetRequiredService<CategoryService>());
 builder.Services.AddScoped<IAdminDashboardService, AdminDashboardService>();
+builder.Services.AddScoped<IDatabaseConnectionProbe, DatabaseConnectionProbe>();
+builder.Services.AddScoped<DevCoreBlog.Services.Operations.IAdminOverviewService, DevCoreBlog.Services.Operations.AdminOverviewService>();
 builder.Services.AddSingleton<ISafeMarkdownRenderer, SafeMarkdownRenderer>();
 builder.Services.AddScoped<IImageService, ImageService>();
 builder.Services.AddSingleton<ImageUploadPolicy>();
@@ -204,18 +219,17 @@ builder.Services.AddSingleton(new WebhookIngressOptions(
 var cloudinaryCloudName = Environment.GetEnvironmentVariable("CLOUDINARY_CLOUD_NAME");
 var cloudinaryApiKey = Environment.GetEnvironmentVariable("CLOUDINARY_API_KEY");
 var cloudinaryApiSecret = Environment.GetEnvironmentVariable("CLOUDINARY_API_SECRET");
-if (string.IsNullOrWhiteSpace(cloudinaryCloudName) ||
-    string.IsNullOrWhiteSpace(cloudinaryApiKey) ||
-    string.IsNullOrWhiteSpace(cloudinaryApiSecret))
+var mediaConfigured = !string.IsNullOrWhiteSpace(cloudinaryCloudName) &&
+    !string.IsNullOrWhiteSpace(cloudinaryApiKey) && !string.IsNullOrWhiteSpace(cloudinaryApiSecret);
+builder.Services.AddSingleton(new DevCoreBlog.Services.Operations.MediaOperationStatus(mediaConfigured, TimeProvider.System));
+if (mediaConfigured)
 {
-    throw new InvalidOperationException("Cloudinary credentials are required for image storage.");
+    var cloudinary = new Cloudinary(new Account(cloudinaryCloudName, cloudinaryApiKey, cloudinaryApiSecret));
+    cloudinary.Api.Secure = true;
+    builder.Services.AddSingleton<ICloudinaryUploadApi>(cloudinary);
+    builder.Services.AddScoped<IImageStorage, CloudinaryImageStorage>();
 }
-
-var cloudinary = new Cloudinary(new Account(
-    cloudinaryCloudName, cloudinaryApiKey, cloudinaryApiSecret));
-cloudinary.Api.Secure = true;
-builder.Services.AddSingleton<ICloudinaryUploadApi>(cloudinary);
-builder.Services.AddScoped<IImageStorage, CloudinaryImageStorage>();
+else builder.Services.AddScoped<IImageStorage, UnavailableImageStorage>();
 builder.Services.AddSingleton<IAdminPasswordVerifier, Pbkdf2PasswordHasher>();
 
 var adminSessionPolicy = new AdminSessionPolicy(
@@ -473,6 +487,7 @@ var app = builder.Build();
 app.UseForwardedHeaders();
 // Apply final headers before explicit host filtering and after cleared error responses.
 app.UseMiddleware<SecurityHeadersMiddleware>();
+app.UseMiddleware<RequestDiagnosticsMiddleware>();
 app.UseHostFiltering();
 
 // Global Error Handling Middleware

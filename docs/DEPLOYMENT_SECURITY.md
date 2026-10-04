@@ -101,3 +101,7 @@ Host ve forwarding eksikliğini geri getirir; bütün proxy’lere güvenmek ç�
 Kaynaklar: [.NET 10 reverse proxy sınırı](https://learn.microsoft.com/en-us/aspnet/core/host-and-deploy/proxy-load-balancer?view=aspnetcore-10.0),
 [Nginx proxy_set_header](https://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_set_header),
 [Nginx TLS/handshake](https://nginx.org/en/docs/http/ngx_http_ssl_module.html#ssl_reject_handshake).
+
+## F53 işletim ve log sınırı
+
+[Operasyon sözleşmesi](OPERASYON_VE_LOG_SOZLESMESI.md) güvenli JSON scope/event, yetkili servis durumu, journal hedefi ve gerçek sunucuda doğrulanacak retention/erişim yollarını tanımlar. Systemd örneğinde stdout/stderr journal’a açıkça yönlendirilir; bu örnek canlı log saklama/rotation kurulumu değildir. Eksik medya credential’ında admin teşhis açık, upload fail-closed kalır; kimlik zorunluluğu korunur.

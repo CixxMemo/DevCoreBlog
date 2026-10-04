@@ -9,13 +9,13 @@
 @*   4. System & Integration Health Status Panel                                *@
 @* ============================================================================= *@
 
-@model DevCoreBlog.Services.Models.AdminDashboardSnapshot
+@model DevCoreBlog.Models.Admin.AdminDashboardViewModel
 
 @{
     ViewData["Title"] = "Command Dashboard";
 
-    var topPosts = Model.TopPosts;
-    var environmentName = (string)(ViewData["EnvironmentName"] ?? "Production");
+    var snapshot = Model.Overview.Dashboard;
+    var topPosts = snapshot?.TopPosts ?? Array.Empty<DevCoreBlog.Core.ReadModels.TopReadPost>();
 }
 
 <div class="space-y-8">
@@ -48,6 +48,8 @@
         </div>
     </div>
 
+    @if (snapshot is not null)
+    {
     @* ========================================================================= *@
     @* SECTION 1: METRIC & ANALYTICS TILES (5 Brutalist Stat Cards)              *@
     @* ========================================================================= *@
@@ -59,7 +61,7 @@
                 Total Posts
             </div>
             <div class="text-3xl md:text-4xl font-black text-black my-2">
-                @Model.TotalPosts
+                @snapshot.TotalPosts
             </div>
             <div class="font-mono text-[10px] text-neutral-600 border-t border-neutral-200 pt-2 flex items-center justify-between">
                 <span>ALL TIME</span>
@@ -74,7 +76,7 @@
                 <span>Publication enabled</span>
             </div>
             <div class="text-3xl md:text-4xl font-black text-black my-2">
-                @Model.PublishedPosts
+                @snapshot.PublishedPosts
             </div>
             <div class="font-mono text-[10px] text-neutral-600 border-t border-neutral-200 pt-2">
                 INCLUDES SCHEDULED
@@ -88,7 +90,7 @@
                 <span>Drafts</span>
             </div>
             <div class="text-3xl md:text-4xl font-black text-black my-2">
-                @Model.DraftPosts
+                @snapshot.DraftPosts
             </div>
             <div class="font-mono text-[10px] text-neutral-600 border-t border-neutral-200 pt-2">
                 UNPUBLISHED
@@ -101,7 +103,7 @@
                 Total Views
             </div>
             <div class="text-3xl md:text-4xl font-black text-black my-2">
-                @Model.TotalViews.ToString("N0")
+                @snapshot.TotalViews.ToString("N0")
             </div>
             <div class="font-mono text-[10px] text-neutral-600 border-t border-neutral-200 pt-2">
                 ARTICLE READS
@@ -114,7 +116,7 @@
                 Categories
             </div>
             <div class="text-3xl md:text-4xl font-black text-black my-2">
-                @Model.CategoryCount
+                @snapshot.CategoryCount
             </div>
             <div class="font-mono text-[10px] text-neutral-600 border-t border-neutral-200 pt-2 flex items-center justify-between">
                 <span>ACTIVE TOPICS</span>
@@ -270,52 +272,32 @@
         </div>
     </div>
 
+    }
+    else
+    {
+        <p role="status" class="border-2 border-black bg-white p-5">Statistics unavailable. Please retry later; no values have been estimated.</p>
+    }
     @* ========================================================================= *@
     @* SECTION 3: SYSTEM & INTEGRATION HEALTH STATUS                             *@
     @* ========================================================================= *@
-    <div class="border-2 border-black bg-white p-5">
-        <div class="font-mono text-[10px] font-bold text-neutral-500 uppercase tracking-widest leading-tight mb-3">
-            // INFRASTRUCTURE & INTEGRATION HEALTH
-        </div>
-        
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            
-            @* DB Health *@
-            <div class="border border-black bg-neutral-50 p-3 font-mono text-xs flex items-center justify-between">
-                <span class="text-neutral-600 font-bold uppercase">Database:</span>
-                <span class="flex items-center gap-1.5 font-bold text-emerald-700">
-                    <span class="w-2 h-2 bg-emerald-500 inline-block"></span>
-                    Connected (PostgreSQL)
-                </span>
-            </div>
-
-            @* Media CDN *@
-            <div class="border border-black bg-neutral-50 p-3 font-mono text-xs flex items-center justify-between">
-                <span class="text-neutral-600 font-bold uppercase">Media CDN:</span>
-                <span class="flex items-center gap-1.5 font-bold text-emerald-700">
-                    <span class="w-2 h-2 bg-emerald-500 inline-block"></span>
-                    Cloudinary (Active)
-                </span>
-            </div>
-
-            @* Environment *@
-            <div class="border border-black bg-neutral-50 p-3 font-mono text-xs flex items-center justify-between">
-                <span class="text-neutral-600 font-bold uppercase">Environment:</span>
-                <span class="font-bold text-black uppercase">
-                    @environmentName
-                </span>
-            </div>
-
-            @* Webhook Pipeline *@
-            <div class="border border-black bg-neutral-50 p-3 font-mono text-xs flex items-center justify-between">
-                <span class="text-neutral-600 font-bold uppercase">Webhook Hub:</span>
-                <a asp-controller="Admin" asp-action="Automations" class="flex items-center gap-1.5 font-bold text-black hover:underline">
-                    <span class="w-2 h-2 bg-emerald-500 inline-block"></span>
-                    Ready (Rate Limited) →
-                </a>
-            </div>
-        </div>
-    </div>
+    <section aria-labelledby="service-status-title" class="border-2 border-black bg-white p-5 space-y-3">
+        <h2 id="service-status-title" class="font-mono text-sm font-bold">System &amp; integration status</h2>
+        <dl class="grid grid-cols-1 sm:grid-cols-2 gap-4 font-mono text-xs">
+            <div class="border border-black p-3"><dt class="font-bold">Database</dt><dd id="database-status">@Model.Overview.DatabaseState (PostgreSQL)</dd></div>
+            <div class="border border-black p-3"><dt class="font-bold">Media storage</dt><dd id="media-status">@(Model.Overview.Media.Configured ? "Configured — access not checked" : "Not configured — uploads unavailable")</dd>
+            @if (Model.Overview.Media.LastCompleted is { } completed)
+            {
+                <dd>Last upload: @(Model.Overview.Media.LastSucceeded == true ? "Succeeded" : "Failed") — @completed.ToString("u", System.Globalization.CultureInfo.InvariantCulture) UTC</dd>
+            }
+            @if (Model.Overview.Media.LastSuccess is { } success)
+            {
+                <dd>Last successful upload: @success.ToString("u", System.Globalization.CultureInfo.InvariantCulture) UTC</dd>
+            }
+            <dd>Upload history covers this process only; it does not prove current provider availability.</dd></div>
+            <div class="border border-black p-3"><dt class="font-bold">Environment</dt><dd>@Model.EnvironmentName</dd></div>
+            <div class="border border-black p-3"><dt class="font-bold">Webhook</dt><dd>@(Model.WebhookConfigured ? "Configured — rate limited" : "Not configured — requests denied")</dd><dd><a asp-action="Automations" class="underline">Automation settings →</a></dd></div>
+        </dl>
+    </section>
 </div>
 
 @* ============================================================================= *@

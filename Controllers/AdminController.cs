@@ -1,4 +1,5 @@
 using DevCoreBlog.Services.Interfaces;
+using DevCoreBlog.Services.Operations;
 using DevCoreBlog.Configuration;
 using DevCoreBlog.Models.Admin;
 using Microsoft.AspNetCore.Authorization;
@@ -10,19 +11,22 @@ namespace DevCoreBlog.Controllers;
 [Authorize]
 public sealed class AdminController : Controller
 {
-    private readonly IAdminDashboardService _dashboard;
+    private readonly IAdminOverviewService _dashboard;
+    private readonly WebhookIngressOptions _webhook;
     private readonly ICategoryService _categories;
     private readonly IWebHostEnvironment _environment;
     private readonly SiteUrlOptions _siteUrl;
     private readonly PortfolioCorsOptions _portfolioCors;
 
     public AdminController(
-        IAdminDashboardService dashboard,
+        IAdminOverviewService dashboard,
         ICategoryService categories,
         IWebHostEnvironment environment,
         SiteUrlOptions siteUrl,
-        PortfolioCorsOptions portfolioCors)
+        PortfolioCorsOptions portfolioCors,
+        WebhookIngressOptions webhook)
     {
+        _webhook = webhook;
         _dashboard = dashboard;
         _categories = categories;
         _environment = environment;
@@ -32,9 +36,9 @@ public sealed class AdminController : Controller
 
     public async Task<IActionResult> Dashboard(CancellationToken cancellationToken)
     {
-        var snapshot = await _dashboard.GetSnapshotAsync(cancellationToken);
-        ViewData["EnvironmentName"] = _environment.EnvironmentName;
-        return View(snapshot);
+        var snapshot = await _dashboard.GetAsync(cancellationToken);
+        if (snapshot.Dashboard is null) Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
+        return View(new AdminDashboardViewModel(snapshot, _environment.EnvironmentName, !string.IsNullOrWhiteSpace(_webhook.Secret)));
     }
 
     public async Task<IActionResult> Automations()

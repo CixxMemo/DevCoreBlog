@@ -28,7 +28,7 @@ if a.expect_unavailable_database:
     assert all(checks.values()), [key for key, value in checks.items() if not value]
     raise SystemExit(0)
 admin, _ = cookie_opener()
-submit_login(admin, base, 'f17-admin', os.environ['DEVCORE_TEST_ADMIN_PASSWORD'])
+submit_login(admin, base, os.environ.get('DEVCORE_TEST_ADMIN_USERNAME', 'f17-admin'), os.environ['DEVCORE_TEST_ADMIN_PASSWORD'])
 checks = {}
 for route in ['/', '/category/f01-active', '/Account/Login', '/Admin/Dashboard', '/AdminCategory/Create', '/not-found-f52', '/AdminPost/Create', '/AdminPost/Edit/2005', '/AdminPost/Edit/99999999']:
     opener = admin if route.startswith('/Admin') else visitor

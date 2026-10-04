@@ -93,7 +93,7 @@ namespace DevCoreBlog.Controllers
             if (!ModelState.IsValid || !CredentialsMatch(username, password))
             {
                 _logger.LogWarning(
-                    "Admin sign-in attempt failed from direct connection IP {RemoteIpAddress}.",
+                    "Admin sign-in attempt failed from resolved client IP {RemoteIpAddress}.",
                     HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown");
                 ViewBag.Error = InvalidCredentialsMessage;
                 return View();
@@ -121,6 +121,7 @@ namespace DevCoreBlog.Controllers
                 new ClaimsPrincipal(claimsIdentity),
                 authProperties);
 
+            _logger.LogInformation("Admin sign-in succeeded.");
             return RedirectToAction("Dashboard", "Admin");
         }
 
@@ -162,6 +163,8 @@ namespace DevCoreBlog.Controllers
         {
             // Remove the authentication cookie from the response
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+            _logger.LogInformation("Admin sign-out completed.");
 
             // Redirect to the home page after logout
             return RedirectToAction("Index", "Home");

@@ -106,7 +106,7 @@ let browser;
     await audit(page, 'article code/YouTube');
     await page.screenshot({ path: path.join(output, 'article-desktop.png') });
     await visit('/Account/Login');
-    await page.locator('#username').fill('f17-admin');
+    await page.locator('#username').fill(process.env.DEVCORE_TEST_ADMIN_USERNAME || 'f17-admin');
     await page.locator('#password').fill(process.env.DEVCORE_TEST_ADMIN_PASSWORD || 'f17-isolated-password');
     await page.getByRole('button', { name: 'Sign In', exact: true }).click();
     await page.waitForURL('**/Admin/Dashboard', { waitUntil: 'domcontentloaded' });

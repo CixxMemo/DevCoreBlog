@@ -1,10 +1,10 @@
 # İlerleme çizelgesi
 
-- **Son kayıt:** 4 Ekim 2026 — F52 engelleyici CSP, güvenlik başlıkları ve Production/500 kabulü doğrulandı.
-- **Tamamlanan plan fazı:** 53/58 (F00–F52).
-- **Tamamlanan uygulama kodu fazı:** 51.
+- **Son kayıt:** 5 Ekim 2026 — F53 ölçülmüş admin servis durumu, bounded DB ve güvenli correlated log kabulü doğrulandı.
+- **Tamamlanan plan fazı:** 54/58 (F00–F53).
+- **Tamamlanan uygulama kodu fazı:** 52.
 - **Aktif faz:** Yok.
-- **Sıradaki faz:** F53 — kullanıcı onayı bekleniyor.
+- **Sıradaki faz:** F54 — kullanıcı onayı bekleniyor.
 - **Uygulama kodu:** F02–F09 güvenlik fazları tamamlandı. F10 migration zincirini doğruladı. F11–F13 form/içerik güvenliğini tamamladı. F14 kategori update'ini güvenli alanlara daralttı. F15 kategori silmesini DB constraint'i ve yarış yönetimiyle veri kaybına karşı korudu. F16 yayın zamanını açık saat dilimiyle UTC'ye bağladı. F17 public görünürlüğü tek kurala bağladı. F18 tek süreçli liste cache'ini yayın sınırı ve mutation invalidation'ıyla doğruladı. F19 düzenlemede kayıtlı slug'ı korudu. F20 benzersiz slug indekslerini ve geçmiş çakışma göçünü ekledi. F21 yalnızca uygun public GET'leri atomik sayıyor. F22 eski edit sekmelerinin içerik ezmesini sürüm karşılaştırmasıyla önlüyor. F23 hata akışında gerçek 404/500 ve JSON durumlarını koruyor. F24 servislerin somut Data repository bağımlılığını Core sözleşmelerine taşıdı. F25 dashboard sorgularını servis/repository sınırına ve kategori menülerini asenkron bileşene taşıdı. F26 güvenli Markdown renderer'ını Services'e taşıyıp Cloudinary istemcisini composition root'tan enjekte etti. F27 webhook'u secret-önce, sınırlı JSON kabulüne ve açık yayın yetkisine bağladı. F28 anahtarlı gönderimleri kalıcı işlem kaydı ve tek transaction ile tekrar korumasına bağladı. F29 portföyü dar DB projection, kararlı sıralama ve yapılandırılmış site URL'sine bağladı. F30 Create/Edit ortak formunu ve editör davranışlarını tek partial/modülde topladı. F31 Create/Edit kurtarmayı yazı kimliği, açık Restore/Discard, sekme koordinasyonu ve doğrulanmış başarılı kayıt bilgisine bağladı. F32 açık kayıt eylemlerini, normal Save korumasını ve doğru yayın durumunu uyguladı. F33 aynı güvenli render sınırından, DB yazısı/sayaç/yayın yan etkisi olmayan özel HTML önizleme üretiyor. F34 yönetim panelini mobil drawer, kontrollü tablo kaydırma ve dar ekranda kullanılabilir form/editörle düzenledi; gerçek %200 Chrome yakınlaştırmasında yatay taşma olmadığını doğruladı. F35 Tailwind CLI/lockfile ile yerel CSS ve sabit lisanslı editör/Prism varlıklarını build/publish akışına bağladı.
 
 ## Kullanım
@@ -73,7 +73,7 @@
 | [x] | F50 | Dağıtım sınırlarını ve reverse proxy güvenini tanımla | TAMAMLANDI — KOD | [F50 kanıtı](../uygulama-kayitlari/F50-2026-10-04.md) |
 | [x] | F51 | CSP uyumluluğunu raporlama modunda hazırla | TAMAMLANDI — KOD | [F51 kanıtı](../uygulama-kayitlari/F51-2026-10-04.md) |
 | [x] | F52 | Doğrulanmış CSP ve güvenlik başlıklarını uygula | TAMAMLANDI — KOD | [F52 kanıtı](../uygulama-kayitlari/F52-2026-10-04.md) |
-| [ ] | F53 | Gerçek hata ve servis durumlarını görünür yap | BAŞLAMADI | — |
+| [x] | F53 | Gerçek hata ve servis durumlarını görünür yap | TAMAMLANDI — KOD | [F53 kanıtı](../uygulama-kayitlari/F53-2026-10-05.md) |
 | [ ] | F54 | Git deposundaki üretilmiş dosyaları temizle | BAŞLAMADI | — |
 | [ ] | F55 | Otomatik kalite kapısını kur | BAŞLAMADI | — |
 | [ ] | F56 | Yedek geri yükleme ve yayınlama prosedürünü kanıtla | BAŞLAMADI | — |
@@ -81,10 +81,10 @@
 
 ## Son agent teslimi
 
-- Bu turdaki faz: F52 — bütün ortamlarda enforcing CSP; OnStarting nosniff/Referrer-Policy/frame koruması. Editor istisnası yalnız200 Create/Edit; statik nonce’sız cache/HEAD eşleşmesi; D26 uygulanır.
-- Kontroller: build 0 uyarı/0 hata; Chrome36 ve27 normal ziyaret/sıfır ihlal; header/cache/HEAD53, error5006, Production/TLS27, preview30, assets30, fixture30 geçti. Kasıtlı inline/handler/eval/dış script/base injection engellendi. [Kanıt](../uygulama-kayitlari/F52-2026-10-04.md).
-- Sınırlama: gerçek hosting/Nginx/deploy/Cloudinary hesabı doğrulanmadı. Framework erken boş Host400 uygulama başlık hattının dışında; uygulama CSRF400/HTML404/DB500 ayrı doğrulandı. Beklenen src=x404/YouTube child abort ayrı kayıtlıdır. F35 vendor bakım borcu ve F47 veri kullanımı taslağı açık kalır.
-- Aktif faz: Yok. Sıradaki tek faz: F53 — Gerçek hata ve servis durumlarını görünür yap.
-- Kullanıcıdan gereken: F53 için açık onay; [veri kullanımı taslağı](../F47_VERI_KULLANIMI_TASLAGI.md) değerlendirmesi.
+- Bu turdaki faz: F53 — admin-only gerçek DB/status ve unavailable503, eksik medya operation fail-closed, process-local upload gözlemi, güvenli JSON TraceId/X-Request-ID; D27 uygulanır.
+- Kontroller: build0 uyarı/0 hata; HTTP/DB/privacy29, unit9, upload18, Chrome36/27 normal ziyaret/sıfır CSP ihlali, status UI8 ve outage12, header/cache53, Production/TLS27, fixture30 geçti. Gerçek locked query2,027s/stalled handshake2,396s sınırlandı. [Kanıt](../uygulama-kayitlari/F53-2026-10-05.md).
+- Sınırlama: canlı Cloudinary/hosting/Nginx/systemd/journal retention-ACL uygulanmadı; hedef işletim belgesinde ayrıldı. Media Configured mevcut erişim kanıtı değil, son upload yalnız süreç gözlemidir. F35 vendor borcu ve F47 hukuki taslak açık; gerçek .env/veri korunur.
+- Aktif faz: Yok. Sıradaki tek faz: F54 — Git deposundaki üretilmiş dosyaları temizle.
+- Kullanıcıdan gereken: F54 için açık onay; [veri kullanımı taslağı](../F47_VERI_KULLANIMI_TASLAGI.md) değerlendirmesi.
 
 [Ana plan](README.md) · [Hazır mesajlar](AGENT_PROMPTLARI.md)
