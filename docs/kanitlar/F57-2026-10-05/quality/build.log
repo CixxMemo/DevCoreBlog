@@ -1,0 +1,29 @@
+  
+  > devcoreblog-assets@1.0.0 build
+  > node scripts/frontend/build.mjs
+  
+  Browserslist: caniuse-lite is outdated. Please run:
+    npx update-browserslist-db@latest
+    Why you should do it regularly: https://github.com/browserslist/update-db#readme
+  
+  Rebuilding...
+  
+  Done in 266ms.
+  Browserslist: caniuse-lite is outdated. Please run:
+    npx update-browserslist-db@latest
+    Why you should do it regularly: https://github.com/browserslist/update-db#readme
+  
+  Rebuilding...
+  
+  Done in 255ms.
+  Frontend assets built: Tailwind 3.4.17, Prism 1.30.0.
+  DevCoreBlog.Core -> /private/tmp/devcoreblog-f55-ccpvy01n/source/DevCoreBlog.Core/bin/Debug/net10.0/DevCoreBlog.Core.dll
+  DevCoreBlog.Data -> /private/tmp/devcoreblog-f55-ccpvy01n/source/DevCoreBlog.Data/bin/Debug/net10.0/DevCoreBlog.Data.dll
+  DevCoreBlog.Services -> /private/tmp/devcoreblog-f55-ccpvy01n/source/DevCoreBlog.Services/bin/Debug/net10.0/DevCoreBlog.Services.dll
+  DevCoreBlog -> /private/tmp/devcoreblog-f55-ccpvy01n/source/bin/Debug/net10.0/DevCoreBlog.dll
+
+Oluşturma başarılı oldu.
+    0 Uyarı
+    0 Hata
+
+Geçen Süre 00:00:10.07

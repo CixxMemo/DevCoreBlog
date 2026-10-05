@@ -1,0 +1,19 @@
+{
+  "checks": {
+    "exact_known_graph_accepted": true,
+    "network_error_rejected": true,
+    "timeout_rejected": true,
+    "exit_two_rejected": true,
+    "new_advisory_rejected": true,
+    "new_package_rejected": true,
+    "changed_version_rejected": true,
+    "runtime_scope_rejected": true,
+    "runtime_dependency_rejected": true,
+    "nested_unknown_node_rejected": true,
+    "expired_exception_rejected": true,
+    "cycle_rejected": true,
+    "malformed_count_rejected": true,
+    "clean_scan_needs_no_exception": true
+  },
+  "count": 14
+}

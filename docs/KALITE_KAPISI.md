@@ -1,4 +1,4 @@
-# F55 — Kalite kapısı
+# F55 / F57 — Kalite kapısı
 
 ## Çalıştırma
 
@@ -37,12 +37,33 @@ kanıtlamaz. Browser/video/gerçek Nginx/hosting kabulü bu otomasyonun kapsamı
 olarak iddia edilmez; mevcut faz kanıtları ayrıdır. SDK seçimi/EF sürümü sabittir,
 paket veya ürün major yükseltmesi yapılmamıştır.
 
+## F57 genişletilmiş yerel kabul
+
+```sh
+python3 scripts/verification/run_quality_gate.py --final-acceptance --report-dir /tmp/devcore-final-quality
+```
+
+Bu seçenek 22 aşamaya iki bağımsız disposable cluster kontrolü ekler: auth/CSRF,
+güvenli Markdown, atomik sayaç, kalıcı webhook/restart, cache/zamanlı yayın ve
+kategori silme yarışı; ardından eski edit/eşzamanlı güncelleme. Ek portlar
+PostgreSQL55461/55462 ve uygulama15199/15201/15200’dür; boş olmalıdır.
+F57 probe kaynak namespace’i ve gerçek DB data_directory sahipliğini doğrular;
+gerçek ortam credential/config taşımaz. Ham auth/provider logları export edilmez.
+Yedi regresyon grubu ve sekiz F22 sonucu eksik/başarısızsa kapı exit1 olur.
+
+5 Ekim 2026 temiz yerel kaynakta **24/24** geçti. Gerçek Chrome yolculuğu,
+CSP/mobil/klavye ve native %200 zoom ayrı tarayıcı kontrolleridir; bu komut onları
+çalıştırmış sayılmaz. [F57 raporu](SON_KABUL_RAPORU_2026-10-05.md) kanıtları ayırır.
+Npm/NuGet audit’inin yerel vendored editörü taramaması nedeniyle bu kapının yeşil
+olması P1 DOMPurify bulgusunu kapatmaz; F57 nihai kabulü hâlâ engellidir.
+
 ## GitHub Actions
 
 Remote GitHub olduğu ve mevcut CI bulunmadığı için .github/workflows/quality.yml
 hazırlandı. Pull request/push/manual tetik, contents read-only, checkout credential
 persist false, resmi actions commit SHA sabitlemesi, ubuntu24.04 ve PostgreSQL16
 araçları kullanılır. Gerçek env secret istemez. Artifacts7 gün saklanır.
+F57 ile workflow aynı `--final-acceptance` komutunu kullanır.
 Workflow remote’da çalıştırılmadı; yerel macOS kabulü Linux CI başarısı değildir.
 Branch protection/required check veya remote repository settings değiştirilmedi.
 

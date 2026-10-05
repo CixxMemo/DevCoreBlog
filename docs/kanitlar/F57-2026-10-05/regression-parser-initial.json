@@ -1,0 +1,35 @@
+{
+  "checks": {
+    "missing_hash_startup_fails_closed": true,
+    "missing_username_startup_fails_closed": true,
+    "malformed_hash_startup_fails_closed": true,
+    "empty_password_rejected": true,
+    "wrong_password_rejected": true,
+    "hashed_login_succeeds": true,
+    "csrf_missing_/Account/Logout": true,
+    "csrf_missing_/AdminPost/TogglePublish/2001": true,
+    "csrf_missing_/AdminPost/Create": true,
+    "csrf_missing_/AdminPost/Edit/2001": true,
+    "csrf_missing_/AdminPost/Delete/2008": true,
+    "csrf_missing_/AdminPost/UploadEditorImage": true,
+    "csrf_missing_/AdminPost/UploadImage": true,
+    "csrf_missing_/AdminPost/Preview": true,
+    "csrf_missing_/AdminCategory/Create": true,
+    "csrf_missing_/AdminCategory/Edit/1001": true,
+    "csrf_missing_/AdminCategory/Delete/1002": true,
+    "csrf_invalid_rejected": true,
+    "rejected_logout_keeps_session": true,
+    "login_missing_csrf_rejected": true,
+    "anonymous_admin_redirect": true,
+    "csrf_valid_reaches_upload_validation": true,
+    "valid_logout_ends_session": true,
+    "login_rate": false
+  },
+  "stages": {
+    "login_rate": {
+      "exit_code": 0,
+      "checks": {}
+    }
+  },
+  "scope": "Owned disposable PostgreSQL and MVC. Private logs not exported. Remote CI not executed."
+}

@@ -1,0 +1,25 @@
+{
+  "python_syntax": true,
+  "node_syntax": true,
+  "shell_syntax": true,
+  "git_diff_whitespace": true,
+  "documentation_local_links": true,
+  "index_unchanged": true,
+  "application_sources_packages_schema_unchanged": true,
+  "final_journey_25_true": true,
+  "final_regression_30_upper_49_child_true": true,
+  "final_edit_conflict_8_true": true,
+  "exported_credential_cookie_pattern_findings": [],
+  "held_fixture_directories_removed": true,
+  "owned_app_cluster_processes_remaining": 0,
+  "missing_links": [],
+  "source_sha256": {
+    "scripts/verification/f57_journey.cjs": "1641af3d4b56e6d35ee6cf3da9d807ff0c1b61fea586e5582147189c1321d9e7",
+    "scripts/verification/f57_regression_probe.py": "bf0fdf3771c5826ca4f2a4c84d80ec09cff90db40fc01c55764c8af81318614b",
+    "scripts/verification/run_quality_gate.py": "50e2a5d2a9d024c6cd590b86ac0e6783a9422cdcc873961569eb01d4d5bbfc74",
+    "scripts/verification/run_f17_visibility.sh": "06dfc04099972929406b9a1ae6beb31acb1774f9942099b62d5168ae47704133",
+    ".github/workflows/quality.yml": "7a8c79752090b78fe7c0cc690217d5e76b6a91b25729676d5c94428e22f4efbf"
+  },
+  "quality_24_stages_passed": true,
+  "remote_ci_verified": false
+}

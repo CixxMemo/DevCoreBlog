@@ -1,0 +1,13 @@
+{
+  "bundle": "frontend/vendor/toastui/toastui-editor-all.min.js",
+  "dompurify_banner": "/*! @license DOMPurify 2.3.3 | (c) Cure53 and other contributors | Released under the Apache license 2.0 and Mozilla Public License 2.0 | github.com/cure53/DOMPurify/blob/2.3.3/LICENSE */",
+  "version": "2.3.3",
+  "advisory": "GHSA-gx9m-whjm-85jf",
+  "affected_range": "<2.5.0",
+  "historical_first_patch": "2.5.0",
+  "advisory_source": "https://github.com/cure53/DOMPurify/security/advisories/GHSA-gx9m-whjm-85jf",
+  "date": "2026-10-05",
+  "application_exploit_demonstrated": false,
+  "priority": "P1 release review blocker; vendor patch/maintenance assessment needed",
+  "covered_by_npm_lock_audit": false
+}

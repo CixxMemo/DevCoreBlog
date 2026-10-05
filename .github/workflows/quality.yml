@@ -28,7 +28,7 @@ jobs:
           sudo apt-get install -y postgresql-16 rsync ripgrep
           echo /usr/lib/postgresql/16/bin >> "$GITHUB_PATH"
       - name: Clean build, audit and isolated PostgreSQL acceptance
-        run: python3 scripts/verification/run_quality_gate.py --report-dir "$RUNNER_TEMP/devcore-quality"
+        run: python3 scripts/verification/run_quality_gate.py --final-acceptance --report-dir "$RUNNER_TEMP/devcore-quality"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: always()
         with:

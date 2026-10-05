@@ -7,6 +7,7 @@ from npm_audit_policy import evaluate_npm_audit
 ROOT=Path(__file__).resolve().parents[2]
 parser=argparse.ArgumentParser()
 parser.add_argument('--report-dir',type=Path,required=True)
+parser.add_argument('--final-acceptance',action='store_true',help='Also run F57 security/data and F22 conflict regression on separate disposable clusters.')
 args=parser.parse_args(); report=args.report_dir.resolve()
 if report.exists() and any(report.iterdir()):
     raise SystemExit('Report directory must be empty; preserve prior evidence in another directory.')
@@ -92,6 +93,17 @@ try:
         (report/'fixture-checks.json').write_text(json.dumps({'checks':checks,'exit_code':code},indent=2)+'\n')
         stages['postgres-http']['passed']=code==0 and bool(checks) and all(checks.values())
         if code: print('Fixture failed; private raw output withheld. See structured reports and rerun the isolated fixture for diagnosis.',flush=True)
+        if args.final_acceptance:
+            code,output=run('final-security-data',['sh','scripts/verification/run_f17_visibility.sh'],source,timeout=480,export=False,extra={'DEVCORE_F49_PROBE':'1','DEVCORE_F57_PROBE':'1','DEVCORE_F57_REPORT':str(report/'final-regression.json'),'DEVCORE_F17_PG_PORT':'55461','DEVCORE_F17_APP_PORT':'15199'})
+            try:
+                acceptance=json.loads((report/'final-regression.json').read_text())
+                stages['final-security-data']['passed']=code==0 and len(acceptance['stages'])==7 and bool(acceptance['checks']) and all(acceptance['checks'].values())
+            except (OSError,ValueError,KeyError,TypeError):
+                stages['final-security-data']['passed']=False
+            code,output=run('final-edit-conflict',['sh','scripts/verification/run_f22_edit_conflict.sh'],source,timeout=480,export=False,extra={'DEVCORE_F22_PG_PORT':'55462','DEVCORE_F22_APP_PORT':'15200'})
+            conflicts={line.split('=')[0]:line.endswith('=true') for line in output.splitlines() if line.startswith('f22_') and line.endswith(('=true','=false'))}
+            (report/'final-edit-conflict.json').write_text(json.dumps({'checks':conflicts,'exit_code':code},indent=2)+'\n')
+            stages['final-edit-conflict']['passed']=code==0 and len(conflicts)==8 and all(conflicts.values())
 except Exception as error:
     stages['gate-error']={'passed':False,'error_type':type(error).__name__,'reason':str(error) if isinstance(error,RuntimeError) else 'See failed stage'}
 finally:

@@ -1,0 +1,33 @@
+{
+  "chromeMenu": "200%",
+  "list": {
+    "width": 960,
+    "rootScroll": 960,
+    "dpr": 2
+  },
+  "editor": {
+    "dpr": 2,
+    "editorVisible": true,
+    "rootScroll": 960,
+    "saveButtons": [
+      {
+        "height": 44,
+        "label": "Save changes (keep draft)"
+      },
+      {
+        "height": 44,
+        "label": "Save Draft"
+      },
+      {
+        "height": 44,
+        "label": "Schedule"
+      },
+      {
+        "height": 44,
+        "label": "Publish now"
+      }
+    ],
+    "width": 960
+  },
+  "initialZoom": 100
+}

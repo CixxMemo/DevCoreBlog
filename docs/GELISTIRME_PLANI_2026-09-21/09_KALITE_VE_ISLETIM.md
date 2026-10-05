@@ -289,4 +289,6 @@ Bu bölüm bir çalıştırma emri değildir. Her seferinde yalnızca **bir faz 
 
 **İzlenebilirlik:** Raporun tümü; nihai kabul.
 
+**Uygulama:** [F57 kaydı](../uygulama-kayitlari/F57-2026-10-05.md) ve [son kabul raporu](../SON_KABUL_RAPORU_2026-10-05.md): yerel Chrome yolculuğu 25/25, CSP/tarayıcı 36/36, gerçek PostgreSQL regresyonları ve genişletilmiş kalite kapısı 24/24 geçti; aynı rubrikte SOLID 82/100. DOMPurify 2.3.3 vendor P1 bulgusu ve güncel uzak CI kanıtı eksikliği nedeniyle kritik riskler kapalı değildir; faz ENGELLİ/[ ] kalır. Ayrı editör güvenlik bakım işi önerildi, başlamadı. D28 istisnası vendor runtime bağımlılığına genişletilmez.
+
 **Durma noktası:** Kanıtı uygulama kaydına ve DURUM.md'ye işle; sonraki fazı başlatma.

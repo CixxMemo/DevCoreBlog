@@ -1,0 +1,14 @@
+{
+  "checks": {
+    "login_dashboard": true,
+    "image_upload_real_request_synthetic_provider": true,
+    "provider_failed_save_retains_recovery": false
+  },
+  "stages": [
+    "category"
+  ],
+  "errors": [],
+  "consoleErrors": [],
+  "violations": [],
+  "scope": "Real Chrome; isolated PostgreSQL and synthetic provider. No production or Cloudinary access."
+}

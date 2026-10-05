@@ -1,0 +1,141 @@
+// One continuous author journey in real Chrome against the owned synthetic fixture.
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+const { chromium } = require(process.env.DEVCORE_PLAYWRIGHT_MODULE || 'playwright');
+const base = process.env.DEVCORE_F57_BASE_URL || 'http://127.0.0.1:15199';
+assert.equal(new URL(base).hostname, '127.0.0.1');
+const output = process.env.DEVCORE_F57_REPORT_DIR;
+assert.ok(output, 'An evidence directory is required');
+fs.mkdirSync(output, { recursive: true });
+const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=', 'base64');
+const gif = Buffer.from('R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==', 'base64');
+const checks = {}, errors = [], consoleErrors = [], violations = [], stages = [];
+const marker = 'F57 Journey ' + Date.now();
+let browser;
+(async () => {
+    browser = await chromium.launch({ headless: true, executablePath: process.env.DEVCORE_BROWSER_EXECUTABLE });
+    const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+    await context.route('https://images.example.test/**', route => route.fulfill({ contentType: 'image/png', body: png }));
+    await context.addInitScript(() => document.addEventListener('securitypolicyviolation', e =>
+        window.__f57Violations = [...(window.__f57Violations || []), e.effectiveDirective]));
+    context.on('page', p => {
+        p.on('pageerror', e => errors.push(e.name));
+        p.on('console', m => { if (m.type() === 'error' && !m.text().includes('Failed to load resource:')) consoleErrors.push(m.text().slice(0, 160)); });
+    });
+    const page = await context.newPage();
+    const visitor = await browser.newContext();
+    async function check(name, passed) { checks[name] = !!passed; assert.ok(passed, name); }
+    async function audit(label) {
+        violations.push(...await page.evaluate(() => window.__f57Violations || []));
+        stages.push(label);
+    }
+    async function edit(url) {
+        await page.goto(base + url);
+        await page.locator('#editor .ProseMirror[contenteditable=true]').first().waitFor({ state: 'visible' });
+    }
+    async function save(button) {
+        await page.getByRole('button', { name: button, exact: true }).click();
+        await page.waitForURL('**/AdminPost*');
+        await page.locator('#posts-table-body').waitFor();
+    }
+    await page.goto(base + '/Account/Login');
+    await page.locator('#username').fill('f17-admin');
+    await page.locator('#password').fill('f17-isolated-password');
+    await page.getByRole('button', { name: 'Sign In', exact: true }).click();
+    await page.waitForURL('**/Admin/Dashboard');
+    await check('login_dashboard', await page.locator('#dashboard-scratchpad').isVisible());
+    await page.goto(base + '/AdminCategory/Create');
+    await page.locator('#category-name-input').fill(marker);
+    await page.getByRole('button', { name: 'Save Category', exact: true }).click();
+    await page.waitForURL('**/AdminCategory');
+    await audit('category');
+    await edit('/AdminPost/Create');
+    const category = await page.locator('#CategoryId option').evaluateAll((options, title) => options.find(o => o.textContent === title)?.value, marker);
+    assert.ok(category);
+    await page.locator('#post-title-input').fill(marker);
+    await page.locator('#CategoryId').selectOption(category);
+    await page.locator('#editor .ProseMirror').first().fill('# F57 accepted article\n\nRecovery and publication journey.');
+    await page.locator('#editor-image-picker').setInputFiles({ name: 'journey.png', mimeType: 'image/png', buffer: png });
+    await page.getByText('Image uploaded and inserted.', { exact: true }).waitFor();
+    await check('image_upload_real_request_synthetic_provider', (await page.locator('#Content').inputValue()).includes('https://images.example.test/'));
+    const content = await page.locator('#Content').inputValue();
+    await page.locator('#thumbnailFile').setInputFiles({ name: 'failure.gif', mimeType: 'image/gif', buffer: gif });
+    const failedResponse = page.waitForResponse(r => r.request().method() === 'POST' && new URL(r.url()).pathname === '/AdminPost/Create');
+    await page.getByRole('button', { name: 'Save Draft', exact: true }).click();
+    const failed = await failedResponse;
+    await page.waitForLoadState('domcontentloaded');
+    // Form failures render field errors with 200; the JSON upload endpoint uses 503.
+    const failureHtml = await failed.text();
+    await check('provider_failed_save_retains_recovery', failed.status() === 200 && new URL(page.url()).pathname === '/AdminPost/Create' && /Image storage is temporarily unavailable/.test(failureHtml) && await page.evaluate(() => !!localStorage.getItem('devcore_editor_draft_create')));
+    await page.goto(base + '/AdminPost?query=' + encodeURIComponent(marker));
+    await check('failed_save_does_not_create_post', await page.getByRole('link', { name: marker, exact: true }).count() === 0);
+    await edit('/AdminPost/Create');
+    await page.locator('#btn-restore-draft').waitFor({ state: 'visible' });
+    await check('recovery_requires_explicit_choice', await page.locator('#post-title-input').inputValue() === '');
+    await page.locator('#btn-restore-draft').click();
+    await page.waitForFunction(title => document.getElementById('post-title-input').value === title, marker);
+    await check('restored_text_and_category_are_exact', await page.locator('#Content').inputValue() === content && await page.locator('#CategoryId').inputValue() === category);
+    await page.locator('#thumbnailFile').setInputFiles({ name: 'cover.png', mimeType: 'image/png', buffer: png });
+    await page.locator('#ThumbnailAlt').fill('Synthetic acceptance cover');
+    await save('Save Draft');
+    await check('successful_save_clears_only_confirmed_copy', await page.evaluate(() => localStorage.getItem('devcore_editor_draft_create') === null));
+    const row = page.locator('tr', { has: page.getByRole('link', { name: marker, exact: true }) });
+    const editUrl = await row.getByRole('link', { name: marker, exact: true }).getAttribute('href');
+    await check('saved_draft_state', await row.getAttribute('data-status') === 'draft');
+    await edit(editUrl);
+    const savedSlug = (await page.locator('#serp-slug-preview').textContent()).trim();
+    await check('draft_hidden', (await visitor.request.get(base + '/post/' + savedSlug)).status() === 404);
+    const popup = context.waitForEvent('page');
+    await page.getByRole('button', { name: 'Preview in new tab', exact: true }).click();
+    const preview = await popup;
+    await preview.waitForLoadState('domcontentloaded');
+    await check('preview_private_and_content_matches', await preview.getByText('Private preview — Not saved', { exact: true }).isVisible() && (await preview.locator('.markdown-content').innerText()).includes('Recovery and publication journey.'));
+    await preview.close();
+    const future = new Date(Date.now() + 86400000 + 3 * 3600000).toISOString().slice(0, 16);
+    await page.locator('#PublishDate').fill(future);
+    await save('Schedule');
+    await check('scheduled_state', await row.getAttribute('data-status') === 'scheduled');
+    await check('scheduled_not_visible_early', (await visitor.request.get(base + '/post/' + savedSlug)).status() === 404);
+    await edit(editUrl);
+    await save('Publish now');
+    await check('published_state', await row.getAttribute('data-status') === 'published');
+    const publicUrl = await row.locator('.live-link-btn').getAttribute('href');
+    assert.ok(publicUrl);
+    const route = new URL(publicUrl, base).pathname;
+    const article = await visitor.request.get(base + route);
+    const html = await article.text();
+    await check('public_article_cover_canonical_schema', article.status() === 200 && html.includes('Synthetic acceptance cover') && html.includes('https://blog.example.test' + route) && html.includes('BlogPosting'));
+    const search = await visitor.request.get(base + '/ara?query=' + encodeURIComponent(marker));
+    await check('published_search', (await search.text()).includes(marker));
+    await check('published_rss', (await (await visitor.request.get(base + '/rss.xml')).text()).includes(marker));
+    await check('published_sitemap', (await (await visitor.request.get(base + '/sitemap.xml')).text()).includes(route));
+    const feed = await visitor.request.get(base + '/api/public/posts/latest');
+    await check('published_portfolio_feed', (await feed.json()).some(item => item.title === marker && item.url === 'https://blog.example.test' + route));
+    await edit(editUrl);
+    await page.locator('#post-title-input').fill(marker + ' edited');
+    await page.getByRole('button', { name: /Save changes \(keep publication\)/ }).click();
+    await page.locator('#posts-table-body').waitFor();
+    const changedRow = page.locator('tr', { has: page.getByRole('link', { name: marker + ' edited', exact: true }) });
+    await check('edit_keeps_permalink_and_publication', new URL(await changedRow.locator('.live-link-btn').getAttribute('href'), base).pathname === route && await changedRow.getAttribute('data-status') === 'published');
+    await changedRow.getByRole('button', { name: 'Save Draft', exact: true }).click();
+    await page.locator('#posts-table-body').waitFor();
+    await check('unpublish_invalidates_public_surfaces', (await visitor.request.get(base + route)).status() === 404 && !(await (await visitor.request.get(base + '/rss.xml')).text()).includes(marker) && !(await (await visitor.request.get(base + '/sitemap.xml')).text()).includes(route) && !(await (await visitor.request.get(base + '/ara?query=' + encodeURIComponent(marker))).text()).includes(marker + ' edited'));
+    await edit(editUrl);
+    await audit('editor desktop');
+    await page.screenshot({ path: path.join(output, 'journey-desktop.png') });
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.locator('#admin-menu-toggle').click();
+    await page.keyboard.press('Escape');
+    await check('mobile_keyboard_returns_focus', await page.locator('#admin-menu-toggle').evaluate(e => e === document.activeElement && e.getAttribute('aria-expanded') === 'false'));
+    await page.waitForFunction(() => document.getElementById('admin-sidebar').getBoundingClientRect().right <= 0);
+    await check('mobile_no_document_overflow', await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+    await page.screenshot({ path: path.join(output, 'journey-mobile.png') });
+    await audit('editor mobile');
+    await check('no_runtime_errors', errors.length === 0);
+    await check('no_unexplained_console_errors', consoleErrors.length === 0);
+    await check('no_normal_flow_csp_violations', violations.length === 0);
+})().catch(e => { console.error(e.message); process.exitCode = 1; }).finally(async () => {
+    fs.writeFileSync(path.join(output, 'journey.json'), JSON.stringify({ checks, stages, errors, consoleErrors, violations, scope: 'Real Chrome; isolated PostgreSQL and synthetic provider. No production or Cloudinary access.' }, null, 2) + '\n');
+    if (browser) await browser.close();
+});

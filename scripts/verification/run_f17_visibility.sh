@@ -400,6 +400,12 @@ if [ "${DEVCORE_F56_PROBE:-0}" = 1 ]; then
         --report "$DEVCORE_F56_REPORT"
 fi
 
+if [ "${DEVCORE_F57_PROBE:-0}" = 1 ]; then
+    python3 "$task_source/scripts/verification/f57_regression_probe.py" \
+        --source "$task_source" --database-port "$task_pg_port" \
+        --report "$DEVCORE_F57_REPORT"
+fi
+
 if [ "${DEVCORE_F55_PROBE:-0}" = 1 ]; then
     DEVCORE_TEST_ADMIN_USERNAME=f17-admin \
     DEVCORE_TEST_ADMIN_PASSWORD="$task_admin_password" \
