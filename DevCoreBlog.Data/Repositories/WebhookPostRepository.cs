@@ -34,6 +34,8 @@ public sealed class WebhookPostRepository(ApplicationDbContext context) : IWebho
             receipt.CreatedPostId = post.Id;
             context.WebhookReceipts.Add(receipt);
             await context.SaveChangesAsync(cancellationToken);
+            // Use persisted precision for both the first response and later replays.
+            await context.Entry(receipt).ReloadAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
             return new(receipt, true);
         }

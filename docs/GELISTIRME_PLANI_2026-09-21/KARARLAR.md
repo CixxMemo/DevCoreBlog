@@ -583,3 +583,29 @@ kanıttır; gelecekteki release veya canlı eski package için otomatik garanti 
 Key ring normal rollback’te korunur. Canlı deploy/restore ayrı somut plan ve
 açık kullanıcı yetkisi ister; F56 yalnız yerel test ve runbook’tur.
 [Prosedür](../YEDEK_VE_YAYIN_PROSEDURU.md), [F56 kanıtı](../uygulama-kayitlari/F56-2026-10-05.md).
+
+## D30 — Hash ve AST kontrollü editör sanitizer bakımı
+
+F57 vendor bulgusu sonrası kullanıcı E01’i onayladı. Aynı Toast UI3.2.2 ve
+resmî CSS korunur; NHN ready bundle’ı eski DOMPurify içerdiği için doğrudan
+publish edilmez. Sabit unminified upstream/hash ve resmî DOMPurify3.4.16 CJS/hash
+ile Acorn AST sınırında webpack368 factory’si bütün olarak değiştirilir, Terser
+ile dağıtım üretilir. Minified regex yaması veya özel sanitizer algoritması yoktur.
+Beklenmeyen kaynak/hash/module şekli build’i kapatır; upstream eski kodu frontend
+build input’udur, Web item/publish sınırından dışlanır. Dağıtım receipt’i ve
+deterministik yeniden build kontrolü kalite kapısındadır.
+
+DOMPurify runtime çıktıya girer; dev dependency etiketi veya D28 build-time
+istisnası bunu muaf yapmaz. Npm audit yeni bulguda kapıyı bloklar; Acorn/Terser/purify
+exact sürüm ve lisanslar lock/dağıtımda korunur. Güncel üretici advisory envanteri,
+detached Chrome rawtext-root önce/sonra regresyonu ve gerçek MVC browser
+CSP/paste/upload/recovery/preview kanıtı gereklidir. Detached test uygulamaya
+özgü ziyaretçi exploit’i değildir. Eski 498 derinlik beklentisi yeni sürümün
+sözleşmesi değildir; assertion kapatmadan güncel üretici rawtext-root sözleşmesi
+uygulanır. Eski kırmızı harness kanıtı korunur.
+
+Bu dağıtım DevCoreBlog bakımındadır; NHN resmî yeni sürümü veya arşivli Editor’in
+genel upstream destek garantisi sayılmaz. Yeni advisory veya sanitizer/source
+değişiminde review ve aynı browser kabulü tekrarlanır; editör değişimi ayrı ürün
+kararıdır. E01, F57 uzak CI kanıtını veya canlı kurulum yetkisini sağlamaz.
+[E01 kartı](E01_EDITOR_GUVENLIK.md), [E01 kaydı](../uygulama-kayitlari/E01-2026-10-05.md).

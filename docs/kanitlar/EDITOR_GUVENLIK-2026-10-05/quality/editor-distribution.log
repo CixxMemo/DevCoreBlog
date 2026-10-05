@@ -1,0 +1,9 @@
+{
+  "checks": {
+    "altered_upstream_fails_closed": true,
+    "altered_sanitizer_fails_closed": true,
+    "deterministic_rebuild_matches_distribution": true,
+    "old_sanitizer_absent": true,
+    "distribution_hash_and_version_match": true
+  }
+}

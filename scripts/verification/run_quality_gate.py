@@ -77,6 +77,7 @@ try:
         build=['dotnet','build','--no-restore','--disable-build-servers','-m:1','-nodeReuse:false','-p:NuGetAudit=false']
         if run('restore',['dotnet','restore','DevCoreBlog.csproj','--configfile','NuGet.Config','-p:NuGetAudit=false'],source)[0]: raise RuntimeError('Application restore failed')
         if run('build',build+['DevCoreBlog.csproj'],source)[0]: raise RuntimeError('Application build failed')
+        if run('editor-distribution',['node','scripts/verification/editor_build_probe.mjs'],source)[0]: raise RuntimeError('Editor distribution integrity failed')
         for project in ('DevCoreBlog.csproj','DevCoreBlog.Core/DevCoreBlog.Core.csproj','DevCoreBlog.Data/DevCoreBlog.Data.csproj','DevCoreBlog.Services/DevCoreBlog.Services.csproj'):
             json_audit('nuget-'+Path(project).stem,['dotnet','package','list','--project',project,'--include-transitive','--vulnerable','--format','json','--no-restore'],source,'nuget')
         if run('tool-restore',['dotnet','tool','restore','--configfile','NuGet.Config'],source)[0]: raise RuntimeError('EF tool restore failed')
@@ -108,6 +109,12 @@ except Exception as error:
     stages['gate-error']={'passed':False,'error_type':type(error).__name__,'reason':str(error) if isinstance(error,RuntimeError) else 'See failed stage'}
 finally:
     passed=bool(stages) and all(s['passed'] for s in stages.values())
-    (report/'summary.json').write_text(json.dumps({'passed':passed,'stages':stages,'remote_workflow_executed':False},indent=2)+'\n')
+    # Report origin separately from the sanitized environment passed to the fixture.
+    remote = os.environ.get('GITHUB_ACTIONS') == 'true'
+    origin = {'remote_workflow_executed':remote}
+    if remote:
+        origin.update(workflow_run_id=os.environ.get('GITHUB_RUN_ID'),
+                      workflow_commit=os.environ.get('GITHUB_SHA'))
+    (report/'summary.json').write_text(json.dumps({'passed':passed,'stages':stages,**origin},indent=2)+'\n')
     print('Quality gate: '+('PASS' if passed else 'FAIL'),flush=True)
 raise SystemExit(0 if passed else 1)

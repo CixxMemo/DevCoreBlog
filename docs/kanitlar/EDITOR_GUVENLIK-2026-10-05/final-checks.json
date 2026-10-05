@@ -1,0 +1,27 @@
+{
+  "checks": {
+    "syntax": true,
+    "docs_local_links": true,
+    "scope_no_application_schema_changes": true,
+    "index_unchanged": true,
+    "css_bytes_unchanged": true,
+    "quality_25_stages_passed": true,
+    "security_9_checks_passed": true,
+    "journey_25_checks_passed": true,
+    "csp_36_checks_passed": true,
+    "publish_6_checks_passed": true,
+    "own_held_fixture_removed": true
+  },
+  "credential_cookie_pattern_findings": [],
+  "missing_links": [],
+  "source_sha256": {
+    "scripts/frontend/editor-bundle.mjs": "ea020a6bc9c56f738ef136a9a3e5e574625e770b2d84329978db788fdcf4cded",
+    "scripts/frontend/build.mjs": "07ca06df1e71b0a46558ed7a1b0d19f33d8fd5600caea1486121bea62519897f",
+    "scripts/verification/editor_build_probe.mjs": "1e842ae3d068cc216d3d8788686a4f344dda835536d7e816da6614fcc46c3bda",
+    "scripts/verification/editor_security_probe.mjs": "23c7ea6423bcd4e81f209df96775dc405731093069b57a4444e02de6653746a6",
+    "scripts/verification/run_quality_gate.py": "8018655f2f64150c51d6e650461281b939e0a4ac1f4bb24096ff895c35c4b2ad",
+    "package.json": "bb025dd269c8f4b8906b536df8f6926a1806894e1c5f8259bf0822af5d807522",
+    "package-lock.json": "0372dc9d4457f40a6b2ada4df0c4ccaef3686840f0a26706840311a6fe860186"
+  },
+  "remote_ci_verified": false
+}

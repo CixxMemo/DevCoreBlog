@@ -3,9 +3,10 @@
 5 Ekim 2026 · Başlangıç commit’i `9cce9fed4faad06c1cc26d73c27e8fe80ae3390f`.
 
 **Temel blog akışları yerel kabulden geçti. F57 bütünüyle tamamlandı değildir;
-üretime hazır sonucu verilmedi.** Editörün vendored bağımlılığı için P1 bakım
-engeli ve güncel değişikliklerin uzak CI kanıtı açık kalıyor. Aşağıdaki puan ve
-test başarısı bu iki eksiği kapatmaz. Uygulama kodu, paketler ve şema değiştirilmedi.
+üretime hazır sonucu verilmedi.** Onaylı [E01 editör bakımı](uygulama-kayitlari/E01-2026-10-05.md)
+vendor sanitizer bulgusunu giderdi; güncel uzak CI kanıtı açık kalıyor. E01’de
+asset/build bağımlılıkları değişti, uygulama C#/Razor ve şema değişmedi.
+Aşağıdaki F57 tablosu ilk değerlendirme snapshot’ıdır; E01 kanıtı ayrı kayıttadır.
 
 ## Doğrulanmış kullanım
 
@@ -62,8 +63,8 @@ bakım borcudur. Bunları F57 içinde geniş refactor ile gizlice değiştirmedi
 
 ## Açık riskler ve yayın öncesi eksikler
 
-**P1 — vendored editör güvenliği.** [Toast UI dosyası](../frontend/vendor/toastui/toastui-editor-all.min.js)
-DOMPurify **2.3.3** içeriyor. Üreticinin
+**İlk F57 P1 bulgusu — E01 ile giderildi.** İlk Toast UI dağıtımı DOMPurify
+**2.3.3** içeriyordu. Üreticinin
 [GHSA-gx9m-whjm-85jf / CVE-2024-47875](https://github.com/cure53/DOMPurify/security/advisories/GHSA-gx9m-whjm-85jf)
 kaydı `<2.5.0` aralığını etkilenen sayıyor; 2.5.0 o advisory’nin tarihsel ilk
 yamasıdır, bugün tüm bulgular için güvenli sürüm önerisi değildir.
@@ -74,6 +75,15 @@ CSP ek koruma sağlıyor, fakat bağımlılığı yamalamıyor. Bu turda uygulam
 bu advisory exploit’i gösterilmedi; “ziyaretçi XSS’i doğrulandı” denmiyor.
 Resmi [Toast UI repository’si](https://github.com/nhn/tui.editor) 2 Eylül 2026’da
 arşivlenmiş görünüyor; sürdürülen güvenli dağıtım kararı ayrıca gerekli.
+
+E01’de aynı Editor3.2.2’nin resmî kaynağındaki sanitizer modülü, hash/AST kontrolüyle
+resmî DOMPurify3.4.16 modülüyle bütünüyle değiştirildi. Eski modül runtime/publish
+çıktısında yoktur; yalnız dışlanan frontend upstream build input’unda kalır.
+Üreticinin güncel rawtext-root önce/sonra regresyonu9/9 ve build integrity5/5,
+aynı Chrome journey25/25/CSP36/36 ve temiz kapı25/25 geçti. Bu DevCoreBlog’un
+bakımını yaptığı dağıtımdır; arşivli NHN Editor için genel upstream destek
+garantisi değildir. [E01 kanıtı](uygulama-kayitlari/E01-2026-10-05.md),
+[dağıtım kaynağı/lisans/hash](../frontend/vendor/toastui/README.md).
 
 **Kanıt eksiği — uzak CI.** Workflow’a `--final-acceptance` eklendi; aynı komut
 temiz yerel kopyada geçti. GitHub’dan mevcut commit için PR-triggered run ilk
@@ -109,14 +119,15 @@ roller, ödeme, AI üretimi ve kişiselleştirme eklenmedi. Bunlar temel tek yö
 blogun kabulünü tamamlamak için zorunlu değildir ve ayrıca ürün kararı ister.
 Yeni framework, Redis, queue veya sağlayıcı eklenmedi.
 
-## Önerilen tek düzeltme işi ve durma noktası
+## Tamamlanan ek iş ve durma noktası
 
-İlk öneri **“Vendored editör güvenlik bakımını tamamla”** adlı ayrı atomik iştir:
+İlk öneri **“Vendored editör güvenlik bakımını tamamla”** adlı ayrı atomik işti:
 resmi kaynak/advisory envanteri → mevcut Toast UI davranışını koruyan sürdürülebilir
 yamalanmış dağıtımın seçimi → lisans/hash/build güncellemesi → gerçek browser
 XSS/CSP/upload/recovery/preview kabulü. Minified dosyaya rastgele regex yaması veya
 eski advisory’nin ilk patch’ine kör yükseltme uygulanmamalı. Editör ürünü değiştirmek
-gerekirse ayrı kullanıcı tercihi gerekir. Bu iş **başlatılmadı**.
+gerekirse ayrı kullanıcı tercihi gerekir. Kullanıcı E01’i onayladı ve aynı
+Editor’i koruyan bu bakım **tamamlandı**; ürün değişmedi.
 
 Sonra güncel snapshot’ın uzak CI kanıtı kaydedilerek F57 tekrar değerlendirilir.
 F00–F56’nın kendi kapsamlarındaki kanıtları korunur; F57 `[ ]` kalır. Yeni faz,

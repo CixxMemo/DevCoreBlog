@@ -148,7 +148,7 @@ def main():
         stop()
         args.report.parent.mkdir(parents=True, exist_ok=True)
         args.report.write_text(json.dumps({'checks': checks, 'stages': stages,
-            'scope': 'Owned disposable PostgreSQL and MVC. Private logs not exported. Remote CI not executed.'}, indent=2) + '\n')
+            'scope': 'Owned disposable PostgreSQL and MVC. Private logs not exported. Execution origin is recorded in quality summary.json.'}, indent=2) + '\n')
     print(json.dumps({'checks': checks, 'stage_count': len(stages)}, indent=2))
 
 

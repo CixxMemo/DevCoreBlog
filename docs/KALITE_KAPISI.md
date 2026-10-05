@@ -24,6 +24,10 @@ tool build/checks → gerçek PostgreSQL migration/görünürlük/sayaç eşzama
 HTTP/CSRF/CSP → Production TLS/proxy/session → bounded DB/hata/log privacy sırası
 uygulanır. Yeni NuGet.Config yalnız geçici kaynakta public nuget.org kullanır.
 
+E01 ile uygulama build’inden sonra `editor_build_probe.mjs` eklenir: değiştirilmiş
+upstream/sanitizer hash’inin reddi, deterministik yeniden build, eski runtime
+sanitizer’ın yokluğu ve dağıtım receipt’i. Güncel varsayılan kapı23 aşamadır.
+
 Audit dışında build/restore NuGetAudit=false kullanır: bu güvenlik sertifikası
 değildir; dört ayrı gerçek audit başarısızsa kapı başarısızdır. Kullanıcının aşağıda kabul ettiği tek build-time istisnası dışındaki vulnerability veya
 advisory erişim/parse hatası başarıya çevrilmez; başarısız audit diğer kontrollerin
@@ -43,7 +47,7 @@ paket veya ürün major yükseltmesi yapılmamıştır.
 python3 scripts/verification/run_quality_gate.py --final-acceptance --report-dir /tmp/devcore-final-quality
 ```
 
-Bu seçenek 22 aşamaya iki bağımsız disposable cluster kontrolü ekler: auth/CSRF,
+Bu seçenek E01 sonrası23 aşamaya iki bağımsız disposable cluster kontrolü ekler: auth/CSRF,
 güvenli Markdown, atomik sayaç, kalıcı webhook/restart, cache/zamanlı yayın ve
 kategori silme yarışı; ardından eski edit/eşzamanlı güncelleme. Ek portlar
 PostgreSQL55461/55462 ve uygulama15199/15201/15200’dür; boş olmalıdır.
@@ -54,8 +58,14 @@ Yedi regresyon grubu ve sekiz F22 sonucu eksik/başarısızsa kapı exit1 olur.
 5 Ekim 2026 temiz yerel kaynakta **24/24** geçti. Gerçek Chrome yolculuğu,
 CSP/mobil/klavye ve native %200 zoom ayrı tarayıcı kontrolleridir; bu komut onları
 çalıştırmış sayılmaz. [F57 raporu](SON_KABUL_RAPORU_2026-10-05.md) kanıtları ayırır.
-Npm/NuGet audit’inin yerel vendored editörü taramaması nedeniyle bu kapının yeşil
-olması P1 DOMPurify bulgusunu kapatmaz; F57 nihai kabulü hâlâ engellidir.
+İlk F57’de npm/NuGet audit’i yerel vendored editörü taramadığı için kapının yeşil
+olması P1 DOMPurify bulgusunu kapatmıyordu; E01 bu dağıtım sınırını değiştirir.
+
+E01 sonrası güncel sonuç **25/25**. Yamalı sanitizer exact npm dependency ve
+hash kontrollü runtime dağıtımıdır; yeni DOMPurify advisory’si artık npm audit’in
+kapsamındadır. Diğer arşivli vendor kodunun tümü audit edilmiş sayılmaz.
+[E01 kaydı](uygulama-kayitlari/E01-2026-10-05.md) ayrı browser güvenlik/paste ve
+publish kanıtını taşır; F57 için uzak CI sonucu hâlâ eksiktir.
 
 ## GitHub Actions
 

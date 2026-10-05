@@ -1,7 +1,8 @@
-import { mkdir, copyFile, cp, rm } from 'node:fs/promises';
+import { mkdir, copyFile, cp, rm, writeFile } from 'node:fs/promises';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { resolve } from 'node:path';
+import { buildEditor, sha256 } from './editor-bundle.mjs';
 
 // Resolve paths from this file so the same command works in MSBuild and npm.
 const root = fileURLToPath(new URL('../../', import.meta.url));
@@ -26,6 +27,17 @@ for (const [name, source, files] of [
         await cp(resolve(root, 'node_modules', source, file), resolve(destination, file), { recursive: true });
     }
 }
-await cp(resolve(root, 'frontend/vendor/toastui'), resolve(output, 'toastui'), { recursive: true });
+// Only reviewed distribution files ship; the old upstream sanitizer is build input.
+const editorOutput = resolve(output, 'toastui');
+await mkdir(editorOutput, { recursive: true });
+for (const file of ['toastui-editor.min.css', 'LICENSE', 'PROSEMIRROR-LICENSE', 'README.md']) {
+    await copyFile(resolve(root, 'frontend/vendor/toastui', file), resolve(editorOutput, file));
+}
+await copyFile(resolve(root, 'node_modules/dompurify/LICENSE'), resolve(editorOutput, 'DOMPURIFY-LICENSE'));
+const editor = await buildEditor(new URL('../../', import.meta.url));
+await writeFile(resolve(editorOutput, 'toastui-editor-all.min.js'), editor);
+await writeFile(resolve(editorOutput, 'build.json'), JSON.stringify({
+    editor: '3.2.2', dompurify: '3.4.16', sha256: sha256(editor)
+}, null, 2) + '\n');
 await copyFile(resolve(root, 'node_modules/tailwindcss/LICENSE'), resolve(output, 'TAILWIND-LICENSE'));
 console.log('Frontend assets built: Tailwind 3.4.17, Prism 1.30.0.');

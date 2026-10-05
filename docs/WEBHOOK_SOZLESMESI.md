@@ -31,6 +31,8 @@ Anahtar secret değildir; kişisel bilgi/credential kullanma.
   oluşturulur. Veritabanındaki benzersiz anahtar eşzamanlı istekleri de korur.
 - Aynı anahtar ve aynı tanımlı payload: ilk başarılı `200` yanıtının alanları
   döner; yeni yazı, yeni sayaç veya yeni işlem kaydı oluşmaz.
+  İlk yanıt da transaction içinde DB'den tekrar okunan işlem kaydından üretilir;
+  `publishDate` PostgreSQL'in sakladığı mikro saniye hassasiyetini taşır.
 - Aynı anahtar ve farklı tanımlı payload: `409`, mevcut yazı değişmez.
 - Yazı daha sonra düzenlense/yayın ayarı değişse/silinse de ilk başarılı sonuç
   döner. Bu yanıt güncel yazı durumunu ifade etmez; silinmiş yazıyı yeniden yaratmaz.

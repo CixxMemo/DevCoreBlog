@@ -32,6 +32,8 @@ Paket sürümlerinin kaynağı `.csproj`, varsa lock/tool manifest ve gerçek re
 
 Yeni bağımlılık yalnızca somut ihtiyacı çözüyor, mevcut araç yeterli değil, resmi API/sürüm/lisans doğrulanmış ve bakım maliyeti gerekçelendirilmişse eklenebilir. Mevcut yığına gerekli build/test aracı için gereksiz ürün onayı isteme. Büyük framework, sağlayıcı, ücretli servis veya ürün mimarisi değişimini kapsam dışına taşıma. Paketleri körlemesine major sürüme yükseltmek ve var olmayan API'leri uydurmak yasaktır.
 
+F57 sonrası onaylı E01 editör bakımı, aynı Toast UI’nin hash’i sabit resmî build input’undaki sanitizer modülünü AST sınırında bütün olarak kilitli resmî DOMPurify paketiyle değiştirir. Eski upstream kaynak yalnız frontend build input’udur; publish/runtime’a kopyalanmaz. Değişen kaynak/hash/sanitizer sürümü review olmadan build’i geçemez. Npm’de dev dependency olması yayımlanan sanitizer’ı build-time risk yapmaz; D28 istisnası buna uygulanmaz. Lisans ve gerçek browser XSS/CSP/upload/recovery kanıtları korunur. Arşivli editörün genel upstream bakım garantisi yoktur. [D30](docs/GELISTIRME_PLANI_2026-09-21/KARARLAR.md#d30--hash-ve-ast-kontrollü-editör-sanitizer-bakımı), [E01 kartı](docs/GELISTIRME_PLANI_2026-09-21/E01_EDITOR_GUVENLIK.md).
+
 ## 3. Mimari ve bağımlılık yönü
 
 Mevcut **dört projeli modüler monolit** korunur. Tek projeye birleştirme veya mikroservislere ayırma bu planın amacı değildir.

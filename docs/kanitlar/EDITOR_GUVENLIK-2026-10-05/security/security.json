@@ -1,0 +1,30 @@
+{
+  "checks": {
+    "old_module_exceeds_patched_nesting_limit": true,
+    "new_module_limits_nesting": false,
+    "hostile_attributes_removed": true,
+    "normal_formatting_preserved": true,
+    "enforcing_csp_unchanged": true,
+    "real_wysiwyg_paste_strips_hostile_attributes": true,
+    "real_wysiwyg_paste_keeps_formatting": true,
+    "markdown_roundtrip_keeps_text": true,
+    "no_runtime_or_console_errors": true
+  },
+  "observations": {
+    "before": {
+      "version": "2.3.3",
+      "retainedDepth": 502,
+      "hostileAttributesRemoved": true,
+      "formattingKept": true
+    },
+    "after": {
+      "version": "3.4.16",
+      "retainedDepth": 502,
+      "hostileAttributesRemoved": true,
+      "formattingKept": true
+    }
+  },
+  "errors": [],
+  "consoleErrors": [],
+  "scope": "Producer nesting regression in detached Chrome document (not application exploit); real MVC WYSIWYG paste under CSP. Synthetic localhost only."
+}

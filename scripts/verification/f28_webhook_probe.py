@@ -37,7 +37,10 @@ def main():
         except json.JSONDecodeError:
             body = {}
         return status, body
-    valid = {'title':'F28 Serial Retry', 'content':'F28 synthetic content', 'categoryId':1001}
+    # PostgreSQL stores microseconds; a seven-digit input catches first/replay drift
+    # even when the host clock happens to return only microsecond precision.
+    valid = {'title':'F28 Serial Retry', 'content':'F28 synthetic content', 'categoryId':1001,
+             'publishDate':'2020-01-02T03:04:05.1234567Z'}
     opener, _ = cookie_opener()
     wait_until_ready(opener, args.base_url + '/Account/Login', 'Admin Sign In', 30)
     if args.mode == 'restart':
