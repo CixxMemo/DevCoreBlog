@@ -2,11 +2,13 @@
 
 5 Ekim 2026 · Başlangıç commit’i `9cce9fed4faad06c1cc26d73c27e8fe80ae3390f`.
 
-**Temel blog akışları yerel kabulden geçti. F57 bütünüyle tamamlandı değildir;
-üretime hazır sonucu verilmedi.** Onaylı [E01 editör bakımı](uygulama-kayitlari/E01-2026-10-05.md)
-vendor sanitizer bulgusunu giderdi; güncel uzak CI kanıtı açık kalıyor. E01’de
-asset/build bağımlılıkları değişti, uygulama C#/Razor ve şema değişmedi.
-Aşağıdaki F57 tablosu ilk değerlendirme snapshot’ıdır; E01 kanıtı ayrı kayıttadır.
+**F57 tamamlandı; ana plan58/58. Canlı kurulum henüz doğrulanmadı ve üretime
+hazır sonucu verilmedi.** Onaylı [E01 editör bakımı](uygulama-kayitlari/E01-2026-10-05.md)
+vendor sanitizer bulgusunu giderdi. [F57 yeniden kabulü](uygulama-kayitlari/F57-CI-2026-10-05.md)
+uzak CI’nın yakaladığı webhook ilk/tekrar yanıt farkını dar repository düzeltmesiyle
+kapattı; kaynak commit’i `2a7a5f1` için yerel ve [GitHub kapısı](https://github.com/CixxMemo/DevCoreBlog/actions/runs/37292561215)25/25 geçti.
+Şema ve UI değişmedi. Aşağıdaki ilk değerlendirme kanıtları korunur;
+E01 ve yeniden kabulün güncel kanıtları ayrı kayıtlardadır.
 
 ## Doğrulanmış kullanım
 
@@ -31,7 +33,7 @@ Cloudinary hesabına erişildiği iddia edilmiyor.
 | Recovery motoru | 11 kontrol ve eski medya açıklaması kopyası kontrolü geçti | [Recovery](kanitlar/F57-2026-10-05/recovery.log) |
 | Gerçek Chrome %200 zoom | Liste ve form: viewport/root scroll 960/960; editör yüklü; dört kayıt düğmesi 44 px; başlangıç %100’e dönüldü | [Ölçüm](kanitlar/F57-2026-10-05/zoom.json), [liste](kanitlar/F57-2026-10-05/zoom-list.png), [editör](kanitlar/F57-2026-10-05/zoom-editor.png) |
 | Önceki fazların kayıt/yerel kanıt bağlantıları | F00–F56: 57 kayıt mevcut; belge içindeki kod örneği link sayılmadı | [Envanter](kanitlar/F57-2026-10-05/phase-evidence.json) |
-| Uzak CI | DOĞRULANAMADI; yerel komutun geçmesi Linux/GitHub sonucu değildir | [Sorgu kapsamı](kanitlar/F57-2026-10-05/remote-ci.json) |
+| Uzak CI | İlk koşuda DOĞRULANAMADI; yeniden kabulde güncel GitHub/Linux kapısı25/25 | [İlk sorgu kapsamı](kanitlar/F57-2026-10-05/remote-ci.json), [güncel CI](kanitlar/F57-CI-2026-10-05/remote-ci.json) |
 
 Gerçek PostgreSQL 16.14 ile atomic sayaç, sayaç sırasında edit, eşzamanlı edit,
 kategori insert/delete yarışı, ısıtılmış cache invalidation, paralel okuma/yazma,
@@ -85,12 +87,19 @@ bakımını yaptığı dağıtımdır; arşivli NHN Editor için genel upstream 
 garantisi değildir. [E01 kanıtı](uygulama-kayitlari/E01-2026-10-05.md),
 [dağıtım kaynağı/lisans/hash](../frontend/vendor/toastui/README.md).
 
-**Kanıt eksiği — uzak CI.** Workflow’a `--final-acceptance` eklendi; aynı komut
-temiz yerel kopyada geçti. GitHub’dan mevcut commit için PR-triggered run ilk
-sayfası ve combined status sorgusunda kayıt dönmedi. Bu sorgular bütün Actions
-check’lerini listelemez; yeni F57 diff’i de henüz commit/push edilmedi. Dolayısıyla
-F02–F08’in güncel diff üzerinde **CI üzerinden** kabulünü geçmiş saymıyoruz.
-Remote settings, branch protection, commit, push veya workflow dispatch yapılmadı.
+**Uzak CI kanıtı — tamamlandı.** İlk değerlendirmedeki PR’ye özel dar sorgu
+push koşularını kapsamıyordu. Doğrudan Actions sorgusu önceki `e1b279f` koşusunun
+webhook tekrar yanıtı hassasiyetinde başarısız olduğunu gösterdi; bu kanıt korundu.
+Yedi basamaklı sabit UTC tarih girdisi hatayı yerelde yeniden gösterdi.
+Transaction içinde receipt yeniden okunarak ilk/tekrar yanıtı DB'nin sakladığı
+değerlere bağlandı; assertion’lar korunarak temiz yerel25/25 geçti.
+Kullanıcı onayıyla commit/push edilen `2a7a5f1f916cc88e86bec4f9f94e05399d14da45`
+için run37292561215 success; artifact checksum/run/commit eşleşmesi doğrulandı.
+F02–F08 güvenlik/CSRF, yedi regresyon grubu ve F22 kabulü CI’da geçti.
+[Kapı](kanitlar/F57-CI-2026-10-05/remote-quality/summary.json),
+[güvenlik/veri](kanitlar/F57-CI-2026-10-05/remote-quality/final-regression.json),
+[edit](kanitlar/F57-CI-2026-10-05/remote-quality/final-edit-conflict.json).
+Branch protection/remote settings değiştirilmedi; deploy yapılmadı.
 
 **Kabul edilmiş ayrı risk — braces.** GHSA-vfj7-8cjw-p6xm build-time istisnası
 exact dev graph ve **5 Kasım 2026** inceleme sınırıyla açık. Ham audit exit1
@@ -129,6 +138,6 @@ eski advisory’nin ilk patch’ine kör yükseltme uygulanmamalı. Editör ür�
 gerekirse ayrı kullanıcı tercihi gerekir. Kullanıcı E01’i onayladı ve aynı
 Editor’i koruyan bu bakım **tamamlandı**; ürün değişmedi.
 
-Sonra güncel snapshot’ın uzak CI kanıtı kaydedilerek F57 tekrar değerlendirilir.
-F00–F56’nın kendi kapsamlarındaki kanıtları korunur; F57 `[ ]` kalır. Yeni faz,
-canlı kurulum veya deploy kendiliğinden başlamaz.
+Güncel uzak CI kanıtıyla F57 yeniden kabulü **tamamlandı**; F00–F57’nin kapsam
+kanıtları korunur. Ana plan58/58, ayrı E01 tamamlandı. Sıradaki numaralı faz yoktur.
+Canlı kurulum veya yeni ürün işi ayrıca kullanıcı onayı ister ve başlatılmadı.

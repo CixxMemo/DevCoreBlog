@@ -1,0 +1,13 @@
+{
+  "checks": {
+    "f22_admin_session": true,
+    "f22_empty_and_prior_migrations": true,
+    "f22_existing_rows_start_at_version_one": true,
+    "f22_category_conflict_preserves_first_and_input": true,
+    "f22_post_conflict_preserves_first_and_input": true,
+    "f22_counter_does_not_conflict": true,
+    "f22_only_successful_edits_advance_versions": true,
+    "f22_simultaneous_updates_have_one_winner": true
+  },
+  "exit_code": 0
+}

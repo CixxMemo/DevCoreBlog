@@ -1,6 +1,6 @@
 # Güncel mimari ve çalışma kararları
 
-**Güncelleme:** 4 Ekim 2026 — F49 doğrulanmış kapak metadata/açıklaması ve salt okunur medya bakımı.
+**Güncelleme:** 5 Ekim 2026 — D30 editör bakım kararı ve F57 güncel uzak CI kabulü.
 
 Kullanıcı eski kuralların yenilenmesini, SOLID/temiz kod/güvenlik sınırlarının güçlendirilmesini, eski planların kaldırılabilmesini ve yeni geliştirme planının buna uyarlanmasını açıkça istedi. Aşağıdaki teknik seçimler bu yetki kapsamında mevcut ürün yapısını koruyarak yapıldı. Kullanıcının ayrıca eski A/B seçeneklerinden birini seçtiği iddia edilmiyor; o karar ağacı yeni kurallarla kaldırıldı.
 
@@ -565,6 +565,11 @@ hatası veya 5 Kasım2026 sonrası review tarihi kapıyı bloklar. İstisna pake
 arasındaki genel “high” suppression değildir; açık kapanmış sayılmaz.
 F35 vendor borcu bağımsız kalır.
 [Kalite kapısı](../KALITE_KAPISI.md), [F55 kaydı](../uygulama-kayitlari/F55-2026-10-05.md).
+
+F57 yeniden kabulünde kullanıcı commit/push’u ayrıca onayladı; kaynak `2a7a5f1`
+için uzak25/25 kanıtı [yeniden kabul kaydında](../uygulama-kayitlari/F57-CI-2026-10-05.md)
+saklandı. İlk koşunun eksik/başarısız sonucu geçmişe dönük değiştirilmez; D28
+advisory istisnası ve diğer hatalarda fail-closed sınırı aynen korunur.
 
 ## D29 — Kanıtlı test restore ve kontrollü yayınlama
 

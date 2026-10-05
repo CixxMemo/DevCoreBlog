@@ -41,7 +41,7 @@ kanıtlamaz. Browser/video/gerçek Nginx/hosting kabulü bu otomasyonun kapsamı
 olarak iddia edilmez; mevcut faz kanıtları ayrıdır. SDK seçimi/EF sürümü sabittir,
 paket veya ürün major yükseltmesi yapılmamıştır.
 
-## F57 genişletilmiş yerel kabul
+## F57 genişletilmiş kabul
 
 ```sh
 python3 scripts/verification/run_quality_gate.py --final-acceptance --report-dir /tmp/devcore-final-quality
@@ -65,16 +65,24 @@ E01 sonrası güncel sonuç **25/25**. Yamalı sanitizer exact npm dependency ve
 hash kontrollü runtime dağıtımıdır; yeni DOMPurify advisory’si artık npm audit’in
 kapsamındadır. Diğer arşivli vendor kodunun tümü audit edilmiş sayılmaz.
 [E01 kaydı](uygulama-kayitlari/E01-2026-10-05.md) ayrı browser güvenlik/paste ve
-publish kanıtını taşır; F57 için uzak CI sonucu hâlâ eksiktir.
+publish kanıtını taşır. [F57 yeniden kabulü](uygulama-kayitlari/F57-CI-2026-10-05.md)
+yerel ve uzak25/25 sonucunu kaydetti; yedi basamaklı PublishDate regresyonu
+webhook ilk/tekrar yanıtının PostgreSQL hassasiyetinde aynı kaldığını doğrular.
 
 ## GitHub Actions
 
-Remote GitHub olduğu ve mevcut CI bulunmadığı için .github/workflows/quality.yml
-hazırlandı. Pull request/push/manual tetik, contents read-only, checkout credential
+F55’te GitHub remote için .github/workflows/quality.yml hazırlandı.
+Pull request/push/manual tetik, contents read-only, checkout credential
 persist false, resmi actions commit SHA sabitlemesi, ubuntu24.04 ve PostgreSQL16
 araçları kullanılır. Gerçek env secret istemez. Artifacts7 gün saklanır.
 F57 ile workflow aynı `--final-acceptance` komutunu kullanır.
-Workflow remote’da çalıştırılmadı; yerel macOS kabulü Linux CI başarısı değildir.
+5 Ekim2026 kullanıcı onaylı push commit’i `2a7a5f1` için
+[run37292561215](https://github.com/CixxMemo/DevCoreBlog/actions/runs/37292561215)
+Linux’ta25/25 geçti. [Kalıcı kanıt](kanitlar/F57-CI-2026-10-05/remote-ci.json)
+job/artifact metadata’sını, indirilen kapı raporu gerçek run ID/commit’i taşır.
+`summary.json.remote_workflow_executed` GitHub Actions origin’ini bildirir;
+yerelde false kalır. Bu provenance uygulama environment’ını fixture’a aktarmak
+veya kapının bağımsız başarı kontrolü yerine kullanmak değildir.
 Branch protection/required check veya remote repository settings değiştirilmedi.
 
 ## Açık kalan bağımlılık bulgusu
@@ -110,8 +118,9 @@ denmez. Açık yamalanmış değildir, kullanıcı tarafından dar kapsamda kabu
 python3 scripts/verification/f55_audit_policy_probe.py --audit docs/kanitlar/F55-2026-10-05/npm-audit.json --report /tmp/devcore-audit-policy.json
 ```
 
-F35 Toast UI/vendor borcu bağımsızdır; yerel vendor dosyaları npm/NuGet advisory
-taramalarının kapsamı değildir. Remote workflow hâlâ yalnız hazırlanmış config’dir.
+Arşivli Toast UI’nin kalan kodu için bakım sorumluluğu sürer; E01’in kilitli
+DOMPurify modülü artık npm audit kapsamındadır. Audit bütün vendor kodunu veya
+gerçek browser/Cloudinary davranışını güvenlik sertifikasıyla doğrulamaz.
 
 Kaynaklar: [.NET SDK global.json](https://learn.microsoft.com/en-us/dotnet/core/tools/global-json),
 [NuGet package audit CLI](https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-package-list),

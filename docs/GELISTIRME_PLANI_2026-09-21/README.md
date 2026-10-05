@@ -1,7 +1,7 @@
 # DevCoreBlog — AI agent ile atomik geliştirme planı
 
 **Tarih:** 21 Eylül 2026  
-**Durum:** F00–F56 tamamlandı. F57 yerel kabul/SOLID incelemesi yapıldı; onaylı [E01 editör bakımı](E01_EDITOR_GUVENLIK.md) vendor bulgusunu giderdi. F57 güncel uzak CI kanıtı eksikliği nedeniyle [ ] / DOĞRULANAMADI; [son kabul raporu](../SON_KABUL_RAPORU_2026-10-05.md) sınırı açıklar. F55 dar build-time risk kabulü D28’de kayıtlıdır. Güncel kanıt ve durum kaynağı DURUM.md'dir.
+**Durum:** F00–F57 tamamlandı (58/58). Onaylı [E01 editör bakımı](E01_EDITOR_GUVENLIK.md) vendor bulgusunu giderdi; [F57 yeniden kabulü](../uygulama-kayitlari/F57-CI-2026-10-05.md) güncel uzak CI25/25 kanıtını kaydetti. [Son kabul raporu](../SON_KABUL_RAPORU_2026-10-05.md) canlı kurulumun henüz doğrulanmadığını açıklar. F55 dar build-time risk kabulü D28’de kayıtlıdır. Güncel kanıt ve durum kaynağı DURUM.md'dir.
 **Temel:** [19 Eylül inceleme raporu](/Users/mehmetcankocakurt/Documents/development/DevCoreBlog/docs/PROJE_INCELEME_RAPORU_2026-09-19.md) ve repository kökündeki güncel AGENTS.md (v2).  
 **Kapsam:** 10 çalışma grubu, F00–F57 arasında 58 faz. Eski koşullu tek proje yolu yürürlükten kaldırıldı. Bunlar 58 gün veya 58 ayrı proje anlamına gelmez. Bir faz tek bir doğrulanabilir sonuçtur.
 

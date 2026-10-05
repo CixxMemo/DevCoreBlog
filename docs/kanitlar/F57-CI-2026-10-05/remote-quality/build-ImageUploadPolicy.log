@@ -1,0 +1,9 @@
+  DevCoreBlog.Core -> /tmp/devcoreblog-f55-nfvmaf6v/source/DevCoreBlog.Core/bin/Debug/net10.0/DevCoreBlog.Core.dll
+  DevCoreBlog.Services -> /tmp/devcoreblog-f55-nfvmaf6v/source/DevCoreBlog.Services/bin/Debug/net10.0/DevCoreBlog.Services.dll
+  DevCoreBlog.ImageUploadPolicyTool -> /tmp/devcoreblog-f55-nfvmaf6v/source/tools/DevCoreBlog.ImageUploadPolicyTool/bin/Debug/net10.0/DevCoreBlog.ImageUploadPolicyTool.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:02.45

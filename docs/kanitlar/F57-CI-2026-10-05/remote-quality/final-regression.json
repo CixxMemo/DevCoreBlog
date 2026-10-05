@@ -1,0 +1,121 @@
+{
+  "checks": {
+    "missing_hash_startup_fails_closed": true,
+    "missing_username_startup_fails_closed": true,
+    "malformed_hash_startup_fails_closed": true,
+    "empty_password_rejected": true,
+    "wrong_password_rejected": true,
+    "hashed_login_succeeds": true,
+    "csrf_missing_/Account/Logout": true,
+    "csrf_missing_/AdminPost/TogglePublish/2001": true,
+    "csrf_missing_/AdminPost/Create": true,
+    "csrf_missing_/AdminPost/Edit/2001": true,
+    "csrf_missing_/AdminPost/Delete/2008": true,
+    "csrf_missing_/AdminPost/UploadEditorImage": true,
+    "csrf_missing_/AdminPost/UploadImage": true,
+    "csrf_missing_/AdminPost/Preview": true,
+    "csrf_missing_/AdminCategory/Create": true,
+    "csrf_missing_/AdminCategory/Edit/1001": true,
+    "csrf_missing_/AdminCategory/Delete/1002": true,
+    "csrf_invalid_rejected": true,
+    "rejected_logout_keeps_session": true,
+    "login_missing_csrf_rejected": true,
+    "anonymous_admin_redirect": true,
+    "csrf_valid_reaches_upload_validation": true,
+    "valid_logout_ends_session": true,
+    "login_rate": true,
+    "safe_markdown": true,
+    "atomic_counter": true,
+    "webhook_durable": true,
+    "webhook_restart": true,
+    "cache_scheduled_release": true,
+    "category_delete_race": true
+  },
+  "stages": {
+    "login_rate": {
+      "exit_code": 0,
+      "checks": {
+        "configured_attempts_reach_generic_failure_view": true,
+        "next_attempt_is_rejected_with_429": true,
+        "rejection_has_english_wait_message_and_retry_after": true,
+        "username_input_does_not_create_rate_limit_partitions": true,
+        "untrusted_forwarded_ip_does_not_bypass_limit": true,
+        "public_pages_and_login_get_remain_available": true,
+        "valid_login_recovers_after_window": true
+      }
+    },
+    "safe_markdown": {
+      "exit_code": 0,
+      "checks": {
+        "f26_markdown_raw_html_is_rendered_inert": true,
+        "f26_markdown_event_handler_attributes_are_not_active": true,
+        "f26_markdown_dangerous_link_and_image_schemes_are_rejected": true,
+        "f26_markdown_generic_attributes_are_not_enabled": true,
+        "f26_markdown_approved_youtube_url_uses_fixed_embed": true,
+        "f26_markdown_fake_youtube_host_is_not_embedded": true,
+        "f26_markdown_safe_https_and_relative_links_render": true,
+        "f26_markdown_table_list_and_csharp_code_render": true
+      }
+    },
+    "atomic_counter": {
+      "exit_code": 0,
+      "checks": {
+        "f21_head_does_not_count": true,
+        "f21_authenticated_admin_does_not_count": true,
+        "f21_parallel_public_gets_are_atomic": true,
+        "f21_only_counter_column_is_updated": true,
+        "f21_deleted_post_returns_404": true,
+        "f21_hidden_posts_do_not_count": true
+      }
+    },
+    "webhook_durable": {
+      "exit_code": 0,
+      "checks": {
+        "f28_serial_retry_is_same_result": true,
+        "f28_serial_retry_creates_one_post": true,
+        "f28_one_receipt_for_serial_retry": true,
+        "f28_different_payload_is_409": true,
+        "f28_unknown_fields_do_not_change_identity": true,
+        "f28_concurrent_retry_returns_one_result": true,
+        "f28_concurrent_retry_creates_one_post": true,
+        "f28_concurrent_retry_creates_one_receipt": true,
+        "f28_concurrent_different_payload_is_one_success_one_conflict": true,
+        "f28_later_edits_do_not_change_replayed_response": true,
+        "f28_deleted_post_retains_receipt_and_cannot_recreate": true,
+        "f28_validation_error_does_not_consume_key": true,
+        "f28_unauthorized_neither_parses_nor_writes_receipt": true,
+        "f28_invalid_key_is_400": true,
+        "f28_database_error_rolls_back_post_and_receipt": true,
+        "f28_database_error_key_can_retry": true
+      }
+    },
+    "webhook_restart": {
+      "exit_code": 0,
+      "checks": {
+        "f28_restart_returns_original_without_write": true
+      }
+    },
+    "cache_scheduled_release": {
+      "exit_code": 0,
+      "checks": {
+        "f18_cached_home_and_category_reused": true,
+        "f18_unpublish_invalidates_warmed_lists": true,
+        "f18_parallel_reads_do_not_reinsert_stale_response": true,
+        "f18_scheduled_post_appears_at_boundary": true,
+        "f18_category_mutation_invalidates_navigation": true,
+        "f18_parallel_mutations_do_not_reinsert_stale_navigation": true,
+        "f18_public_client_responses_are_not_stored": true
+      }
+    },
+    "category_delete_race": {
+      "exit_code": 0,
+      "checks": {
+        "empty_category_is_deleted": true,
+        "linked_category_is_blocked_without_data_loss": true,
+        "concurrent_insert_commits": true,
+        "concurrent_delete_is_blocked_without_data_loss": true
+      }
+    }
+  },
+  "scope": "Owned disposable PostgreSQL and MVC. Private logs not exported. Execution origin is recorded in quality summary.json."
+}

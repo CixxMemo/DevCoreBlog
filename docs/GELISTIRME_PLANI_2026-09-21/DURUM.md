@@ -1,10 +1,10 @@
 # İlerleme çizelgesi
 
-- **Son kayıt:** 5 Ekim 2026 — Onaylı E01 editör güvenlik bakımı tamamlandı; F57’nin uzak CI kanıtı hâlâ eksik.
-- **Tamamlanan plan fazı:** 57/58 (F00–F56).
+- **Son kayıt:** 5 Ekim 2026 — E01 ve F57 yeniden kabulü tamamlandı; güncel GitHub Actions kabulü 25/25 geçti.
+- **Tamamlanan plan fazı:** 58/58 (F00–F57).
 - **Tamamlanan uygulama kodu fazı:** 52.
 - **Aktif faz:** Yok.
-- **Sıradaki faz:** Güncel uzak CI kanıtıyla F57 yeniden kabul. E01 tamamlandı; commit/push/CI dispatch veya canlı işlem yapılmadı.
+- **Sıradaki faz:** Yok; ana plan tamamlandı. Yeni iş veya canlı kurulum için kullanıcıdan ayrı onay beklenir.
 - **Uygulama kodu:** F02–F09 güvenlik fazları tamamlandı. F10 migration zincirini doğruladı. F11–F13 form/içerik güvenliğini tamamladı. F14 kategori update'ini güvenli alanlara daralttı. F15 kategori silmesini DB constraint'i ve yarış yönetimiyle veri kaybına karşı korudu. F16 yayın zamanını açık saat dilimiyle UTC'ye bağladı. F17 public görünürlüğü tek kurala bağladı. F18 tek süreçli liste cache'ini yayın sınırı ve mutation invalidation'ıyla doğruladı. F19 düzenlemede kayıtlı slug'ı korudu. F20 benzersiz slug indekslerini ve geçmiş çakışma göçünü ekledi. F21 yalnızca uygun public GET'leri atomik sayıyor. F22 eski edit sekmelerinin içerik ezmesini sürüm karşılaştırmasıyla önlüyor. F23 hata akışında gerçek 404/500 ve JSON durumlarını koruyor. F24 servislerin somut Data repository bağımlılığını Core sözleşmelerine taşıdı. F25 dashboard sorgularını servis/repository sınırına ve kategori menülerini asenkron bileşene taşıdı. F26 güvenli Markdown renderer'ını Services'e taşıyıp Cloudinary istemcisini composition root'tan enjekte etti. F27 webhook'u secret-önce, sınırlı JSON kabulüne ve açık yayın yetkisine bağladı. F28 anahtarlı gönderimleri kalıcı işlem kaydı ve tek transaction ile tekrar korumasına bağladı. F29 portföyü dar DB projection, kararlı sıralama ve yapılandırılmış site URL'sine bağladı. F30 Create/Edit ortak formunu ve editör davranışlarını tek partial/modülde topladı. F31 Create/Edit kurtarmayı yazı kimliği, açık Restore/Discard, sekme koordinasyonu ve doğrulanmış başarılı kayıt bilgisine bağladı. F32 açık kayıt eylemlerini, normal Save korumasını ve doğru yayın durumunu uyguladı. F33 aynı güvenli render sınırından, DB yazısı/sayaç/yayın yan etkisi olmayan özel HTML önizleme üretiyor. F34 yönetim panelini mobil drawer, kontrollü tablo kaydırma ve dar ekranda kullanılabilir form/editörle düzenledi; gerçek %200 Chrome yakınlaştırmasında yatay taşma olmadığını doğruladı. F35 Tailwind CLI/lockfile ile yerel CSS ve sabit lisanslı editör/Prism varlıklarını build/publish akışına bağladı.
 
 ## Kullanım
@@ -77,7 +77,7 @@
 | [x] | F54 | Git deposundaki üretilmiş dosyaları temizle | TAMAMLANDI — DEPO BAKIMI | [F54 kanıtı](../uygulama-kayitlari/F54-2026-10-05.md) |
 | [x] | F55 | Otomatik kalite kapısını kur | TAMAMLANDI — DOĞRULAMA/OTOMASYON | [F55 kaydı](../uygulama-kayitlari/F55-2026-10-05.md) |
 | [x] | F56 | Yedek geri yükleme ve yayınlama prosedürünü kanıtla | TAMAMLANDI — DOĞRULAMA/İŞLETİM BELGESİ | [F56 kanıtı](../uygulama-kayitlari/F56-2026-10-05.md) |
-| [ ] | F57 | Uçtan uca kabul ve yeni SOLID değerlendirmesi | DOĞRULANAMADI — E01 ile vendor bulgusu giderildi; uzak CI kanıtı eksik | [F57 kaydı](../uygulama-kayitlari/F57-2026-10-05.md), [E01](../uygulama-kayitlari/E01-2026-10-05.md) |
+| [x] | F57 | Uçtan uca kabul ve yeni SOLID değerlendirmesi | TAMAMLANDI — KABUL/DEĞERLENDİRME; güncel uzak CI 25/25 | [İlk kayıt](../uygulama-kayitlari/F57-2026-10-05.md), [yeniden kabul](../uygulama-kayitlari/F57-CI-2026-10-05.md), [E01](../uygulama-kayitlari/E01-2026-10-05.md) |
 
 ## Onaylı ek işler
 
@@ -89,10 +89,10 @@ Ana planın 58 fazlık sayacı değişmez; ek bakım işleri ayrı izlenir.
 
 ## Son agent teslimi
 
-- Bu turdaki iş: Onaylı E01. Aynı Editor3.2.2/CSS, resmî DOMPurify3.4.16 ve hash/AST kontrollü yeniden dağıtım; eski runtime sanitizer çıkarıldı. [Kanıt](../uygulama-kayitlari/E01-2026-10-05.md), [son kabul raporu](../SON_KABUL_RAPORU_2026-10-05.md).
-- Doğrulama: modül güvenlik/paste 9/9, build integrity 5/5, Chrome yolculuğu 25/25, CSP/tarayıcı 36/36; temiz yerel kapı 25/25, build 0 uyarı/0 hata; publish sınırı kanıtlı. Eski/yeni rawtext-root farkı detached testtedir, uygulamaya özgü exploit iddiası yoktur.
-- Kalan sınır: NHN Editor arşivli; gelecekte sanitizer/source bakım ve browser kabulü gerekir. D28 braces istisnası korunur, vendor’a uygulanmaz. F57 uzak CI kanıtı eksik olduğundan [ ] kalır; üretime hazır sonucu yoktur. SOLID82/100 önceki inceleme sonucudur, tekrar puan verilmedi.
-- Aktif faz: Yok. Sıradaki tek iş: güncel uzak CI kanıtıyla F57 yeniden kabulü; ana plan tamamlanan57/58 olarak korunur.
-- Commit/push/remote dispatch/canlı kurulum/deploy yapılmadı. Yeni iş için kullanıcı onayı beklenir.
+- Bu turdaki iş: Kullanıcı onaylı commit/push ve F57 yeniden kabulü. E01 değişiklikleri korundu; önceki uzak CI’da görülen webhook ilk/tekrar tarih hassasiyeti farkı F28 persistence sınırında düzeltildi. [Yeniden kabul](../uygulama-kayitlari/F57-CI-2026-10-05.md), [son kabul raporu](../SON_KABUL_RAPORU_2026-10-05.md).
+- Doğrulama: yeni root build0 hata/0 uyarı, deterministik kırmızı→yeşil regresyon, temiz yerel kapı25/25 ve [GitHub Actions25/25](https://github.com/CixxMemo/DevCoreBlog/actions/runs/37292561215); kaynak commit’i `2a7a5f1f916cc88e86bec4f9f94e05399d14da45`. E01 Chrome journey25/25, CSP36/36, güvenlik9/9 ve integrity5/5 kanıtları ayrı korunur.
+- Kalan sınır: arşivli Editor bakım sorumluluğu ve D28 dar braces risk kabulü sürer; canlı VPS/Nginx/Cloudinary/yedek/keyring ve gerçek CWV doğrulanmış değildir. F57 tamamlanması canlıya hazır veya dağıtılmış sonucu değildir. SOLID82/100 kaynak inceleme sonucudur; otomatik sertifika veya yeni puan değildir.
+- Aktif/sıradaki faz: Yok. Ana plan58/58, uygulama kodu fazı52; ek E01 ayrı tamamlandı. F28 düzeltmesi yeni numaralı faz eklemez.
+- Commit/push kullanıcı onayıyla yapıldı; canlı kurulum/restore/deploy veya sonraki iş başlatılmadı. Yeni iş için kullanıcı onayı beklenir.
 
 [Ana plan](README.md) · [Hazır mesajlar](AGENT_PROMPTLARI.md)

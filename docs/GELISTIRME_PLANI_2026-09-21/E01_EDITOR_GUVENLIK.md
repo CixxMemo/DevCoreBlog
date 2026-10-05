@@ -23,3 +23,7 @@ doğrulanmış kayıtla DURUM’a işlenir; F57 uzak CI koşulu ayrı kalır.
 
 **Durma noktası:** Bu işi bitirip dur. Sonraki tek iş güncel uzak CI kanıtıyla F57
 yeniden kabulüdür; kendiliğinden commit/push/deploy yapılmaz.
+
+**Sonraki ayrı onay tamamlandı:** Kullanıcı commit/push ve F57 yeniden kabulünü
+ayrıca onayladı. [F57 yeniden kabulü](../uygulama-kayitlari/F57-CI-2026-10-05.md)
+güncel uzak25/25 kanıtını kaydetti; ana plan58/58. Canlı deploy yapılmadı.

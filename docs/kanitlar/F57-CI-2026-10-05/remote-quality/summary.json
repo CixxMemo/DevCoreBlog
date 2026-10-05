@@ -1,0 +1,175 @@
+{
+  "passed": true,
+  "stages": {
+    "sdk": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 1.524
+    },
+    "npm-install": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 2.598
+    },
+    "npm-audit": {
+      "exit_code": 1,
+      "passed": true,
+      "seconds": 1.21,
+      "exception_policy": {
+        "passed": true,
+        "accepted": [
+          {
+            "package": "braces",
+            "version": "3.0.3",
+            "advisory": "https://github.com/advisories/GHSA-vfj7-8cjw-p6xm",
+            "scope": "dev-only build dependency"
+          },
+          {
+            "package": "chokidar",
+            "version": "3.6.0",
+            "advisory": "https://github.com/advisories/GHSA-vfj7-8cjw-p6xm",
+            "scope": "dev-only build dependency"
+          },
+          {
+            "package": "fast-glob",
+            "version": "3.3.3",
+            "advisory": "https://github.com/advisories/GHSA-vfj7-8cjw-p6xm",
+            "scope": "dev-only build dependency"
+          },
+          {
+            "package": "micromatch",
+            "version": "4.0.8",
+            "advisory": "https://github.com/advisories/GHSA-vfj7-8cjw-p6xm",
+            "scope": "dev-only build dependency"
+          },
+          {
+            "package": "tailwindcss",
+            "version": "3.4.17",
+            "advisory": "https://github.com/advisories/GHSA-vfj7-8cjw-p6xm",
+            "scope": "dev-only build dependency"
+          }
+        ],
+        "unaccepted": [],
+        "policy": "GHSA-vfj7-8cjw-p6xm build-time risk accepted by user; review by 2026-11-05"
+      },
+      "advisory_response_valid": true
+    },
+    "restore": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 5.217
+    },
+    "build": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 18.175
+    },
+    "editor-distribution": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 4.188
+    },
+    "nuget-DevCoreBlog": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 1.867,
+      "advisory_response_valid": true
+    },
+    "nuget-DevCoreBlog.Core": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 0.701,
+      "advisory_response_valid": true
+    },
+    "nuget-DevCoreBlog.Data": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 1.359,
+      "advisory_response_valid": true
+    },
+    "nuget-DevCoreBlog.Services": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 0.792,
+      "advisory_response_valid": true
+    },
+    "tool-restore": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 1.569
+    },
+    "ef-version": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 1.775
+    },
+    "restore-PasswordHash": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 1.487
+    },
+    "build-PasswordHash": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 2.742
+    },
+    "restore-ContentRules": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 1.601
+    },
+    "build-ContentRules": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 2.818
+    },
+    "restore-ImageUploadPolicy": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 1.073
+    },
+    "build-ImageUploadPolicy": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 2.644
+    },
+    "checks-ImageUploadPolicy": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 0.27
+    },
+    "restore-Operations": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 1.058
+    },
+    "build-Operations": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 2.558
+    },
+    "checks-Operations": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 2.092
+    },
+    "postgres-http": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 91.159
+    },
+    "final-security-data": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 86.507
+    },
+    "final-edit-conflict": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 35.877
+    }
+  },
+  "remote_workflow_executed": true,
+  "workflow_run_id": "37292561215",
+  "workflow_commit": "2a7a5f1f916cc88e86bec4f9f94e05399d14da45"
+}

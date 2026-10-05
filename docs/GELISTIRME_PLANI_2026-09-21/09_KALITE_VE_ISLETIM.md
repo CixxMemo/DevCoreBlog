@@ -289,8 +289,8 @@ Bu bölüm bir çalıştırma emri değildir. Her seferinde yalnızca **bir faz 
 
 **İzlenebilirlik:** Raporun tümü; nihai kabul.
 
-**Uygulama:** [F57 kaydı](../uygulama-kayitlari/F57-2026-10-05.md) ve [son kabul raporu](../SON_KABUL_RAPORU_2026-10-05.md): yerel Chrome yolculuğu 25/25, CSP/tarayıcı 36/36, gerçek PostgreSQL regresyonları ve genişletilmiş kalite kapısı 24/24 geçti; aynı rubrikte SOLID 82/100. DOMPurify 2.3.3 vendor P1 bulgusu ve güncel uzak CI kanıtı eksikliği nedeniyle kritik riskler kapalı değildir; faz ENGELLİ/[ ] kalır. Ayrı editör güvenlik bakım işi önerildi, başlamadı. D28 istisnası vendor runtime bağımlılığına genişletilmez.
+**İlk değerlendirme (tarihsel):** [F57 kaydı](../uygulama-kayitlari/F57-2026-10-05.md): yerel Chrome yolculuğu25/25, CSP/tarayıcı36/36 ve kapı24/24; SOLID82/100. Vendor P1 ve uzak CI eksikliği nedeniyle faz o koşuda ENGELLİ kaldı. Eski kırmızı/eksik kanıtlar başarılıya çevrilmez.
 
-**E01 sonrası güncel durum:** Kullanıcı onaylı [E01](E01_EDITOR_GUVENLIK.md), eski runtime sanitizer’ı resmî yamalı modülle değiştirdi; build/security/browser/publish kanıtıyla vendor bulgusu giderildi. Yeni yerel kapı25/25 geçti. F57’nin uzak CI kabulü hâlâ doğrulanmadığı için faz [ ]/DOĞRULANAMADI kalır; E01 kaydı F57’nin eski koşusunu veya CI’yı geçmişe dönük başarılı yapmaz.
+**Güncel sonuç — TAMAMLANDI:** Onaylı [E01](E01_EDITOR_GUVENLIK.md) vendor sanitizer bulgusunu giderdi. [F57 yeniden kabulü](../uygulama-kayitlari/F57-CI-2026-10-05.md), uzak CI’nın yakaladığı webhook yanıt hassasiyetini dar persistence düzeltmesi ve deterministik önce/sonra testiyle kapattı. Kaynak commit’i `2a7a5f1` için temiz yerel kapı ve [GitHub Actions](https://github.com/CixxMemo/DevCoreBlog/actions/runs/37292561215)25/25 geçti; F02–F08/güvenlik/veri ve F22 sonuçları kanıtlandı. D28 risk kabulü ve canlı kurulum sınırları [son raporda](../SON_KABUL_RAPORU_2026-10-05.md) görünür; üretime hazır/deploy sonucu verilmez.
 
 **Durma noktası:** Kanıtı uygulama kaydına ve DURUM.md'ye işle; sonraki fazı başlatma.
