@@ -1,8 +1,0 @@
-port 15173: connect_ex=61 (expected61 ECONNREFUSED)
-port 55445: connect_ex=61 (expected61 ECONNREFUSED)
-port 15174: connect_ex=61 (expected61 ECONNREFUSED)
-port 55446: connect_ex=61 (expected61 ECONNREFUSED)
-/private/tmp/devcoreblog-f17.Jp6TGs removed=True
-/private/tmp/devcoreblog-f17.9wC3Ao removed=True
-/private/tmp/devcoreblog-f17.ruTXfK removed=True
-/private/tmp/devcoreblog-f17.h7J4ka removed=True

@@ -1,9 +1,0 @@
-f21_head_does_not_count=true
-f21_authenticated_admin_does_not_count=true
-f21_parallel_public_gets_are_atomic=true
-f21_only_counter_column_is_updated=true
-f21_deleted_post_returns_404=true
-f21_hidden_posts_do_not_count=true
-f21_public_request_count=24
-f21_final_counter_delta=24
-f21_counter_definition=eligible_public_get_requests

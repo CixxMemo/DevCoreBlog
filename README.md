@@ -6,13 +6,10 @@ ASP.NET Core MVC (.NET 10), PostgreSQL ve Razor/Tailwind kullanan blog projesi. 
 
 **Önce [AGENTS.md](AGENTS.md) dosyasını oku.** Güncel mimari, SOLID, güvenlik, kod kalitesi ve doğrulama kuralları buradadır. .agents/AGENTS.md yalnızca köke yönlendirir; eski planlar aktif değildir.
 
-- [Geliştirme planı](docs/GELISTIRME_PLANI_2026-09-21/README.md)
-- [İlerleme](docs/GELISTIRME_PLANI_2026-09-21/DURUM.md)
-- [Kararlar](docs/GELISTIRME_PLANI_2026-09-21/KARARLAR.md)
-- [Hazır agent mesajları](docs/GELISTIRME_PLANI_2026-09-21/AGENT_PROMPTLARI.md)
-- [19 Eylül inceleme raporu](docs/PROJE_INCELEME_RAPORU_2026-09-19.md)
-
-Kullanıcının kod/terminal komutu yazması gerekmez; agent seçilen tek fazı uygular ve doğrular. Güncel tamamlanma ve sıradaki tek faz için her zaman [DURUM](docs/GELISTIRME_PLANI_2026-09-21/DURUM.md) kaydını esas al.
+Kişisel geliştirme planı, ilerleme/karar kayıtları ve kabul kanıtları yerelde
+tutulur; GitHub checkout'unda bulunmaları beklenmez. Yerelde mevcutsa agent
+görevle ilgili kayıtları okur; yoksa AGENTS.md, teknik sözleşmeler ve kullanıcının
+açık göreviyle çalışır. Kullanıcının kod/terminal komutu yazması gerekmez.
 
 ## Teknoloji ve proje haritası
 
@@ -35,10 +32,10 @@ DevCoreBlog.Data/                 EF ve repository implementasyonları
 DevCoreBlog.Services/             Use case'ler ve servisler
 Migrations/                      Bugün Web'de bulunan migration geçmişi
 wwwroot/                         Statik varlıklar
-docs/                            Aktif plan, karar, kanıt ve tarihsel arşiv
+docs/                            Teknik sözleşmeler ve kurulum/işletim belgeleri
 ```
 
-Dört proje korunur. Core'un Markdig bağımlılığı ve Services'ın Data bağımlılığı F24/F26'da giderilecek teknik borçtur. Gerçek paket sürümleri .csproj dosyalarından doğrulanır.
+Dört proje korunur: Data ve Services, Core sözleşmelerine bağımlıdır; Services Data'ya, Core vendor SDK'larına referans vermez. Gerçek paket sürümleri .csproj dosyalarından doğrulanır.
 
 ## Frontend derlemesi (F35)
 
@@ -72,7 +69,7 @@ dotnet build DevCoreBlog.csproj
 
 Konfigürasyon adları [.env.example](.env.example) dosyasındadır. Gerçek .env ve secret'lar commit/rapora yazılmaz. Testte ayrı PostgreSQL ve sentetik admin/medya verisi kullanılır; production kaynağına bağlanılmaz.
 
-Migration geçmişi Web projesindedir ve `ApplicationDbContext` bu assembly'yi açıkça kullanır. Beş mevcut migration'ı listelemek ve idempotent kurulum SQL'i üretmek için gerçek proje yolları şunlardır:
+Migration geçmişi Web projesindedir ve `ApplicationDbContext` bu assembly'yi açıkça kullanır. Mevcut migration'ları listelemek ve idempotent kurulum SQL'i üretmek için gerçek proje yolları şunlardır:
 
 ```sh
 dotnet ef migrations list --project DevCoreBlog.csproj --startup-project DevCoreBlog.csproj --context ApplicationDbContext
@@ -85,14 +82,26 @@ Yeni migration da aynı `--project` ve `--startup-project` değerleriyle oluştu
 dotnet run --project DevCoreBlog.csproj
 ```
 
-Bu komutların belgelenmesi çalıştırıldıkları anlamına gelmez. Build/test/tarayıcı kanıtları ilgili faz kaydında tutulur. CSRF, cache, XSS veya SOLID açısından kusursuzluk iddia edilmez; inceleme raporu ve ilerleme çizelgesi güncel durumu ayırır.
+Bu komutların belgelenmesi çalıştırıldıkları anlamına gelmez. Yeni çalışma için gerçek build/test kanıtı gerekir; CSRF, cache, XSS veya SOLID açısından kusursuzluk iddia edilmez. Yerel kabul kayıtları ve GitHub Actions sonuçları kendi sınırlarıyla yorumlanır.
 
-## Git ve yerel doğrulama dosyaları (F54)
+## Git, yerel dosyalar ve yayın paketi
 
 `bin/`, `obj/`, `node_modules/`, `wwwroot/generated/` ve yerel cookie/auth
 kayıtları takip edilmez. Derleme çıktıları build ile yeniden üretilir; migration,
 lockfile ve lisanslı frontend kaynakları korunur. `git rm --cached` yerel dosyayı
-silmez; F54 index kaldırmaları commit yapılana kadar staged görünür.
+silmez. Kişisel plan/kayıt/kanıt/arşiv ve iç inceleme raporları da Git dışında
+kalır; gerekli teknik belgeler, AGENTS.md ve test/CI kaynakları takip edilir.
+
+Gerçek `.env` ignore edilir; yalnız güvenli placeholder içeren `.env.example`
+takipte kalır. Yerel `.env` için `chmod 600 .env` dosya sahibine okuma/yazma verir,
+diğer normal kullanıcıların erişimini kapatır. Root/yönetici ve aynı hesapta
+çalışan süreçler için mutlak koruma değildir. Production `.env` okumaz;
+[dağıtım sözleşmesindeki](docs/DEPLOYMENT_SECURITY.md) servis environment'ını kullanır.
+
+Git ignore kuralları publish'i yönetmez. Proje ayrıca `.env*`, `docs/**`, AGENTS.md
+ve `.agents/**` dosyalarını SDK item keşfinden dışlar; `publish-boundary` kontrolü
+sentetik dosyalarla gerçek publish çıktısını sınar. Teknik belgeler GitHub’da
+kalır, uygulama paketine kopyalanmaz.
 
 Gerçek `.env`, cookie ve Data Protection anahtarlarını eklemeyin.
 [Oturum ve geçmiş riski](docs/DEPLOYMENT_SECURITY.md#f54--git-takibi-ve-geçmişteki-oturum-kayıtları)
@@ -105,7 +114,8 @@ açıklar.
 temiz build, gerçek advisory taraması ve sentetik PostgreSQL/HTTP kontrollerini
 tek akışta çalıştırır. Gereksinimler, kapsam ve kullanıcı onaylı dar build-time risk istisnası
 [kalite kapısı belgesindedir](docs/KALITE_KAPISI.md); kırmızı sonuç başarı sayılmaz.
-GitHub Actions yapılandırması hazırdır; remote çalıştırma henüz doğrulanmadı.
+GitHub Actions aynı kontrolleri push/PR'da çalıştırır; yerel başarı uzak CI sonucu
+yerine geçmez. Tam kabul için `--final-acceptance` seçeneğini kullanın.
 
 ## Yedek ve yayınlama (F56)
 

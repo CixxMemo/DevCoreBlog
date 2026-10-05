@@ -1,7 +1,7 @@
 # CSP sözleşmesi ve kaynak envanteri — F52
 
 F52 ile **Content-Security-Policy engelleme modunda bütün ortamlarda** etkindir.
-F51 Report-Only hazırlığı tarihsel [kayıttadır](uygulama-kayitlari/F51-2026-10-04.md).
+F51 Report-Only hazırlığı tarihsel kayıttadır.
 Encoding ve güvenli Markdown sınırları ayrı zorunlu korumalardır.
 
 ## Etkinleşme ve yanıt sınırı
@@ -88,7 +88,7 @@ ve 36 browser kontrolü geçti; normal CSP ihlali sıfırdı. Kasıtlı inline s
 event handler, eval, dış script ve base injection engellendi. Eval kontrolü
 automation evaluate yerine browser fixture’ının yerelden yüklediği script içinde
 çalışır; automation kanalının CSP bypass’ı koruma başarısı sayılmaz.
-[F52 kanıtı](uygulama-kayitlari/F52-2026-10-04.md) header/cache/error ve Production
+F52 kanıtı header/cache/error ve Production
 regresyonunu açıklar.
 
 Kaynaklar: [OWASP CSP](https://cheatsheetseries.owasp.org/cheatsheets/Content_Security_Policy_Cheat_Sheet.html),

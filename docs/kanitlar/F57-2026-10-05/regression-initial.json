@@ -1,5 +1,0 @@
-{
-  "checks": {},
-  "stages": {},
-  "scope": "Owned disposable PostgreSQL and MVC. Private logs not exported. Remote CI not executed."
-}

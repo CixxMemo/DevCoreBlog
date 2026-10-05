@@ -4,7 +4,8 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <DefaultItemExcludes>$(DefaultItemExcludes);node_modules/**;frontend/**;scripts/frontend/**</DefaultItemExcludes>
+    <!-- Git ignores do not control SDK discovery or publish; exclude private inputs here too. -->
+    <DefaultItemExcludes>$(DefaultItemExcludes);node_modules/**;frontend/**;scripts/frontend/**;.env;.env.*;**/.env;**/.env.*;docs/**;AGENTS.md;.agents/**</DefaultItemExcludes>
   </PropertyGroup>
 
   <ItemGroup>

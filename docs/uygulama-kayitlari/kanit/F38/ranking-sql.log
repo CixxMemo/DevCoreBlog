@@ -1,8 +1,0 @@
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@utcNow='?' (DbType = DateTime), @p='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
-      SELECT p."Id", p."Title", p."Slug", c."Name", p."ViewCount"
-      FROM "Posts" AS p
-      INNER JOIN "Categories" AS c ON p."CategoryId" = c."Id"
-      WHERE p."IsActive" AND p."IsPublished" AND p."PublishDate" <= @utcNow AND c."IsActive"
-      ORDER BY p."ViewCount" DESC, p."PublishDate" DESC, p."Id"
-      LIMIT @p

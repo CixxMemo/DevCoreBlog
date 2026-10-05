@@ -1,5 +1,9 @@
 # F55 / F57 — Kalite kapısı
 
+Kişisel faz kayıtları ve ekran görüntüsü/test kanıtları yerelde Git dışında
+tutulur. Temiz GitHub checkout'unda bu kayıtlar gerekmez; bu belge, test
+script'leri ve Actions sonuçları kamuya açık doğrulama kaynaklarıdır.
+
 ## Çalıştırma
 
 Repository kökünde tek komut:
@@ -26,7 +30,11 @@ uygulanır. Yeni NuGet.Config yalnız geçici kaynakta public nuget.org kullanı
 
 E01 ile uygulama build’inden sonra `editor_build_probe.mjs` eklenir: değiştirilmiş
 upstream/sanitizer hash’inin reddi, deterministik yeniden build, eski runtime
-sanitizer’ın yokluğu ve dağıtım receipt’i. Güncel varsayılan kapı23 aşamadır.
+sanitizer’ın yokluğu ve dağıtım receipt’i. E02 ile `publish-boundary` eklenir:
+yalnız owned kaynakta sentetik `.env*` ve özel belge JSON'ları oluşturulur,
+SDK item keşfi ve gerçek publish çıktısı denetlenir; gerçek `.env` okunmaz.
+Uygulama DLL'leri, appsettings ve lisanslı frontend varlıkları korunmalıdır.
+Güncel varsayılan kapı24, `--final-acceptance` kapısı26 aşamadır.
 
 Audit dışında build/restore NuGetAudit=false kullanır: bu güvenlik sertifikası
 değildir; dört ayrı gerçek audit başarısızsa kapı başarısızdır. Kullanıcının aşağıda kabul ettiği tek build-time istisnası dışındaki vulnerability veya
@@ -47,7 +55,7 @@ paket veya ürün major yükseltmesi yapılmamıştır.
 python3 scripts/verification/run_quality_gate.py --final-acceptance --report-dir /tmp/devcore-final-quality
 ```
 
-Bu seçenek E01 sonrası23 aşamaya iki bağımsız disposable cluster kontrolü ekler: auth/CSRF,
+Bu seçenek güncel24 aşamaya iki bağımsız disposable cluster kontrolü ekler: auth/CSRF,
 güvenli Markdown, atomik sayaç, kalıcı webhook/restart, cache/zamanlı yayın ve
 kategori silme yarışı; ardından eski edit/eşzamanlı güncelleme. Ek portlar
 PostgreSQL55461/55462 ve uygulama15199/15201/15200’dür; boş olmalıdır.
@@ -57,15 +65,15 @@ Yedi regresyon grubu ve sekiz F22 sonucu eksik/başarısızsa kapı exit1 olur.
 
 5 Ekim 2026 temiz yerel kaynakta **24/24** geçti. Gerçek Chrome yolculuğu,
 CSP/mobil/klavye ve native %200 zoom ayrı tarayıcı kontrolleridir; bu komut onları
-çalıştırmış sayılmaz. [F57 raporu](SON_KABUL_RAPORU_2026-10-05.md) kanıtları ayırır.
+çalıştırmış sayılmaz. F57 raporu kanıtları ayırır.
 İlk F57’de npm/NuGet audit’i yerel vendored editörü taramadığı için kapının yeşil
 olması P1 DOMPurify bulgusunu kapatmıyordu; E01 bu dağıtım sınırını değiştirir.
 
-E01 sonrası güncel sonuç **25/25**. Yamalı sanitizer exact npm dependency ve
+E01 sonrası kaydedilen sonuç **25/25** idi. Yamalı sanitizer exact npm dependency ve
 hash kontrollü runtime dağıtımıdır; yeni DOMPurify advisory’si artık npm audit’in
 kapsamındadır. Diğer arşivli vendor kodunun tümü audit edilmiş sayılmaz.
-[E01 kaydı](uygulama-kayitlari/E01-2026-10-05.md) ayrı browser güvenlik/paste ve
-publish kanıtını taşır. [F57 yeniden kabulü](uygulama-kayitlari/F57-CI-2026-10-05.md)
+E01 kaydı ayrı browser güvenlik/paste ve
+publish kanıtını taşır. F57 yeniden kabulü
 yerel ve uzak25/25 sonucunu kaydetti; yedi basamaklı PublishDate regresyonu
 webhook ilk/tekrar yanıtının PostgreSQL hassasiyetinde aynı kaldığını doğrular.
 
@@ -78,8 +86,8 @@ araçları kullanılır. Gerçek env secret istemez. Artifacts7 gün saklanır.
 F57 ile workflow aynı `--final-acceptance` komutunu kullanır.
 5 Ekim2026 kullanıcı onaylı push commit’i `2a7a5f1` için
 [run37292561215](https://github.com/CixxMemo/DevCoreBlog/actions/runs/37292561215)
-Linux’ta25/25 geçti. [Kalıcı kanıt](kanitlar/F57-CI-2026-10-05/remote-ci.json)
-job/artifact metadata’sını, indirilen kapı raporu gerçek run ID/commit’i taşır.
+Linux’ta25/25 geçti. Kişisel kabul kaydı yerelde job/artifact metadata'sını korur;
+Actions artifact'indeki kapı raporu gerçek run ID/commit'i taşır.
 `summary.json.remote_workflow_executed` GitHub Actions origin’ini bildirir;
 yerelde false kalır. Bu provenance uygulama environment’ını fixture’a aktarmak
 veya kapının bağımsız başarı kontrolü yerine kullanmak değildir.
@@ -115,7 +123,7 @@ denmez. Açık yamalanmış değildir, kullanıcı tarafından dar kapsamda kabu
 İstisna regresyon komutu:
 
 ```sh
-python3 scripts/verification/f55_audit_policy_probe.py --audit docs/kanitlar/F55-2026-10-05/npm-audit.json --report /tmp/devcore-audit-policy.json
+python3 scripts/verification/f55_audit_policy_probe.py --audit /tmp/devcore-quality-report/npm-audit.json --report /tmp/devcore-audit-policy.json
 ```
 
 Arşivli Toast UI’nin kalan kodu için bakım sorumluluğu sürer; E01’in kilitli

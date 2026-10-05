@@ -81,7 +81,7 @@ F47 veri kullanımı belgesi taslak kalır. Dış log forwarding/analytics eklen
 
 ## Doğrulama ve geri dönüş
 
-[F53 kaydı](uygulama-kayitlari/F53-2026-10-05.md), gerçek DB/driver/HTTP testlerini,
+F53 kaydı, gerçek DB/driver/HTTP testlerini,
 özel canary log taramasını ve Chrome görüntülerini içerir. Ham log/cookie export’u
 yoktur. Şema/veri etkisi yok; durum widget’ı kaldırılabilir ama sahte Active veya
 başarısız DB’de sıfır metriklere dönülmez. Güvenli logging ve fail-closed upload

@@ -1,6 +1,6 @@
 # Kapak bilgisi ve salt okunur medya bakımı
 
-F49 kapsamı; [D23](GELISTIRME_PLANI_2026-09-21/KARARLAR.md#d23--kapak-kimliği-açıklama-ve-salt-okunur-bakım) uygulanır.
+F49 kapsamı; D23 uygulanır.
 
 Yeni kapağın URL, PublicId ve gerçek width/height bilgileri yalnız doğrulanmış Cloudinary upload sonucundan alınır. PublicId en çok 255 karakter; boyutlar 1–4096; URL credential'sız HTTPS ve en çok 2048 karakterdir. Post formu yalnız isteğe bağlı `ThumbnailAlt` açıklamasını kabul eder (trim, en çok 300 karakter); kimlik/boyut/URL formdan alınmaz. Boş açıklama dekoratif görseldir. Detay ve sunucu önizlemesi Razor encoding kullanır; başlıktan açıklama türetilmez. Liste kartları bağlantı başlığını tekrar etmemek için dekoratif kalır. Açıklama değişimi gerçek içerik güncellemesidir; UpdatedDate sunucu UTC saatini kullanır. HTML'deki 1600×900 mevcut kırpma oranıdır; gerçek provider boyutlarıyla karıştırılmaz.
 

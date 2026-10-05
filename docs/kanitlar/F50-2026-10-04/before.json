@@ -1,6 +1,0 @@
-{
-  "baseline_commit": "d6b91b438aa075f786836d9422af387052d4502f",
-  "baseline_original_program_and_appsettings": true,
-  "trusted_https_proxy_still_redirects": true,
-  "wildcard_host_redirects_to_attacker_host": true
-}

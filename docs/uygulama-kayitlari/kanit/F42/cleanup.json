@@ -1,8 +1,0 @@
-{
-  "owned_roots_removed": true,
-  "postgres_version": "psql (PostgreSQL) 16.14 (Homebrew)",
-  "port_15175_closed": true,
-  "port_55447_closed": true,
-  "port_15176_closed": true,
-  "port_55448_closed": true
-}

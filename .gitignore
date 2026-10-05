@@ -7,6 +7,14 @@ obj/
 .env.*
 !.env.example
 
+## Personal development plans, records and acceptance evidence (kept locally)
+/docs/GELISTIRME_PLANI_*/
+/docs/uygulama-kayitlari/
+/docs/kanitlar/
+/docs/arsiv/
+/docs/PROJE_INCELEME_RAPORU_*.md
+/docs/SON_KABUL_RAPORU_*.md
+
 ## Reproducible frontend dependencies and build output
 node_modules/
 wwwroot/generated/

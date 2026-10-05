@@ -1,8 +1,0 @@
-{
-  "diff_check": "passed",
-  "completed_phase_rows": 44,
-  "next_phase": "F44 awaiting approval",
-  "generated_tracked_diff_at_review": 0,
-  "evidence_logs_sensitive_value_scan": "passed",
-  "scope_review": "F43 only; F44/F45 not started"
-}

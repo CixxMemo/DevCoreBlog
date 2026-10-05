@@ -1,9 +1,0 @@
-{
-  "mode": "one",
-  "checks": {
-    "small_card_count": true,
-    "small_no_duplicate_cards": true,
-    "small_one_h1": true,
-    "small_bounded_ranking": true
-  }
-}
