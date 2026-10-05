@@ -1,0 +1,14 @@
+{
+  "checks": {
+    "restore_31_checks_passed": true,
+    "fixture_31_checks_passed": true,
+    "python_shell_syntax_valid": true,
+    "local_document_links_exist": true,
+    "owned_fixture_removed": true,
+    "git_index_unchanged": true,
+    "app_sources_migrations_packages_unchanged": true,
+    "F55_artifacts_preserved": true
+  },
+  "live_restore_or_deploy": false,
+  "F57_started": false
+}

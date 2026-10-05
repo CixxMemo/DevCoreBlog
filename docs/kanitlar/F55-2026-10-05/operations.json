@@ -1,0 +1,40 @@
+{
+  "checks": {
+    "actual_postgresql_read_is_verified": true,
+    "credentials_do_not_claim_media_access": true,
+    "anonymous_cannot_read_diagnostics": true,
+    "server_request_id_ignores_client_value": true,
+    "diagnostics_are_private_no_store": true,
+    "real_upload_fixture_success_is_observed": true,
+    "provider_failure_is_observed_without_erasing_prior_success": true,
+    "webhook_rejection_preserves_401": true,
+    "webhook_invalid_body_preserves_400": true,
+    "real_locked_metric_query_is_bounded_and_not_fabricated": true,
+    "missing_media_config_keeps_admin_available_and_does_not_claim_access": true,
+    "observations_reset_after_restart": true,
+    "missing_media_config_fails_upload_closed": true,
+    "missing_webhook_config_fails_closed": true,
+    "stopped_database_returns_real_503_with_diagnostics": true,
+    "outage_keeps_csp_request_id_and_no_store": true,
+    "outage_does_not_expose_connection_or_exception": true,
+    "real_driver_deadline_is_bounded": true,
+    "static_asset_remains_available_during_outage": true,
+    "exception_before_headers_keeps_real_500_and_safe_body": true,
+    "started_fault_aborts_incomplete_response": true,
+    "private_values_are_absent_from_real_logs": true,
+    "auth_failure_is_correlated": true,
+    "upload_failure_is_correlated": true,
+    "webhook_failure_is_correlated": true,
+    "error_response_ids_match_log_scopes": true,
+    "provider_logs_cannot_be_enabled_by_specific_override": true,
+    "client_abort_is_not_server_crash": true,
+    "deliberate_faults_have_safe_correlated_error_events": true
+  },
+  "count": 29,
+  "latencies": {
+    "locked_metric_query_seconds": 2.033,
+    "stopped_database_seconds": 0.011,
+    "stalled_handshake_seconds": 2.41
+  },
+  "scope": "Disposable PostgreSQL + actual Npgsql stalled handshake + MVC, synthetic storage. No real Cloudinary access; logs scanned privately and not exported."
+}

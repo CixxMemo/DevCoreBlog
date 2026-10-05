@@ -4,7 +4,7 @@ import argparse,base64,getpass,http.client,json,os,socketserver,subprocess,threa
 from pathlib import Path
 from http_probe_support import cookie_opener,request_with_headers,submit_login,extract_antiforgery_token,multipart_payload
 p=argparse.ArgumentParser();p.add_argument('--source',type=Path,required=True);p.add_argument('--database-port',type=int,required=True);p.add_argument('--port',type=int,default=15195);p.add_argument('--report',type=Path,required=True);p.add_argument('--hold-for-browser',action='store_true');a=p.parse_args()
-source=a.source.resolve();assert source.name=='source' and str(source).startswith('/private/tmp/devcoreblog-f17.') and not (source/'.git').exists()
+source=a.source.resolve();assert source.name=='source' and (str(source).startswith('/private/tmp/devcoreblog-f17.') or str(source).startswith('/tmp/devcoreblog-f17.')) and not (source/'.git').exists()
 assert a.port!=a.database_port and 1024<a.port<65535
 # Inject faults only into the owned test copy; no production route is added.
 (source/'F53FaultController.cs').write_text('''using Microsoft.AspNetCore.Authorization;

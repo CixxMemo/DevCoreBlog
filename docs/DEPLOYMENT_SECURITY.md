@@ -92,7 +92,7 @@ hesabı doğrulanmalıdır. Ardından `nginx -t`, `systemd-analyze verify` ve ge
 Nginx üzerinden spoofed-header/HTTPS/login/upload/429 kabul kontrolleri yapılır.
 F50 yerel ortamında Nginx/systemd bulunmadığı için bu host kontrolleri çalışmadı;
 uygulama kabulü gerçek Production Kestrel, doğrulanan yerel TLS ve Nginx’in başlık
-sözleşmesini taklit eden fixture ile yapıldı. Canlı yayın/restore F56 kapsamındadır.
+sözleşmesini taklit eden fixture ile yapıldı. F56 yalnız test restore ve yayınlama prosedürünü kanıtlar; canlı yayın/restore ayrıca açık yetki ister.
 
 Geri dönüşte önceki güvenli binary ve onun uyumlu servis/proxy config’i birlikte
 kullanılır; mevcut anahtar halkası korunur. F50 öncesi binary’ye dönmek wildcard
@@ -127,3 +127,7 @@ Index kaldırması eski commit/blob/clone kopyalarını temizlemez. Cookie geçm
 kalır; history rewrite ve force-push yapılmadı. Secret geçmişini genel olarak
 temizlenmiş saymayın. Gerçek secret tespitinde ilgili credential rotasyonu ayrıca
 planlanır; dosyayı yeniden takip etmek geri dönüş yöntemi değildir.
+
+## F56 yedek ve yayınlama sırası
+
+[Yedek/restore/yayın prosedürü](YEDEK_VE_YAYIN_PROSEDURU.md) DB, medya referansı/byte ayrımı, migration/secret/keyring kapsamı, staging geçiş kapıları ve veri kaybettirmeyen geri dönüş sınırını tanımlar. Yerel test restore gerçek host kurulumunu veya Cloudinary yedeğini kanıtlamaz.

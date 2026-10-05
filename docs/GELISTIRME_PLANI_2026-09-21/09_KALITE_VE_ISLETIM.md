@@ -230,6 +230,8 @@ Bu bölüm bir çalıştırma emri değildir. Her seferinde yalnızca **bir faz 
 
 **İzlenebilirlik:** Rapor §10; sürdürülebilirlik.
 
+**Uygulama:** [F55 kaydı](../uygulama-kayitlari/F55-2026-10-05.md):otomasyon/yerel build ve HTTP/DB kabulü geçti; resmi safe override yokluğu doğrulandı. Kullanıcı onaylı exact build-time advisory istisnasıyla22/22 stage geçti; faz tamamlandı. F56 onay bekler.
+
 **Durma noktası:** Kanıtı uygulama kaydına ve DURUM.md'ye işle; sonraki fazı başlatma.
 
 ---
@@ -256,6 +258,8 @@ Bu bölüm bir çalıştırma emri değildir. Her seferinde yalnızca **bir faz 
 **Geri dönüş:** Test kaynakları kontrollü kaldırılır; canlıya dokunulmadığı için prod rollback iddiası yok.
 
 **İzlenebilirlik:** Rapor §10 işletim.
+
+**Uygulama:** [F56 kaydı](../uygulama-kayitlari/F56-2026-10-05.md):31 izole restore/previous binary/publish kontrolü ve31 fixture regresyonu geçti. Runbook test/canlı/medya byte sınırını ayırır; canlı kurulum/restore/deploy yok. D29 uygulanır; F57 onay bekler.
 
 **Durma noktası:** Kanıtı uygulama kaydına ve DURUM.md'ye işle; sonraki fazı başlatma.
 

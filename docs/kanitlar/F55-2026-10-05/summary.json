@@ -1,0 +1,158 @@
+{
+  "passed": true,
+  "stages": {
+    "sdk": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 0.141
+    },
+    "npm-install": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 0.839
+    },
+    "npm-audit": {
+      "exit_code": 1,
+      "passed": true,
+      "seconds": 0.876,
+      "exception_policy": {
+        "passed": true,
+        "accepted": [
+          {
+            "package": "braces",
+            "version": "3.0.3",
+            "advisory": "https://github.com/advisories/GHSA-vfj7-8cjw-p6xm",
+            "scope": "dev-only build dependency"
+          },
+          {
+            "package": "chokidar",
+            "version": "3.6.0",
+            "advisory": "https://github.com/advisories/GHSA-vfj7-8cjw-p6xm",
+            "scope": "dev-only build dependency"
+          },
+          {
+            "package": "fast-glob",
+            "version": "3.3.3",
+            "advisory": "https://github.com/advisories/GHSA-vfj7-8cjw-p6xm",
+            "scope": "dev-only build dependency"
+          },
+          {
+            "package": "micromatch",
+            "version": "4.0.8",
+            "advisory": "https://github.com/advisories/GHSA-vfj7-8cjw-p6xm",
+            "scope": "dev-only build dependency"
+          },
+          {
+            "package": "tailwindcss",
+            "version": "3.4.17",
+            "advisory": "https://github.com/advisories/GHSA-vfj7-8cjw-p6xm",
+            "scope": "dev-only build dependency"
+          }
+        ],
+        "unaccepted": [],
+        "policy": "GHSA-vfj7-8cjw-p6xm build-time risk accepted by user; review by 2026-11-05"
+      },
+      "advisory_response_valid": true
+    },
+    "restore": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 1.176
+    },
+    "build": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 7.58
+    },
+    "nuget-DevCoreBlog": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 0.953,
+      "advisory_response_valid": true
+    },
+    "nuget-DevCoreBlog.Core": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 0.395,
+      "advisory_response_valid": true
+    },
+    "nuget-DevCoreBlog.Data": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 0.678,
+      "advisory_response_valid": true
+    },
+    "nuget-DevCoreBlog.Services": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 0.459,
+      "advisory_response_valid": true
+    },
+    "tool-restore": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 0.1
+    },
+    "ef-version": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 0.127
+    },
+    "restore-PasswordHash": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 0.524
+    },
+    "build-PasswordHash": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 1.392
+    },
+    "restore-ContentRules": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 0.717
+    },
+    "build-ContentRules": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 1.581
+    },
+    "restore-ImageUploadPolicy": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 0.578
+    },
+    "build-ImageUploadPolicy": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 1.62
+    },
+    "checks-ImageUploadPolicy": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 0.066
+    },
+    "restore-Operations": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 0.786
+    },
+    "build-Operations": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 1.518
+    },
+    "checks-Operations": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 2.087
+    },
+    "postgres-http": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 52.57
+    }
+  },
+  "remote_workflow_executed": false
+}

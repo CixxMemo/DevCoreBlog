@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "parameters": "--vulnerable --include-transitive",
+  "sources": [
+    "https://api.nuget.org/v3/index.json"
+  ],
+  "projects": [
+    {
+      "path": "/private/tmp/devcoreblog-f55-821_vvsc/source/DevCoreBlog.Services/DevCoreBlog.Services.csproj"
+    }
+  ]
+}

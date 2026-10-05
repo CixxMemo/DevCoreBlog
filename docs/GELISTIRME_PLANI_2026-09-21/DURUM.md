@@ -1,10 +1,10 @@
 # İlerleme çizelgesi
 
-- **Son kayıt:** 5 Ekim 2026 — F54 index/ignore ve temiz kaynak build kabulü doğrulandı.
-- **Tamamlanan plan fazı:** 55/58 (F00–F54).
+- **Son kayıt:** 5 Ekim 2026 — F56 izole DB restore, previous binary/schema ve yayınlama prosedürü kanıtlandı.
+- **Tamamlanan plan fazı:** 57/58 (F00–F56).
 - **Tamamlanan uygulama kodu fazı:** 52.
 - **Aktif faz:** Yok.
-- **Sıradaki faz:** F55 — kullanıcı onayı bekleniyor.
+- **Sıradaki faz:** F57 — kullanıcı onayı bekleniyor.
 - **Uygulama kodu:** F02–F09 güvenlik fazları tamamlandı. F10 migration zincirini doğruladı. F11–F13 form/içerik güvenliğini tamamladı. F14 kategori update'ini güvenli alanlara daralttı. F15 kategori silmesini DB constraint'i ve yarış yönetimiyle veri kaybına karşı korudu. F16 yayın zamanını açık saat dilimiyle UTC'ye bağladı. F17 public görünürlüğü tek kurala bağladı. F18 tek süreçli liste cache'ini yayın sınırı ve mutation invalidation'ıyla doğruladı. F19 düzenlemede kayıtlı slug'ı korudu. F20 benzersiz slug indekslerini ve geçmiş çakışma göçünü ekledi. F21 yalnızca uygun public GET'leri atomik sayıyor. F22 eski edit sekmelerinin içerik ezmesini sürüm karşılaştırmasıyla önlüyor. F23 hata akışında gerçek 404/500 ve JSON durumlarını koruyor. F24 servislerin somut Data repository bağımlılığını Core sözleşmelerine taşıdı. F25 dashboard sorgularını servis/repository sınırına ve kategori menülerini asenkron bileşene taşıdı. F26 güvenli Markdown renderer'ını Services'e taşıyıp Cloudinary istemcisini composition root'tan enjekte etti. F27 webhook'u secret-önce, sınırlı JSON kabulüne ve açık yayın yetkisine bağladı. F28 anahtarlı gönderimleri kalıcı işlem kaydı ve tek transaction ile tekrar korumasına bağladı. F29 portföyü dar DB projection, kararlı sıralama ve yapılandırılmış site URL'sine bağladı. F30 Create/Edit ortak formunu ve editör davranışlarını tek partial/modülde topladı. F31 Create/Edit kurtarmayı yazı kimliği, açık Restore/Discard, sekme koordinasyonu ve doğrulanmış başarılı kayıt bilgisine bağladı. F32 açık kayıt eylemlerini, normal Save korumasını ve doğru yayın durumunu uyguladı. F33 aynı güvenli render sınırından, DB yazısı/sayaç/yayın yan etkisi olmayan özel HTML önizleme üretiyor. F34 yönetim panelini mobil drawer, kontrollü tablo kaydırma ve dar ekranda kullanılabilir form/editörle düzenledi; gerçek %200 Chrome yakınlaştırmasında yatay taşma olmadığını doğruladı. F35 Tailwind CLI/lockfile ile yerel CSS ve sabit lisanslı editör/Prism varlıklarını build/publish akışına bağladı.
 
 ## Kullanım
@@ -75,16 +75,16 @@
 | [x] | F52 | Doğrulanmış CSP ve güvenlik başlıklarını uygula | TAMAMLANDI — KOD | [F52 kanıtı](../uygulama-kayitlari/F52-2026-10-04.md) |
 | [x] | F53 | Gerçek hata ve servis durumlarını görünür yap | TAMAMLANDI — KOD | [F53 kanıtı](../uygulama-kayitlari/F53-2026-10-05.md) |
 | [x] | F54 | Git deposundaki üretilmiş dosyaları temizle | TAMAMLANDI — DEPO BAKIMI | [F54 kanıtı](../uygulama-kayitlari/F54-2026-10-05.md) |
-| [ ] | F55 | Otomatik kalite kapısını kur | BAŞLAMADI | — |
-| [ ] | F56 | Yedek geri yükleme ve yayınlama prosedürünü kanıtla | BAŞLAMADI | — |
+| [x] | F55 | Otomatik kalite kapısını kur | TAMAMLANDI — DOĞRULAMA/OTOMASYON | [F55 kaydı](../uygulama-kayitlari/F55-2026-10-05.md) |
+| [x] | F56 | Yedek geri yükleme ve yayınlama prosedürünü kanıtla | TAMAMLANDI — DOĞRULAMA/İŞLETİM BELGESİ | [F56 kanıtı](../uygulama-kayitlari/F56-2026-10-05.md) |
 | [ ] | F57 | Uçtan uca kabul ve yeni SOLID değerlendirmesi | BAŞLAMADI | — |
 
 ## Son agent teslimi
 
-- Bu turdaki faz: F54 — 245 bin/obj +1 cookie yalnız index’ten çıkarıldı;246 yerel dosya byte aynı korundu. Ignore/env.example ve kaynak sınırı doğrulandı.
-- Kontroller:9/9 kabul; mevcut ve temiz kaynak build0 uyarı/0 hata. [Kanıt](../uygulama-kayitlari/F54-2026-10-05.md).
-- Sınırlama: Git geçmişi temizlenmedi; localhost session cookie’nin aktifliği doğrulanmadı, canlı session-version iptali/rotasyon yapılmadı. Gerçek .env/keyring korunur; dependency audit başarısı iddia edilmez.
-- Aktif faz: Yok. Sıradaki tek faz: F55 — Otomatik kalite kapısını kur.
-- Kullanıcıdan gereken: F55 için açık onay; [veri kullanımı taslağı](../F47_VERI_KULLANIMI_TASLAGI.md) değerlendirmesi.
+- Bu turdaki faz:F56. Guard’lı test dump/restore,31 kabul ve31 ilgili fixture boolean kontrolü geçti; build0 uyarı/0 hata. [Kanıt](../uygulama-kayitlari/F56-2026-10-05.md).
+- Tam kıyas:11 yazı/2 kategori/12 migration/1 webhook cevabı, tüm row/UTC/media/sequences; previous HEAD/current publish restored schema smoke başarılı.
+- Sınırlama:Cloudinary byte/secret/keyring/global roles yedeği, gerçek host/backup encryption/retention/ACL/live deploy uygulanmadı. Runbook test/canlı sınırını ayırır; eski commit yeniden derlemesi gelecekteki eski package uyumluluk garantisi değildir. D28 risk istisnası korunur.
+- Aktif faz:Yok. Sıradaki tek faz:F57 — Uçtan uca kabul ve yeni SOLID değerlendirmesi.
+- Kullanıcıdan gereken:F57 için açık onay. F57/canlı işlem başlamadı.
 
 [Ana plan](README.md) · [Hazır mesajlar](AGENT_PROMPTLARI.md)

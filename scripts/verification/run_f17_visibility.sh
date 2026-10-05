@@ -394,6 +394,21 @@ if [ "${DEVCORE_F50_PROBE:-0}" = 1 ]; then
         --report "$task_tmp/f50-proxy.json"
 fi
 
+if [ "${DEVCORE_F56_PROBE:-0}" = 1 ]; then
+    DEVCORE_F56_REPO="$task_repo" python3 "$task_source/scripts/verification/f56_restore_probe.py" \
+        --source "$task_source" --database-port "$task_pg_port" \
+        --report "$DEVCORE_F56_REPORT"
+fi
+
+if [ "${DEVCORE_F55_PROBE:-0}" = 1 ]; then
+    DEVCORE_TEST_ADMIN_USERNAME=f17-admin \
+    DEVCORE_TEST_ADMIN_PASSWORD="$task_admin_password" \
+    python3 "$task_source/scripts/verification/f55_fixture_checks.py" \
+        --source "$task_source" --database-port "$task_pg_port" \
+        --base-url "http://127.0.0.1:$task_app_port" \
+        --report-dir "$DEVCORE_F55_REPORT_DIR"
+fi
+
 if [ "${DEVCORE_F17_HOLD_FOR_BROWSER:-0}" = 1 ]; then
     printf 'F17 browser fixture ready at http://127.0.0.1:%s\n' "$task_app_port"
     while kill -0 "$task_app_pid" 2>/dev/null; do

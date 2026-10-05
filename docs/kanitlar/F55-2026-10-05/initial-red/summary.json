@@ -1,0 +1,121 @@
+{
+  "passed": false,
+  "stages": {
+    "sdk": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 0.13
+    },
+    "npm-install": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 0.853
+    },
+    "npm-audit": {
+      "exit_code": 1,
+      "passed": false,
+      "seconds": 0.691,
+      "advisory_response_valid": true
+    },
+    "restore": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 0.801
+    },
+    "build": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 7.355
+    },
+    "nuget-DevCoreBlog": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 0.977,
+      "advisory_response_valid": true
+    },
+    "nuget-DevCoreBlog.Core": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 0.386,
+      "advisory_response_valid": true
+    },
+    "nuget-DevCoreBlog.Data": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 0.678,
+      "advisory_response_valid": true
+    },
+    "nuget-DevCoreBlog.Services": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 0.576,
+      "advisory_response_valid": true
+    },
+    "tool-restore": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 0.104
+    },
+    "ef-version": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 0.132
+    },
+    "restore-PasswordHash": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 0.649
+    },
+    "build-PasswordHash": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 2.3
+    },
+    "restore-ContentRules": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 0.773
+    },
+    "build-ContentRules": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 1.675
+    },
+    "restore-ImageUploadPolicy": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 0.6
+    },
+    "build-ImageUploadPolicy": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 1.455
+    },
+    "checks-ImageUploadPolicy": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 0.07
+    },
+    "restore-Operations": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 0.528
+    },
+    "build-Operations": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 1.335
+    },
+    "checks-Operations": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 2.087
+    },
+    "postgres-http": {
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 52.262
+    }
+  },
+  "remote_workflow_executed": false
+}

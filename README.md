@@ -98,3 +98,15 @@ Gerçek `.env`, cookie ve Data Protection anahtarlarını eklemeyin.
 [Oturum ve geçmiş riski](docs/DEPLOYMENT_SECURITY.md#f54--git-takibi-ve-geçmişteki-oturum-kayıtları)
 Git takibinden çıkarmanın geçmişi temizlemediğini ve gerektiğinde oturum iptalini
 açıklar.
+
+## Otomatik kalite kapısı (F55)
+
+`python3 scripts/verification/run_quality_gate.py --report-dir /tmp/devcore-quality-report`
+temiz build, gerçek advisory taraması ve sentetik PostgreSQL/HTTP kontrollerini
+tek akışta çalıştırır. Gereksinimler, kapsam ve kullanıcı onaylı dar build-time risk istisnası
+[kalite kapısı belgesindedir](docs/KALITE_KAPISI.md); kırmızı sonuç başarı sayılmaz.
+GitHub Actions yapılandırması hazırdır; remote çalıştırma henüz doğrulanmadı.
+
+## Yedek ve yayınlama (F56)
+
+[Prosedür ve izole restore komutu](docs/YEDEK_VE_YAYIN_PROSEDURU.md) DB/medya/anahtar kapsamını, staging sırasını ve önceki binary uyumluluğunu açıklar. Test aracı canlı DB kabul etmez; canlı deploy/restore için ayrı açık yetki gerekir.

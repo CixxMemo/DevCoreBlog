@@ -1,0 +1,8 @@
+{
+  "checks": {
+    "nested_projects_and_tools_not_root_compile": true,
+    "baseline_worktree_clean": true,
+    "no_staged_changes": true
+  },
+  "compile_item_count": 70
+}

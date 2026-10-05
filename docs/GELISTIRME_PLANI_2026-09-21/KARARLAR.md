@@ -540,3 +540,46 @@ analytics/polling ve yeni dependency yoktur. Kimlik ayarları zorunlu kalır.
 retention ve gerçek host’ta henüz ölçülmeyenleri ayırır. Canlı host/log retention
 uygulanmış sayılmaz; sistem genelinde log ayarı/deploy yapılmadı.
 [F53 gerçek DB/driver/HTTP/Chrome kaydı](../uygulama-kayitlari/F53-2026-10-05.md).
+
+## D28 — Tekrarlanabilir ve başarısızlığı gizlemeyen kalite kapısı
+
+Mevcut doğrulanmış SDK10.0.302 exact/disable rollForward ve yerel dotnet-ef10.0.10
+sabitlenir; major/paket yükseltmesi yapılmaz. GitHub remote için read-only, resmi
+actions commit’leri sabitlenmiş workflow hazırlanır; remote başarı iddiası yoktur.
+Temiz kopya/sentetik cluster tek komutla build, transitif audit ve anlamlı HTTP/DB
+kontrollerinden geçer; gerçek env/credential kullanılmaz. Npm/NuGet bulgusu,
+servis/ağ/parse hatası, restore/build/test failure exit1 olur; audit diğer testleri
+çalıştırıp gerçek sonucu raporlamaya engel olmaz. Raw fixture auth/log export’u yok.
+
+İlk çalıştırma braces3.0.3 GHSA-vfj7-8cjw-p6xm nedeniyle kırmızıydı. Kullanıcı
+5 Ekim2026’da önce resmi safe override aramasını, yama yoksa bu spesifik build-time
+advisory’nin gerekçeli istisnasını açıkça yetkilendirdi. Registry latest3.0.3 ve
+advisory <=3.0.3/null patched nedeniyle güvenli override yok; package/lockfile
+uydurma yama veya unsafe downgrade ile değiştirilmedi.
+
+İstisna yalnız GHSA-vfj7-8cjw-p6xm, braces3.0.3/chokidar3.6.0/fast-glob3.3.3/
+micromatch4.0.8/tailwindcss3.4.17 dev-only lock kayıtları ve mevcut root advisory
+graph içindir. Rapor raw finding/exit1’i saklar ve PASS_WITH_ACCEPTED_BUILD_RISK
+üretir. Yeni advisory/package/node/version, runtime dependency, ağ/parse/timeout
+hatası veya 5 Kasım2026 sonrası review tarihi kapıyı bloklar. İstisna paket
+arasındaki genel “high” suppression değildir; açık kapanmış sayılmaz.
+F35 vendor borcu bağımsız kalır.
+[Kalite kapısı](../KALITE_KAPISI.md), [F55 kaydı](../uygulama-kayitlari/F55-2026-10-05.md).
+
+## D29 — Kanıtlı test restore ve kontrollü yayınlama
+
+F56 PostgreSQL custom dump’ı yalnız owned disposable cluster’da yeni boş f56_*
+hedefe restore eder. Data_directory/DB namespace/archive path/checksum ve mevcut
+hedef guard’ları zorunludur; --clean/drop/source overwrite yoktur. Tam row,
+sequence, migration ve kalıcı webhook cevap kıyası yapılır; raw dump/veri export’u
+yoktur. DB medya referanslarını saklar, Cloudinary byte’ı/secret/keyring/global
+role yedeği sayılmaz. Gerçek host/encryption/offsite/retention ayrıca doğrulanır.
+
+Staging build→backup→migration→smoke→trafik sırasını kullanır; başarısız adımda
+trafik/yazılar kapalı kalır. Transaction dışı partial apply ayrıca incelenir;
+otomatik down migration veya uyumsuz eski binary yoktur. Önceki HEAD uygulama
+kodunun restored current schema’da testlenmesi aynı code/schema sınırında
+kanıttır; gelecekteki release veya canlı eski package için otomatik garanti olmaz.
+Key ring normal rollback’te korunur. Canlı deploy/restore ayrı somut plan ve
+açık kullanıcı yetkisi ister; F56 yalnız yerel test ve runbook’tur.
+[Prosedür](../YEDEK_VE_YAYIN_PROSEDURU.md), [F56 kanıtı](../uygulama-kayitlari/F56-2026-10-05.md).
