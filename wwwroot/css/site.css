@@ -438,11 +438,29 @@ html.dark .public-site .text-primary { color: var(--accent); }
   padding: 0.75rem;
 }
 .public-skip-link:focus { transform: translateY(0); }
+.public-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+.public-toolbar .public-search { order: 1; flex: 1 1 100%; }
+.public-sign-in {
+  margin-inline-start: auto;
+  flex-shrink: 0;
+  padding: 0.625rem 0.75rem;
+  border: var(--public-rule);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font: 700 var(--public-copy-size)/1.5 var(--font-mono);
+  text-decoration: none;
+}
+.public-sign-in:hover { border-color: var(--accent); }
 .public-search {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  margin-bottom: 1.5rem;
   min-width: 0;
   font: var(--public-copy-size)/1.5 var(--font-mono);
 }
@@ -458,6 +476,8 @@ html.dark .public-site .text-primary { color: var(--accent); }
 .public-search button:hover { border-color: var(--accent); }
 .public-search-shortcut { display: none; color: var(--text-muted); font-size: var(--public-meta-size); }
 @media (min-width: 768px) {
+  .public-toolbar { flex-wrap: nowrap; }
+  .public-toolbar .public-search { order: 0; flex: 1 1 auto; }
   .public-sidebar, .public-navigation-ready .public-sidebar {
     position: fixed;
     inset: 0 auto 0 0;
