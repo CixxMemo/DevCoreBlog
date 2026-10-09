@@ -115,6 +115,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 // Validation messages identify only the missing key and never include its value.
 var adminUsername = Environment.GetEnvironmentVariable("ADMIN_USERNAME");
 var adminPasswordHash = Environment.GetEnvironmentVariable("ADMIN_PASSWORD_HASH");
+var adminLogin = new AdminLoginOptions(Environment.GetEnvironmentVariable("ADMIN_LOGIN_PATH"));
+builder.Services.AddSingleton(adminLogin);
 var adminSessionVersion = Environment.GetEnvironmentVariable("ADMIN_SESSION_VERSION") ?? "1";
 
 if (string.IsNullOrWhiteSpace(adminSessionVersion) || adminSessionVersion.Length > 128)
@@ -310,7 +312,10 @@ else if (!builder.Environment.IsDevelopment())
 // Validate antiforgery tokens on every unsafe MVC request by default. The inbound
 // secret-auth webhook declares its narrow exception on that action.
 builder.Services.AddControllersWithViews(options =>
-    options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute()));
+{
+    options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute());
+    options.Conventions.Add(new DevCoreBlog.Routing.AdminLoginRouteConvention(adminLogin));
+});
 
 // AJAX callers send the request token in this header. Standard Razor forms keep
 // using the generated __RequestVerificationToken form field.
@@ -408,7 +413,7 @@ builder.Services.AddRateLimiter(options =>
 
         var request = context.HttpContext.Request;
         var isLoginPost = HttpMethods.IsPost(request.Method) &&
-            string.Equals(request.Path.Value, "/Account/Login", StringComparison.OrdinalIgnoreCase);
+            string.Equals(request.Path.Value, adminLogin.Path, StringComparison.OrdinalIgnoreCase);
 
         if (!isLoginPost)
         {
@@ -467,8 +472,8 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.ExpireTimeSpan = adminSessionPolicy.Lifetime;
         options.SlidingExpiration = false;
         options.EventsType = typeof(AdminCookieAuthenticationEvents);
-        options.LoginPath = "/Account/Login";
-        options.AccessDeniedPath = "/Account/Login";
+        options.LoginPath = adminLogin.Path;
+        options.AccessDeniedPath = adminLogin.Path;
     });
 
 // ---------------------------------------------------------------------------

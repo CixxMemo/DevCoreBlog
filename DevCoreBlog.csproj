@@ -5,7 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <!-- Git ignores do not control SDK discovery or publish; exclude private inputs here too. -->
-    <DefaultItemExcludes>$(DefaultItemExcludes);node_modules/**;frontend/**;scripts/frontend/**;.env;.env.*;**/.env;**/.env.*;docs/**;AGENTS.md;.agents/**</DefaultItemExcludes>
+    <DefaultItemExcludes>$(DefaultItemExcludes);node_modules/**;frontend/**;scripts/frontend/**;.env;.env.*;**/.env;**/.env.*;docs/**;.local/devcoreblog_vol1/**;AGENTS.md;.agents/**</DefaultItemExcludes>
   </PropertyGroup>
 
   <ItemGroup>

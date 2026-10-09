@@ -3,7 +3,7 @@ namespace DevCoreBlog.Middlewares;
 /// <summary>Correlates safe application events with a server-assigned request identifier.</summary>
 public sealed class RequestDiagnosticsMiddleware(RequestDelegate next, ILogger<RequestDiagnosticsMiddleware> logger)
 {
-    public async Task InvokeAsync(HttpContext context)
+    public async Task InvokeAsync(HttpContext context, DevCoreBlog.Configuration.AdminLoginOptions login)
     {
         using var scope = logger.BeginScope(new Dictionary<string, object> { ["TraceId"] = context.TraceIdentifier });
         context.Response.OnStarting(() =>
@@ -18,7 +18,7 @@ public sealed class RequestDiagnosticsMiddleware(RequestDelegate next, ILogger<R
             return;
         }
         var area = context.Request.Path.StartsWithSegments("/api/webhooks") ? "Webhook" :
-            context.Request.Path.StartsWithSegments("/Account") ? "Authentication" :
+            context.Request.Path.StartsWithSegments("/Account") || context.Request.Path.Equals(login.Path, StringComparison.OrdinalIgnoreCase) ? "Authentication" :
             context.Request.Path.StartsWithSegments("/AdminPost/UploadEditorImage") ||
             context.Request.Path.StartsWithSegments("/AdminPost/UploadImage") ? "Upload" : null;
         if (area is not null && context.Response.StatusCode >= 400)

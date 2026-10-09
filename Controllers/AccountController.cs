@@ -29,6 +29,7 @@ namespace DevCoreBlog.Controllers
     // ---------------------------------------------------------------------------
     // Handles login/logout for the single admin user.
     // Credentials are supplied through validated environment configuration.
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public class AccountController : Controller
     {
         private const string InvalidCredentialsMessage = "Invalid username or password.";
@@ -65,6 +66,7 @@ namespace DevCoreBlog.Controllers
         // Displays the login form. If the user is already authenticated,
         // redirect them to the admin dashboard instead of showing the form again.
         [HttpGet]
+        [HttpHead]
         public IActionResult Login()
         {
             // Check if the current request is already authenticated
