@@ -90,7 +90,7 @@ try:
             if tool in ('ImageUploadPolicy','Operations'):
                 if run('checks-'+tool,['dotnet',str(source/Path(project).parent/'bin/Debug/net10.0'/('DevCoreBlog.'+tool+'Tool.dll'))],source)[0]: raise RuntimeError('Tool checks failed')
         # Existing runner owns cluster, sockets, synthetic credentials and application cleanup.
-        code,output=run('postgres-http',['sh','scripts/verification/run_f17_visibility.sh'],source,timeout=480,export=False,extra={'DEVCORE_F21_PROBE':'1','DEVCORE_F49_PROBE':'1','DEVCORE_F30_PROBE':'1','DEVCORE_F55_PROBE':'1','DEVCORE_F55_REPORT_DIR':str(report),'DEVCORE_F17_PG_PORT':'55459','DEVCORE_F17_APP_PORT':'15196'})
+        code,output=run('postgres-http',['sh','scripts/verification/run_f17_visibility.sh'],source,timeout=480,export=False,extra={'DEVCORE_F21_PROBE':'1','DEVCORE_F49_PROBE':'1','DEVCORE_F30_PROBE':'1','DEVCORE_F55_PROBE':'1','DEVCORE_F55_REPORT_DIR':str(report),'DEVCORE_VOL1_F01_REPORT_DIR':str(report),'DEVCORE_F17_PG_PORT':'55459','DEVCORE_F17_APP_PORT':'15196'})
         checks={line.split('=')[0]:line.endswith('=true') for line in output.splitlines() if line.endswith(('=true','=false'))}
         (report/'fixture-checks.json').write_text(json.dumps({'checks':checks,'exit_code':code},indent=2)+'\n')
         stages['postgres-http']['passed']=code==0 and bool(checks) and all(checks.values())

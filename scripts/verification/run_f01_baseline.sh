@@ -1,6 +1,10 @@
 #!/bin/sh
 set -eu
 
+# Explicit synthetic configuration shared with the HTTP probes; no real dotenv path.
+export ADMIN_LOGIN_PATH=/fixture-admin/login
+export DEVCORE_TEST_ADMIN_LOGIN_PATH=/fixture-admin/login
+
 # This runner copies the current working tree, starts a temporary PostgreSQL
 # cluster, and uses only synthetic credentials and content.
 task_repo=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
@@ -90,7 +94,7 @@ openssl req -x509 -newkey rsa:2048 -sha256 -nodes -days 1 \
     -out "$task_tls_certificate" >/dev/null 2>&1
 chmod 600 "$task_tls_key" "$task_tls_certificate"
 rsync -a \
-    --exclude .git --exclude .env --exclude bin --exclude obj \
+    --exclude .local --exclude .kilo --exclude .codex --exclude .auth --exclude .git --exclude '.env*' --exclude bin --exclude obj \
     --exclude cookies.txt --exclude .DS_Store \
     "$task_repo/" "$task_source/"
 

@@ -8,7 +8,7 @@ from pathlib import Path
 import re
 import subprocess
 
-from http_probe_support import (cookie_opener, extract_antiforgery_token,
+from http_probe_support import (admin_login_url, admin_login_path, is_private_admin_challenge, request_with_headers, cookie_opener, extract_antiforgery_token,
     has_authentication_cookie, request, submit_login, wait_until_ready)
 
 
@@ -43,6 +43,7 @@ def main():
         SITE_URL='https://blog.example.test', PORTFOLIO_CORS_ORIGIN='https://portfolio.example.test',
         DB_CONNECTION_STRING=f'Host=127.0.0.1;Port={args.database_port};Database=devcoreblog_f01_test;Username={user}',
         ADMIN_USERNAME='f57-admin', ADMIN_PASSWORD_HASH=hashed,
+        ADMIN_LOGIN_PATH=admin_login_path(), DEVCORE_TEST_ADMIN_LOGIN_PATH=admin_login_path(),
         ADMIN_SESSION_VERSION='f57-stable', DATA_PROTECTION_KEYS_PATH=str(keys),
         CLOUDINARY_CLOUD_NAME='f57-cloud', CLOUDINARY_API_KEY='f57-key', CLOUDINARY_API_SECRET='f57-media',
         WEBHOOK_API_SECRET='f17-webhook', Security__WebhookRateLimit__PermitLimit='20',
@@ -81,7 +82,7 @@ def main():
             checks[label + '_startup_fails_closed'] = code != 0 and 'OptionsValidationException' in body and 'ADMIN_' in body
             assert checks[label + '_startup_fails_closed']
             return
-        wait_until_ready(cookie_opener()[0], base + '/Account/Login', 'Admin Sign In', 30)
+        wait_until_ready(cookie_opener()[0], admin_login_url(base), 'Admin Sign In', 30)
         assert process.poll() is None
 
     def probe(label, filename, arguments):
@@ -109,7 +110,7 @@ def main():
         for name, candidate in (('empty', ''), ('wrong', 'wrong')):
             admin, cookies = cookie_opener()
             _, token, status, url, body = submit_login(admin, base, 'f57-admin', candidate)
-            checks[name + '_password_rejected'] = bool(token) and status == 200 and '/Account/Login' in url and 'Invalid username or password.' in body and not has_authentication_cookie(cookies)
+            checks[name + '_password_rejected'] = bool(token) and status == 200 and url == admin_login_url(base) and 'Invalid username or password.' in body and not has_authentication_cookie(cookies)
         start('csrf')
         admin, cookies = cookie_opener()
         _, token, status, url, _ = submit_login(admin, base, 'f57-admin', password)
@@ -122,13 +123,13 @@ def main():
         checks['csrf_invalid_rejected'] = request(admin, base + '/AdminPost/TogglePublish/2001', data={}, headers={'X-CSRF-TOKEN': 'invalid-fixture-token'})[0] == 400
         checks['rejected_logout_keeps_session'] = '/Admin/Dashboard' in request(admin, base + '/Admin/Dashboard')[1]
         anon, jar = cookie_opener()
-        checks['login_missing_csrf_rejected'] = request(anon, base + '/Account/Login', data={'username': 'f57-admin', 'password': password})[0] == 400 and not has_authentication_cookie(jar)
-        checks['anonymous_admin_redirect'] = '/Account/Login' in request(anon, base + '/AdminPost')[1]
+        checks['login_missing_csrf_rejected'] = request(anon, admin_login_url(base), data={'username': 'f57-admin', 'password': password})[0] == 400 and not has_authentication_cookie(jar)
+        checks['anonymous_admin_is_private_404'] = is_private_admin_challenge(request_with_headers(anon, base + '/AdminPost'))
         page = request(admin, base + '/AdminPost/Create')[2]
         valid_token = extract_antiforgery_token(page)
         checks['csrf_valid_reaches_upload_validation'] = request(admin, base + '/AdminPost/UploadEditorImage', data={}, headers={'X-CSRF-TOKEN': valid_token})[0] == 400
         request(admin, base + '/Account/Logout', data={'__RequestVerificationToken': valid_token})
-        checks['valid_logout_ends_session'] = '/Account/Login' in request(admin, base + '/Admin/Dashboard')[1] and not has_authentication_cookie(cookies)
+        checks['valid_logout_ends_session'] = is_private_admin_challenge(request_with_headers(admin, base + '/Admin/Dashboard')) and not has_authentication_cookie(cookies)
         start('rate', {'Security__LoginRateLimit__PermitLimit': '4', 'Security__LoginRateLimit__WindowSeconds': '2'})
         probe('login_rate', 'f06_login_rate_limit_probe.py', ['--permit-limit', '4', '--window-seconds', '2'])
         start('renderer')

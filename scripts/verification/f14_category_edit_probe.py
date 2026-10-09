@@ -11,6 +11,7 @@ import sys
 from dataclasses import dataclass
 
 from http_probe_support import (
+    admin_login_url,
     cookie_opener,
     extract_antiforgery_token,
     extract_hidden_value,
@@ -103,7 +104,7 @@ def main() -> int:
     opener, cookies = cookie_opener()
     wait_until_ready(
         opener,
-        f"{base_url}/Account/Login",
+        admin_login_url(base_url),
         "Admin Sign In",
         args.wait_seconds,
     )

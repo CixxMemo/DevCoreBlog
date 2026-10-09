@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Check information pages on the disposable F17 application only."""
 import json
+from http_probe_support import admin_login_path
 import urllib.request
 import urllib.error
 from html.parser import HTMLParser
@@ -33,7 +34,7 @@ for path in ['/about','/contact']:
     check(path+'_canonical',any(m.get('rel')=='canonical' and m.get('href')=='https://blog.example.test'+path for m in page.metas))
     check(path+'_footer',all(any(a.get('href')==target for a in page.links) for target in ['/about','/contact','/rss.xml']))
     check(path+'_reader_sign_in',any(a.get('href')=='/sign-in' for a in page.links))
-    check(path+'_no_admin_link',all(a.get('href')!='/Account/Login' for a in page.links))
+    check(path+'_no_admin_link',all(a.get('href') not in (admin_login_path(), '/Account/Login') for a in page.links))
     check(path+'_github',any(a.get('href')=='https://github.com/CixxMemo' for a in page.links))
     check(path+'_no_message_form',all(f.get('action')=='/ara' and f.get('method')=='get' for f in page.forms))
     check(path+'_not_article','"@type":"BlogPosting"' not in body)

@@ -5,7 +5,7 @@ import json
 import os
 import re
 from urllib.parse import urljoin
-from http_probe_support import cookie_opener, submit_login, request
+from http_probe_support import admin_login_path, cookie_opener, submit_login, request
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--base-url', required=True)
@@ -18,7 +18,7 @@ checks = {}
 assets = set()
 for path, opener in [('/', visitor), ('/kategori/f01-active', visitor),
                      ('/ara?query=F01', visitor), ('/yazi/f01-markdown-xss', visitor),
-                     ('/Account/Login', visitor), ('/Admin/Dashboard', admin),
+                     (admin_login_path(), visitor), ('/Admin/Dashboard', admin),
                      ('/AdminPost', admin), ('/AdminPost/Create', admin),
                      ('/AdminPost/Edit/2005', admin)]:
     status, _, html = request(opener, base + path)

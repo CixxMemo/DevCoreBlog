@@ -5,7 +5,7 @@ import argparse
 import json
 import subprocess
 
-from http_probe_support import cookie_opener, request, wait_until_ready
+from http_probe_support import admin_login_url, cookie_opener, request, wait_until_ready
 
 
 def send(opener, base_url, payload=None, secret=None, raw=None, content_type="application/json"):
@@ -59,7 +59,7 @@ def main():
     args = parser.parse_args()
     base_url = args.base_url.rstrip("/")
     opener, _ = cookie_opener()
-    wait_until_ready(opener, base_url + "/Account/Login", "Admin Sign In", 30)
+    wait_until_ready(opener, admin_login_url(base_url), "Admin Sign In", 30)
     secret = "f17-webhook"
     valid = {
         "title": "F27 Webhook Contract",

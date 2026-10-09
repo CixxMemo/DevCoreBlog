@@ -2,7 +2,7 @@
 """Exercise real MVC diagnostics only on an owned disposable source/database; never store secrets or cookies."""
 import argparse,base64,getpass,http.client,json,os,socketserver,subprocess,threading,time
 from pathlib import Path
-from http_probe_support import cookie_opener,request_with_headers,submit_login,extract_antiforgery_token,multipart_payload
+from http_probe_support import admin_login_url, admin_login_path, cookie_opener,request_with_headers,submit_login,extract_antiforgery_token,multipart_payload
 p=argparse.ArgumentParser();p.add_argument('--source',type=Path,required=True);p.add_argument('--database-port',type=int,required=True);p.add_argument('--port',type=int,default=15195);p.add_argument('--report',type=Path,required=True);p.add_argument('--hold-for-browser',action='store_true');a=p.parse_args()
 source=a.source.resolve();assert source.name=='source' and (str(source).startswith('/private/tmp/devcoreblog-f17.') or str(source).startswith('/tmp/devcoreblog-f17.')) and not (source/'.git').exists()
 assert a.port!=a.database_port and 1024<a.port<65535
@@ -30,7 +30,7 @@ tmp=source.parent;keys=tmp/'f53-keys';keys.mkdir(exist_ok=True);keys.chmod(0o700
 password='f53-isolated-password';canary='F53_PRIVATE_CANARY_DO_NOT_LOG'
 hashed=subprocess.run(['dotnet','run','--no-build','--project',str(source/'tools/DevCoreBlog.PasswordHashTool'),'--','--stdin'],input=password+'\n',capture_output=True,text=True,check=True).stdout.strip()
 base=f'http://127.0.0.1:{a.port}';connection=f'Host=127.0.0.1;Port={a.database_port};Database=devcoreblog_f01_test;Username={getpass.getuser()}'
-env={**os.environ,'ASPNETCORE_ENVIRONMENT':'Development','DOTNET_ENVIRONMENT':'Development','ASPNETCORE_URLS':base,'SITE_URL':'https://blog.example.test','DATA_PROTECTION_KEYS_PATH':str(keys),'DB_CONNECTION_STRING':connection,'ADMIN_USERNAME':'f53-admin','ADMIN_PASSWORD_HASH':hashed,'ADMIN_SESSION_VERSION':'f53-stable','ADMIN_SESSION_LIFETIME_SECONDS':'1800','CLOUDINARY_CLOUD_NAME':'f53-cloud','CLOUDINARY_API_KEY':canary+'-key','CLOUDINARY_API_SECRET':canary+'-media','WEBHOOK_API_SECRET':canary+'-webhook','Security__LoginRateLimit__PermitLimit':'20','Security__WebhookRateLimit__PermitLimit':'20','Logging__LogLevel__Microsoft.EntityFrameworkCore.Database.Command':'Information','Logging__LogLevel__Npgsql.Command':'Trace'}
+env={**os.environ,'ASPNETCORE_ENVIRONMENT':'Development','DOTNET_ENVIRONMENT':'Development','ASPNETCORE_URLS':base,'SITE_URL':'https://blog.example.test','DATA_PROTECTION_KEYS_PATH':str(keys),'DB_CONNECTION_STRING':connection,'ADMIN_LOGIN_PATH':admin_login_path(),'ADMIN_USERNAME':'f53-admin','ADMIN_PASSWORD_HASH':hashed,'ADMIN_SESSION_VERSION':'f53-stable','ADMIN_SESSION_LIFETIME_SECONDS':'1800','CLOUDINARY_CLOUD_NAME':'f53-cloud','CLOUDINARY_API_KEY':canary+'-key','CLOUDINARY_API_SECRET':canary+'-media','WEBHOOK_API_SECRET':canary+'-webhook','Security__LoginRateLimit__PermitLimit':'20','Security__WebhookRateLimit__PermitLimit':'20','Logging__LogLevel__Microsoft.EntityFrameworkCore.Database.Command':'Information','Logging__LogLevel__Npgsql.Command':'Trace'}
 proc=None;lock_proc=None;streams=[];logs=[];checks={};latencies={};failure_ids={};fault_ids=set()
 def stop():
  global proc
@@ -54,7 +54,7 @@ def start(name,overrides=None):
  raise AssertionError('Owned application did not start')
 def anonymous_has_no_diagnostics():
  c=http.client.HTTPConnection('127.0.0.1',a.port,timeout=5);c.request('GET','/Admin/Dashboard');r=c.getresponse();body=r.read().decode();c.close()
- return r.status==302 and 'database-status' not in body and 'media-status' not in body
+ return r.status==404 and 'no-store' in r.getheader('Cache-Control','') and not r.getheader('Location') and 'database-status' not in body and 'media-status' not in body
 def get_dashboard(admin):
  started=time.monotonic();s,_,b,h=request_with_headers(admin,base+'/Admin/Dashboard',headers={'X-Request-ID':canary})
  return s,b,h,time.monotonic()-started
@@ -83,8 +83,8 @@ try:
  failure_ids['Webhook']=h.get('X-Request-ID')
  s,_,_,h=request_with_headers(anon,base+'/api/webhooks/posts',raw_data=canary.encode(),headers={'Content-Type':'application/json','X-DevCore-Secret':canary+'-webhook'})
  checks['webhook_invalid_body_preserves_400']=s==400
- _,_,login,_=request_with_headers(anon,base+'/Account/Login');login_token=extract_antiforgery_token(login)
- failed_login=request_with_headers(anon,base+'/Account/Login',data={'username':canary+'-username','password':canary+'-password','__RequestVerificationToken':login_token})
+ _,_,login,_=request_with_headers(anon,admin_login_url(base));login_token=extract_antiforgery_token(login)
+ failed_login=request_with_headers(anon,admin_login_url(base),data={'username':canary+'-username','password':canary+'-password','__RequestVerificationToken':login_token})
  failure_ids['Authentication']=failed_login[3].get('X-Request-ID')
  if a.hold_for_browser:
   print('F53_BROWSER_READY '+base,flush=True)

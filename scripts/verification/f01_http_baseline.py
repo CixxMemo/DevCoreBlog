@@ -10,6 +10,7 @@ import re
 import sys
 
 from http_probe_support import (
+    admin_login_url,
     cookie_opener,
     extract_antiforgery_token,
     has_authentication_cookie,
@@ -52,7 +53,7 @@ def probe_rejected_password(
         get_status == 200
         and token is not None
         and status == 200
-        and "/Account/Login" in final_url
+        and final_url == admin_login_url(base_url)
         and "Invalid username or password." in body
         and not has_authentication_cookie(cookies)
     )
@@ -223,8 +224,8 @@ def main() -> int:
         )
     valid_logout_succeeded = (
         logout_status == 200
-        and post_logout_admin_status == 200
-        and "/Account/Login" in post_logout_admin_url
+        and post_logout_admin_status == 404
+        and post_logout_admin_url == f"{base_url}/Admin/Dashboard"
         and not has_authentication_cookie(authenticated_cookies)
     )
 

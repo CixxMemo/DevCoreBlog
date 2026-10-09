@@ -12,6 +12,7 @@ import time
 import urllib.request
 
 from http_probe_support import (
+    admin_login_url,
     AUTHENTICATION_COOKIE_NAME,
     cookie_opener,
     has_authentication_cookie,
@@ -93,7 +94,7 @@ def main() -> int:
     )
     wait_until_ready(
         ready_opener,
-        f"{base_url}/Account/Login",
+        admin_login_url(base_url),
         "Admin Sign In",
         args.wait_seconds,
     )
@@ -161,8 +162,8 @@ def main() -> int:
     elif args.mode == "stale":
         status, final_url, _ = request(opener, f"{base_url}/Admin/Dashboard")
         stale_rejected = (
-            status == 200
-            and "/Account/Login" in final_url
+            status == 404
+            and final_url == f"{base_url}/Admin/Dashboard"
             and not has_authentication_cookie(cookies)
         )
         fresh_opener, fresh_cookies = cookie_opener(
@@ -223,7 +224,7 @@ def main() -> int:
                 midpoint_status == 200 and "/Admin/Dashboard" in midpoint_url
             ),
             "session_expires_at_fixed_boundary_without_sliding_renewal": (
-                expired_status == 200 and "/Account/Login" in expired_url
+                expired_status == 404 and expired_url == f"{base_url}/Admin/Dashboard"
             ),
         }
         statuses = {

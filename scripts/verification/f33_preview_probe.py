@@ -5,7 +5,8 @@ import hashlib
 import json
 import os
 import subprocess
-from http_probe_support import (cookie_opener, submit_login, request, request_with_headers,
+from http_probe_support import (
+    is_private_admin_challenge,cookie_opener, submit_login, request, request_with_headers,
     extract_antiforgery_token, extract_hidden_value, multipart_payload)
 from f01_http_baseline import extract_markdown_content, build_f04_checks
 from f11_optional_thumbnail_probe import post_fields
@@ -44,7 +45,7 @@ checks['no_store_and_no_index'] = ('no-store' in headers.get('Cache-Control', ''
 checks['button_is_native_separate_target_without_changing_save_form'] = ( 'formtarget="_blank"' in create
     and 'formaction="/AdminPost/Preview"' in create and 'formenctype="application/x-www-form-urlencoded"' in create
     and 'rel="noopener"' in create and 'action="/AdminPost/Create"' in create)
-checks['anonymous_preview_is_not_rendered'] = '/Account/Login' in request(visitor, base + '/AdminPost/Preview', data=fields)[1]
+checks['anonymous_preview_is_not_rendered'] = is_private_admin_challenge(request_with_headers(visitor, base + '/AdminPost/Preview', data=fields))
 checks['authenticated_get_cannot_render_input'] = request(admin, base + '/AdminPost/Preview')[0] in (404, 405)
 checks['missing_token_rejected'] = request(admin, base + '/AdminPost/Preview', data={k:v for k,v in fields.items() if k != '__RequestVerificationToken'})[0] == 400
 checks['invalid_token_rejected'] = request(admin, base + '/AdminPost/Preview', data={**fields, '__RequestVerificationToken':'invalid'})[0] == 400

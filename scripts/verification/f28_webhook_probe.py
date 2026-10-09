@@ -5,7 +5,7 @@ import concurrent.futures
 import json
 import subprocess
 import time
-from http_probe_support import cookie_opener, request, wait_until_ready
+from http_probe_support import admin_login_url, cookie_opener, request, wait_until_ready
 
 
 def main():
@@ -42,7 +42,7 @@ def main():
     valid = {'title':'F28 Serial Retry', 'content':'F28 synthetic content', 'categoryId':1001,
              'publishDate':'2020-01-02T03:04:05.1234567Z'}
     opener, _ = cookie_opener()
-    wait_until_ready(opener, args.base_url + '/Account/Login', 'Admin Sign In', 30)
+    wait_until_ready(opener, admin_login_url(args.base_url), 'Admin Sign In', 30)
     if args.mode == 'restart':
         before = sql('SELECT count(*) FROM "Posts";')
         status, body = send('f28-serial', valid)

@@ -17,7 +17,7 @@ fs.mkdirSync(output, { recursive: true });
         });
         const page = await context.newPage();
         const errors = []; page.on('pageerror', error => errors.push(error.name));
-        await page.goto(base + '/Account/Login');
+        await page.goto(base + (process.env.DEVCORE_TEST_ADMIN_LOGIN_PATH || '/fixture-admin/login'));
         await page.locator('#username').fill(process.env.DEVCORE_TEST_ADMIN_USERNAME || 'f53-admin');
         await page.locator('#password').fill(process.env.DEVCORE_TEST_ADMIN_PASSWORD || 'f53-isolated-password');
         await page.getByRole('button', { name: 'Sign In', exact: true }).click();

@@ -11,6 +11,7 @@ import subprocess
 import sys
 
 from http_probe_support import (
+    admin_login_url,
     cookie_opener,
     extract_antiforgery_token,
     extract_hidden_value,
@@ -102,7 +103,7 @@ def main() -> int:
 
     base_url = args.base_url.rstrip("/")
     opener, cookies = cookie_opener()
-    wait_until_ready(opener, f"{base_url}/Account/Login", "Admin Sign In", 30)
+    wait_until_ready(opener, admin_login_url(base_url), "Admin Sign In", 30)
     _, token, status, url, _ = submit_login(
         opener, base_url, os.environ.get("DEVCORE_TEST_ADMIN_USERNAME", ""), password,
     )

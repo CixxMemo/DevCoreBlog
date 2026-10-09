@@ -1,6 +1,10 @@
 #!/bin/sh
 set -eu
 
+# Explicit synthetic configuration shared with the HTTP probes; no real dotenv path.
+export ADMIN_LOGIN_PATH=/fixture-admin/login
+export DEVCORE_TEST_ADMIN_LOGIN_PATH=/fixture-admin/login
+
 # Exercise the real migration chain and HTTP creates in disposable databases.
 task_repo=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 task_tmp=$(mktemp -d /tmp/devcoreblog-f20.XXXXXX)
@@ -41,7 +45,9 @@ pg_isready -h 127.0.0.1 -p "$task_pg_port" >/dev/null 2>&1 && {
 }
 
 mkdir -p "$task_source" "$task_socket"
-rsync -a --exclude .git --exclude '.env*' --exclude bin --exclude obj \
+mkdir -m 700 "$task_tmp/keys"
+export DATA_PROTECTION_KEYS_PATH="$task_tmp/keys"
+rsync -a --exclude .local --exclude .kilo --exclude .codex --exclude .auth --exclude .git --exclude '.env*' --exclude bin --exclude obj \
     --exclude cookies.txt --exclude .DS_Store "$task_repo/" "$task_source/"
 for task_project in . DevCoreBlog.Core DevCoreBlog.Data DevCoreBlog.Services \
     tools/DevCoreBlog.PasswordHashTool; do

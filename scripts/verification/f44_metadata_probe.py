@@ -9,7 +9,7 @@ from pathlib import Path
 import shlex
 import subprocess
 import urllib.parse
-from http_probe_support import cookie_opener, request, request_with_headers, submit_login, extract_antiforgery_token, extract_hidden_value
+from http_probe_support import admin_login_path, cookie_opener, request, request_with_headers, submit_login, extract_antiforgery_token, extract_hidden_value
 parser=argparse.ArgumentParser()
 parser.add_argument('--fixture-root',required=True)
 a=parser.parse_args()
@@ -84,7 +84,7 @@ check('search_no_article_schema',not h.schemas())
 spoof={'Host':'attacker.example.test','X-Forwarded-Host':'forwarded.example.test','X-Forwarded-Proto':'http'}
 _,h,_,_=get('/post/f44-malicious',spoof)
 check('spoof_cannot_change_canonical_OG_schema',h.canonical==['https://blog.example.test/post/f44-malicious'] and h.meta['og:url']==h.canonical and h.schemas()[0]['url']==h.canonical[0])
-_,h,_,_=get('/Account/Login')
+_,h,_,_=get(admin_login_path())
 check('login_noindex_single_canonical',h.meta.get('robots')==['noindex, nofollow, noarchive'] and len(h.canonical)==1)
 admin,_=cookie_opener();_,_,status,url,_=submit_login(admin,base,'f17-admin',os.environ['DEVCORE_TEST_ADMIN_PASSWORD'])
 check('admin_login_success',status==200 and '/Admin/Dashboard' in url)

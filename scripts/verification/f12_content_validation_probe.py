@@ -9,6 +9,7 @@ import os
 import sys
 
 from http_probe_support import (
+    admin_login_url,
     cookie_opener,
     extract_antiforgery_token,
     has_authentication_cookie,
@@ -74,7 +75,7 @@ def main() -> int:
     opener, cookies = cookie_opener()
     wait_until_ready(
         opener,
-        f"{base_url}/Account/Login",
+        admin_login_url(base_url),
         "Admin Sign In",
         args.wait_seconds,
     )

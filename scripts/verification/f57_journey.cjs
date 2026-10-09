@@ -39,7 +39,7 @@ let browser;
         await page.waitForURL('**/AdminPost*');
         await page.locator('#posts-table-body').waitFor();
     }
-    await page.goto(base + '/Account/Login');
+    await page.goto(base + (process.env.DEVCORE_TEST_ADMIN_LOGIN_PATH || '/fixture-admin/login'));
     await page.locator('#username').fill('f17-admin');
     await page.locator('#password').fill('f17-isolated-password');
     await page.getByRole('button', { name: 'Sign In', exact: true }).click();

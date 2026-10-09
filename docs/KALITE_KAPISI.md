@@ -36,6 +36,22 @@ SDK item keşfi ve gerçek publish çıktısı denetlenir; gerçek `.env` okunma
 Uygulama DLL'leri, appsettings ve lisanslı frontend varlıkları korunmalıdır.
 Güncel varsayılan kapı24, `--final-acceptance` kapısı26 aşamadır.
 
+Yönetici rotası fixture'larda açıkça `/fixture-admin/login` olarak atanır;
+HTTP yardımcıları `DEVCORE_TEST_ADMIN_LOGIN_PATH` değerini kullanır. Gerçek
+`ADMIN_LOGIN_PATH` veya dotenv okunmaz. `postgres-http` içinde
+`f01_admin_boundary_probe.py`, yapılandırılmış GET/HEAD/POST, eski adreslerin
+kapalı olması, anonim challenge için404/no-store ve Location bulunmaması,
+CSRF, logout ve geçersiz/eksik rota config'inin fail-closed davranışını ölçer.
+Ek vakalar için fixture login bütçesi20'dir; rate-limit kabulü ayrı süreçte
+ölçülür. Keyring owned geçici dizindedir; kaynak kopyasına `.local`, `.kilo`,
+`.codex` ve `.auth` girmez. Test dosyalarındaki eski Fxx adları tarihsel kimliklerdir.
+
+`f01_admin_browser_probe.cjs` ayrı gerçek Chrome kontrolüdür: public okuyucu
+linki, masaüstü/mobil giriş, klavyeyle giriş/çıkış ve CSP. Mevcut
+`f57_journey.cjs` aynı sentetik rotayla editör kabulünü sürdürür. Playwright modülü,
+Chrome executable, loopback base URL ve boş rapor dizini dışarıdan belirtilir;
+bu browser kontrolleri kalite kapısının otomatik aşamaları değildir.
+
 Audit dışında build/restore NuGetAudit=false kullanır: bu güvenlik sertifikası
 değildir; dört ayrı gerçek audit başarısızsa kapı başarısızdır. Kullanıcının aşağıda kabul ettiği tek build-time istisnası dışındaki vulnerability veya
 advisory erişim/parse hatası başarıya çevrilmez; başarısız audit diğer kontrollerin
@@ -94,6 +110,16 @@ veya kapının bağımsız başarı kontrolü yerine kullanmak değildir.
 Branch protection/required check veya remote repository settings değiştirilmedi.
 
 ## Açık kalan bağımlılık bulgusu
+
+9 Ekim2026 yeniden taramasında kilitli `postcss-selector-parser6.1.4` için
+[GHSA-rj75-hqrm-r3gf](https://github.com/advisories/GHSA-rj75-hqrm-r3gf)
+bulgusu da görüldü; `postcss-nested6.2.0` ve Tailwind zincirine taşınıyor.
+Resmî kayıt <7.1.6 aralığını etkilenen,7.1.6'yı yamalı gösteriyor. Bu repository'de
+paket trusted frontend kaynaklarını build sırasında işliyor; publish'te Node
+runtime değildir. Bu kapsam gözlemi önceki dar istisnayı genişletmez:
+`npm_audit_policy.py` yeni advisory'yi reddeder ve genel kapı **FAIL** kalır.
+Bağımlılık bakımı ayrı iştir; paket/lockfile ve istisna politikası bu rota
+fixture düzeltmesinde değiştirilmedi. Eski yeşil sonuçlar güncel audit kabulü değildir.
 
 5 Ekim2026 npm audit, Tailwind3.4.17 build zincirindeki braces3.0.3 için
 [GHSA-vfj7-8cjw-p6xm / CVE-2026-93687](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm)

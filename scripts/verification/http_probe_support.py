@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import html
 import http.cookiejar
+import os
 import re
 import secrets
 import ssl
@@ -14,6 +15,26 @@ import urllib.request
 
 
 AUTHENTICATION_COOKIE_NAME = "DevCoreBlog.Admin"
+
+
+def admin_login_path() -> str:
+    """Use a synthetic fixture path, never discover or read the real admin configuration."""
+    path = os.environ.get("DEVCORE_TEST_ADMIN_LOGIN_PATH", "/fixture-admin/login")
+    if len(path) > 160 or not re.fullmatch(r"/[A-Za-z0-9_-]+(?:/[A-Za-z0-9_-]+)?", path):
+        raise ValueError("Expected a bounded local fixture login path.")
+    return path
+
+
+def admin_login_url(base_url: str) -> str:
+    return base_url.rstrip("/") + admin_login_path()
+
+
+def is_private_admin_challenge(response) -> bool:
+    """Check denial status and privacy headers without following an admin login redirect."""
+    status, _, body, headers = response
+    lowered = {name.casefold(): value for name, value in headers.items()}
+    return (status == 404 and "no-store" in lowered.get("cache-control", "")
+            and "location" not in lowered and admin_login_path() not in body)
 
 
 def cookie_opener(*, allow_untrusted_https: bool = False):
@@ -181,7 +202,7 @@ def submit_login(
     *,
     include_password: bool = True,
 ):
-    get_status, token, _ = get_antiforgery_token(opener, f"{base_url}/Account/Login")
+    get_status, token, _ = get_antiforgery_token(opener, admin_login_url(base_url))
     form_data = {
         "username": username,
         "__RequestVerificationToken": token or "",
@@ -191,7 +212,7 @@ def submit_login(
 
     status, final_url, body = request(
         opener,
-        f"{base_url}/Account/Login",
+        admin_login_url(base_url),
         data=form_data,
     )
     return get_status, token, status, final_url, body

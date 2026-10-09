@@ -10,6 +10,7 @@ import sys
 import time
 
 from http_probe_support import (
+    admin_login_url,
     cookie_opener,
     get_antiforgery_token,
     has_authentication_cookie,
@@ -38,11 +39,11 @@ def post_login(
 ):
     get_status, token, _ = get_antiforgery_token(
         opener,
-        f"{base_url}/Account/Login",
+        admin_login_url(base_url),
     )
     status, final_url, body, response_headers = request_with_headers(
         opener,
-        f"{base_url}/Account/Login",
+        admin_login_url(base_url),
         data={
             "username": username,
             "password": password,
@@ -137,7 +138,7 @@ def main() -> int:
     )
     login_get_status, _, login_get_body = request(
         opener,
-        f"{base_url}/Account/Login",
+        admin_login_url(base_url),
     )
 
     time.sleep(max(args.window_seconds, retry_after_seconds) + 0.5)

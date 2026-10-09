@@ -9,6 +9,7 @@ import os
 import sys
 
 from http_probe_support import (
+    admin_login_url,
     cookie_opener,
     extract_antiforgery_token,
     get_antiforgery_token,
@@ -27,15 +28,15 @@ def probe_login_token_rejections(
     tokenless_opener, tokenless_cookies = cookie_opener()
     tokenless_status, _, _ = request(
         tokenless_opener,
-        f"{base_url}/Account/Login",
+        admin_login_url(base_url),
         data={"username": username, "password": password},
     )
 
     invalid_opener, invalid_cookies = cookie_opener()
-    get_antiforgery_token(invalid_opener, f"{base_url}/Account/Login")
+    get_antiforgery_token(invalid_opener, admin_login_url(base_url))
     invalid_status, _, _ = request(
         invalid_opener,
-        f"{base_url}/Account/Login",
+        admin_login_url(base_url),
         data={
             "username": username,
             "password": password,
@@ -237,8 +238,8 @@ def probe_authenticated_flow(
     )
     valid_logout = (
         logout_status == 200
-        and post_logout_status == 200
-        and "/Account/Login" in post_logout_url
+        and post_logout_status == 404
+        and post_logout_url == f"{base_url}/Admin/Dashboard"
         and not has_authentication_cookie(cookies)
     )
 
@@ -316,8 +317,7 @@ def main() -> int:
         **login_checks,
         **flow_checks,
         "anonymous_write_is_rejected": (
-            anonymous_status in {400, 401, 403}
-            or "/Account/Login" in anonymous_url
+            anonymous_status == 404
         ),
     }
     result = {

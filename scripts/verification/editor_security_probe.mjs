@@ -77,7 +77,7 @@ try {
     page.on('console', message => {
         if (message.type() === 'error' && !message.text().includes('Failed to load resource:')) consoleErrors.push(message.text().slice(0, 160));
     });
-    await page.goto(base + '/Account/Login');
+    await page.goto(base + (process.env.DEVCORE_TEST_ADMIN_LOGIN_PATH || '/fixture-admin/login'));
     await page.locator('#username').fill('f17-admin');
     await page.locator('#password').fill('f17-isolated-password');
     await page.getByRole('button', { name: 'Sign In', exact: true }).click();

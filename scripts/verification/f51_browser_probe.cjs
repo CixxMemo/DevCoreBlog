@@ -76,7 +76,7 @@ let browser;
         await audit(page, route);
         return response;
     }
-    for (const route of ['/', '/category/f01-active', '/ara?query=F01', '/about', '/contact', '/Account/Login']) await visit(route);
+    for (const route of ['/', '/category/f01-active', '/ara?query=F01', '/about', '/contact', (process.env.DEVCORE_TEST_ADMIN_LOGIN_PATH || '/fixture-admin/login')]) await visit(route);
     await visit('/does-not-exist', 404);
     await visit('/');
     const darkBefore = await page.locator('html').evaluate(e => e.classList.contains('dark'));
@@ -105,7 +105,7 @@ let browser;
     checks.article_no_script_execution = !await page.evaluate(() => window.__f04RawHtmlXss || window.__f04AttributeXss);
     await audit(page, 'article code/YouTube');
     await page.screenshot({ path: path.join(output, 'article-desktop.png') });
-    await visit('/Account/Login');
+    await visit((process.env.DEVCORE_TEST_ADMIN_LOGIN_PATH || '/fixture-admin/login'));
     await page.locator('#username').fill(process.env.DEVCORE_TEST_ADMIN_USERNAME || 'f17-admin');
     await page.locator('#password').fill(process.env.DEVCORE_TEST_ADMIN_PASSWORD || 'f17-isolated-password');
     await page.getByRole('button', { name: 'Sign In', exact: true }).click();

@@ -1,6 +1,10 @@
 #!/bin/sh
 set -eu
 
+# Explicit synthetic configuration shared with the HTTP probes; no real dotenv path.
+export ADMIN_LOGIN_PATH=/fixture-admin/login
+export DEVCORE_TEST_ADMIN_LOGIN_PATH=/fixture-admin/login
+
 # Run F17 checks only against a disposable PostgreSQL cluster and source copy.
 task_repo=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 task_tmp=$(mktemp -d /tmp/devcoreblog-f17.XXXXXX)
@@ -14,6 +18,11 @@ task_db=devcoreblog_f01_test
 task_admin_password=f17-isolated-password
 task_ef_command_log_level=Warning
 task_webhook_rate_limit=5
+task_login_rate_limit=5
+if [ -n "${DEVCORE_VOL1_F01_REPORT_DIR:-}" ]; then
+    # Privacy/CSRF cases share this fixture; rate-limit acceptance has its own fresh process.
+    task_login_rate_limit=20
+fi
 if [ "${DEVCORE_F25_PROBE:-0}" = 1 ] || [ "${DEVCORE_F29_PROBE:-0}" = 1 ]; then
     task_ef_command_log_level=Information
 fi
@@ -56,7 +65,9 @@ pg_isready -h 127.0.0.1 -p "$task_pg_port" >/dev/null 2>&1 && {
 }
 
 mkdir -p "$task_source" "$task_socket"
-rsync -a --exclude .git --exclude '.env*' --exclude bin --exclude obj \
+mkdir -m 700 "$task_tmp/keys"
+export DATA_PROTECTION_KEYS_PATH="$task_tmp/keys"
+rsync -a --exclude .local --exclude .kilo --exclude .codex --exclude .auth --exclude .git --exclude '.env*' --exclude bin --exclude obj \
     --exclude cookies.txt --exclude .DS_Store \
     "$task_repo/" "$task_source/"
 for task_project in . DevCoreBlog.Core DevCoreBlog.Data DevCoreBlog.Services \
@@ -269,6 +280,7 @@ start_app() {
         WEBHOOK_API_SECRET="${DEVCORE_F27_WEBHOOK_SECRET-f17-webhook}" \
         ALLOW_WEBHOOK_PUBLISH="${DEVCORE_F27_ALLOW_PUBLISH:-false}" \
         Security__WebhookRateLimit__PermitLimit="$task_webhook_rate_limit" \
+        Security__LoginRateLimit__PermitLimit="$task_login_rate_limit" \
         "Logging__LogLevel__Microsoft.EntityFrameworkCore.Database.Command=$task_ef_command_log_level" \
         dotnet run --no-build --project DevCoreBlog.csproj \
         --urls "http://127.0.0.1:$task_app_port" > "$task_tmp/application.log" 2>&1
@@ -281,6 +293,15 @@ DEVCORE_TEST_ADMIN_USERNAME=f17-admin \
 DEVCORE_TEST_ADMIN_PASSWORD="$task_admin_password" \
 python3 "$task_source/scripts/verification/f17_visibility_probe.py" \
     --base-url "http://127.0.0.1:$task_app_port"
+
+if [ -n "${DEVCORE_VOL1_F01_REPORT_DIR:-}" ]; then
+    DEVCORE_TEST_ADMIN_USERNAME=f17-admin \
+    DEVCORE_TEST_ADMIN_PASSWORD="$task_admin_password" \
+    python3 "$task_source/scripts/verification/f01_admin_boundary_probe.py" \
+        --source "$task_source" --database-port "$task_pg_port" \
+        --base-url "http://127.0.0.1:$task_app_port" \
+        --report "$DEVCORE_VOL1_F01_REPORT_DIR/admin-boundary.json"
+fi
 
 if [ "${DEVCORE_F26_PROBE:-0}" = 1 ]; then
     python3 "$task_source/scripts/verification/f26_renderer_probe.py" \

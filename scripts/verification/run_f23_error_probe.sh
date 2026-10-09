@@ -1,6 +1,10 @@
 #!/bin/sh
 set -eu
 
+# Explicit synthetic configuration shared with the HTTP probes; no real dotenv path.
+export ADMIN_LOGIN_PATH=/fixture-admin/login
+export DEVCORE_TEST_ADMIN_LOGIN_PATH=/fixture-admin/login
+
 task_repo=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 task_tmp=$(mktemp -d /tmp/devcoreblog-f23.XXXXXX)
 task_source="$task_tmp/source"
@@ -24,7 +28,7 @@ trap cleanup EXIT INT TERM
 
 mkdir -p "$task_source"
 mkdir -m 700 "$task_tmp/keys"
-rsync -a --exclude .git --exclude '.env*' --exclude bin --exclude obj \
+rsync -a --exclude .local --exclude .kilo --exclude .codex --exclude .auth --exclude .git --exclude '.env*' --exclude bin --exclude obj \
     "$task_repo/" "$task_source/"
 for task_project in . DevCoreBlog.Core DevCoreBlog.Data DevCoreBlog.Services tools/DevCoreBlog.PasswordHashTool; do
     if [ -d "$task_repo/$task_project/obj" ]; then

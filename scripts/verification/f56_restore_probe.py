@@ -2,7 +2,7 @@
 """Prove backup/restore and previous-code compatibility only in a disposable cluster."""
 import argparse,getpass,hashlib,json,os,shutil,subprocess,time,urllib.request
 from pathlib import Path
-from http_probe_support import cookie_opener,submit_login,request_with_headers
+from http_probe_support import admin_login_path,cookie_opener,submit_login,request_with_headers
 p=argparse.ArgumentParser();p.add_argument('--source',type=Path,required=True);p.add_argument('--database-port',type=int,required=True);p.add_argument('--report',type=Path,required=True);a=p.parse_args()
 source=a.source.resolve();root=source.parent
 assert source.name=='source' and root.parent in (Path('/tmp'),Path('/private/tmp')) and root.name.startswith('devcoreblog-f17.') and not (source/'.git').exists()
@@ -67,7 +67,7 @@ checks['previous_committed_binary_built']=True
 password='f56-isolated-password';hashed=subprocess.run(['dotnet','run','--no-build','--project',str(source/'tools/DevCoreBlog.PasswordHashTool'),'--','--stdin'],input=password+'\n',env=env,capture_output=True,text=True,check=True).stdout.strip()
 keys=root/'f56-keys';keys.mkdir(mode=0o700)
 baseurl='http://127.0.0.1:15197';connection=f'Host=127.0.0.1;Port={a.database_port};Database={restored};Username={getpass.getuser()}'
-appenv={**env,'ASPNETCORE_ENVIRONMENT':'Development','DOTNET_ENVIRONMENT':'Development','ASPNETCORE_URLS':baseurl,'SITE_URL':'https://blog.example.test','DB_CONNECTION_STRING':connection,'ADMIN_USERNAME':'f56-admin','ADMIN_PASSWORD_HASH':hashed,'DATA_PROTECTION_KEYS_PATH':str(keys),'ADMIN_SESSION_VERSION':'f56-stable'}
+appenv={**env,'ASPNETCORE_ENVIRONMENT':'Development','DOTNET_ENVIRONMENT':'Development','ASPNETCORE_URLS':baseurl,'SITE_URL':'https://blog.example.test','DB_CONNECTION_STRING':connection,'ADMIN_LOGIN_PATH':admin_login_path(),'ADMIN_USERNAME':'f56-admin','ADMIN_PASSWORD_HASH':hashed,'DATA_PROTECTION_KEYS_PATH':str(keys),'ADMIN_SESSION_VERSION':'f56-stable'}
 def stop():
  global proc
  if proc:

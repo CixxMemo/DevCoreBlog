@@ -4,7 +4,7 @@ import argparse, getpass, http.client, json, os, ssl, subprocess, threading, tim
 from http.cookies import SimpleCookie
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from http_probe_support import extract_antiforgery_token
+from http_probe_support import admin_login_path, extract_antiforgery_token
 p=argparse.ArgumentParser()
 p.add_argument('--security-headers', action='store_true', help='Run F52 header acceptance, including stopping the owned fixture database')
 p.add_argument('--source',type=Path,required=True)
@@ -28,7 +28,7 @@ env={**os.environ,'ASPNETCORE_ENVIRONMENT':'Production','DOTNET_ENVIRONMENT':'Pr
     'DEPLOYMENT_PROFILE':'nginx-loopback','ASPNETCORE_URLS':f'http://127.0.0.1:{a.backend_port}',
     'SITE_URL':'https://blog.example.test','DATA_PROTECTION_KEYS_PATH':str(keys),
     'DB_CONNECTION_STRING':f'Host=127.0.0.1;Port={a.database_port};Database=devcoreblog_f01_test;Username={getpass.getuser()}',
-    'ADMIN_USERNAME':'f50-admin','ADMIN_PASSWORD_HASH':hash_result,'ADMIN_SESSION_VERSION':'f50-1',
+    'ADMIN_LOGIN_PATH':admin_login_path(),'ADMIN_USERNAME':'f50-admin','ADMIN_PASSWORD_HASH':hash_result,'ADMIN_SESSION_VERSION':'f50-1',
     'ADMIN_SESSION_LIFETIME_SECONDS':'1800','CLOUDINARY_CLOUD_NAME':'f50-test','CLOUDINARY_API_KEY':'f50-placeholder',
     'CLOUDINARY_API_SECRET':'f50-placeholder','WEBHOOK_API_SECRET':'f50-placeholder',
     'Security__LoginRateLimit__PermitLimit':'3','Security__LoginRateLimit__WindowSeconds':'300',
@@ -42,7 +42,7 @@ def start(overrides=None):
     for _ in range(150):
         if proc.poll() is not None: raise RuntimeError('Production fixture exited before ready')
         try:
-            c=http.client.HTTPConnection('127.0.0.1',a.backend_port,timeout=1);c.request('GET','/Account/Login',headers={'Host':'blog.example.test'});r=c.getresponse();r.read();c.close()
+            c=http.client.HTTPConnection('127.0.0.1',a.backend_port,timeout=1);c.request('GET',admin_login_path(),headers={'Host':'blog.example.test'});r=c.getresponse();r.read();c.close()
             if r.status==308:return
         except OSError:pass
         time.sleep(.1)
@@ -77,7 +77,7 @@ ctx=ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER);ctx.load_cert_chain(cert,key)
 client_ctx=ssl.create_default_context(cafile=str(cert))
 class Client:
     def __init__(self,port=None):self.port=port or a.proxy_port;self.cookies={}
-    def call(self,path='/Account/Login',fields=None,headers=None,method=None):
+    def call(self,path=admin_login_path(),fields=None,headers=None,method=None):
         h={'Host':'blog.example.test',**(headers or {})}
         if self.cookies:h['Cookie']='; '.join(k+'='+v for k,v in self.cookies.items())
         data=urllib.parse.urlencode(fields).encode() if fields is not None else None
@@ -101,10 +101,10 @@ try:
     checks['trusted_https_proxy_has_no_redirect_loop']=status==200 and 'Admin Sign In' in body
     checks['production_hsts_on_forwarded_https']='max-age=2592000' in headers.get('strict-transport-security','')
     if a.security_headers:
-        for route in ['/Account/Login', '/does-not-exist-f52', '/js/public-theme.js', '/rss.xml']:
+        for route in [admin_login_path(), '/does-not-exist-f52', '/js/public-theme.js', '/rss.xml']:
             s,h,b,c=Client().call(route)
             checks[route + '_production_security_headers'] = h.get('x-content-type-options') == 'nosniff' and h.get('referrer-policy') == 'strict-origin-when-cross-origin' and h.get('x-frame-options') == 'DENY'
-            html = route in ('/Account/Login', '/does-not-exist-f52')
+            html = route in (admin_login_path(), '/does-not-exist-f52')
             checks[route + '_production_csp_scope'] = bool(h.get('content-security-policy')) == html and 'content-security-policy-report-only' not in h
     checks['antiforgery_cookie_is_secure_httponly']=any('Antiforgery' in c and '; secure' in c.lower() and '; httponly' in c.lower() for c in cookies)
     token=extract_antiforgery_token(body);assert token
@@ -116,11 +116,11 @@ try:
     checks['admin_cookie_secure_httponly_lax_session']=bool(auth) and all('; secure' in c.lower() and '; httponly' in c.lower() and 'samesite=lax' in c.lower() and 'expires=' not in c.lower() for c in auth)
     checks['protected_admin_loads_through_tls_proxy']=admin.call('/AdminPost')[0]==200
     checks['logout_without_csrf_stays_400']=admin.call('/Account/Logout',fields={})[0]==400
-    anon=Client();s,h,b,c=anon.call('/AdminPost');checks['authorization_redirect_uses_public_https_host']=s==302 and h.get('location','').startswith('https://blog.example.test/Account/Login')
+    anon=Client();s,h,b,c=anon.call('/AdminPost');checks['authorization_denial_is_private_404']=s==404 and 'no-store' in h.get('cache-control','') and 'location' not in h and admin_login_path() not in b
     s,h,b,c=anon.call('/rss.xml',headers={'X-Forwarded-Host':'evil.example'});checks['public_document_keeps_trusted_site_origin']=s==200 and 'https://blog.example.test/' in b and 'evil.example' not in b
     checks['unknown_host_rejected_even_with_wildcard_config']=Client().call(headers={'Host':'evil.example'})[0]==400
-    c=http.client.HTTPConnection('127.0.0.1',a.backend_port,timeout=5);c.request('GET','/Account/Login?returnUrl=%2FAdminPost',headers={'Host':'blog.example.test'});r=c.getresponse();location=r.getheader('Location','');r.read();c.close()
-    checks['backend_http_redirect_is_single_public_https_308']=r.status==308 and location=='https://blog.example.test/Account/Login?returnUrl=%2FAdminPost'
+    c=http.client.HTTPConnection('127.0.0.1',a.backend_port,timeout=5);c.request('GET',admin_login_path() + '?returnUrl=%2FAdminPost',headers={'Host':'blog.example.test'});r=c.getresponse();location=r.getheader('Location','');r.read();c.close()
+    checks['backend_http_redirect_is_single_public_https_308']=r.status==308 and location=='https://blog.example.test' + admin_login_path() + '?returnUrl=%2FAdminPost'
     attacker=Client();s,h,b,c=attacker.call();t=extract_antiforgery_token(b);assert t
     statuses=[]
     for ip in ['203.0.113.1','203.0.113.2','203.0.113.3']:
@@ -131,12 +131,12 @@ try:
     stop();start()
     checks['same_persisted_keys_and_stamp_keep_session_after_restart']=admin.call('/AdminPost')[0]==200
     stop();start({'ADMIN_SESSION_VERSION':'f50-2'})
-    checks['stamp_change_rejects_old_session']=admin.call('/AdminPost')[0]==302
+    checks['stamp_change_rejects_old_session']=admin.call('/AdminPost')[0]==404
     stop();start({'ADMIN_SESSION_VERSION':'f50-2','ADMIN_SESSION_LIFETIME_SECONDS':'1'})
     expiry=Client();s,h,b,c=expiry.call();t=extract_antiforgery_token(b);assert t
     s,h,b,c=expiry.call(fields={'username':'f50-admin','password':password,'__RequestVerificationToken':t});assert s==302
     time.sleep(2)
-    checks['session_expires_without_sliding_renewal']=expiry.call('/AdminPost')[0]==302
+    checks['session_expires_without_sliding_renewal']=expiry.call('/AdminPost')[0]==404
     if a.security_headers:
         subprocess.run(['pg_ctl', '-D', str(tmp/'postgres'), '-m', 'fast', '-w', 'stop'], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         s,h,b,c=Client().call('/post/f01-markdown-xss')
