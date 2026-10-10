@@ -2,6 +2,7 @@ using DevCoreBlog.Core.Documents;
 using DevCoreBlog.Core.Entities;
 using DevCoreBlog.Core.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using System.Data.Common;
 
 namespace DevCoreBlog.Data.Repositories;
 
@@ -18,24 +19,35 @@ public sealed class EditorPostRepository(ApplicationDbContext context, IPostRepo
             ThumbnailWidth = p.ThumbnailWidth, ThumbnailHeight = p.ThumbnailHeight, ThumbnailAlt = p.ThumbnailAlt
         }).SingleOrDefaultAsync(cancellationToken);
 
-    public Task<bool> TryCreateAsync(Post post, CancellationToken cancellationToken) =>
-        posts.TryCreateWithSlugAsync(post, cancellationToken);
+    public async Task<bool> TryCreateAsync(Post post, CancellationToken cancellationToken)
+    {
+        try { return await posts.TryCreateWithSlugAsync(post, cancellationToken); }
+        catch (Exception exception) when (exception is DbUpdateException or DbException)
+        {
+            context.Entry(post).State = EntityState.Detached;
+            throw new EditorPostStorageException();
+        }
+    }
 
     public async Task<bool> TryUpdateAsync(Post post, long expectedVersion, CancellationToken cancellationToken)
     {
         if (post.Id <= 0 || expectedVersion <= 0 || expectedVersion == long.MaxValue)
             throw new ArgumentOutOfRangeException(nameof(expectedVersion));
         // Never overwrite legacy content, ownership, slug, creation time or the independently updated counter.
-        var affected = await context.Posts.Where(p => p.Id == post.Id && p.EditVersion == expectedVersion && p.DocumentVersion == 1)
-            .ExecuteUpdateAsync(s => s
-                .SetProperty(p => p.Title, post.Title).SetProperty(p => p.Summary, post.Summary)
-                .SetProperty(p => p.Excerpt, post.Excerpt).SetProperty(p => p.CategoryId, post.CategoryId)
-                .SetProperty(p => p.IsActive, post.IsActive).SetProperty(p => p.IsPublished, post.IsPublished)
-                .SetProperty(p => p.PublishDate, post.PublishDate).SetProperty(p => p.ThumbnailAlt, post.ThumbnailAlt)
-                .SetProperty(p => p.DocumentVersion, post.DocumentVersion).SetProperty(p => p.DocumentJson, post.DocumentJson)
-                .SetProperty(p => p.DocumentPlainText, post.DocumentPlainText).SetProperty(p => p.DocumentWordCount, post.DocumentWordCount)
-                .SetProperty(p => p.DocumentReadingMinutes, post.DocumentReadingMinutes)
-                .SetProperty(p => p.UpdatedDate, post.UpdatedDate).SetProperty(p => p.EditVersion, expectedVersion + 1), cancellationToken);
-        return affected == 1;
+        try
+        {
+            var affected = await context.Posts.Where(p => p.Id == post.Id && p.EditVersion == expectedVersion && p.DocumentVersion == 1)
+                .ExecuteUpdateAsync(s => s
+                    .SetProperty(p => p.Title, post.Title).SetProperty(p => p.Summary, post.Summary)
+                    .SetProperty(p => p.Excerpt, post.Excerpt).SetProperty(p => p.CategoryId, post.CategoryId)
+                    .SetProperty(p => p.IsActive, post.IsActive).SetProperty(p => p.IsPublished, post.IsPublished)
+                    .SetProperty(p => p.PublishDate, post.PublishDate).SetProperty(p => p.ThumbnailAlt, post.ThumbnailAlt)
+                    .SetProperty(p => p.DocumentVersion, post.DocumentVersion).SetProperty(p => p.DocumentJson, post.DocumentJson)
+                    .SetProperty(p => p.DocumentPlainText, post.DocumentPlainText).SetProperty(p => p.DocumentWordCount, post.DocumentWordCount)
+                    .SetProperty(p => p.DocumentReadingMinutes, post.DocumentReadingMinutes)
+                    .SetProperty(p => p.UpdatedDate, post.UpdatedDate).SetProperty(p => p.EditVersion, expectedVersion + 1), cancellationToken);
+            return affected == 1;
+        }
+        catch (DbException) { throw new EditorPostStorageException(); }
     }
 }

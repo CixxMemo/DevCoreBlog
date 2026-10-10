@@ -455,7 +455,10 @@ public class AdminPostController : Controller
         {
             success = outcome.Succeeded,
             url = outcome.Url,
-            message = outcome.Message
+            message = outcome.Message,
+            publicId = outcome.PublicId,
+            width = outcome.Width,
+            height = outcome.Height
         };
 
         if (outcome.Succeeded)

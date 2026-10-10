@@ -5,7 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <!-- Git ignores do not control SDK discovery or publish; exclude private inputs here too. -->
-    <DefaultItemExcludes>$(DefaultItemExcludes);node_modules/**;frontend/**;scripts/frontend/**;.env;.env.*;**/.env;**/.env.*;docs/**;.local/devcoreblog_vol1/**;AGENTS.md;.agents/**</DefaultItemExcludes>
+    <DefaultItemExcludes>$(DefaultItemExcludes);wwwroot/generated/**;node_modules/**;frontend/**;scripts/frontend/**;.env;.env.*;**/.env;**/.env.*;docs/**;.local/devcoreblog_vol1/**;AGENTS.md;.agents/**</DefaultItemExcludes>
   </PropertyGroup>
 
   <ItemGroup>
@@ -61,7 +61,7 @@
           Condition="'$(DesignTimeBuild)' != 'true'">
     <Exec Command="npm ci --ignore-scripts --no-fund --no-audit" WorkingDirectory="$(MSBuildProjectDirectory)" />
   </Target>
-  <Target Name="BuildFrontendAssets" BeforeTargets="PrepareForBuild"
+  <Target Name="BuildFrontendAssets" BeforeTargets="ResolveProjectStaticWebAssets"
           Condition="'$(DesignTimeBuild)' != 'true'">
     <Exec Command="npm run build" WorkingDirectory="$(MSBuildProjectDirectory)" />
     <ItemGroup>

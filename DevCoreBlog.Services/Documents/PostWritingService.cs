@@ -26,6 +26,16 @@ public sealed class PostWritingService(IEditorPostRepository repository, IActive
     /// <summary>Validates intent before the atomic write; failures never adopt a newer edit revision.</summary>
     public async Task<EditorPostSave> SaveAsync(EditorPostInput input, CancellationToken cancellationToken)
     {
+        try { return await SaveValidatedAsync(input, cancellationToken); }
+        catch (EditorPostStorageException)
+        {
+            return new(EditorPostSaveStatus.Unavailable,
+                [new("", "Yazı kaydedilemedi. Metniniz korunuyor; biraz sonra yeniden deneyin.")]);
+        }
+    }
+
+    private async Task<EditorPostSave> SaveValidatedAsync(EditorPostInput input, CancellationToken cancellationToken)
+    {
         cancellationToken.ThrowIfCancellationRequested();
         if (input.Id < 0 || (input.Id > 0 && (input.EditVersion <= 0 || input.EditVersion == long.MaxValue)))
             return Failed("", "Yazıyı yeniden açıp tekrar deneyin.");
@@ -116,5 +126,5 @@ public sealed record EditorPostInput(int Id, long EditVersion, string Title, str
     int CategoryId, string Summary, string Excerpt, string? ThumbnailAlt, bool IsActive,
     DateTime PublishDate, PostSaveAction SaveAction);
 public sealed record EditorPostRead(Post Metadata, string? Json);
-public enum EditorPostSaveStatus { Saved, Invalid, Limit, NotFound, Conflict }
+public enum EditorPostSaveStatus { Saved, Invalid, Limit, NotFound, Conflict, Unavailable }
 public sealed record EditorPostSave(EditorPostSaveStatus Status, IReadOnlyList<ContentValidationError> Errors, int? Id = null);

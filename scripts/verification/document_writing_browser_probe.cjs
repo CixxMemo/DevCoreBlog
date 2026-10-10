@@ -131,7 +131,7 @@ function canonical(node) {
     violations.push(...await page.evaluate(() => window.__writingViolations || []), ...await stale.evaluate(() => window.__writingViolations || []));
     await page.goto(base + '/AdminWriting/Create'); await editor.waitFor();
     const unsupported = JSON.stringify({ version: 1, document: { type: 'doc', content: [
-        { type: 'image', attrs: { src: 'https://example.test/synthetic.png', alt: 'Korunan görsel' } }
+        { type: 'youtube', attrs: { src: 'https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ', width: 640, height: 480, start: 0 } }
     ] } });
     const unsupportedResponse = await context.request.post(base + '/AdminWriting/Create', { form: {
         Title: 'F09 henüz desteklenmeyen araç', DocumentJson: unsupported, CategoryId: '1001', IsActive: 'true',

@@ -72,7 +72,8 @@ public sealed class AdminWritingController(PostWritingService writing, ICategory
             TempData["DocumentSaved"] = "Yazı kaydedildi.";
             return RedirectToAction(nameof(Edit), new { id = result.Id, returnUrl = input.ReturnUrl });
         }
-        Response.StatusCode = result.Status switch { EditorPostSaveStatus.Limit => 413, EditorPostSaveStatus.Conflict => 409, _ => 400 };
+        Response.StatusCode = result.Status switch { EditorPostSaveStatus.Limit => 413, EditorPostSaveStatus.Conflict => 409,
+            EditorPostSaveStatus.Unavailable => 503, _ => 400 };
         foreach (var error in result.Errors) ModelState.AddModelError(error.Field, error.Message);
         return await ShowAsync(input);
     }

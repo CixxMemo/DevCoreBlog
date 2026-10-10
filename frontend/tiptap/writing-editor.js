@@ -2,6 +2,8 @@ import { Editor, Extension } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
 import Code from '@tiptap/extension-code';
 import { writingTableExtensions, isTableCommand, canTableCommand, runTableCommand } from './tables.js';
+import { writingImageExtensions, supportedImage } from './images.js';
+import { mountImageUpload } from './image-upload.js';
 
 // Preserve supported stored attributes without dynamic style attributes or new alignment tools.
 const Alignment = Extension.create({
@@ -19,6 +21,7 @@ const attributes = {
     table: [], tableRow: [], tableCell: ['colspan', 'rowspan', 'colwidth', 'align'],
     tableHeader: ['colspan', 'rowspan', 'colwidth', 'align'],
     blockquote: [], bulletList: [], orderedList: ['start', 'type'], listItem: [], codeBlock: ['language'],
+    image: ['src', 'alt', 'title', 'width', 'height'],
 };
 const marks = { bold: [], italic: [], underline: [], code: [], link: ['href', 'title', 'target', 'rel', 'class'] };
 
@@ -32,6 +35,7 @@ function supportedDocument(envelope) {
         if (++count > 10000 || !node || !Object.hasOwn(attributes, node.type) ||
             Object.keys(node).some(k => !['type', 'attrs', 'content', 'text', 'marks'].includes(k)) ||
             Object.keys(node.attrs ?? {}).some(k => !attributes[node.type].includes(k))) return false;
+        if (node.type === 'image' && !supportedImage(node.attrs)) return false;
         for (const mark of node.marks ?? []) {
             if (!Object.hasOwn(marks, mark.type) || Object.keys(mark).some(k => !['type', 'attrs'].includes(k)) ||
                 Object.keys(mark.attrs ?? {}).some(k => !marks[mark.type].includes(k))) return false;
@@ -55,7 +59,8 @@ export function mountWritingEditor(form) {
             horizontalRule: false, strike: false, trailingNode: false, dropcursor: false,
             link: { openOnClick: false, autolink: false, linkOnPaste: false,
                 HTMLAttributes: { target: null, rel: 'noopener noreferrer', class: null } },
-        }), Code.extend({ excludes: '' }), Alignment, ...writingTableExtensions(message => { status.textContent = message; })],
+        }), Code.extend({ excludes: '' }), Alignment, ...writingTableExtensions(message => { status.textContent = message; }),
+        ...writingImageExtensions(message => { status.textContent = message; })],
         content: original.document,
         onContentError: () => { contentError = true; },
         editorProps: { attributes: { class: 'writing-document', role: 'textbox',
@@ -65,6 +70,9 @@ export function mountWritingEditor(form) {
     const saves = [...form.querySelectorAll('[data-writing-save]')];
     const buttons = [...form.querySelectorAll('[data-writing-command]')];
     let dirty = false;
+    const media = mountImageUpload(form, editor, busy => {
+        saves.forEach(button => { button.disabled = busy; });
+    });
     function synchronize() {
         input.value = JSON.stringify({ version: 1, document: editor.getJSON() });
     }
@@ -108,13 +116,13 @@ export function mountWritingEditor(form) {
         if (event.target !== input) { dirty = true; status.textContent = 'Kaydedilmemiş değişiklikler var.'; }
     });
     form.addEventListener('submit', event => {
-        if (contentError || saves.every(button => button.disabled)) { event.preventDefault(); return; }
+        if (contentError || media.busy() || saves.every(button => button.disabled)) { event.preventDefault(); return; }
         synchronize();
         dirty = false;
         status.textContent = 'Kaydediliyor…';
     });
     window.addEventListener('beforeunload', event => { if (dirty) { event.preventDefault(); event.returnValue = ''; } });
-    window.addEventListener('pagehide', event => { if (!event.persisted) editor.destroy(); });
+    window.addEventListener('pagehide', event => { media.cancel(); if (!event.persisted) editor.destroy(); });
     // Expose neither a mutable global editor nor a client storage recovery format.
     mount.hidden = false;
     form.querySelector('[data-document-fallback]').hidden = true;

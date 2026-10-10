@@ -517,6 +517,10 @@ if [ -n "${DEVCORE_VOL1_F08_REPORT_DIR:-}" ]; then
     python3 "$task_source/scripts/verification/document_tables_http_probe.py" \
         --base-url "http://127.0.0.1:$task_app_port" --database-port "$task_pg_port" \
         --report "$DEVCORE_VOL1_F08_REPORT_DIR/document-tables-http.json"
+    DEVCORE_TEST_ADMIN_USERNAME=f17-admin DEVCORE_TEST_ADMIN_PASSWORD="$task_admin_password" \
+    python3 "$task_source/scripts/verification/document_images_http_probe.py" \
+        --base-url "http://127.0.0.1:$task_app_port" --database-port "$task_pg_port" \
+        --report "$DEVCORE_VOL1_F08_REPORT_DIR/document-images-http.json"
     task_before_down=$(psql -X -h 127.0.0.1 -p "$task_pg_port" -U "$task_pg_user" -d "$task_db" -At -c 'SELECT to_jsonb(p) FROM "Posts" p WHERE "Id" = 2003;')
     if (
         cd "$task_source"

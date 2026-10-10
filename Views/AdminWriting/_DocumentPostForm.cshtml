@@ -19,7 +19,8 @@
     <h1>@(editing ? "Yazıyı düzenle" : "Yeni yazı")</h1>
     @if (TempData["DocumentSaved"] is string saved) { <p role="status" class="writing-notice">@saved</p> }
     <form asp-controller="AdminWriting" asp-action="@(editing ? "Edit" : "Create")" asp-route-id="@(editing ? Model.Id : (int?)null)"
-          method="post" id="postForm" data-document-form data-editor-enabled="@Model.EditorEnabled.ToString().ToLowerInvariant()">
+          method="post" id="postForm" data-document-form data-editor-enabled="@Model.EditorEnabled.ToString().ToLowerInvariant()"
+          data-image-upload-url="@Url.Action("UploadEditorImage", "AdminPost")">
         <input asp-for="Id" type="hidden" />
         <input asp-for="EditVersion" type="hidden" />
         <input name="returnUrl" value="@Model.ReturnUrl" type="hidden" />
@@ -46,6 +47,20 @@
                     }
                 </div>
                 <p id="writing-table-help" class="writing-help">Yeni tablo 3 × 3 hücredir. En fazla 20 satır, 10 sütun ve belgede 1.000 hücre; birleştirme ve boyutlandırma yok. Tab ile hücreler arasında ilerleyebilirsiniz.</p>
+                <fieldset class="writing-media" data-writing-media hidden>
+                    <legend>Görsel ve GIF</legend>
+                    <label for="writing-image-file">Dosya seçin</label>
+                    <input id="writing-image-file" type="file" accept="image/jpeg,image/png,image/webp,image/gif" data-image-file disabled aria-describedby="writing-image-help" />
+                    <label for="writing-image-alt">Görsel açıklaması (isteğe bağlı)</label>
+                    <input id="writing-image-alt" type="text" data-image-alt disabled aria-describedby="writing-image-help" />
+                    <p id="writing-image-help" class="writing-help">JPEG, PNG, WebP veya GIF; en fazla 8 MiB ve 4.096 × 4.096 piksel. Belgede en fazla 50 görsel. Açıklama en fazla 300 karakterdir; boş açıklama dekoratif görsel içindir.</p>
+                    <div class="writing-toolbar">
+                        <button type="button" data-image-upload disabled>Yükle ve ekle</button>
+                        <button type="button" data-image-cancel disabled>Yüklemeyi iptal et</button>
+                        <button type="button" data-image-update disabled>Seçili görselin açıklamasını güncelle</button>
+                    </div>
+                    <p data-image-status role="status" aria-live="polite">Görsel, yükleme başladığında seçili olan konuma eklenir. Yüklerken yazmaya devam edebilirsiniz.</p>
+                </fieldset>
                 <div data-editor-mount hidden></div>
                 @* Encoded original envelope is both startup input and an inspectable fallback. *@
                 <div data-document-fallback>
