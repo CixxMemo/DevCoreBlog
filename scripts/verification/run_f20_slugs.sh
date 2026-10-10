@@ -47,7 +47,7 @@ pg_isready -h 127.0.0.1 -p "$task_pg_port" >/dev/null 2>&1 && {
 mkdir -p "$task_source" "$task_socket"
 mkdir -m 700 "$task_tmp/keys"
 export DATA_PROTECTION_KEYS_PATH="$task_tmp/keys"
-rsync -a --exclude .local --exclude .kilo --exclude .codex --exclude .auth --exclude .git --exclude '.env*' --exclude bin --exclude obj \
+rsync -a --exclude .local --exclude .kilo --exclude .codex --exclude .auth --exclude .git --exclude '.env*' --exclude node_modules --exclude bin --exclude obj \
     --exclude cookies.txt --exclude .DS_Store "$task_repo/" "$task_source/"
 for task_project in . DevCoreBlog.Core DevCoreBlog.Data DevCoreBlog.Services \
     tools/DevCoreBlog.PasswordHashTool; do

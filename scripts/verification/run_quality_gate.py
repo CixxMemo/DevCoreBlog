@@ -78,6 +78,7 @@ try:
         if run('restore',['dotnet','restore','DevCoreBlog.csproj','--configfile','NuGet.Config','-p:NuGetAudit=false'],source)[0]: raise RuntimeError('Application restore failed')
         if run('build',build+['DevCoreBlog.csproj'],source)[0]: raise RuntimeError('Application build failed')
         if run('editor-distribution',['node','scripts/verification/editor_build_probe.mjs'],source)[0]: raise RuntimeError('Editor distribution integrity failed')
+        if run('tiptap-distribution',['node','scripts/verification/tiptap_build_probe.mjs'],source)[0]: raise RuntimeError('Tiptap distribution integrity failed')
         if run('publish-boundary',['python3','scripts/verification/publish_boundary_probe.py','--source',str(source)],source)[0]: raise RuntimeError('Private files entered SDK items or publish output')
         for project in ('DevCoreBlog.csproj','DevCoreBlog.Core/DevCoreBlog.Core.csproj','DevCoreBlog.Data/DevCoreBlog.Data.csproj','DevCoreBlog.Services/DevCoreBlog.Services.csproj'):
             json_audit('nuget-'+Path(project).stem,['dotnet','package','list','--project',project,'--include-transitive','--vulnerable','--format','json','--no-restore'],source,'nuget')

@@ -51,6 +51,15 @@ public class AdminPostController : Controller
     private readonly TimeProvider _timeProvider;
     private const int MaximumPreviewRequestBytes = 1_048_576;
 
+    /// <summary>Exercises the local editor without binding input, reading posts or saving data.</summary>
+    [HttpGet]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
+    public IActionResult EditorTrial()
+    {
+        Response.Headers["X-Robots-Tag"] = "noindex, nofollow, noarchive";
+        return View();
+    }
+
     // Constructor receives services from the DI container
     public AdminPostController(
         IPostService postService,

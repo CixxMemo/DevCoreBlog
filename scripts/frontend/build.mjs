@@ -3,6 +3,7 @@ import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { resolve } from 'node:path';
 import { buildEditor, sha256 } from './editor-bundle.mjs';
+import { buildTiptap } from './tiptap-bundle.mjs';
 
 // Resolve paths from this file so the same command works in MSBuild and npm.
 const root = fileURLToPath(new URL('../../', import.meta.url));
@@ -40,4 +41,5 @@ await writeFile(resolve(editorOutput, 'build.json'), JSON.stringify({
     editor: '3.2.2', dompurify: '3.4.16', sha256: sha256(editor)
 }, null, 2) + '\n');
 await copyFile(resolve(root, 'node_modules/tailwindcss/LICENSE'), resolve(output, 'TAILWIND-LICENSE'));
-console.log('Frontend assets built: Tailwind 3.4.17, Prism 1.30.0.');
+await buildTiptap(root, resolve(output, 'tiptap'));
+console.log('Frontend assets built: Tailwind 3.4.17, Prism 1.30.0, Tiptap 3.31.4.');

@@ -1,0 +1,23 @@
+@{
+    ViewData["Title"] = "Editör denemesi";
+}
+
+<link rel="stylesheet" href="~/generated/tiptap/editor.css" asp-append-version="true" />
+<section class="editor-trial" lang="tr" aria-labelledby="editor-trial-title">
+    <h1 id="editor-trial-title">Editör denemesi</h1>
+    <p id="editor-trial-description">Bu alandaki metin kaydedilmez. Yazmayı ve temel biçimlendirmeyi deneyebilirsiniz.</p>
+    <div data-tiptap-trial>
+        <div class="editor-trial-controls" role="group" aria-label="Metin biçimlendirme">
+            <button type="button" data-editor-command="bold" aria-pressed="false" disabled>Kalın</button>
+            <button type="button" data-editor-command="undo" disabled>Geri al</button>
+            <button type="button" data-editor-command="redo" disabled>Yinele</button>
+        </div>
+        <div data-editor-mount></div>
+        <p data-editor-status role="status">Editör yükleniyor. Açılmazsa sayfayı yeniden yükleyin.</p>
+        <noscript>Yazım alanını kullanmak için JavaScript açık olmalıdır.</noscript>
+    </div>
+</section>
+
+@section Scripts {
+    <script type="module" src="~/generated/tiptap/trial.js" asp-append-version="true"></script>
+}

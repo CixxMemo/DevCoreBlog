@@ -1,0 +1,12 @@
+.editor-trial { max-width: 56rem; margin-inline: auto; }
+.editor-trial h1 { font-size: 1.75rem; font-weight: 800; margin-bottom: 1rem; }
+.editor-trial p { margin-block: 1rem; }
+.editor-trial-controls { display: flex; flex-wrap: wrap; gap: .5rem; margin-block: 1rem; }
+.editor-trial-controls button { border: 2px solid #171717; background: #fff; padding: .5rem 1rem; font-weight: 700; }
+.editor-trial-controls button[aria-pressed="true"] { color: #fff; background: #171717; }
+.editor-trial-controls button:disabled { color: #737373; border-color: #737373; cursor: not-allowed; }
+.editor-trial-controls button:focus-visible,
+.editor-trial-document:focus-visible { outline: 3px solid #1d4ed8; outline-offset: 3px; }
+.editor-trial-document { min-height: 16rem; padding: 1rem; border: 2px solid #171717; background: #fff; white-space: pre-wrap; overflow-wrap: anywhere; }
+.editor-trial-document p { margin-block: .5rem; }
+.editor-trial-document strong { font-weight: 700; }

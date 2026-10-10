@@ -34,7 +34,10 @@ sanitizer’ın yokluğu ve dağıtım receipt’i. E02 ile `publish-boundary` e
 yalnız owned kaynakta sentetik `.env*` ve özel belge JSON'ları oluşturulur,
 SDK item keşfi ve gerçek publish çıktısı denetlenir; gerçek `.env` okunmaz.
 Uygulama DLL'leri, appsettings ve lisanslı frontend varlıkları korunmalıdır.
-Güncel varsayılan kapı24, `--final-acceptance` kapısı26 aşamadır.
+Tiptap yerel build temeliyle `tiptap-distribution` aşaması da eklenir: gerçek
+bundle/CSS hash, deterministik tekrar build, kullanılan paket LICENSE metinleri
+ve eşleşen Tiptap aile sürümleri. Güncel varsayılan kapı25,
+`--final-acceptance` kapısı27 aşamadır.
 
 Yönetici rotası fixture'larda açıkça `/fixture-admin/login` olarak atanır;
 HTTP yardımcıları `DEVCORE_TEST_ADMIN_LOGIN_PATH` değerini kullanır. Gerçek
@@ -71,7 +74,7 @@ paket veya ürün major yükseltmesi yapılmamıştır.
 python3 scripts/verification/run_quality_gate.py --final-acceptance --report-dir /tmp/devcore-final-quality
 ```
 
-Bu seçenek güncel24 aşamaya iki bağımsız disposable cluster kontrolü ekler: auth/CSRF,
+Bu seçenek güncel25 aşamaya iki bağımsız disposable cluster kontrolü ekler: auth/CSRF,
 güvenli Markdown, atomik sayaç, kalıcı webhook/restart, cache/zamanlı yayın ve
 kategori silme yarışı; ardından eski edit/eşzamanlı güncelleme. Ek portlar
 PostgreSQL55461/55462 ve uygulama15199/15201/15200’dür; boş olmalıdır.
@@ -109,7 +112,7 @@ yerelde false kalır. Bu provenance uygulama environment’ını fixture’a akt
 veya kapının bağımsız başarı kontrolü yerine kullanmak değildir.
 Branch protection/required check veya remote repository settings değiştirilmedi.
 
-## Açık kalan bağımlılık bulgusu
+## Bağımlılık bakımının güncel durumu
 
 9 Ekim2026 yeniden taramasında kilitli `postcss-selector-parser6.1.4` için
 [GHSA-rj75-hqrm-r3gf](https://github.com/advisories/GHSA-rj75-hqrm-r3gf)
@@ -118,8 +121,12 @@ Resmî kayıt <7.1.6 aralığını etkilenen,7.1.6'yı yamalı gösteriyor. Bu r
 paket trusted frontend kaynaklarını build sırasında işliyor; publish'te Node
 runtime değildir. Bu kapsam gözlemi önceki dar istisnayı genişletmez:
 `npm_audit_policy.py` yeni advisory'yi reddeder ve genel kapı **FAIL** kalır.
-Bağımlılık bakımı ayrı iştir; paket/lockfile ve istisna politikası bu rota
-fixture düzeltmesinde değiştirilmedi. Eski yeşil sonuçlar güncel audit kabulü değildir.
+Bu, 9 Ekim rota fixture düzeltmesinin tarihsel sonucudur. 10 Ekim Tiptap build
+entegrasyonunda yalnız Tailwind subtree'sine exact selector-parser7.1.6 override
+uygulandı; eski CSS/vendor çıktılarının byte eşitliği doğrulandı. Yeni graph'ta
+bu advisory artık bulunmuyor; audit politikası veya istisna genişletilmedi.
+Temiz kalite kapısı ve browser sonucu ayrı gerçek kanıttır. Eski yeşil sonuçlar
+güncel audit kabulü değildir. [Tiptap build sözleşmesi](TIPTAP_BUILD_SOZLESMESI.md).
 
 5 Ekim2026 npm audit, Tailwind3.4.17 build zincirindeki braces3.0.3 için
 [GHSA-vfj7-8cjw-p6xm / CVE-2026-93687](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm)

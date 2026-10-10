@@ -28,7 +28,7 @@ trap cleanup EXIT INT TERM
 
 mkdir -p "$task_source"
 mkdir -m 700 "$task_tmp/keys"
-rsync -a --exclude .local --exclude .kilo --exclude .codex --exclude .auth --exclude .git --exclude '.env*' --exclude bin --exclude obj \
+rsync -a --exclude .local --exclude .kilo --exclude .codex --exclude .auth --exclude .git --exclude '.env*' --exclude node_modules --exclude bin --exclude obj \
     "$task_repo/" "$task_source/"
 for task_project in . DevCoreBlog.Core DevCoreBlog.Data DevCoreBlog.Services tools/DevCoreBlog.PasswordHashTool; do
     if [ -d "$task_repo/$task_project/obj" ]; then

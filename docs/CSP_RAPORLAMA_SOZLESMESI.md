@@ -4,6 +4,11 @@ F52 ile **Content-Security-Policy engelleme modunda bütün ortamlarda** etkindi
 F51 Report-Only hazırlığı tarihsel kayıttadır.
 Encoding ve güvenli Markdown sınırları ayrı zorunlu korumalardır.
 
+Tiptap'in kayıtsız yönetici denemesi `/AdminPost/EditorTrial` aynı enforcing
+politikanın `style-src-attr 'none'` sınırını kullanır. `injectCSS:false`, yerel
+bundle/CSS ve minimal extension set'i ile yeni izin/nonce eklenmez. Create/Edit
+Toast UI istisnası korunur. [Tiptap build sözleşmesi](TIPTAP_BUILD_SOZLESMESI.md).
+
 ## Etkinleşme ve yanıt sınırı
 
 `SecurityHeadersMiddleware` koşulsuz kullanılır; kapatma/report-only configuration
