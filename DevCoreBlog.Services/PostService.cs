@@ -183,6 +183,7 @@ public class PostService : IPostService, IPublicationSchedule, IWebhookPostServi
         PostContentRules.Normalize(post);
         var result = PostContentRules.Validate(post);
         var errors = result.Errors.ToList();
+        errors.AddRange(PostAccessRules.Validate(post).Errors);
 
         // Normalize the shared service input before uploads or persistence.
         if (_publicationTimeZone.TryConvertToUtc(
@@ -375,7 +376,8 @@ public class PostService : IPostService, IPublicationSchedule, IWebhookPostServi
         if (existingPost.Title != post.Title || existingPost.Summary != post.Summary ||
             existingPost.Content != post.Content || existingPost.Excerpt != post.Excerpt ||
             existingPost.ThumbnailUrl != post.ThumbnailUrl || existingPost.ThumbnailAlt != post.ThumbnailAlt ||
-            existingPost.CategoryId != post.CategoryId)
+            existingPost.CategoryId != post.CategoryId || existingPost.ContentKind != post.ContentKind ||
+            existingPost.AccessScope != post.AccessScope)
             existingPost.UpdatedDate = _timeProvider.GetUtcNow().UtcDateTime;
 
         existingPost.Title = post.Title;
@@ -390,6 +392,8 @@ public class PostService : IPostService, IPublicationSchedule, IWebhookPostServi
         existingPost.IsPublished = post.IsPublished;
         existingPost.CategoryId = post.CategoryId;
         existingPost.IsActive = post.IsActive;
+        existingPost.ContentKind = post.ContentKind;
+        existingPost.AccessScope = post.AccessScope;
 
         existingPost.PublishDate = post.PublishDate;
 

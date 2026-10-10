@@ -51,6 +51,9 @@ internal static class InventoryReader
             "IsActive", "IsPublished", "PublishDate", "ThumbnailUrl" };
         if (!required.All(columns.Contains) || !schema.GetProperty("categoriesPresent").GetBoolean())
             throw new InvalidOperationException();
+        // A half-applied access schema cannot be interpreted as legacy public content.
+        if (columns.Contains("ContentKind") != columns.Contains("AccessScope"))
+            throw new InvalidOperationException();
 
         var totals = await Read("totals", InventoryQueries.Totals);
         if (totals.GetProperty("posts").GetInt64() > 50000 ||

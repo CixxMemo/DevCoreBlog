@@ -34,7 +34,7 @@ internal static class InventoryQueries
             FROM information_schema.columns WHERE table_schema='public' AND table_name='Posts'
               AND column_name IN ('Id','Title','Content','Summary','Excerpt','Slug','CategoryId',
                 'IsActive','IsPublished','PublishDate','ThumbnailUrl','ThumbnailPublicId',
-                'ThumbnailWidth','ThumbnailHeight','ThumbnailAlt','EditVersion','UpdatedDate')), '[]'),
+                'ThumbnailWidth','ThumbnailHeight','ThumbnailAlt','EditVersion','UpdatedDate','ContentKind','AccessScope')), '[]'),
           'postSlugUniqueValidUnfiltered', EXISTS(SELECT 1 FROM pg_index i
             JOIN pg_attribute a ON a.attrelid=i.indrelid AND a.attnum=ANY(i.indkey)
             WHERE i.indrelid=to_regclass('public."Posts"') AND i.indisunique AND i.indisvalid
@@ -58,14 +58,22 @@ internal static class InventoryQueries
             ? "count(*) FILTER (WHERE nullif(btrim(p.\"ThumbnailPublicId\"),'') IS NOT NULL)" : "NULL::bigint";
         var dimensions = columns.Contains("ThumbnailWidth") && columns.Contains("ThumbnailHeight")
             ? "count(*) FILTER (WHERE p.\"ThumbnailWidth\">0 AND p.\"ThumbnailHeight\">0)" : "NULL::bigint";
+        var hasAccess = columns.Contains("ContentKind") && columns.Contains("AccessScope");
+        var publicBody = hasAccess ? "p.\"AccessScope\"=0 AND p.\"ContentKind\" IN (0,1,2,3)" : "true";
+        var accessContract = hasAccess ? "explicit_kind_and_access" : "legacy_schema_without_access_metadata";
+        var privateBodies = hasAccess ? "count(*) FILTER (WHERE p.\"AccessScope\"=1)" : "NULL::bigint";
+        var invalidAccess = hasAccess
+            ? "count(*) FILTER (WHERE p.\"ContentKind\" NOT IN (0,1,2,3,4) OR p.\"AccessScope\" NOT IN (0,1) OR (p.\"ContentKind\"=4 AND p.\"AccessScope\"<>1) OR p.\"ContentKind\" IS NULL OR p.\"AccessScope\" IS NULL)"
+            : "NULL::bigint";
         return $$"""
             SELECT jsonb_build_object(
               'storageContract','legacy_markdown_text_not_inferred_json',
+              'accessContract','{{accessContract}}', 'subscriberBodies',{{privateBodies}}, 'invalidAccessMetadata',{{invalidAccess}},
               'total',count(*), 'active',count(*) FILTER (WHERE p."IsActive"),
               'inactiveByPostOrCategory',count(*) FILTER (WHERE NOT p."IsActive" OR NOT coalesce(c."IsActive",false)),
               'draft',count(*) FILTER (WHERE p."IsActive" AND c."IsActive" AND NOT p."IsPublished"),
               'scheduled',count(*) FILTER (WHERE p."IsActive" AND c."IsActive" AND p."IsPublished" AND p."PublishDate">transaction_timestamp()),
-              'publiclyVisible',count(*) FILTER (WHERE p."IsActive" AND c."IsActive" AND p."IsPublished" AND p."PublishDate"<=transaction_timestamp()),
+              'publiclyVisible',count(*) FILTER (WHERE p."IsActive" AND c."IsActive" AND p."IsPublished" AND p."PublishDate"<=transaction_timestamp() AND {{publicBody}}),
               'missingCategory',count(*) FILTER (WHERE c."Id" IS NULL),
               'blankTitle',count(*) FILTER (WHERE nullif(btrim(p."Title"),'') IS NULL),
               'blankContent',count(*) FILTER (WHERE nullif(btrim(p."Content"),'') IS NULL),

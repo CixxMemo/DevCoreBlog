@@ -23,6 +23,10 @@ if (args.Contains("--visibility"))
 {
     return await VisibilityProbe.RunAsync(options);
 }
+if (args.Contains("--access"))
+{
+    return await AccessProbe.RunAsync(options);
+}
 
 await using var context = new ApplicationDbContext(options);
 var postRepository = new PostRepository(context);

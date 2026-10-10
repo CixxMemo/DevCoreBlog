@@ -49,6 +49,10 @@ public class Post : BaseEntity
     // Is the post published or draft?
     public bool IsPublished { get; set; } = false;
 
+    // Server-owned classification; legacy form saves preserve the stored values.
+    public PostContentKind ContentKind { get; set; } = PostContentKind.Unclassified;
+    public PostAccessScope AccessScope { get; set; } = PostAccessScope.Public;
+
 
     // The full content of the blog post (plain text in <textarea>)
     public string Content { get; set; } = string.Empty;

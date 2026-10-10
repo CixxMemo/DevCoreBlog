@@ -79,6 +79,9 @@ for task_project in . DevCoreBlog.Core DevCoreBlog.Data DevCoreBlog.Services \
     fi
 done
 : > "$task_source/.env"
+if [ -n "${DEVCORE_VOL1_F04_REPORT_DIR:-}" ]; then
+    python3 "$task_source/scripts/verification/f04_prepare_fixture.py" --source "$task_source"
+fi
 if [ "${DEVCORE_F30_PROBE:-0}" = 1 ]; then
     python3 "$task_source/scripts/verification/f30_prepare_fixture.py" --source "$task_source"
 fi
@@ -165,7 +168,7 @@ pg_ctl -D "$task_pgdata" -l "$task_tmp/postgres.log" \
     -o "-p $task_pg_port -h 127.0.0.1 -k $task_socket" -w start >/dev/null
 task_pg_started=1
 createdb -h 127.0.0.1 -p "$task_pg_port" -U "$task_pg_user" "$task_db"
-if [ "${DEVCORE_F44_PROBE:-0}" = 1 ] || [ "${DEVCORE_F49_PROBE:-0}" = 1 ]; then
+if [ "${DEVCORE_F44_PROBE:-0}" = 1 ] || [ "${DEVCORE_F49_PROBE:-0}" = 1 ] || [ -n "${DEVCORE_VOL1_F04_REPORT_DIR:-}" ]; then
     # Verify both a clean migration chain and the immediately preceding schema with synthetic rows.
     createdb -h 127.0.0.1 -p "$task_pg_port" -U "$task_pg_user" f44_empty
     (
@@ -176,6 +179,7 @@ if [ "${DEVCORE_F44_PROBE:-0}" = 1 ] || [ "${DEVCORE_F49_PROBE:-0}" = 1 ]; then
             if [ "$task_migration_db" = "$task_db" ]; then
                 task_target=20260930094820_WebhookReceipts
                 if [ "${DEVCORE_F49_PROBE:-0}" = 1 ]; then task_target=20261004180016_ReadOrderingIndexes; fi
+                if [ -n "${DEVCORE_VOL1_F04_REPORT_DIR:-}" ]; then task_target=20261004183254_CoverMetadata; fi
             fi
             DB_CONNECTION_STRING="$task_connection" dotnet ef database update $task_target \
                 --no-build --project DevCoreBlog.csproj --startup-project DevCoreBlog.csproj \
@@ -185,7 +189,11 @@ if [ "${DEVCORE_F44_PROBE:-0}" = 1 ] || [ "${DEVCORE_F49_PROBE:-0}" = 1 ]; then
     sed -n '/^INSERT INTO "Categories"/,$p' "$task_source/scripts/verification/f01_fixture.sql" > "$task_tmp/seed.sql"
     psql -X -h 127.0.0.1 -p "$task_pg_port" -U "$task_pg_user" -d "$task_db" \
         -v ON_ERROR_STOP=1 -f "$task_tmp/seed.sql" >/dev/null
-    task_snapshot_sql='SELECT to_jsonb(p) - $$UpdatedDate$$ - $$ThumbnailAlt$$ - $$ThumbnailPublicId$$ - $$ThumbnailWidth$$ - $$ThumbnailHeight$$ FROM "Posts" p ORDER BY "Id"; SELECT to_jsonb(c) FROM "Categories" c ORDER BY "Id";'
+    task_snapshot_sql='SELECT to_jsonb(p) - $$UpdatedDate$$ - $$ThumbnailAlt$$ - $$ThumbnailPublicId$$ - $$ThumbnailWidth$$ - $$ThumbnailHeight$$ - $$ContentKind$$ - $$AccessScope$$ FROM "Posts" p ORDER BY "Id"; SELECT to_jsonb(c) FROM "Categories" c ORDER BY "Id";'
+    if [ -n "${DEVCORE_VOL1_F04_REPORT_DIR:-}" ]; then
+        # F04 must preserve every prior field, including cover metadata, dates and concurrency.
+        task_snapshot_sql='SELECT to_jsonb(p) - $$ContentKind$$ - $$AccessScope$$ FROM "Posts" p ORDER BY "Id"; SELECT to_jsonb(c) FROM "Categories" c ORDER BY "Id";'
+    fi
     psql -X -h 127.0.0.1 -p "$task_pg_port" -U "$task_pg_user" -d "$task_db" \
         -At -c "$task_snapshot_sql" > "$task_tmp/prior-data.txt"
     (
@@ -206,6 +214,9 @@ if [ "${DEVCORE_F44_PROBE:-0}" = 1 ] || [ "${DEVCORE_F49_PROBE:-0}" = 1 ]; then
     task_empty_count=$(psql -X -h 127.0.0.1 -p "$task_pg_port" -U "$task_pg_user" -d f44_empty \
         -At -c 'SELECT count(*) FROM "Posts";')
     [ "$task_empty_count" = 0 ]
+    task_access_default_count=$(psql -X -h 127.0.0.1 -p "$task_pg_port" -U "$task_pg_user" -d "$task_db" -At -c 'SELECT count(*) FROM "Posts" WHERE "ContentKind" <> 0 OR "AccessScope" <> 0;')
+    [ "$task_access_default_count" = 0 ]
+    printf 'f04_legacy_kind_and_access_mapping=true\n'
     if [ "${DEVCORE_F49_PROBE:-0}" = 1 ]; then
         task_media_count=$(psql -X -h 127.0.0.1 -p "$task_pg_port" -U "$task_pg_user" -d "$task_db" -At -c 'SELECT count(*) FROM "Posts" WHERE "ThumbnailPublicId" IS NOT NULL OR "ThumbnailWidth" IS NOT NULL OR "ThumbnailHeight" IS NOT NULL OR "ThumbnailAlt" IS NOT NULL;')
         [ "$task_media_count" = 0 ]
@@ -229,7 +240,7 @@ elif [ "${DEVCORE_F28_PROBE:-0}" = 1 ]; then
     sed -n '/^INSERT INTO "Categories"/,$p' "$task_source/scripts/verification/f01_fixture.sql" > "$task_tmp/seed.sql"
     psql -X -h 127.0.0.1 -p "$task_pg_port" -U "$task_pg_user" -d "$task_db" \
         -v ON_ERROR_STOP=1 -f "$task_tmp/seed.sql" >/dev/null
-    task_snapshot_sql='SELECT row_to_json(p) FROM "Posts" p ORDER BY "Id"; SELECT row_to_json(c) FROM "Categories" c ORDER BY "Id";'
+    task_snapshot_sql='SELECT to_jsonb(p) - $$ContentKind$$ - $$AccessScope$$ - $$UpdatedDate$$ - $$ThumbnailAlt$$ - $$ThumbnailPublicId$$ - $$ThumbnailWidth$$ - $$ThumbnailHeight$$ FROM "Posts" p ORDER BY "Id"; SELECT to_jsonb(c) FROM "Categories" c ORDER BY "Id";'
     psql -X -h 127.0.0.1 -p "$task_pg_port" -U "$task_pg_user" -d "$task_db" \
         -At -c "$task_snapshot_sql" > "$task_tmp/prior-data.txt"
     (
@@ -265,6 +276,25 @@ if [ "${1:-current}" = current ]; then
         --project "$task_source/tools/DevCoreBlog.ContentRulesTool/DevCoreBlog.ContentRulesTool.csproj"
 fi
 
+if [ -n "${DEVCORE_VOL1_F04_REPORT_DIR:-}" ]; then
+    DB_CONNECTION_STRING="Host=127.0.0.1;Port=$task_pg_port;Database=$task_db;Username=$task_pg_user" \
+    dotnet run --no-build --project "$task_source/tools/DevCoreBlog.ContentRulesTool/DevCoreBlog.ContentRulesTool.csproj" -- --access
+    task_connection="Host=127.0.0.1;Port=$task_pg_port;Database=$task_db;Username=$task_pg_user"
+    # The down migration must refuse to discard newly classified/private records.
+    if (
+        cd "$task_source"
+        DB_CONNECTION_STRING="$task_connection" dotnet ef database update 20261004183254_CoverMetadata \
+            --no-build --project DevCoreBlog.csproj --startup-project DevCoreBlog.csproj \
+            --context ApplicationDbContext --connection "$task_connection" --no-color
+    ) > "$task_tmp/refused-down.log" 2>&1; then
+        printf 'f04_private_data_downgrade_refused=false\n' >&2
+        exit 1
+    fi
+    task_private_count=$(psql -X -h 127.0.0.1 -p "$task_pg_port" -U "$task_pg_user" -d "$task_db" -At -c 'SELECT count(*) FROM "Posts" WHERE "AccessScope"=1;')
+    [ "$task_private_count" = 5 ]
+    printf 'f04_private_data_downgrade_refused_and_preserved=true\n'
+fi
+
 start_app() {
 (
     cd "$task_source"
@@ -293,6 +323,13 @@ DEVCORE_TEST_ADMIN_USERNAME=f17-admin \
 DEVCORE_TEST_ADMIN_PASSWORD="$task_admin_password" \
 python3 "$task_source/scripts/verification/f17_visibility_probe.py" \
     --base-url "http://127.0.0.1:$task_app_port"
+
+if [ -n "${DEVCORE_VOL1_F04_REPORT_DIR:-}" ]; then
+    DEVCORE_TEST_ADMIN_USERNAME=f17-admin DEVCORE_TEST_ADMIN_PASSWORD="$task_admin_password" \
+    python3 "$task_source/scripts/verification/f04_public_access_probe.py" \
+        --base-url "http://127.0.0.1:$task_app_port" --source "$task_source" \
+        --database-port "$task_pg_port" --report "$DEVCORE_VOL1_F04_REPORT_DIR/public-access.json"
+fi
 
 if [ -n "${DEVCORE_VOL1_F01_REPORT_DIR:-}" ]; then
     DEVCORE_TEST_ADMIN_USERNAME=f17-admin \

@@ -36,8 +36,20 @@ public static class PostPublication
         return Expression.Lambda<Func<Post, bool>>(Expression.Equal(rule.Body, Expression.Constant(state)), rule.Parameters);
     }
 
-    public static Expression<Func<Post, bool>> VisibleAt(DateTime utcNow) =>
-        post => post.IsActive && post.IsPublished && post.PublishDate <= utcNow && post.Category.IsActive;
+    /// <summary>Allow only known public body types, even if corrupt data bypassed DB constraints.</summary>
+    public static Expression<Func<Post, bool>> EligibleForPublicPublication() =>
+        post => post.IsActive && post.IsPublished && post.Category.IsActive &&
+            post.AccessScope == PostAccessScope.Public &&
+            (post.ContentKind == PostContentKind.Unclassified || post.ContentKind == PostContentKind.AiNews ||
+             post.ContentKind == PostContentKind.Experience || post.ContentKind == PostContentKind.Philosophy);
+
+    public static Expression<Func<Post, bool>> VisibleAt(DateTime utcNow)
+    {
+        var eligibility = EligibleForPublicPublication();
+        var date = Expression.Property(eligibility.Parameters[0], nameof(Post.PublishDate));
+        return Expression.Lambda<Func<Post, bool>>(Expression.AndAlso(eligibility.Body,
+            Expression.LessThanOrEqual(date, Expression.Constant(utcNow))), eligibility.Parameters);
+    }
 
     // Inline scalar parameters so providers receive a plain expression, never Compile/Invoke in SQL.
     private sealed class StateParameterBinding(IReadOnlyDictionary<ParameterExpression, Expression> replacements) : ExpressionVisitor

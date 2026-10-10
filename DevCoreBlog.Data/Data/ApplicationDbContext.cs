@@ -76,6 +76,16 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<Post>().Property(post => post.ThumbnailPublicId).HasMaxLength(255);
         modelBuilder.Entity<Post>().Property(post => post.ThumbnailAlt).HasMaxLength(300);
 
+        // Explicit legacy mapping preserves existing visibility without guessing a content kind.
+        modelBuilder.Entity<Post>().Property(post => post.ContentKind).HasDefaultValue(PostContentKind.Unclassified);
+        modelBuilder.Entity<Post>().Property(post => post.AccessScope).HasDefaultValue(PostAccessScope.Public);
+        modelBuilder.Entity<Post>().ToTable(table =>
+        {
+            table.HasCheckConstraint("CK_Posts_ContentKind", "\"ContentKind\" IN (0, 1, 2, 3, 4)");
+            table.HasCheckConstraint("CK_Posts_AccessScope", "\"AccessScope\" IN (0, 1)");
+            table.HasCheckConstraint("CK_Posts_NewsletterAccess", "\"ContentKind\" <> 4 OR \"AccessScope\" = 1");
+        });
+
         modelBuilder.Entity<Post>()
             .Property(post => post.EditVersion)
             .IsConcurrencyToken();

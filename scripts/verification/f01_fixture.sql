@@ -34,6 +34,11 @@ CREATE TABLE "Posts" (
     "Excerpt" text NOT NULL,
     "IsPublished" boolean NOT NULL,
     "ThumbnailUrl" text NOT NULL,
+    "ContentKind" integer NOT NULL DEFAULT 0,
+    "AccessScope" integer NOT NULL DEFAULT 0,
+    CONSTRAINT "CK_Posts_ContentKind" CHECK ("ContentKind" IN (0,1,2,3,4)),
+    CONSTRAINT "CK_Posts_AccessScope" CHECK ("AccessScope" IN (0,1)),
+    CONSTRAINT "CK_Posts_NewsletterAccess" CHECK ("ContentKind" <> 4 OR "AccessScope" = 1),
     CONSTRAINT "FK_Posts_Categories_CategoryId"
         FOREIGN KEY ("CategoryId") REFERENCES "Categories" ("Id") ON DELETE RESTRICT
 );

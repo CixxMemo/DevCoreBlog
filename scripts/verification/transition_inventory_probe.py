@@ -94,6 +94,17 @@ def main():
             checks['media_candidates_count_without_returning_urls_or_bodies'] = posts['postsWithMarkdownImageCandidate'] == posts['postsWithHtmlImageCandidate'] == posts['postsWithCoverUrl'] == 1
             checks['receipts_retained_after_deletion_are_counted'] = seeded['sections']['webhookReceipts']['total'] == 2 and seeded['sections']['webhookReceipts']['retainedAfterPostDeletion'] == 1
             checks['inventory_does_not_change_existing_content'] = before == sql('SELECT md5(string_agg(row_to_json(p)::text,\'\' ORDER BY "Id")) FROM "Posts" p')
+            checks['legacy_access_metadata_is_explicitly_unknown'] = posts['accessContract'] == 'legacy_schema_without_access_metadata' and posts['subscriberBodies'] is None
+            sql('ALTER TABLE "Posts" ADD COLUMN "ContentKind" int NOT NULL DEFAULT 0, ADD COLUMN "AccessScope" int NOT NULL DEFAULT 0; UPDATE "Posts" SET "ContentKind"=4,"AccessScope"=1 WHERE "Id"=1')
+            code, private = inventory('explicit-private-access')
+            checks['new_access_schema_excludes_published_private_body'] = code == 0 and private['sections']['posts']['publiclyVisible'] == 0 and private['sections']['posts']['subscriberBodies'] == 1
+            sql('UPDATE "Posts" SET "AccessScope"=0 WHERE "Id"=1')
+            code, invalid_access = inventory('invalid-access')
+            checks['corrupt_public_newsletter_is_counted_but_not_public'] = code == 0 and invalid_access['sections']['posts']['publiclyVisible'] == 0 and invalid_access['sections']['posts']['invalidAccessMetadata'] == 1
+            sql('ALTER TABLE "Posts" DROP COLUMN "AccessScope"')
+            code, partial = inventory('partial-access-schema')
+            checks['partial_access_schema_is_unverified_without_fake_public_count'] = code == 1 and 'posts' not in partial['sections'] and 'totals' not in partial['sections']
+            sql('ALTER TABLE "Posts" DROP COLUMN "ContentKind"')
             sql('DROP INDEX "Posts_Slug_idx"; UPDATE "Posts" SET "Slug"=\'one\' WHERE "Id"=2; ALTER TABLE "Posts" DROP COLUMN "ThumbnailPublicId"')
             code, legacy = inventory('duplicates-legacy')
             checks['actual_duplicate_slug_and_missing_index_are_visible'] = code == 0 and legacy['sections']['posts']['duplicateNonemptySlugGroups'] == 1 and not legacy['sections']['schema']['postSlugUniqueValidUnfiltered']

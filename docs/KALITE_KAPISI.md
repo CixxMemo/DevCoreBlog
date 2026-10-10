@@ -15,7 +15,7 @@ python3 scripts/verification/run_quality_gate.py --report-dir /tmp/devcore-quali
 Rapor dizini boş olmalıdır; eski kanıt yeniden kullanılmaz. Gerekenler: global.json
 ile tam .NET SDK10.0.302, Node22+, npm, Python3, rsync, PostgreSQL16 araçları
 (initdb/pg_ctl/createdb/psql/pg_isready), ripgrep, openssl. Yerelde PostgreSQL bin
-PATH içinde olmalıdır; root olarak initdb çalışmaz. Test portları55459/15196 ve
+PATH içinde olmalıdır; root olarak initdb çalışmaz. Test portları55459/15196, erişim55474/15204 ve
 proxy/diagnostics15186–15188/15195 boş olmalıdır. Aktif PostgreSQL portu üzerinde
 runner erken durur. PostgreSQL yalnız yeni /tmp fixture cluster’ında başlatılır;
 mevcut DB connection/config kullanılmaz.
@@ -36,8 +36,16 @@ SDK item keşfi ve gerçek publish çıktısı denetlenir; gerçek `.env` okunma
 Uygulama DLL'leri, appsettings ve lisanslı frontend varlıkları korunmalıdır.
 Tiptap yerel build temeliyle `tiptap-distribution` aşaması da eklenir: gerçek
 bundle/CSS hash, deterministik tekrar build, kullanılan paket LICENSE metinleri
-ve eşleşen Tiptap aile sürümleri. Güncel varsayılan kapı25,
-`--final-acceptance` kapısı27 aşamadır.
+ve eşleşen Tiptap aile sürümleri. Güncel varsayılan kapı26,
+`--final-acceptance` kapısı28 aşamadır.
+
+`content-access` ayrı owned PostgreSQL/HTTP fixture'ında tür/erişim metadata'sını
+sınar: boş ve önceki şemadan migration, eski alanların korunması, enum/bülten
+invariants, public sorgu matrisi ve atomik sayaç reddi. GET/HEAD404, meta/JSON-LD/
+crawler/portföy sızıntısı, admin overposting reddi ve gerçekten ısıtılmış cache'in
+erişim değişikliğiyle eviction'ı `public-access.json` içindedir. Mutation adapter'ı
+yalnız geçici kaynakta oluşur; uygulamaya yeni HTTP endpoint'i eklenmez.
+Private veri bulunan owned DB'de down migration'ın reddi de sınanır.
 
 Yönetici rotası fixture'larda açıkça `/fixture-admin/login` olarak atanır;
 HTTP yardımcıları `DEVCORE_TEST_ADMIN_LOGIN_PATH` değerini kullanır. Gerçek
@@ -74,7 +82,7 @@ paket veya ürün major yükseltmesi yapılmamıştır.
 python3 scripts/verification/run_quality_gate.py --final-acceptance --report-dir /tmp/devcore-final-quality
 ```
 
-Bu seçenek güncel25 aşamaya iki bağımsız disposable cluster kontrolü ekler: auth/CSRF,
+Bu seçenek güncel26 aşamaya iki bağımsız disposable cluster kontrolü ekler: auth/CSRF,
 güvenli Markdown, atomik sayaç, kalıcı webhook/restart, cache/zamanlı yayın ve
 kategori silme yarışı; ardından eski edit/eşzamanlı güncelleme. Ek portlar
 PostgreSQL55461/55462 ve uygulama15199/15201/15200’dür; boş olmalıdır.

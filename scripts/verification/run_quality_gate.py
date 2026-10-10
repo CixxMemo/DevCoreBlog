@@ -96,6 +96,15 @@ try:
         (report/'fixture-checks.json').write_text(json.dumps({'checks':checks,'exit_code':code},indent=2)+'\n')
         stages['postgres-http']['passed']=code==0 and bool(checks) and all(checks.values())
         if code: print('Fixture failed; private raw output withheld. See structured reports and rerun the isolated fixture for diagnosis.',flush=True)
+        code,output=run('content-access',['sh','scripts/verification/run_f17_visibility.sh'],source,timeout=480,export=False,extra={
+            'DEVCORE_VOL1_F04_REPORT_DIR':str(report),'DEVCORE_F17_PG_PORT':'55474','DEVCORE_F17_APP_PORT':'15204'})
+        access_checks={line.split('=')[0]:line.endswith('=true') for line in output.splitlines() if line.startswith('f04_') and line.endswith(('=true','=false'))}
+        (report/'content-access-fixture.json').write_text(json.dumps({'checks':access_checks,'exit_code':code},indent=2)+'\n')
+        try:
+            http_access=json.loads((report/'public-access.json').read_text())
+            stages['content-access']['passed']=code==0 and bool(access_checks) and all(access_checks.values()) and bool(http_access['checks']) and all(http_access['checks'].values())
+        except (OSError,ValueError,KeyError,TypeError):
+            stages['content-access']['passed']=False
         if args.final_acceptance:
             code,output=run('final-security-data',['sh','scripts/verification/run_f17_visibility.sh'],source,timeout=480,export=False,extra={'DEVCORE_F49_PROBE':'1','DEVCORE_F57_PROBE':'1','DEVCORE_F57_REPORT':str(report/'final-regression.json'),'DEVCORE_F17_PG_PORT':'55461','DEVCORE_F17_APP_PORT':'15199'})
             try:

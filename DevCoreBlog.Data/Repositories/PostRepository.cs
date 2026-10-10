@@ -87,8 +87,8 @@ public class PostRepository : GenericRepository<Post>, IPostRepository
     public Task<DateTime?> GetNextScheduledPublicationAsync(
         DateTime utcNow, CancellationToken cancellationToken = default) =>
         _context.Posts.AsNoTracking()
-            .Where(post => post.IsActive && post.IsPublished &&
-                post.Category.IsActive && post.PublishDate > utcNow)
+            .Where(PostPublication.EligibleForPublicPublication())
+            .Where(post => post.PublishDate > utcNow)
             .MinAsync(post => (DateTime?)post.PublishDate, cancellationToken);
 
     // One extra row detects protocol overflow without loading article bodies.

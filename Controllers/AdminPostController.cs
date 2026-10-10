@@ -494,6 +494,8 @@ public class AdminPostController : Controller
             IsPublished = input.IsPublished,
             IsActive = input.IsActive,
             PublishDate = input.PublishDate,
+            ContentKind = storedPost?.ContentKind ?? PostContentKind.Unclassified,
+            AccessScope = storedPost?.AccessScope ?? PostAccessScope.Public,
             ThumbnailUrl = storedPost?.ThumbnailUrl ?? string.Empty,
             ThumbnailPublicId = storedPost?.ThumbnailPublicId,
             ThumbnailWidth = storedPost?.ThumbnailWidth,

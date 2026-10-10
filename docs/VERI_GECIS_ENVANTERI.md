@@ -32,7 +32,7 @@ Rapor stdout'ta JSON'dur. `verified` ve exit code 0 tamamlanmış snapshot;
   30 saniyedir. Rapor başına bölüm en çok 65.536 karakterdir. İçerik analizi
   öncesinde en çok 50.000 yazı ve 67.108.864 UTF-8 içerik byte sınırı uygulanır.
   İlk toplam sorgusu da statement deadline'a tabidir.
-- Sabit SQL sorguları kullanılır. Yalnız bilinen iki kapak metadata ifadesi,
+- Sabit SQL sorguları kullanılır. Bilinen kapak ve erişim metadata ifadeleri,
   sunucuda bulunan izinli kolonlara göre seçilir; dış SQL input'u yoktur.
 - Rapor başlık, slug değeri, gövde, medya URL/PublicId, receipt anahtarı, bağlantı
   adresi, kullanıcı adı veya parola içermez. Hedef fingerprint'i bağlantının
@@ -54,6 +54,15 @@ parser'ı veya tüm olası medya referanslarının eksiksiz envanteri değildir.
 Draft/Scheduled/Published/Inactive mevcut kategori ve yayın durumuna göre ayrılır.
 Kapak URL doluluğu sağlayıcı varlığının erişilebilir olduğunu kanıtlamaz.
 PublicId veya boyut kolonu bulunmuyorsa ilgili sonuç `null` olur.
+
+`ContentKind` ve `AccessScope` birlikte varsa public sayımı yalnız public erişim
+ve tanınan bülten dışı türlerle yapılır; `subscriberBodies` ve
+`invalidAccessMetadata` ayrı sayılır. Bülten/public veya bilinmeyen enum kaydı
+public sayılmaz. İki kolon da yoksa `accessContract=legacy_schema_without_access_metadata`
+eski kuralı gösterir; erişim metadata sayıları bilinmediği için `null` olur.
+Yalnız bir erişim kolonu bulunan yarım şema `unverified`/exit1 verir; eksik erişim
+metadata'sı varsayılan public kabul edilmez. Draft/scheduled site durumları erişimden
+bağımsızdır; private scheduled kayıt public cache'in sonraki yayın sınırı değildir.
 
 Gerçek/sentetik içerik sınıflaması sahibinden ayrıca alınır. Sıfır webhook receipt
 aktif tüketici yokluğu kanıtı değildir; webhook ve portföy kullanımı operatör/kullanıcı
