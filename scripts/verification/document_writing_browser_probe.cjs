@@ -45,7 +45,7 @@ function canonical(node) {
     await page.getByRole('link', { name: '+ Yeni yazı', exact: true }).click();
     const editor = page.getByRole('textbox', { name: 'Yazı metni', exact: true });
     await editor.waitFor();
-    check('shared_turkish_form_loads_local_editor', await page.locator('[data-writing-command]').count() === 16 && await page.locator('[data-document-fallback]').isHidden());
+    check('shared_turkish_form_loads_local_editor', await page.getByRole('group', { name: 'Metin biçimi', exact: true }).locator('[data-writing-command]').count() === 16 && await page.getByRole('group', { name: 'Tablo araçları', exact: true }).locator('[data-writing-command]').count() === 9 && await page.locator('[data-document-fallback]').isHidden());
     await page.locator('#post-title-input').fill('F09 tarayıcı yazısı');
     await page.locator('[name=CategoryId]').selectOption('1001');
     await editor.fill('Kalıcı Türkçe metin 👋');

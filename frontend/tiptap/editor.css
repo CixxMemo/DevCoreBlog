@@ -40,3 +40,10 @@
 .writing-help { font-size: .875rem; margin-block: .75rem; }
 .writing-checkbox { display: flex !important; gap: .5rem; align-items: center; }
 @media (max-width: 800px) { .writing-grid { grid-template-columns: minmax(0, 1fr); } .writing-page { padding: .5rem; } }
+
+.writing-table-scroll { max-width: 100%; overflow-x: auto; overscroll-behavior-x: contain; margin-block: 1rem; }
+.writing-table-scroll table { border-collapse: collapse; table-layout: fixed; min-width: 100%; width: max-content; }
+.writing-table-scroll :is(td, th) { min-width: 8rem; width: 8rem; border: 2px solid #171717; padding: .5rem; vertical-align: top; position: relative; }
+.writing-table-scroll th { background: #e5e5e5; font-weight: 700; }
+.writing-table-scroll .selectedCell { background: #dbeafe; outline: 3px solid #1d4ed8; outline-offset: -3px; }
+.writing-table-scroll p { margin-block: .3rem; }

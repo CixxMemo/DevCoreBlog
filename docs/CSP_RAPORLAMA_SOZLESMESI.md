@@ -120,3 +120,9 @@ MVC'nin otomatik gizli `<li style="display:none">` çıktısı ilk browser kabul
 CSP ihlali oluşturdu; koşullu summary ile giderildi. Middleware politika izinleri
 ve eski Toast UI200 Create/Edit istisnası değişmedi. Klavye, mobil, bütün temel
 biçimler ve400/409 editörleri gerçek Chrome'da aynı sınırlarda sınanır.
+
+JSON yazım formundaki tablolar exact Tiptap Table API'sinin static renderHTML
+uyarlamasıyla gösterilir; varsayılan dinamik genişlikli TableView devreye girmez.
+View:null/resizable:false, static hücre hizalama sınıfları ve yerel CSS kullanılır.
+Tablo ekleme/silme, paste, seçim ve kayıt akışı için yeni CSP izni eklenmez;
+AdminWriting200/400/413/409 yanıtlarının style-src-attr:none sınırı korunur.

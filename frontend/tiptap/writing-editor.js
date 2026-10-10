@@ -1,6 +1,7 @@
 import { Editor, Extension } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
 import Code from '@tiptap/extension-code';
+import { writingTableExtensions, isTableCommand, canTableCommand, runTableCommand } from './tables.js';
 
 // Preserve supported stored attributes without dynamic style attributes or new alignment tools.
 const Alignment = Extension.create({
@@ -15,6 +16,8 @@ const Alignment = Extension.create({
 });
 const attributes = {
     doc: [], paragraph: ['textAlign'], heading: ['level', 'textAlign'], text: [], hardBreak: [],
+    table: [], tableRow: [], tableCell: ['colspan', 'rowspan', 'colwidth', 'align'],
+    tableHeader: ['colspan', 'rowspan', 'colwidth', 'align'],
     blockquote: [], bulletList: [], orderedList: ['start', 'type'], listItem: [], codeBlock: ['language'],
 };
 const marks = { bold: [], italic: [], underline: [], code: [], link: ['href', 'title', 'target', 'rel', 'class'] };
@@ -43,6 +46,7 @@ export function mountWritingEditor(form) {
     const original = JSON.parse(input.value);
     if (!supportedDocument(original)) throw new Error('Unsupported document; retain original');
     const mount = form.querySelector('[data-editor-mount]');
+    const status = form.querySelector('[data-writing-status]');
     let contentError = false;
     const editor = new Editor({
         element: mount, injectCSS: false, enableContentCheck: true,
@@ -51,14 +55,13 @@ export function mountWritingEditor(form) {
             horizontalRule: false, strike: false, trailingNode: false, dropcursor: false,
             link: { openOnClick: false, autolink: false, linkOnPaste: false,
                 HTMLAttributes: { target: null, rel: 'noopener noreferrer', class: null } },
-        }), Code.extend({ excludes: '' }), Alignment],
+        }), Code.extend({ excludes: '' }), Alignment, ...writingTableExtensions(message => { status.textContent = message; })],
         content: original.document,
         onContentError: () => { contentError = true; },
         editorProps: { attributes: { class: 'writing-document', role: 'textbox',
             'aria-label': 'Yazı metni', 'aria-multiline': 'true', lang: 'tr', spellcheck: 'true' } },
     });
     if (contentError) { editor.destroy(); throw new Error('Invalid content'); }
-    const status = form.querySelector('[data-writing-status]');
     const saves = [...form.querySelectorAll('[data-writing-save]')];
     const buttons = [...form.querySelectorAll('[data-writing-command]')];
     let dirty = false;
@@ -68,13 +71,14 @@ export function mountWritingEditor(form) {
     function controls() {
         for (const button of buttons) {
             const command = button.dataset.writingCommand;
-            button.disabled = command === 'undo' ? !editor.can().undo() : command === 'redo' ? !editor.can().redo() : false;
-            const active = command.startsWith('h') ? editor.isActive('heading', { level: Number(command[1]) }) : editor.isActive(command);
-            if (!['undo', 'redo', 'unlink', 'link'].includes(command)) button.setAttribute('aria-pressed', String(active));
+            button.disabled = isTableCommand(command) ? !canTableCommand(editor, command) : command === 'undo' ? !editor.can().undo() : command === 'redo' ? !editor.can().redo() : false;
+            const active = command === 'tableHeader' ? editor.isActive('tableHeader') : command.startsWith('h') ? editor.isActive('heading', { level: Number(command[1]) }) : editor.isActive(command);
+            if ((!isTableCommand(command) || command === 'tableHeader') && !['undo', 'redo', 'unlink', 'link'].includes(command)) button.setAttribute('aria-pressed', String(active));
         }
     }
     for (const button of buttons) button.addEventListener('click', () => {
         const command = button.dataset.writingCommand;
+        if (isTableCommand(command)) { runTableCommand(editor, command); return; }
         const chain = editor.chain().focus();
         switch (command) {
             case 'bold': chain.toggleBold().run(); break;

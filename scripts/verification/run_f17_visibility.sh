@@ -19,8 +19,9 @@ task_admin_password=f17-isolated-password
 task_ef_command_log_level=Warning
 task_webhook_rate_limit=5
 task_login_rate_limit=5
-if [ -n "${DEVCORE_VOL1_F01_REPORT_DIR:-}" ]; then
-    # Privacy/CSRF cases share this fixture; rate-limit acceptance has its own fresh process.
+if [ -n "${DEVCORE_VOL1_F01_REPORT_DIR:-}" ] || [ -n "${DEVCORE_VOL1_F08_REPORT_DIR:-}" ]; then
+    # Multiple authenticated document/privacy probes share this synthetic fixture.
+    # Actual rate-limit acceptance runs in its own fresh process.
     task_login_rate_limit=20
 fi
 if [ "${DEVCORE_F25_PROBE:-0}" = 1 ] || [ "${DEVCORE_F29_PROBE:-0}" = 1 ]; then
@@ -512,6 +513,10 @@ if [ -n "${DEVCORE_VOL1_F08_REPORT_DIR:-}" ]; then
     python3 "$task_source/scripts/verification/document_writing_http_probe.py" \
         --base-url "http://127.0.0.1:$task_app_port" --database-port "$task_pg_port" \
         --report "$DEVCORE_VOL1_F08_REPORT_DIR/document-writing-http.json"
+    DEVCORE_TEST_ADMIN_USERNAME=f17-admin DEVCORE_TEST_ADMIN_PASSWORD="$task_admin_password" \
+    python3 "$task_source/scripts/verification/document_tables_http_probe.py" \
+        --base-url "http://127.0.0.1:$task_app_port" --database-port "$task_pg_port" \
+        --report "$DEVCORE_VOL1_F08_REPORT_DIR/document-tables-http.json"
     task_before_down=$(psql -X -h 127.0.0.1 -p "$task_pg_port" -U "$task_pg_user" -d "$task_db" -At -c 'SELECT to_jsonb(p) FROM "Posts" p WHERE "Id" = 2003;')
     if (
         cd "$task_source"

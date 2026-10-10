@@ -331,3 +331,22 @@ Gerçek yapılandırılmış DB veya production migration bu kabulde kullanılma
 Resmî istemci kaynakları: [Tiptap Editor](https://tiptap.dev/docs/editor/api/editor),
 [StarterKit](https://tiptap.dev/docs/editor/extensions/functionality/starterkit).
 Exact API ve LICENSE dosyaları yerel kilitli paket/build receipt'inde doğrulanır.
+
+## Tablo yazımı
+
+Ortak Türkçe JSON yazım formu tablo, başlık hücresi, satır/sütun ekleme ve silme
+araçlarını sunar. Yeni tablo 3×3 hücre ve başlık satırıyla açılır. Birleştirme ve
+resize araçları yoktur; colspan/rowspan1 ve colwidthnull sözleşmesi değişmez.
+İstemci seçim ve toplam hücre sayısından araç durumunu hesaplar; transaction
+kontrolü Tab ile otomatik satır ekleme ve paste dahil20×10/toplam1000 sınırını ve
+her derinlikte iç içe tablo yasağını uygular. Geçersiz işlem metni kırpmadan
+reddedilir, Türkçe durum mesajı gösterilir. HTML paste'de desteklenmeyen tablo
+şekli upstream onarımından önce reddedilir; bu kontrol HTML güvenlik validator'ı
+veya sunucu şema doğrulamasının yerine geçmez.
+
+Static table/cell/header render yalnız sınıflar üretir, inline style/colgroup/
+resize handle üretmez. Table View:null, resizable:false ile enforcing CSP'de
+style-src-attr:none korunur. Tablo aynı v1 JSON validation, türev ve atomik
+metadata+document yazım hattından geçer. Doğrudan HTTP sınır üstüne413, geçersiz
+şemaya400; edit çakışmasına409 döner ve gönderilmiş belgeyi korur. Public JSON
+sunumu ve medya entegrasyonu ayrı geçişlerdir; yeni DB kolonu/migration gerekmez.

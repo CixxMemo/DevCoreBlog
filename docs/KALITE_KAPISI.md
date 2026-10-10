@@ -206,3 +206,10 @@ klavye/focus, CSP, unsupported node ve dependency-load hatası/veri korumayı ö
 Dashboard/listeden yeni JSON formuna gidilir; mevcut Markdown kapak ve validation
 regresyonları eski gerçek adreslerini korur. Legacy kurtarma kopyası yeni format
 olarak yüklenmez veya silinmez. JSON kurtarma/public gösterim bu kabul değildir.
+
+Tablo yazımıyla `document-tables-http.json` aynı `document-persistence` aşamasında
+zorunludur: gerçek MVC/postgres tablo limitleri, nested/merged/resize/attribute
+reddi, atomik edit ve400/413/409 input koruma. Bu kontrol normal30/final32 aşama
+sayısını artırmaz. `document_tables_browser_probe.cjs` ayrı gerçek Chrome kabulü
+olarak tablo komutları, klavye/paste, mobil yatay alan, round-trip ve enforcing
+CSP'yi ölçer; önceki `document_writing_browser_probe.cjs` temel araçları da korur.

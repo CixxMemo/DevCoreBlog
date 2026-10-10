@@ -113,8 +113,9 @@ try:
             document_db=json.loads((report/'document-persistence.json').read_text())
             document_http=json.loads((report/'document-persistence-http.json').read_text())
             writing_http=json.loads((report/'document-writing-http.json').read_text())
+            tables_http=json.loads((report/'document-tables-http.json').read_text())
             stages['document-persistence']['passed']=code==0 and len(document_checks)>=5 and all(document_checks.values()) and all(
-                bool(data['checks']) and data['count']==len(data['checks']) and all(data['checks'].values()) for data in (document_db,document_http,writing_http))
+                bool(data['checks']) and data['count']==len(data['checks']) and all(data['checks'].values()) for data in (document_db,document_http,writing_http,tables_http))
         except (OSError,ValueError,KeyError,TypeError):
             stages['document-persistence']['passed']=False
         if args.final_acceptance:

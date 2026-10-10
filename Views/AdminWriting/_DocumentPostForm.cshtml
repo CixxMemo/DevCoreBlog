@@ -8,6 +8,12 @@
         ("codeBlock", "Kod bloğu"), ("link", "Bağlantı"), ("unlink", "Bağlantıyı kaldır"),
         ("undo", "Geri al"), ("redo", "Yinele")
     };
+    var tableCommands = new (string Key, string Label)[] {
+        ("tableInsert", "Tablo ekle"), ("tableHeader", "Başlık hücresi"),
+        ("tableRowBefore", "Üste satır ekle"), ("tableRowAfter", "Alta satır ekle"), ("tableRowDelete", "Satırı sil"),
+        ("tableColumnBefore", "Sola sütun ekle"), ("tableColumnAfter", "Sağa sütun ekle"), ("tableColumnDelete", "Sütunu sil"),
+        ("tableDelete", "Tabloyu sil")
+    };
 }
 <main class="writing-page" lang="tr">
     <h1>@(editing ? "Yazıyı düzenle" : "Yeni yazı")</h1>
@@ -34,6 +40,12 @@
                         <button type="button" data-writing-command="@command.Key" disabled>@command.Label</button>
                     }
                 </div>
+                <div class="writing-toolbar" role="group" aria-label="Tablo araçları" aria-describedby="writing-table-help">
+                    @foreach (var command in tableCommands) {
+                        <button type="button" data-writing-command="@command.Key" disabled>@command.Label</button>
+                    }
+                </div>
+                <p id="writing-table-help" class="writing-help">Yeni tablo 3 × 3 hücredir. En fazla 20 satır, 10 sütun ve belgede 1.000 hücre; birleştirme ve boyutlandırma yok. Tab ile hücreler arasında ilerleyebilirsiniz.</p>
                 <div data-editor-mount hidden></div>
                 @* Encoded original envelope is both startup input and an inspectable fallback. *@
                 <div data-document-fallback>
