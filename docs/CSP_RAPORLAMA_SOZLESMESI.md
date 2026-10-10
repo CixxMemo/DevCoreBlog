@@ -9,6 +9,15 @@ politikanın `style-src-attr 'none'` sınırını kullanır. `injectCSS:false`, 
 bundle/CSS ve minimal extension set'i ile yeni izin/nonce eklenmez. Create/Edit
 Toast UI istisnası korunur. [Tiptap build sözleşmesi](TIPTAP_BUILD_SOZLESMESI.md).
 
+JSON kayıt geçişinde gerçek legacy Edit409 yanıtı yeniden ölçüldü. Başarısız
+Create/Edit yanıtında dar style-src-attr none politikası korunur; ortak formun
+sunucu tarafından üretilen `data-rich-editor-enabled` alanı yalnız200'de true
+olur. `post-editor.js` diğer yanıtlarda Toast UI'yi başlatmaz, encode edilmiş
+textarea'yı görünür tutar. Kullanıcı metni ve mevcut kurtarma kopyası korunur;
+genel unsafe-inline izni veya yeni CSP istisnası eklenmez. Ayrı gerçek Chrome
+`document_persistence_browser_probe.cjs` masaüstü/mobil409, klavye/focus,
+input/kurtarma korunması ve sıfır normal CSP/runtime hatasını sınar.
+
 ## Etkinleşme ve yanıt sınırı
 
 `SecurityHeadersMiddleware` koşulsuz kullanılır; kapatma/report-only configuration

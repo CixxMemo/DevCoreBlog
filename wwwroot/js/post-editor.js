@@ -62,7 +62,8 @@ function initializePostEditor() {
     // Initialize Toast UI Editor
     const editorElement = document.querySelector('#editor');
     const contentFallback = document.getElementById('content-fallback');
-    const editor = create({
+    // Error responses have a strict style policy; keep the authored textarea without dynamic editor styles.
+    const editor = postForm.dataset.richEditorEnabled === 'true' ? create({
         editorElement: editorElement,
         contentField: contentHidden,
         fallbackElement: contentFallback,
@@ -77,7 +78,7 @@ function initializePostEditor() {
                 }
             }
         }
-    });
+    }) : null;
 
     if (editor) {
         // Update hidden content before form submit

@@ -105,6 +105,17 @@ try:
             stages['content-access']['passed']=code==0 and bool(access_checks) and all(access_checks.values()) and bool(http_access['checks']) and all(http_access['checks'].values())
         except (OSError,ValueError,KeyError,TypeError):
             stages['content-access']['passed']=False
+        code,output=run('document-persistence',['sh','scripts/verification/run_f17_visibility.sh'],source,timeout=480,export=False,extra={
+            'DEVCORE_VOL1_F08_REPORT_DIR':str(report),'DEVCORE_F17_PG_PORT':'55478','DEVCORE_F17_APP_PORT':'15408'})
+        document_checks={line.split('=')[0]:line.endswith('=true') for line in output.splitlines() if line.startswith('f08_') and line.endswith(('=true','=false'))}
+        (report/'document-migration-fixture.json').write_text(json.dumps({'checks':document_checks,'exit_code':code},indent=2)+'\n')
+        try:
+            document_db=json.loads((report/'document-persistence.json').read_text())
+            document_http=json.loads((report/'document-persistence-http.json').read_text())
+            stages['document-persistence']['passed']=code==0 and len(document_checks)>=5 and all(document_checks.values()) and all(
+                bool(data['checks']) and data['count']==len(data['checks']) and all(data['checks'].values()) for data in (document_db,document_http))
+        except (OSError,ValueError,KeyError,TypeError):
+            stages['document-persistence']['passed']=False
         if args.final_acceptance:
             code,output=run('final-security-data',['sh','scripts/verification/run_f17_visibility.sh'],source,timeout=480,export=False,extra={'DEVCORE_F49_PROBE':'1','DEVCORE_F57_PROBE':'1','DEVCORE_F57_REPORT':str(report/'final-regression.json'),'DEVCORE_F17_PG_PORT':'55461','DEVCORE_F17_APP_PORT':'15199'})
             try:

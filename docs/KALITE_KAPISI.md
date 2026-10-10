@@ -15,7 +15,7 @@ python3 scripts/verification/run_quality_gate.py --report-dir /tmp/devcore-quali
 Rapor dizini boş olmalıdır; eski kanıt yeniden kullanılmaz. Gerekenler: global.json
 ile tam .NET SDK10.0.302, Node22+, npm, Python3, rsync, PostgreSQL16 araçları
 (initdb/pg_ctl/createdb/psql/pg_isready), ripgrep, openssl. Yerelde PostgreSQL bin
-PATH içinde olmalıdır; root olarak initdb çalışmaz. Test portları55459/15196, erişim55474/15204 ve
+PATH içinde olmalıdır; root olarak initdb çalışmaz. Test portları55459/15196, erişim55474/15204, belge55478/15408 ve
 proxy/diagnostics15186–15188/15195 boş olmalıdır. Aktif PostgreSQL portu üzerinde
 runner erken durur. PostgreSQL yalnız yeni /tmp fixture cluster’ında başlatılır;
 mevcut DB connection/config kullanılmaz.
@@ -38,7 +38,15 @@ F07 aynı araçta güvenli C# web renderer fixture'larını; `postgres-http` gru
 Schema400/Limit413 ve bütün DB satırlarının değişmezliğini ekler. Gerçek Chrome
 `document_web_browser_probe.cjs` ayrı masaüstü/mobil/klavye/CSP kabulüdür;
 medya stub'ları gerçek YouTube/Cloudinary kanıtı değildir. Aşama sayısı değişmez.
-Bu eklemeyle kapı normal29, `--final-acceptance` ile31 aşamadır; tarihsel
+F08 `document-persistence` aşamasını ekler: ayrı owned PostgreSQL'de boş/hemen
+önceki şema yükseltmesi, belge+türev atomikliği, stale/paralel edit ve sayaç yarışı,
+constraint hatası, veri taşıyan down reddi ve gerçek legacy Edit409 ölçülür.
+`document-persistence.json`, `document-persistence-http.json` ve
+`document-migration-fixture.json` raporları ayrı kapsamları taşır; gelecekteki
+kayıt HTTP eşlemesi adapter'ı yalnız geçici kaynakta oluşur. Yeni production
+endpoint'i değildir. En büyük Unicode belge, ek LF ayırıcıları ve1MiB JSON
+kayıt–okuma sınırı gerçek DB'de sınanır.
+Bu eklemeyle kapı normal30, `--final-acceptance` ile32 aşamadır; tarihsel
 24/25/28 sonuçları önceki kaynaklara aittir.
 
 E01 ile uygulama build’inden sonra `editor_build_probe.mjs` eklenir: değiştirilmiş

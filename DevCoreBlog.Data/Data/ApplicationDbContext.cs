@@ -84,6 +84,18 @@ public class ApplicationDbContext : DbContext
             table.HasCheckConstraint("CK_Posts_ContentKind", "\"ContentKind\" IN (0, 1, 2, 3, 4)");
             table.HasCheckConstraint("CK_Posts_AccessScope", "\"AccessScope\" IN (0, 1)");
             table.HasCheckConstraint("CK_Posts_NewsletterAccess", "\"ContentKind\" <> 4 OR \"AccessScope\" = 1");
+            // Explicit NOT NULL terms prevent SQL's unknown result from admitting a partial set.
+            table.HasCheckConstraint("CK_Posts_DocumentFacts", """
+                ("DocumentVersion" IS NULL AND "DocumentJson" IS NULL AND "DocumentPlainText" IS NULL
+                    AND "DocumentWordCount" IS NULL AND "DocumentReadingMinutes" IS NULL)
+                OR
+                ("DocumentVersion" IS NOT NULL AND "DocumentJson" IS NOT NULL AND "DocumentPlainText" IS NOT NULL
+                    AND "DocumentWordCount" IS NOT NULL AND "DocumentReadingMinutes" IS NOT NULL
+                    AND "DocumentVersion" = 1 AND octet_length("DocumentJson") BETWEEN 1 AND 1048576
+                    AND octet_length("DocumentPlainText") <= 1048576
+                    AND "DocumentWordCount" BETWEEN 0 AND 200000
+                    AND "DocumentReadingMinutes" = ("DocumentWordCount" + 199) / 200)
+                """);
         });
 
         modelBuilder.Entity<Post>()

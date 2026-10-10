@@ -19,6 +19,10 @@ if (string.IsNullOrWhiteSpace(connectionString))
 var options = new DbContextOptionsBuilder<ApplicationDbContext>()
     .UseNpgsql(connectionString)
     .Options;
+if (args.Contains("--documents"))
+{
+    return await DocumentPersistenceProbe.RunAsync(options);
+}
 if (args.Contains("--visibility"))
 {
     return await VisibilityProbe.RunAsync(options);

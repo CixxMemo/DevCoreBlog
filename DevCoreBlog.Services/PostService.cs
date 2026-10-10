@@ -185,6 +185,12 @@ public class PostService : IPostService, IPublicationSchedule, IWebhookPostServi
         var errors = result.Errors.ToList();
         errors.AddRange(PostAccessRules.Validate(post).Errors);
 
+        // The legacy writer cannot accept document fields or keep their derivatives in sync.
+        if (post.DocumentVersion is not null || post.DocumentJson is not null ||
+            post.DocumentPlainText is not null || post.DocumentWordCount is not null ||
+            post.DocumentReadingMinutes is not null)
+            errors.Add(new(nameof(Post.Content), "JSON belge kaydı için belge kayıt akışını kullanın."));
+
         // Normalize the shared service input before uploads or persistence.
         if (_publicationTimeZone.TryConvertToUtc(
                 post.PublishDate, out var publishDateUtc, out var dateError))
@@ -215,6 +221,10 @@ public class PostService : IPostService, IPublicationSchedule, IWebhookPostServi
     {
         var validation = await ValidatePostAsync(post, cancellationToken);
         if (!validation.IsValid) return validation;
+        var stored = post.Id > 0 ? await _postRepository.GetByIdAsync(post.Id) : null;
+        if (stored is { DocumentVersion: not null })
+            return ContentValidationResult.Conflict(
+                "Bu yazı JSON belge kullanıyor. Değişiklikleriniz korunuyor; belge editörüyle düzenleyin.");
         var utcNow = _timeProvider.GetUtcNow().UtcDateTime;
         switch (action)
         {
@@ -232,7 +242,6 @@ public class PostService : IPostService, IPublicationSchedule, IWebhookPostServi
                 post.PublishDate = utcNow;
                 break;
             case PostSaveAction.Save:
-                var stored = post.Id > 0 ? await _postRepository.GetByIdAsync(post.Id) : null;
                 if (stored is null)
                     return ContentValidationResult.FromErrors([
                         new("SaveAction", "Save changes requires an existing post.")]);
@@ -366,6 +375,9 @@ public class PostService : IPostService, IPublicationSchedule, IWebhookPostServi
         }
 
         var loadedVersion = expectedEditVersion ?? existingPost.EditVersion;
+        if (existingPost.DocumentVersion is not null || existingPost.DocumentJson is not null)
+            return ContentValidationResult.Conflict(
+                "Bu yazı JSON belge kullanıyor. Değişiklikleriniz korunuyor; belge editörüyle düzenleyin.");
         if (loadedVersion != existingPost.EditVersion)
         {
             return ContentValidationResult.Conflict(

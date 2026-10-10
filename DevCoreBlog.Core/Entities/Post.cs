@@ -57,6 +57,13 @@ public class Post : BaseEntity
     // The full content of the blog post (plain text in <textarea>)
     public string Content { get; set; } = string.Empty;
 
+    // An all-null set identifies legacy content. Only the document use case owns these fields.
+    public int? DocumentVersion { get; set; }
+    public string? DocumentJson { get; set; }
+    public string? DocumentPlainText { get; set; }
+    public int? DocumentWordCount { get; set; }
+    public int? DocumentReadingMinutes { get; set; }
+
     // -----------------------------------------------------------------------
     // VIEW COUNT — Tracks how many times this post has been viewed
     // -----------------------------------------------------------------------

@@ -319,6 +319,7 @@ public class AdminPostController : Controller
             var validationResult = await _postService.PrepareEditorSaveAsync(
                 post, input.SaveAction, cancellationToken);
             ModelState.AddContentErrors(validationResult);
+            if (validationResult.IsConflict) Response.StatusCode = StatusCodes.Status409Conflict;
         }
 
         if (ModelState.IsValid && thumbnailFile is not null)

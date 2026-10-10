@@ -3,7 +3,7 @@
 Sunucu sınırı `ContentDocumentValidator.Validate(string | ReadOnlyMemory<byte>)`.
 F05 bu bileşeni ve salt sentetik kabul aracını ekler; F06 bağımsız okuma türevini,
 F07 güvenli web HTML ve kayıtsız yönetici doğrulama yüzeyini ekler.
-Kayıt ve tam editör geçişi daha sonraki fazlardır. Mevcut Markdown
+F08 atomik kalıcı belge kaydını ekler; tam editör geçişi sonraki fazdadır. Mevcut Markdown
 akışı bu belgeyi tüketmez. Yeni runtime paketi yoktur.
 
 Zarf tam olarak `{"version":1,"document":{"type":"doc","content":[...]}}`.
@@ -229,3 +229,63 @@ Karşılaştırılan resmi kaynaklar: [Tiptap JSON persistence](https://tiptap.d
 Yerel exact3.31.4 list/link/heading/code kaynakları da incelendi.
 Sunucu şeması bu kaynaklardan dar bir uygulama sözleşmesidir; npm şeması
 sunucu güvenlik sınırı yerine geçmez.
+
+## Atomik kalıcı kayıt (F08)
+
+`PostDocumentService.SaveAsync(postId, expectedEditVersion, documentJson, token)`
+yalnız pozitif yazı kimliği ve1..long.MaxValue−1 beklenen düzenleme sürümü alır.
+F05 validator aynı immutable belgeden F06 türevlerini üretir; hatalı input
+persistence'a ulaşmaz. HTML, türev, sayaç, slug veya yayın alanı input değildir.
+Doğrulanmış Tiptap v1 zarfı byte anlamı/whitespace korunarak metin olarak saklanır;
+Core ağacının varsayılan serializer çıktısı wire format yerine kullanılmaz.
+
+Core'daki `IPostDocumentRepository` yalnız dar snapshot ve koşullu belge yazımı
+sunar. Data tek `UPDATE WHERE Id AND EditVersion` içinde DocumentVersion,
+DocumentJson, DocumentPlainText, DocumentWordCount, DocumentReadingMinutes,
+UTC UpdatedDate ve EditVersion+1 alanlarını açık eşler. PostgreSQL statement
+transaction'ı bunların tamamını atomik yapar; ek çok adımlı transaction veya
+tracked entity'nin bütün satırını güncelleme yoktur. Slug, Content, sayaç, medya,
+CreatedDate, sınıflandırma ve site yayın durumu korunur. Başarılı commit mevcut
+public liste cache'ini geçersizleştirir. DB/cache I/O hatası ve cancellation başarıya
+çevrilmez; commit sonrasındaki cache/cancellation hatası kaydın geri alındığını
+kanıtlamaz. HTTP entegrasyonu yeniden okuyarak sürümü değerlendirmelidir.
+
+`ContentDocuments` additive migration'ı eski alan ve migration geçmişini tutar.
+Beş belge alanı legacy satırda bütünüyle null, belge satırında bütünüyle doludur.
+DB CHECK açık IS NULL/IS NOT NULL terimleriyle kısmi null takımı reddeder;
+version1, JSON1..1.048.576 UTF-8 byte, plain text en çok1.048.576 byte,
+word count0..200.000 ve minutes=(words+199)/200 şarttır. Metin sınırı doğrulanmış
+200.000 rune ile ek blok/hardBreak LF ayırıcılarını kapsar; plain text200.000
+rune'a kesilmez. CHECK tam JSON şeması veya metin eşitliği doğrulaması değildir.
+
+`ReadAsync` NotFound/Legacy/Inconsistent/Ready ayrımı yapar. Kaydedilmiş zarf
+aynı validator'dan tekrar geçer; metin/kelime/dakika yeniden türetilip kolonlarla
+karşılaştırılır. Tutarsız kayıttan trusted document/HTML üretilmez. Boş veya
+medyadan oluşan geçerli belgede0 kelime/0 dakika kabul edilir.
+
+Eski Markdown Create/webhook belge alanlarını kabul etmez. JSON kayıtlarının
+eski Edit yoluyla değiştirilmesi servis seviyesinde conflict olur; gerçek MVC
+Edit409/no-store döner, kullanıcı input'unu formda tutar ve bu kontrol upload'dan
+önce yapılır. Belge kaydı yayın metadata'sını değiştirmez; mevcut legacy toggle
+da JSON satırlarında bu güvenli ret sınırına takılır. F09 form entegrasyonunda
+yayın eylemleri JSON'a uygun atomik metadata/kayıt sınırıyla ele alınmalıdır.
+Yeni genel HTTP endpoint'i eklenmez; F09 temel Create/Edit yolculuğunu
+aynı belge sınırına bağlayacaktır. Bu faz mevcut public Markdown gösterimini,
+arama sorgusunu, JSON kurtarmayı veya eski veriyi değiştirmez.
+
+Down, tabloyu transaction boyunca kilitleyip herhangi bir belge alanı doluysa
+reddeder; kolonlar ve veri kalır. Veri taşımayan disposable DB downgrade edilebilir.
+Belge verisi varken önceki binary'ye dönüş otomatik uyumlu sayılmaz; forward repair
+veya yeni kayıt yolunun kapatılması veri kaybetmeyen sınırdır. Gerçek yapılandırılmış
+DB'ye migration uygulanmadı.
+
+`ContentRulesTool --documents` yalnız runner'ın owned cluster'ında kayıt/okuma,
+invalid input'ta sıfır I/O, stale ve paralel edit, sayaç yarışı, constraint rollback,
+legacy yazıcı reddi, en büyük Unicode metin ve1MiB zarf sınırını doğrular.
+`document_persistence_http_probe.py` gelecekteki HTTP eşlemesi için geçici kaynakta
+oluşan auth/CSRF korumalı adapter'ı ve gerçek legacy Edit409'u ayırır. Adapter
+üretim kaynak/publish yüzeyi değildir. Boş ve hemen önceki ContentAccess şemasından
+yükseltme bütün eski kolonları korur; dolu veride gerçek EF down reddi sınanır.
+
+Resmi atomiklik/concurrency kaynağı: [EF Core ExecuteUpdate](https://learn.microsoft.com/en-us/ef/core/saving/execute-insert-update-delete).
+SQL null semantiği: [PostgreSQL CHECK constraints](https://www.postgresql.org/docs/current/ddl-constraints.html).

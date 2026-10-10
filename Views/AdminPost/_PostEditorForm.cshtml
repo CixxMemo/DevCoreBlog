@@ -7,6 +7,7 @@
 
 <form asp-action="@(isEdit ? "Edit" : "Create")" method="post" id="postForm" enctype="multipart/form-data" rel="noopener"
       data-site-time-zone="@SiteDates.BrowserTimeZoneId" data-mode="@(isEdit ? "edit" : "create")" data-post-id="@Model.Id"
+      data-rich-editor-enabled="@(Context.Response.StatusCode == 200 ? "true" : "false")"
       data-upload-url="@Url.Action("UploadEditorImage", "AdminPost")" data-slug="@Model.Slug">
     <input type="hidden" name="returnUrl" value="@Model.ReturnUrl" />
     @if (isEdit && Model.ReturnUrl is not null)
