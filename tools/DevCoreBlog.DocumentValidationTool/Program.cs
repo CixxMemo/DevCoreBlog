@@ -216,6 +216,8 @@ Check("contract.requestStateIsolated", () => {
     return outcomes.All(x => x);
 });
 
+DocumentReadingChecks.Run(Check);
+
 var passed = checks.Values.All(value => value);
 Console.WriteLine(JsonSerializer.Serialize(new { passed, count = checks.Count, checks, failures }, new JsonSerializerOptions { WriteIndented = true }));
 return passed ? 0 : 1;

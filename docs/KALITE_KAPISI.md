@@ -31,6 +31,8 @@ uygulanır. Yeni NuGet.Config yalnız geçici kaynakta public nuget.org kullanı
 Sürümlü belge doğrulamasıyla `DocumentValidation` restore/build/check aşamaları
 da eklenir: host/DB/HTTP kullanmadan şema, Unicode, URL, resource limitleri ve
 kısmi belge reddi kontrol edilir. [Belge v1 sözleşmesi](ICERIK_BELGESI_V1.md).
+F06 aynı araç/check içinde görünür metin, başlık hedefleri ve okuma türevi
+kabulünü ekler; kalite aşaması sayısı değişmez.
 Bu eklemeyle kapı normal29, `--final-acceptance` ile31 aşamadır; tarihsel
 24/25/28 sonuçları önceki kaynaklara aittir.
 

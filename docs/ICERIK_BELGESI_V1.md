@@ -1,8 +1,8 @@
 # İçerik belgesi v1 doğrulama sözleşmesi
 
 Sunucu sınırı `ContentDocumentValidator.Validate(string | ReadOnlyMemory<byte>)`.
-F05 bu bileşeni ve salt sentetik kabul aracını ekler. HTTP, DI kullanımı, kayıt,
-HTML/düz metin üretimi ve editör geçişi daha sonraki fazlardır. Mevcut Markdown
+F05 bu bileşeni ve salt sentetik kabul aracını ekler; F06 bağımsız okuma türevini
+ekler. HTTP, DI kullanımı, kayıt, HTML üretimi ve editör geçişi daha sonraki fazlardır. Mevcut Markdown
 akışı bu belgeyi tüketmez. Yeni runtime paketi yoktur.
 
 Zarf tam olarak `{"version":1,"document":{"type":"doc","content":[...]}}`.
@@ -109,6 +109,39 @@ Literal `<script>` gibi metin **text verisi** olarak korunabilir; bu HTML üreti
 değildir. Gelecek renderer bu değeri encode etmek zorundadır. `html` node veya
 event/style attribute'ları reddedilir. Doğrulanmış model `Html.Raw` güveni vermez.
 
+## Okuma türevi (F06)
+
+`DocumentTextProducer.Produce(ValidatedContentDocument)` aynı doğrulanmış snapshot'tan
+immutable `DocumentReading` üretir: PlainText, WordCount, ReadingMinutes ve
+belge sırasındaki immutable Headings. JSON yeniden parse edilmez; HTML üretilmez.
+Bu bileşen henüz kayıt/arama/UI'ya bağlanmaz.
+
+Text, biçimli text, inline kod, link etiketi, kod bloğu ve hücre metni korunur.
+JSON anahtarları, mark/attribute değerleri, URL/alt/title/video kimliği dışarıda
+kalır. Bloklar LF ile ayrılır; boş bloklar gereksiz satır eklemez. Inline text
+run'ları aralarına boşluk eklemeden birleşir. HardBreak LF üretir; yazılmış
+whitespace, code LF/CR/TAB ve Unicode dizileri trim/normalize edilmez.
+Son bloğun ardından yapay LF eklenmez; yazılmış son hardBreak/LF korunur.
+
+Kelime, Unicode harf/rakam veya underscore ile başlayan kesintisiz gruptur.
+Birleşen Unicode mark'ları mevcut kelimeyi sürdürür, kendi başlarına kelime
+başlatmaz. Diğer karakterler grubu bitirir. Emoji sayılmaz; Türkçe, supplementary
+harf ve birleşen aksan bölünmez. Apostrof/tire ayrı kelime sınırıdır. Bu açık,
+sınırlı mühendislik sayımıdır; dilbilimsel tokenizer veya kişiye özgü hız değildir.
+Tahmin200 kelime/dakika; pozitif sayıda yukarı yuvarlanır, kelimesiz belge0 dakika.
+Legacy Markdown'ın boş içerikte en az1 dakika kuralı yeni JSON'a taşınmaz.
+
+Her h2–h4, boş veya tekrarlı olsa da belge sırasıyla `document-section-N` kimliği
+alır. N1'den başlar, invariant decimal biçimdedir. Title bütün inline text ve
+hardBreak'ten gelir; h2–h4 seviyesi korunur. Kimlik başlık metninden veya serbest
+attribute'tan gelmez; aynı belge ve farklı culture aynı sonucu verir. Başlık
+ekleme/sıralama kimlikleri değiştirebilir; bu kimlikler kalıcı dış URL taahhüdü
+değildir. F07 renderer bu aynı sıradaki kimlikleri kullanmalıdır.
+
+Türev metin ve başlık hâlâ plain data'dır; `<script>` gibi literal text
+korunabilir. HTML/Razor/e-posta tüketicisi kendi doğrulanmış encoding sınırını
+uygulamalıdır. F06 sonuçları `Html.Raw` güveni vermez.
+
 ## Doğrulama ve resmi kaynaklar
 
 Salt sentetik araç:
@@ -121,6 +154,11 @@ Her sayısal limitte başarı ve bir üstünde typed ret; pozitif node/mark/defa
 matrisi, Unicode, XSS/URL/duplicate/nesting negatifleri, kısmi belge ve çağrılar
 arası durum izolasyonu kontrol edilir. Genel kalite kapısında restore/build/check
 olarak da çalışır; DB/HTTP/gerçek sağlayıcı veya browser kabulü sayılmaz.
+F06 fixture'ları ayrıca blok/inline sınırı, Unicode/emoji/kod/tablo/media,
+kelime/dakika eşikleri, tekrarlı başlıklar, deterministik/no-mutation/parallel
+üretim, F05'in en büyük geçerli girdileri ve legacy Markdown karşılaştırmasını
+kontrol eder. Ortak örneklerin whitespace-normalized metin/dakika sonuçları eşit;
+boş belgede yeni0/legacy1 farkı açık assertion ile korunur.
 
 Karşılaştırılan resmi kaynaklar: [Tiptap JSON persistence](https://tiptap.dev/docs/editor/core-concepts/persistence),
 [v3.31.4 Image](https://github.com/ueberdosis/tiptap/blob/v3.31.4/packages/extension-image/src/image.ts),
