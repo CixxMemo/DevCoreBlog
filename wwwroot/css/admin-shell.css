@@ -9,7 +9,7 @@
 body {
     background-color: var(--admin-bg);
     color: var(--admin-text);
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-sans);
 }
 
 /* Sidebar Navigation Item Base */

@@ -5,6 +5,7 @@ task_repo=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 task_tmp=$(mktemp -d /tmp/devcoreblog-f35.XXXXXX)
 trap 'rm -rf -- "$task_tmp"' EXIT INT TERM
 rsync -a --exclude .git --exclude '.env*' --exclude bin --exclude obj \
+    --exclude .local --exclude .codex --exclude .auth --exclude docs \
     --exclude node_modules --exclude wwwroot/generated --exclude .DS_Store \
     "$task_repo/" "$task_tmp/source/"
 cd "$task_tmp/source"
@@ -34,3 +35,4 @@ for file in ['tailwind-public.css','tailwind-admin.css','prism/components/prism-
 assert not list(root.rglob('node_modules')), 'node_modules must not be published'
 print('f35_clean_publish_builds_and_includes_assets=true')
 PY
+python3 scripts/verification/tailwind_incremental_probe.py --source "$task_tmp/source"
