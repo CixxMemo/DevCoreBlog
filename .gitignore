@@ -9,7 +9,9 @@ obj/
 
 ## Personal development plans, records and acceptance evidence (kept locally)
 /.local/devcoreblog_vol1/
-/docs
+/docs/*
+# This technical contract is public; all other untracked docs remain private by default.
+!/docs/ICERIK_BELGESI_V1.md
 /docs/GELISTIRME_PLANI_*/
 /docs/uygulama-kayitlari/
 /docs/kanitlar/

@@ -28,6 +28,12 @@ tool build/checks → gerçek PostgreSQL migration/görünürlük/sayaç eşzama
 HTTP/CSRF/CSP → Production TLS/proxy/session → bounded DB/hata/log privacy sırası
 uygulanır. Yeni NuGet.Config yalnız geçici kaynakta public nuget.org kullanır.
 
+Sürümlü belge doğrulamasıyla `DocumentValidation` restore/build/check aşamaları
+da eklenir: host/DB/HTTP kullanmadan şema, Unicode, URL, resource limitleri ve
+kısmi belge reddi kontrol edilir. [Belge v1 sözleşmesi](ICERIK_BELGESI_V1.md).
+Bu eklemeyle kapı normal29, `--final-acceptance` ile31 aşamadır; tarihsel
+24/25/28 sonuçları önceki kaynaklara aittir.
+
 E01 ile uygulama build’inden sonra `editor_build_probe.mjs` eklenir: değiştirilmiş
 upstream/sanitizer hash’inin reddi, deterministik yeniden build, eski runtime
 sanitizer’ın yokluğu ve dağıtım receipt’i. E02 ile `publish-boundary` eklenir:

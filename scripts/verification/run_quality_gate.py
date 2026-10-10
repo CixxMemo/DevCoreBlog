@@ -84,11 +84,11 @@ try:
             json_audit('nuget-'+Path(project).stem,['dotnet','package','list','--project',project,'--include-transitive','--vulnerable','--format','json','--no-restore'],source,'nuget')
         if run('tool-restore',['dotnet','tool','restore','--configfile','NuGet.Config'],source)[0]: raise RuntimeError('EF tool restore failed')
         if run('ef-version',['dotnet','ef','--version'],source)[0]: raise RuntimeError('EF tool unavailable')
-        for tool in ('PasswordHash','ContentRules','ImageUploadPolicy','Operations'):
+        for tool in ('PasswordHash','ContentRules','ImageUploadPolicy','Operations','DocumentValidation'):
             project=f'tools/DevCoreBlog.{tool}Tool/DevCoreBlog.{tool}Tool.csproj'
             if run('restore-'+tool,['dotnet','restore',project,'--configfile','NuGet.Config','-p:NuGetAudit=false'],source)[0]: raise RuntimeError('Test tool restore failed')
             if run('build-'+tool,build+[project],source)[0]: raise RuntimeError('Test tool build failed')
-            if tool in ('ImageUploadPolicy','Operations'):
+            if tool in ('ImageUploadPolicy','Operations','DocumentValidation'):
                 if run('checks-'+tool,['dotnet',str(source/Path(project).parent/'bin/Debug/net10.0'/('DevCoreBlog.'+tool+'Tool.dll'))],source)[0]: raise RuntimeError('Tool checks failed')
         # Existing runner owns cluster, sockets, synthetic credentials and application cleanup.
         code,output=run('postgres-http',['sh','scripts/verification/run_f17_visibility.sh'],source,timeout=480,export=False,extra={'DEVCORE_F21_PROBE':'1','DEVCORE_F49_PROBE':'1','DEVCORE_F30_PROBE':'1','DEVCORE_F55_PROBE':'1','DEVCORE_F55_REPORT_DIR':str(report),'DEVCORE_VOL1_F01_REPORT_DIR':str(report),'DEVCORE_F17_PG_PORT':'55459','DEVCORE_F17_APP_PORT':'15196'})
