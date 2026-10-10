@@ -1,0 +1,34 @@
+@model DevCoreBlog.Models.Admin.DocumentPreviewModel
+@{
+    ViewData["Title"] = "Belge önizlemesi";
+}
+<section class="document-preview" lang="tr" aria-labelledby="document-preview-title">
+    <h1 id="document-preview-title" class="text-2xl font-bold mb-4">Belge önizlemesi</h1>
+    <p class="mb-4">Bu önizleme kaydedilmez ve yayımlanmaz. İçerik belgesinin sitedeki gösterimini inceleyebilirsiniz.</p>
+    <form asp-controller="AdminDocument" asp-action="Preview" method="post" class="mb-8">
+        <label asp-for="Input.DocumentJson" class="block font-bold mb-2">İçerik belgesi (JSON v1)</label>
+        <textarea asp-for="Input.DocumentJson" rows="8" class="w-full min-w-0 border-2 border-black p-3 font-mono text-sm" aria-describedby="document-json-help document-json-error"></textarea>
+        <p id="document-json-help" class="text-sm">En çok 1 MiB. Kaydetme işlemi yapılmaz.</p>
+        <span asp-validation-for="Input.DocumentJson" id="document-json-error" class="block text-red-700" role="alert"></span>
+        <button type="submit" class="border-2 border-black bg-black text-white px-4 py-2 mt-3 font-bold">Önizlemeyi göster</button>
+    </form>
+    @if (Model.Rendered is { } rendered)
+    {
+        <section aria-labelledby="document-preview-result-title" class="border-2 border-black bg-white p-4 md:p-6">
+            <h2 id="document-preview-result-title" class="font-bold mb-3">Önizleme</h2>
+            <p class="text-sm mb-4">@rendered.Reading.WordCount kelime · Tahmini @rendered.Reading.ReadingMinutes dakika</p>
+            @if (rendered.Reading.Headings.Length > 0)
+            {
+                <nav aria-label="İçindekiler" class="mb-6">
+                    <ul>
+                        @foreach (var heading in rendered.Reading.Headings)
+                        {
+                            <li><a href="#@heading.Id" class="underline">@(heading.Title.Length == 0 ? "Başlıksız bölüm" : heading.Title)</a></li>
+                        }
+                    </ul>
+                </nav>
+            }
+            <partial name="_RenderedContentDocument" model="rendered" />
+        </section>
+    }
+</section>

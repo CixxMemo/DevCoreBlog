@@ -1,8 +1,9 @@
 # İçerik belgesi v1 doğrulama sözleşmesi
 
 Sunucu sınırı `ContentDocumentValidator.Validate(string | ReadOnlyMemory<byte>)`.
-F05 bu bileşeni ve salt sentetik kabul aracını ekler; F06 bağımsız okuma türevini
-ekler. HTTP, DI kullanımı, kayıt, HTML üretimi ve editör geçişi daha sonraki fazlardır. Mevcut Markdown
+F05 bu bileşeni ve salt sentetik kabul aracını ekler; F06 bağımsız okuma türevini,
+F07 güvenli web HTML ve kayıtsız yönetici doğrulama yüzeyini ekler.
+Kayıt ve tam editör geçişi daha sonraki fazlardır. Mevcut Markdown
 akışı bu belgeyi tüketmez. Yeni runtime paketi yoktur.
 
 Zarf tam olarak `{"version":1,"document":{"type":"doc","content":[...]}}`.
@@ -17,7 +18,7 @@ Core modelini elle kurmak doğrulanmış belge yetkisi vermez. Her çağrı ayr�
 tutar. Başarısızlıkta belge yoktur; hata yalnız `Schema`/`Limit`, sabit kod ve
 şema yolu taşır. Payload/hata değeri loglanmaz. İlk ihlal döner; tüm hataları
 toplamak için kaynak kullanımı büyütülmez. İleride HTTP katmanı Schema→400,
-Limit→413 eşlemesini yapar; bu faz response üretmez.
+Limit→413 eşlemesini yapar; F07 belge önizlemesi bu eşlemeyi uygular.
 
 ## Node ve mark şeması
 
@@ -54,7 +55,7 @@ Marks yalnız text'te: bold, italic, underline, code, link. Aynı tür tekrarlan
 İlk dört türün attribute'ları boş olmalıdır. Link: zorunlu href; title=null veya
 en çok300 rune; target=null/_self/_blank; rel=null/"noopener noreferrer"/
 "noopener noreferrer nofollow"; class yalnıznull. Typed model target ve nofollow
-anlamını taşır; gelecekte renderer kendi sabit güvenli rel değerini üretmelidir.
+anlamını taşır; F07 renderer kendi sabit güvenli rel değerini üretir.
 
 Beş mark birlikte geçerlidir. Tiptap'in standart Code mark'ı diğer mark'ları
 dışladığı için tam istemci şemasında `Code.extend({ excludes: '' })` gerekir.
@@ -103,10 +104,10 @@ YouTube kimliği tam11 ASCII harf/rakam/`-`/`_` olmalıdır. İzinli ham biçiml
 `https://youtu.be/ID`, `https://[www.]youtube.com/watch?v=ID`,
 `https://[www.]youtube.com/embed/ID`, `https://www.youtube-nocookie.com/embed/ID`.
 Ek query/fragment/port/path/escape yoktur. URI normalization izinli grameri
-genişletemez. Renderer ileride bu kimlikten dar embed üretir; JSON iframe taşımaz.
+genişletemez. F07 renderer bu kimlikten yalnız nocookie embed üretir; JSON iframe taşımaz.
 
 Literal `<script>` gibi metin **text verisi** olarak korunabilir; bu HTML üretimi
-değildir. Gelecek renderer bu değeri encode etmek zorundadır. `html` node veya
+değildir. Web renderer bu değeri encode eder. `html` node veya
 event/style attribute'ları reddedilir. Doğrulanmış model `Html.Raw` güveni vermez.
 
 ## Okuma türevi (F06)
@@ -114,7 +115,7 @@ event/style attribute'ları reddedilir. Doğrulanmış model `Html.Raw` güveni 
 `DocumentTextProducer.Produce(ValidatedContentDocument)` aynı doğrulanmış snapshot'tan
 immutable `DocumentReading` üretir: PlainText, WordCount, ReadingMinutes ve
 belge sırasındaki immutable Headings. JSON yeniden parse edilmez; HTML üretilmez.
-Bu bileşen henüz kayıt/arama/UI'ya bağlanmaz.
+F07 renderer/önizleme aynı okuma sonucunu kullanır; kayıt ve arama henüz bağlanmaz.
 
 Text, biçimli text, inline kod, link etiketi, kod bloğu ve hücre metni korunur.
 JSON anahtarları, mark/attribute değerleri, URL/alt/title/video kimliği dışarıda
@@ -136,11 +137,72 @@ alır. N1'den başlar, invariant decimal biçimdedir. Title bütün inline text 
 hardBreak'ten gelir; h2–h4 seviyesi korunur. Kimlik başlık metninden veya serbest
 attribute'tan gelmez; aynı belge ve farklı culture aynı sonucu verir. Başlık
 ekleme/sıralama kimlikleri değiştirebilir; bu kimlikler kalıcı dış URL taahhüdü
-değildir. F07 renderer bu aynı sıradaki kimlikleri kullanmalıdır.
+değildir. F07 renderer bu aynı sıradaki kimlikleri kullanır.
 
 Türev metin ve başlık hâlâ plain data'dır; `<script>` gibi literal text
 korunabilir. HTML/Razor/e-posta tüketicisi kendi doğrulanmış encoding sınırını
 uygulamalıdır. F06 sonuçları `Html.Raw` güveni vermez.
+
+## Güvenli web gösterimi (F07)
+
+`DocumentWebRenderer.Render(ValidatedContentDocument)` JSON/HTML parse etmez;
+yalnız doğrulanmış immutable Core ağacını tüketir. `DocumentTextProducer` ile
+aynı snapshot'ın `DocumentReading` sonucunu ve HTML'ini tek
+`RenderedContentDocument` içinde döndürür. Başlık id/level sırası doğrudan bu
+okuma sonucundan alınır. Çıktı tipinin public constructor/setter'ı yoktur.
+PlainText veya elle kurulmuş Core ağacı güvenli HTML kabiliyeti değildir.
+
+Metin, href, src, alt, title ve başlık kimliği yerleşik `HtmlEncoder.Default`
+ile kodlanır. Açılan bütün mark'lar ters sırayla kapanır; link için sabit
+`_self`/`_blank` ve her zaman `noopener noreferrer`, gerekiyorsa `nofollow`
+üretilir. Kullanıcı rel/class/style/event verisi çıktı şablonuna aktarılmaz.
+Türkçe, emoji ve literal HTML, tarayıcıda metin olarak korunur.
+
+| Şema | Web çıktısı |
+|---|---|
+| paragraph / heading / hardBreak | p / h2–h4 ve ortak document-section-N / br |
+| bold / italic / underline / code / link | strong / em / u / code / a |
+| blockquote / list / listItem | blockquote / ul veya kayıtlı start ile ol / li |
+| codeBlock | whitespace koruyan pre/code; sabit language sınıfı; odaklanabilir kaydırma |
+| image / GIF | Kaynak HTTPS URL'si korunur; encode alt/title, boş alt dekoratif; lazy/async |
+| youtube | Yalnız typed VideoId'den www.youtube-nocookie.com/embed/ID; sabit title, lazy, no-referrer, fullscreen |
+| table / row / cell / header | Odaklanabilir adlandırılmış kaydırma bölgesi; table/tbody/tr/td/th |
+
+Hizalama yalnız sabit sol/orta/sağ sınıflarıdır. Hücre ve paragraf hizalaması
+ayrı düğüm değerleridir; iç paragraf kendi hizalamasını uygular. Tablo header
+düğümü th üretir; şema satır/sütun başlık kapsamı taşımadığından scope uydurulmaz.
+Görselin gerçek boyutu/sahipliği veya GIF frame'leri burada doğrulanmaz;
+kaynak değiştirilmez, sunucu URL fetch yapmaz. Kod okunabilir düz gösterimdir;
+bu faz ayrıca syntax highlighting veya kopyalama etkileşimi eklemez.
+
+`_RenderedContentDocument.cshtml` tek yeni `Html.Raw` sınırıdır: yalnız bu çıktı
+tipini alır ve yerel `document-content.css` ile gösterir. Sabit CSS, enforcing
+CSP altında inline style/event/script gerektirmez. Mevcut public Markdown detay
+ve eski önizleme henüz JSON'a çevrilmez; DB/şema/veri değişmez.
+
+`/AdminDocument/Preview` ayrı MVC GET/POST yönetici doğrulama yüzeyidir.
+GET boş form açar; POST antiforgery korumalı doğrulama ve renderer çağrısıdır.
+Her iki sonuç no-store/noindex'tir; kayıt, upload, sayaç veya yayın eylemi yoktur.
+Hatalı belge partial render edilmez; form metni Razor encoding ile korunur.
+Schema400, belge kaynak sınırı413; eksik form400. Wire body sınırı3.211.264 byte
+(3×1MiB +64KiB), form value sınırı aynı, value count8'dir. Bounded form-read
+hatası ASP.NET antiforgery tarafından action'dan önce400'e çevrilebilir;
+geçerli belge için1MiB UTF-8 kuralı server validator'da ayrıca uygulanır.
+Anonim GET404/private challenge'dır; token'sız POST404 hata view'ının yeniden
+yürütülmesi sırasında global antiforgery400 verebilir. Her durumda içerik
+üretilmez, login adresine redirect yoktur. Gerçek4xx korunur.
+
+F07'nin saf fixture'ları bütün node/mark'lar, attribute encoding, tehlikeli URL/
+embed reddi, Unicode/code whitespace, heading snapshot, en büyük geçerli metin/
+node/depth/tablo ve deterministik/parallel üretimi kapsar. Kalite kapısının
+`postgres-http` grubundaki `document_web_preview_probe.py` authorization/CSRF/
+limitler/overposting ve bütün DB satırlarının değişmezliğini sınar.
+`document_web_browser_probe.cjs` ayrı gerçek Chrome desktop/mobile/klavye
+kontrolüdür; medyanın deterministik stub yanıtı gerçek YouTube oynatma veya
+Cloudinary/upload kabulü değildir. Browser kontrolleri kapı aşaması sayılmaz.
+
+Encoding API kaynağı: [.NET HtmlEncoder](https://learn.microsoft.com/en-us/dotnet/api/system.text.encodings.web.htmlencoder?view=net-10.0).
+Iframe attribute kaynağı: [MDN iframe](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/iframe).
 
 ## Doğrulama ve resmi kaynaklar
 

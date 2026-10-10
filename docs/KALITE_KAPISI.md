@@ -33,6 +33,11 @@ da eklenir: host/DB/HTTP kullanmadan şema, Unicode, URL, resource limitleri ve
 kısmi belge reddi kontrol edilir. [Belge v1 sözleşmesi](ICERIK_BELGESI_V1.md).
 F06 aynı araç/check içinde görünür metin, başlık hedefleri ve okuma türevi
 kabulünü ekler; kalite aşaması sayısı değişmez.
+F07 aynı araçta güvenli C# web renderer fixture'larını; `postgres-http` grubunda
+`document-web.json` ile kayıtsız yönetici JSON önizlemesinin authorization/CSRF,
+Schema400/Limit413 ve bütün DB satırlarının değişmezliğini ekler. Gerçek Chrome
+`document_web_browser_probe.cjs` ayrı masaüstü/mobil/klavye/CSP kabulüdür;
+medya stub'ları gerçek YouTube/Cloudinary kanıtı değildir. Aşama sayısı değişmez.
 Bu eklemeyle kapı normal29, `--final-acceptance` ile31 aşamadır; tarihsel
 24/25/28 sonuçları önceki kaynaklara aittir.
 

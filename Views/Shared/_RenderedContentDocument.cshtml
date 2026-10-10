@@ -1,0 +1,4 @@
+@model DevCoreBlog.Services.Documents.RenderedContentDocument
+@* Only the C# renderer can construct this encoded HTML capability. *@
+<link rel="stylesheet" href="~/css/document-content.css" asp-append-version="true" />
+<div class="document-content">@Html.Raw(Model.Html)</div>
