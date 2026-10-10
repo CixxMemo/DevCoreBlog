@@ -46,3 +46,45 @@ Bütün yazılar (taslak, future, pasif ve pasif kategori dahil) no-tracking dar
 Kaydedilmemiş editör/yerel kurtarma kopyaları, harici siteler/uygulamalar, envanterde eksik alias'lar, legacy bilinmeyen kimlikler ve snapshot sonrası upload/save işlemleri kapsam dışıdır. Sağlayıcı yanıtı kaybolan upload ancak yeni güncel export'ta görülebilir. Bakım sırasında yeni kayıtların gelmesi yarış yaratır; herhangi bir silmeden önce somut liste, gerçek sahiplik, bütün referanslar, devam eden işler ve geri dönüş ayrıca değerlendirilip kullanıcıdan açık onay alınmalıdır. Araç silme komutu üretmez ve uzak varlıklara hiç bağlanmaz; eksik/hatalı giriş veya DB arızası exit 1/2 ile tamamlanmış rapor üretmeden biter.
 
 Nullable kolonları bırakarak önceki kod sürümüne dönülebilir; eski kodla yapılan kapak değişimlerinden sonra metadata güncelliği ayrıca gözden geçirilir. Down migration açıklama/metadata'yı düşürür; varsayılan rollback değildir. Canlı migration ve uzak varlık silme bu fazda yapılmadı.
+
+## Upload öncesi gerçek decode sınırı
+
+Ortak `ImageUploadPolicy` yalnız JPG/PNG/GIF/WebP uzantı/MIME/imza eşleşmesini,
+8 MiB gerçek stream sınırını ve tam decode kabulünü geçiren dosyayı storage'a
+verir. Sağlayıcıya yeniden açılmış kullanıcı stream'i yerine aynı doğrulanmış
+byte snapshot gönderilir. Boyutlar upload öncesi 1–4096; en çok100 kare ve
+100.000.000 canvas pikseli (`width × height × frameCount`, long aritmetik)
+kabul edilir. Küçük GIF frame rectangle'ı büyük canvas maliyetini gizleyemez.
+Her frame tam `SKCodecResult.Success` vermelidir. Restore-previous nedeniyle
+native bağımlı karelerin yeniden decode edilmesi gerektiğinde, bu ek iş de
+100 milyon piksel bütçesine sayılır; sınır bir kabul garantisi değildir.
+Kanonik dosya yeniden encode edilmez; GIF'in bütün kaynak kareleri korunur.
+Gerçek Cloudinary animasyon çıktısı bu yerel decoder kontrolüyle kanıtlanmış
+olmaz ve ayrıca sağlayıcı kabulü gerektirir.
+
+Decoder SkiaSharp4.153.1 ve aynı sürüm Linux.NoDependencies native paketidir;
+[resmî sürüm/API](https://github.com/mono/SkiaSharp/tree/v4.153.1), MIT lisansı
+ve native üçüncü taraf bildirileri `licenses/SkiaSharp/` içinde, publish
+çıktısında korunur. Core/provider/HTTP katmanları codec API'sine bağlanmaz.
+Native bakım ve transitive advisory audit yeni sürüm incelemesinde tekrarlanır.
+
+Singleton `ProcessImageDecoder` en fazla iki kısa ömürlü child process açar;
+bekleyen decode kuyruğu yoktur. Worker aynı uygulama binary'sinin özel CLI
+modudur; HTTP endpoint değildir. Host/config/dotenv/DI başlamadan çalışır,
+secret environment devralmaz; yalnız bounded stdin byte'ları ve allowlist
+formatı kullanır. Disk/path/URL/delegate/GPU işi yapmaz, dosya üretmez.
+Native pixel buffer tek RGBA canvas'tır (en fazla64 MiB); tüm kareler bellekte
+biriktirilmez. Child managed GC heap üst sınırı64 MiB, OS CPU hard limit5
+saniye ve core dump sıfırdır. Linux'ta ayrıca512 MiB `RLIMIT_DATA` uygulanır;
+Darwin bu limiti desteklemediği için ona dayanılmaz. Parent50ms aralıkla
+resident belleği ölçer;256 MiB aşımında worker'ı öldürür. Bu örneklemeli sınır
+mutlak toplam RSS hard cap değildir; kısa ölçüm arası taşma mümkündür.
+Boyut/input/frame bütçeleri native allocation öncesinde ayrıca uygulanır.
+
+Parent başlangıç/IPC/decode için10 saniye deadline koyar. İptal, süre/bellek
+sınırı veya arıza halinde gerçek child kill + exit wait tamamlanmadan slot
+serbest bırakılmaz; yalnız Task timeout bırakıp native işi sürdürmez.
+Başka platform/native paket/işletim sistemi limit hatası kapalı başarısızdır.
+Geçersiz içerik400, gerçek body aşımı413; yoğunluk/decoder arızası503 güvenli
+hata verir. Native stderr, dosya gövdesi ve secret loglanmaz. Yeni upload
+başarısızlığı mevcut kapak/uzak varlık üzerinde silme veya otomatik değişim yapmaz.

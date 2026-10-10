@@ -39,6 +39,12 @@ using DevCoreBlog.Caching;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.HostFiltering;
 
+if (args.Length > 0 && args[0] == ImageDecodeWorker.Argument)
+{
+    Environment.ExitCode = args.Length == 2 ? await ImageDecodeWorker.RunAsync(args[1]) : 2;
+    return;
+}
+
 // Create the application builder, which loads configuration from appsettings.json,
 // environment variables, and command-line arguments
 var builder = WebApplication.CreateBuilder(args);
@@ -212,6 +218,7 @@ builder.Services.AddScoped<DevCoreBlog.Services.Documents.PostDocumentService>()
 builder.Services.AddScoped<DevCoreBlog.Core.Documents.IEditorPostRepository, EditorPostRepository>();
 builder.Services.AddScoped<DevCoreBlog.Services.Documents.PostWritingService>();
 builder.Services.AddScoped<IImageService, ImageService>();
+builder.Services.AddSingleton<IImageDecoder, ProcessImageDecoder>();
 builder.Services.AddSingleton<ImageUploadPolicy>();
 builder.Services.AddSingleton<CloudinaryImageUploadRequestFactory>();
 var rawAllowWebhookPublish = Environment.GetEnvironmentVariable("ALLOW_WEBHOOK_PUBLISH");

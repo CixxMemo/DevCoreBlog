@@ -36,14 +36,14 @@ public sealed class ImageService : IImageService
         CancellationToken cancellationToken = default)
     {
         var validation = await _policy.ValidateAsync(file, cancellationToken);
-        if (!validation.IsValid || file is null || validation.ProviderFormat is null)
+        if (!validation.IsValid || validation.Content is null || validation.ProviderFormat is null)
         {
             return ImageUploadOutcome.Failure(
                 validation.FailureKind,
                 validation.Message);
         }
 
-        await using var stream = file.OpenReadStream();
+        await using var stream = validation.Content.OpenRead();
         var storedImage = await _storage.UploadAsync(
             stream,
             validation.ProviderFormat,

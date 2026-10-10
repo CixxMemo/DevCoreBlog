@@ -3,13 +3,16 @@ using Microsoft.AspNetCore.Http;
 
 namespace DevCoreBlog.Services.Images;
 
+/// <summary>Applies the common byte, format and actual decode gate before any storage call.</summary>
 public sealed class ImageUploadPolicy
 {
     public const long MaximumFileBytes = 8L * 1024 * 1024;
     public const long MaximumRequestBytes = MaximumFileBytes + (2L * 1024 * 1024);
     public const int MaximumDimension = PostContentRules.MaximumThumbnailDimension;
 
-    private const int SignatureBufferLength = 12;
+    private readonly IImageDecoder _decoder;
+
+    public ImageUploadPolicy(IImageDecoder decoder) => _decoder = decoder;
 
     private static readonly byte[] PngSignature =
         [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
@@ -56,12 +59,21 @@ public sealed class ImageUploadPolicy
             return InvalidFormat();
         }
 
-        var signature = new byte[SignatureBufferLength];
-        int bytesRead;
+        byte[] content;
         try
         {
             await using var stream = file.OpenReadStream();
-            bytesRead = await ReadSignatureAsync(stream, signature, cancellationToken);
+            using var buffer = new MemoryStream();
+            var chunk = new byte[16 * 1024];
+            int count;
+            while ((count = await stream.ReadAsync(chunk, cancellationToken)) != 0)
+            {
+                if (buffer.Length + count > MaximumFileBytes)
+                    return ImageValidationOutcome.Failure(ImageUploadFailureKind.FileTooLarge,
+                        "The image exceeds the 8 MB upload limit.");
+                buffer.Write(chunk, 0, count);
+            }
+            content = buffer.ToArray();
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
@@ -80,35 +92,19 @@ public sealed class ImageUploadPolicy
             return InvalidFormat();
         }
 
-        return format.Matches(signature.AsSpan(0, bytesRead))
-            ? ImageValidationOutcome.Success(format.ProviderFormat)
-            : InvalidFormat();
+        if (content.Length != file.Length || !format.Matches(content)) return InvalidFormat();
+        var decoded = await _decoder.ValidateAsync(content, format.ProviderFormat, cancellationToken);
+        return decoded switch
+        {
+            ImageDecodeResult.Valid => ImageValidationOutcome.Success(format.ProviderFormat, content),
+            ImageDecodeResult.Unavailable => ImageValidationOutcome.Failure(ImageUploadFailureKind.StorageUnavailable,
+                "Image validation is temporarily unavailable. Try again."),
+            _ => InvalidFormat()
+        };
     }
 
     public bool IsAllowedProviderFormat(string? format) =>
         !string.IsNullOrWhiteSpace(format) && AllowedProviderFormats.Contains(format);
-
-    private static async Task<int> ReadSignatureAsync(
-        Stream stream,
-        byte[] buffer,
-        CancellationToken cancellationToken)
-    {
-        var totalRead = 0;
-        while (totalRead < buffer.Length)
-        {
-            var bytesRead = await stream.ReadAsync(
-                buffer.AsMemory(totalRead, buffer.Length - totalRead),
-                cancellationToken);
-            if (bytesRead == 0)
-            {
-                break;
-            }
-
-            totalRead += bytesRead;
-        }
-
-        return totalRead;
-    }
 
     private static ImageValidationOutcome InvalidFormat() =>
         ImageValidationOutcome.Failure(
@@ -163,17 +159,27 @@ public sealed class ImageUploadPolicy
     }
 }
 
+/// <summary>Returns only a safe failure or the exact validated upload snapshot.</summary>
 public sealed record ImageValidationOutcome(
     bool IsValid,
     string? ProviderFormat,
     ImageUploadFailureKind FailureKind,
-    string Message)
+    string Message,
+    ValidatedImageContent? Content = null)
 {
-    public static ImageValidationOutcome Success(string providerFormat) =>
-        new(true, providerFormat, ImageUploadFailureKind.None, string.Empty);
+    public static ImageValidationOutcome Success(string providerFormat, byte[] content) =>
+        new(true, providerFormat, ImageUploadFailureKind.None, string.Empty, new ValidatedImageContent(content));
 
     public static ImageValidationOutcome Failure(
         ImageUploadFailureKind failureKind,
         string message) =>
         new(false, null, failureKind, message);
+}
+
+/// <summary>Keeps the decoded snapshot immutable so storage receives the exact bytes that passed validation.</summary>
+public sealed class ValidatedImageContent
+{
+    private readonly byte[] _bytes;
+    internal ValidatedImageContent(byte[] bytes) => _bytes = bytes;
+    public Stream OpenRead() => new MemoryStream(_bytes, writable: false);
 }

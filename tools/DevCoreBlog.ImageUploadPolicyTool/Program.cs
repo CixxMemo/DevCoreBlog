@@ -6,7 +6,32 @@ using DevCoreBlog.Services.Images;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging.Abstractions;
 
-var policy = new ImageUploadPolicy();
+if (args.Length > 0 && args[0] == ImageDecodeWorker.Argument)
+{
+    // Owned test executable only: emulate a stuck/crashed child to test actual kill/reap behavior.
+    if (args.Length == 2 && args[1] == "f11-stall") { await Task.Delay(TimeSpan.FromSeconds(30)); return 3; }
+    if (args.Length == 2 && args[1] == "f11-failure") return 3;
+    if (args.Length == 2 && args[1] == "f11-resident-memory")
+    {
+        var pointer = System.Runtime.InteropServices.Marshal.AllocHGlobal(320 * 1024 * 1024);
+        try
+        {
+            for (var offset = 0; offset < 320 * 1024 * 1024; offset += 4096)
+                System.Runtime.InteropServices.Marshal.WriteByte(pointer, offset, 1);
+            await Task.Delay(TimeSpan.FromSeconds(30));
+            return 3;
+        }
+        finally { System.Runtime.InteropServices.Marshal.FreeHGlobal(pointer); }
+    }
+    if (args.Length == 2 && args[1] == "f11-environment")
+        return Environment.GetEnvironmentVariable("F11_DECODE_PRIVATE_CANARY") is null &&
+            Environment.ProcessorCount == 1 && !System.Runtime.GCSettings.IsServerGC &&
+            GC.GetGCMemoryInfo().TotalAvailableMemoryBytes == 64L * 1024 * 1024 ? 0 : 3;
+    return args.Length == 2 ? await ImageDecodeWorker.RunAsync(args[1]) : 2;
+}
+
+using var decoder = new ProcessImageDecoder();
+var policy = new ImageUploadPolicy(decoder);
 var pngBytes = Convert.FromBase64String(
     "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=");
 var gifBytes = Convert.FromBase64String("R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==");
@@ -145,6 +170,8 @@ var checks = new Dictionary<string, bool>
     ["upload_client_is_replaceable_without_network"] =
         uploadProxy.CallCount == 2 && !providerUpload.Succeeded
 };
+
+foreach (var check in await ImageDecodeChecks.RunAsync(policy, decoder)) checks.Add(check.Key, check.Value);
 
 foreach (var check in checks)
 {

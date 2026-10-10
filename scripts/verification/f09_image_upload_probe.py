@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import base64
 import json
 import os
 import sys
@@ -78,6 +79,21 @@ def main() -> int:
     svg = b"<svg xmlns='http://www.w3.org/2000/svg'><script/></svg>"
     corrupt_png = b"not-a-real-png"
     oversized_png = png_signature + bytes(MAXIMUM_FILE_BYTES + 1 - len(png_signature))
+
+    # Full-decoder regressions: these all have the formerly accepted signature/MIME.
+    truncated = base64.b64decode("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=")[:40]
+    gif = base64.b64decode("R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==")
+    too_many = gif[:19] + gif[19:-1] * 101 + gif[-1:]
+    later_corrupt = bytearray(gif[:19] + gif[19:-1] * 2 + gif[-1:])
+    later_corrupt[-3] = 255
+    decode_checks = {}
+    for endpoint in ("UploadEditorImage", "UploadImage"):
+        for label, content, extension, mime in (("truncated", truncated, "png", "image/png"),
+                ("101_frames", too_many, "gif", "image/gif"),
+                ("later_frame_corrupt", bytes(later_corrupt), "gif", "image/gif")):
+            status, _, body = post_file(opener, f"{base_url}/AdminPost/{endpoint}", form_token,
+                file_field="file", file_name="fixture." + extension, content_type=mime, content=content)
+            decode_checks[endpoint + "_decode_" + label] = status == 400 and json_message(body) == "Invalid image. Upload a valid JPG, PNG, GIF, or WEBP file."
 
     editor_fake_status, _, editor_fake_body = post_file(
         opener,
@@ -227,6 +243,7 @@ def main() -> int:
             and "max 8 MB" in edit_body
         ),
     }
+    checks.update(decode_checks)
     statuses = {
         "editor_fake_extension": editor_fake_status,
         "editor_svg": editor_svg_status,

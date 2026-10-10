@@ -51,6 +51,10 @@
     <None Remove="tools\**" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="licenses/SkiaSharp/**" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+
   <!-- Build before static web assets are discovered, including on a clean checkout. -->
   <Target Name="InstallFrontendDependencies" BeforeTargets="BuildFrontendAssets"
           Inputs="package.json;package-lock.json" Outputs="node_modules/.package-lock.json"
