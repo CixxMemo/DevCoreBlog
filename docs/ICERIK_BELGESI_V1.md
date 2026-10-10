@@ -289,3 +289,45 @@ yükseltme bütün eski kolonları korur; dolu veride gerçek EF down reddi sın
 
 Resmi atomiklik/concurrency kaynağı: [EF Core ExecuteUpdate](https://learn.microsoft.com/en-us/ef/core/saving/execute-insert-update-delete).
 SQL null semantiği: [PostgreSQL CHECK constraints](https://www.postgresql.org/docs/current/ddl-constraints.html).
+
+## Ortak JSON yazım formu (F09)
+
+Yazı listesi ve dashboard'daki yeni yazı bağlantısı `AdminWriting/Create` formunu
+açar; JSON satırlarının eski yönetici Edit bağlantısı `AdminWriting/Edit/{id}`
+formuna yönlenir. İki ekran aynı Türkçe Razor partial ve yerel Tiptap modülünü
+kullanır. Geçişte eski Markdown Create/Edit/Preview ve nottan taslak aktarma
+adresleri korunur; webhook formatı değişmez. Bu geçici uyumluluk veri göçü değildir.
+
+`PostWritingService`, izinli metadata ile v1 zarfını doğrular ve metin/okuma
+türevlerini aynı snapshot'tan üretir. Core `IEditorPostRepository` sınırı Create'te
+tek INSERT, Edit'te beklenen EditVersion ve document version1 koşuluyla tek UPDATE
+kullanır. Başlık, özet, kategori, açıklama, etkinlik ve site yayın bilgileri bütün
+belge alanlarıyla birlikte kaydedilir. Slug benzersizliği mevcut DB indeksiyle
+korunur; edit slug/sayaç/CreatedDate/eski Content/erişim/tür/kapak kimliğini yazmaz.
+Normal Save yayın iznini ve kayıtlı tam UTC anını korur; eksik eylem SaveDraft'tır.
+SaveDraft/Schedule/Publish mevcut ortak yayın kuralını kullanır; e-posta üretmez.
+
+Yetkili/no-store POST'ta antiforgery ve küçük typed form allowlist'i vardır.
+1MiB UTF-8 belge sınırı validator'dadır; URL encoding için wire limiti
+3×1MiB+65.536 byte, form value limiti aynı ve field count32'dir. Framework'ün
+ön binding/antiforgery reddi400 olabilir. Action schema/metadata400, belge
+limit413, edit409 verir. Başarısız view gönderilmiş zarf, metadata ve eski revision'ı
+Razor encoding ile tutar; güncel revision sessizce benimsenmez. Başarılı commit
+sonrası redirect formu yeniden okur ve tek kullanımlı Türkçe başarı mesajı gösterir.
+
+Başlangıç zarfı yeniden doğrulanmış orijinal JSON'dur; Core ağacı wire JSON olarak
+serialize edilmez. Client `getJSON()` version1 zarfıyla taşınır. Tiptap3.31.4
+ücretsiz exact build: h2–h4, temel beş mark, liste, alıntı, kod, link, undo/redo;
+Code excludes:'' ve HardBreak keepMarks:false. Hizalama sabit CSS class'ıyla
+korunur; bu fazda yeni hizalama/medya/tablo araçları yoktur. Server-valid ama bu
+istemcide desteklenmeyen node/attribute, tutarsız stored facts veya yükleme hatası
+kaydı kapatır ve orijinal veriyi korur; bilinmeyen özellik sessiz düşürülmez.
+
+Yeni form eski localStorage recovery/Markdown transfer değerini okumaz veya silmez;
+JSON kurtarma F14'e aittir. Public JSON detay/arama geçişi F16, webhook F17,
+kontrollü eski veri göçü F18'dir. Yeni form kabulü bu işleri tamamlamış sayılmaz.
+Gerçek yapılandırılmış DB veya production migration bu kabulde kullanılmaz.
+
+Resmî istemci kaynakları: [Tiptap Editor](https://tiptap.dev/docs/editor/api/editor),
+[StarterKit](https://tiptap.dev/docs/editor/extensions/functionality/starterkit).
+Exact API ve LICENSE dosyaları yerel kilitli paket/build receipt'inde doğrulanır.

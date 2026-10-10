@@ -30,6 +30,14 @@ public static class PostContentRules
 
     public static ContentValidationResult Validate(Post post)
     {
+        var errors = ValidateMetadata(post).Errors.ToList();
+        ValidateRequiredText(errors, nameof(Post.Content), post.Content, MaximumContentLength, "Content");
+        return ContentValidationResult.FromErrors(errors);
+    }
+
+    /// <summary>Validates shared metadata without requiring a legacy Markdown body.</summary>
+    public static ContentValidationResult ValidateMetadata(Post post)
+    {
         ArgumentNullException.ThrowIfNull(post);
 
         var errors = new List<ContentValidationError>();
@@ -39,12 +47,6 @@ public static class PostContentRules
             post.Title,
             MaximumTitleLength,
             "Title");
-        ValidateRequiredText(
-            errors,
-            nameof(Post.Content),
-            post.Content,
-            MaximumContentLength,
-            "Content");
         ValidateOptionalText(
             errors,
             nameof(Post.Summary),

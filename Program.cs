@@ -209,6 +209,8 @@ builder.Services.AddSingleton<DevCoreBlog.Services.Documents.DocumentTextProduce
 builder.Services.AddSingleton<DevCoreBlog.Services.Documents.DocumentWebRenderer>();
 builder.Services.AddScoped<DevCoreBlog.Core.Documents.IPostDocumentRepository, PostDocumentRepository>();
 builder.Services.AddScoped<DevCoreBlog.Services.Documents.PostDocumentService>();
+builder.Services.AddScoped<DevCoreBlog.Core.Documents.IEditorPostRepository, EditorPostRepository>();
+builder.Services.AddScoped<DevCoreBlog.Services.Documents.PostWritingService>();
 builder.Services.AddScoped<IImageService, ImageService>();
 builder.Services.AddSingleton<ImageUploadPolicy>();
 builder.Services.AddSingleton<CloudinaryImageUploadRequestFactory>();

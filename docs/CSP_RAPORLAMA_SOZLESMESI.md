@@ -109,3 +109,14 @@ Kaynaklar: [OWASP CSP](https://cheatsheetseries.owasp.org/cheatsheets/Content_Se
 [MDN style-src-attr ve CSSOM farkı](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Content-Security-Policy/style-src-attr).
 
 Başlık kaynakları: [MDN Referrer-Policy](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Referrer-Policy), [ASP.NET Core 10.0.10 HSTS middleware](https://github.com/dotnet/aspnetcore/blob/v10.0.10/src/Middleware/HttpsPolicy/src/HstsMiddleware.cs).
+
+## JSON yazım formu (F09)
+
+AdminWriting Create/Edit yanıtları200/400/413/409 durumlarında static enforcing
+`style-src-attr 'none'` politikasını korur. Yerel Tiptap ESM injectCSS:false ile
+başlar; hizalama sabit CSS class'ı kullanır. Server-invalid JSON editöre verilmez;
+Razor-encoded textarea korunur. Hata yokken validation summary üretilmez:
+MVC'nin otomatik gizli `<li style="display:none">` çıktısı ilk browser kabulünde
+CSP ihlali oluşturdu; koşullu summary ile giderildi. Middleware politika izinleri
+ve eski Toast UI200 Create/Edit istisnası değişmedi. Klavye, mobil, bütün temel
+biçimler ve400/409 editörleri gerçek Chrome'da aynı sınırlarda sınanır.

@@ -30,14 +30,15 @@ if a.expect_unavailable_database:
 admin, _ = cookie_opener()
 submit_login(admin, base, os.environ.get('DEVCORE_TEST_ADMIN_USERNAME', 'f17-admin'), os.environ['DEVCORE_TEST_ADMIN_PASSWORD'])
 checks = {}
-for route in ['/', '/category/f01-active', admin_login_path(), '/Admin/Dashboard', '/AdminCategory/Create', '/not-found-f52', '/AdminPost/Create', '/AdminPost/Edit/2005', '/AdminPost/Edit/99999999']:
+for route in ['/', '/category/f01-active', admin_login_path(), '/Admin/Dashboard', '/AdminCategory/Create', '/not-found-f52', '/AdminPost/Create', '/AdminWriting/Create', '/AdminPost/Edit/2005', '/AdminPost/Edit/99999999']:
     opener = admin if route.startswith('/Admin') else visitor
-    status, _, body, headers = request_with_headers(opener, base + route)
+    status, final_url, body, headers = request_with_headers(opener, base + route)
     policy = headers.get('Content-Security-Policy', '')
     checks[route + '_security_headers'] = security_headers(headers)
     checks[route + '_enforced_html'] = status in (200, 404) and bool(policy) and 'Content-Security-Policy-Report-Only' not in headers
     checks[route + '_local_scripts_no_eval'] = "script-src 'self'; script-src-attr 'none'" in policy and 'unsafe-eval' not in policy and '*' not in policy
-    editor = status == 200 and (route.startswith('/AdminPost/Create') or route.startswith('/AdminPost/Edit'))
+    # Followed redirects may reach the JSON editor, whose policy needs no style exception.
+    editor = status == 200 and urlparse(final_url).path.startswith(('/AdminPost/Create', '/AdminPost/Edit'))
     checks[route + '_style_scope'] = ("style-src-attr 'unsafe-inline'" if editor else "style-src-attr 'none'") in policy
 for route in ['/js/public-theme.js', '/css/admin-shell.css', '/api/categories', '/rss.xml', '/sitemap.xml', '/robots.txt']:
     status, _, body, headers = request_with_headers(visitor, base + route)

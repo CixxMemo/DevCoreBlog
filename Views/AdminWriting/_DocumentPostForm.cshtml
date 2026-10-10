@@ -1,0 +1,73 @@
+@model DevCoreBlog.Models.Admin.DocumentPostFormInput
+@{
+    var editing = Model.Id > 0;
+    var commands = new (string Key, string Label)[] {
+        ("bold", "Kalın"), ("italic", "İtalik"), ("underline", "Altı çizili"), ("code", "Satır içi kod"),
+        ("paragraph", "Paragraf"), ("h2", "Başlık 2"), ("h3", "Başlık 3"), ("h4", "Başlık 4"),
+        ("bulletList", "Madde listesi"), ("orderedList", "Numaralı liste"), ("blockquote", "Alıntı"),
+        ("codeBlock", "Kod bloğu"), ("link", "Bağlantı"), ("unlink", "Bağlantıyı kaldır"),
+        ("undo", "Geri al"), ("redo", "Yinele")
+    };
+}
+<main class="writing-page" lang="tr">
+    <h1>@(editing ? "Yazıyı düzenle" : "Yeni yazı")</h1>
+    @if (TempData["DocumentSaved"] is string saved) { <p role="status" class="writing-notice">@saved</p> }
+    <form asp-controller="AdminWriting" asp-action="@(editing ? "Edit" : "Create")" asp-route-id="@(editing ? Model.Id : (int?)null)"
+          method="post" id="postForm" data-document-form data-editor-enabled="@Model.EditorEnabled.ToString().ToLowerInvariant()">
+        <input asp-for="Id" type="hidden" />
+        <input asp-for="EditVersion" type="hidden" />
+        <input name="returnUrl" value="@Model.ReturnUrl" type="hidden" />
+        @if (!ViewData.ModelState.IsValid) {
+            <div asp-validation-summary="All" class="writing-errors" role="alert"></div>
+        }
+        @if (Model.BlockingMessage is not null) { <p role="alert">@Model.BlockingMessage</p> }
+        @if (editing) {
+            <a asp-controller="AdminWriting" asp-action="Edit" asp-route-id="@Model.Id" asp-route-returnUrl="@Model.ReturnUrl">Güncel yazıyı yeniden aç</a>
+        }
+        <div class="writing-grid">
+            <section class="writing-body" aria-label="Yazı içeriği">
+                <label for="post-title-input">Başlık</label>
+                <input asp-for="Title" id="post-title-input" maxlength="200" autocomplete="off" />
+                <span asp-validation-for="Title"></span>
+                <div class="writing-toolbar" role="group" aria-label="Metin biçimi">
+                    @foreach (var command in commands) {
+                        <button type="button" data-writing-command="@command.Key" disabled>@command.Label</button>
+                    }
+                </div>
+                <div data-editor-mount hidden></div>
+                @* Encoded original envelope is both startup input and an inspectable fallback. *@
+                <div data-document-fallback>
+                    <label asp-for="DocumentJson">Korunan içerik belgesi</label>
+                    <textarea asp-for="DocumentJson" rows="18" spellcheck="false" aria-describedby="writing-status"></textarea>
+                </div>
+                <span asp-validation-for="DocumentJson"></span>
+                <p id="writing-status" data-writing-status role="status" aria-live="polite">Editör açılıyor. Açılamazsa kaydetme kapalı kalır; metniniz korunur.</p>
+                <p class="writing-help">Henüz kaydedilmemiş değişiklikler bu sayfadadır. Sayfadan ayrılmadan kaydedin.</p>
+            </section>
+            <aside aria-label="Yazı bilgileri">
+                <label asp-for="CategoryId">Kategori</label>
+                <select asp-for="CategoryId" asp-items="ViewBag.CategoryId"><option value="">Kategori seçin</option></select>
+                <span asp-validation-for="CategoryId"></span>
+                <label asp-for="Summary">Özet</label><textarea asp-for="Summary" maxlength="500" rows="4"></textarea>
+                <span asp-validation-for="Summary"></span>
+                <label asp-for="Excerpt">Kısa açıklama</label><textarea asp-for="Excerpt" maxlength="1000" rows="3"></textarea>
+                <span asp-validation-for="Excerpt"></span>
+                <label asp-for="ThumbnailAlt">Kapak açıklaması</label><input asp-for="ThumbnailAlt" maxlength="300" />
+                <span asp-validation-for="ThumbnailAlt"></span>
+                <label asp-for="PublishDate">Site yayın zamanı (@Model.SiteTimeZoneId)</label>
+                <input asp-for="PublishDate" asp-format="{0:yyyy-MM-ddTHH:mm:ss}" type="datetime-local" step="1" />
+                <span asp-validation-for="PublishDate"></span>
+                <label class="writing-checkbox"><input asp-for="IsActive" /> Yazı etkin</label>
+                <div class="writing-actions">
+                    @if (editing) { <button type="submit" name="SaveAction" value="Save" data-writing-save disabled>Değişiklikleri kaydet</button> }
+                    <button type="submit" name="SaveAction" value="SaveDraft" data-writing-save disabled>Taslağı kaydet</button>
+                    <button type="submit" name="SaveAction" value="Schedule" data-writing-save disabled>Site yayınını planla</button>
+                    <button type="submit" name="SaveAction" value="Publish" data-writing-save disabled>Şimdi sitede yayımla</button>
+                </div>
+                <span asp-validation-for="SaveAction"></span>
+                <p class="writing-help">Değişiklikleri kaydet mevcut yayın durumunu ve tarihini korur. Sitede yayımlamak e-posta göndermez.</p>
+                <a href="@(Model.ReturnUrl ?? Url.Action("Index", "AdminPost"))">Yazı listesine dön</a>
+            </aside>
+        </div>
+    </form>
+</main>

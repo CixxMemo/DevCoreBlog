@@ -8,7 +8,7 @@ export async function buildTiptap(root, output) {
     await mkdir(output, { recursive: true });
     const manifest = JSON.parse(await readFile(resolve(root, 'package.json'), 'utf8'));
     const result = await build({
-        absWorkingDir: root, entryPoints: { trial: 'frontend/tiptap/trial.js' },
+        absWorkingDir: root, entryPoints: { trial: 'frontend/tiptap/trial.js', form: 'frontend/tiptap/form.js' },
         outdir: output, bundle: true, splitting: true, format: 'esm', platform: 'browser',
         target: 'es2022', minify: true, charset: 'utf8', sourcemap: false,
         chunkNames: 'chunks/[name]-[hash]', legalComments: 'external', metafile: true,

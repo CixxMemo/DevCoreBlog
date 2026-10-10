@@ -248,6 +248,9 @@ public class AdminPostController : Controller
         if (post == null)
             return NotFound();
 
+        if (post.DocumentVersion is not null)
+            return RedirectToAction("Edit", "AdminWriting", new { id, returnUrl });
+
         // Get all categories for the dropdown
         var categoryIsActive = await PopulateCategorySelectAsync(post.CategoryId);
         var input = MapToInput(post);

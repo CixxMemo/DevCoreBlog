@@ -225,34 +225,7 @@ public class PostService : IPostService, IPublicationSchedule, IWebhookPostServi
         if (stored is { DocumentVersion: not null })
             return ContentValidationResult.Conflict(
                 "Bu yazı JSON belge kullanıyor. Değişiklikleriniz korunuyor; belge editörüyle düzenleyin.");
-        var utcNow = _timeProvider.GetUtcNow().UtcDateTime;
-        switch (action)
-        {
-            case PostSaveAction.SaveDraft:
-                post.IsPublished = false;
-                break;
-            case PostSaveAction.Schedule:
-                if (post.PublishDate <= utcNow)
-                    return ContentValidationResult.FromErrors([
-                        new(nameof(Post.PublishDate), "Choose a future publish date to schedule this post.")]);
-                post.IsPublished = true;
-                break;
-            case PostSaveAction.Publish:
-                post.IsPublished = true;
-                post.PublishDate = utcNow;
-                break;
-            case PostSaveAction.Save:
-                if (stored is null)
-                    return ContentValidationResult.FromErrors([
-                        new("SaveAction", "Save changes requires an existing post.")]);
-                post.IsPublished = stored.IsPublished;
-                post.PublishDate = stored.PublishDate;
-                break;
-            default:
-                return ContentValidationResult.FromErrors([
-                    new("SaveAction", "Choose a valid save action.")]);
-        }
-        return ContentValidationResult.Success();
+        return EditorPublicationIntent.Apply(post, stored, action, _timeProvider.GetUtcNow().UtcDateTime);
     }
 
     public async Task<ContentValidationResult> CreatePostAsync(

@@ -195,3 +195,14 @@ gerçek browser/Cloudinary davranışını güvenlik sertifikasıyla doğrulamaz
 Kaynaklar: [.NET SDK global.json](https://learn.microsoft.com/en-us/dotnet/core/tools/global-json),
 [NuGet package audit CLI](https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-package-list),
 [GitHub Actions sözdizimi](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax).
+
+F09 aynı `document-persistence` aşamasında `document-writing-http.json` ekler:
+geçici adapter yerine gerçek AdminWriting MVC Create/Edit, atomik metadata+JSON,
+server türevler/overposting,400/413/409 veri koruma, iki paralel HTTP edit'in tek
+kazananı ve legacy satırın sessiz dönüşmemesi kontrol edilir. Aşama sayısı32 olarak
+kalır. `document_writing_browser_probe.cjs` ayrı gerçek Chrome kabulüdür; Türkçe
+tek form, toolbar/undo-redo, beş mark, kayıt–yeniden açma, başarılı mobil kayıt,
+klavye/focus, CSP, unsupported node ve dependency-load hatası/veri korumayı ölçer.
+Dashboard/listeden yeni JSON formuna gidilir; mevcut Markdown kapak ve validation
+regresyonları eski gerçek adreslerini korur. Legacy kurtarma kopyası yeni format
+olarak yüklenmez veya silinmez. JSON kurtarma/public gösterim bu kabul değildir.

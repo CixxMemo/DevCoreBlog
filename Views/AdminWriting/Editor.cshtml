@@ -1,0 +1,9 @@
+@model DevCoreBlog.Models.Admin.DocumentPostFormInput
+@{
+    ViewData["Title"] = Model.Id > 0 ? "Yazıyı düzenle" : "Yeni yazı";
+}
+<link rel="stylesheet" href="~/generated/tiptap/editor.css" asp-append-version="true" />
+<partial name="_DocumentPostForm" model="Model" />
+@section Scripts {
+    <script type="module" src="~/generated/tiptap/form.js" asp-append-version="true"></script>
+}

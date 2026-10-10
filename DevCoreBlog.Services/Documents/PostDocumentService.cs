@@ -45,7 +45,7 @@ public sealed class PostDocumentService(IPostDocumentRepository repository, Cont
         if (reading.PlainText != stored.PlainText || reading.WordCount != stored.WordCount ||
             reading.ReadingMinutes != stored.ReadingMinutes)
             return new(PostDocumentReadStatus.Inconsistent, stored.EditVersion);
-        return new(PostDocumentReadStatus.Ready, stored.EditVersion, document, reading);
+        return new(PostDocumentReadStatus.Ready, stored.EditVersion, document, reading, stored.Json);
     }
 }
 
@@ -57,4 +57,4 @@ public sealed record PostDocumentSaveResult(PostDocumentSaveStatus Status, long?
 public enum PostDocumentReadStatus { Ready, Legacy, NotFound, Inconsistent }
 /// <summary>Only a revalidated, consistent stored snapshot grants document and reading values.</summary>
 public sealed record PostDocumentReadResult(PostDocumentReadStatus Status, long? EditVersion = null,
-    ValidatedContentDocument? Document = null, DocumentReading? Reading = null);
+    ValidatedContentDocument? Document = null, DocumentReading? Reading = null, string? Json = null);
