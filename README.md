@@ -8,7 +8,7 @@ ASP.NET Core MVC (.NET 10), PostgreSQL ve Razor/Tailwind kullanan blog projesi. 
 
 Kişisel geliştirme planı, ilerleme/karar kayıtları ve kabul kanıtları yerelde
 tutulur; GitHub checkout'unda bulunmaları beklenmez. Yerelde mevcutsa agent
-görevle ilgili kayıtları okur; yoksa AGENTS.md, teknik sözleşmeler ve kullanıcının
+görevle ilgili kayıtları ve teknik sözleşmeleri okur; yoksa AGENTS.md, gerçek kaynaklar ve kullanıcının
 açık göreviyle çalışır. Kullanıcının kod/terminal komutu yazması gerekmez.
 
 ## Teknoloji ve proje haritası
@@ -32,7 +32,7 @@ DevCoreBlog.Data/                 EF ve repository implementasyonları
 DevCoreBlog.Services/             Use case'ler ve servisler
 Migrations/                      Bugün Web'de bulunan migration geçmişi
 wwwroot/                         Statik varlıklar
-docs/                            Teknik sözleşmeler ve kurulum/işletim belgeleri
+docs/                            Yerel teknik sözleşmeler ve işletim belgeleri; Git dışında
 ```
 
 Dört proje korunur: Data ve Services, Core sözleşmelerine bağımlıdır; Services Data'ya, Core vendor SDK'larına referans vermez. Gerçek paket sürümleri .csproj dosyalarından doğrulanır.
@@ -84,13 +84,21 @@ dotnet run --project DevCoreBlog.csproj
 
 Bu komutların belgelenmesi çalıştırıldıkları anlamına gelmez. Yeni çalışma için gerçek build/test kanıtı gerekir; CSRF, cache, XSS veya SOLID açısından kusursuzluk iddia edilmez. Yerel kabul kayıtları ve GitHub Actions sonuçları kendi sınırlarıyla yorumlanır.
 
+Gerçek test mümkünse yapılır. Agent önce kodu ve mevcut ortam/hesap/araçları
+inceler, gerekli izole ortamın kurulabilirliğini araştırır. Gerçek entegrasyonun
+yerine mock sonucu sunulmaz. Ortam kurulamazsa somut engel ve gerçeğe en yakın
+kontrol kaydedilir; teorik inceleme çalıştırılmış test sayılmaz. Ayrıntılı kural
+[AGENTS.md bölüm 9](AGENTS.md#9-çalışma-ağacı-ve-doğrulama) içindedir.
+
 ## Git, yerel dosyalar ve yayın paketi
 
 `bin/`, `obj/`, `node_modules/`, `wwwroot/generated/` ve yerel cookie/auth
 kayıtları takip edilmez. Derleme çıktıları build ile yeniden üretilir; migration,
 lockfile ve lisanslı frontend kaynakları korunur. `git rm --cached` yerel dosyayı
 silmez. Kişisel plan/kayıt/kanıt/arşiv ve iç inceleme raporları da Git dışında
-kalır; gerekli teknik belgeler, AGENTS.md ve test/CI kaynakları takip edilir.
+kalır. `docs/` klasörünün tamamı, teknik sözleşmeler dahil, yalnız yerelde
+korunur; AGENTS.md ve test/CI kaynakları takip edilir. Bu README'deki `docs/`
+bağlantıları yerel belgelere aittir; temiz GitHub checkout'unda bulunmayabilir.
 
 Gerçek `.env` ignore edilir; yalnız güvenli placeholder içeren `.env.example`
 takipte kalır. Yerel `.env` için `chmod 600 .env` dosya sahibine okuma/yazma verir,
@@ -100,8 +108,8 @@ diğer normal kullanıcıların erişimini kapatır. Root/yönetici ve aynı hes
 
 Git ignore kuralları publish'i yönetmez. Proje ayrıca `.env*`, `docs/**`, AGENTS.md
 ve `.agents/**` dosyalarını SDK item keşfinden dışlar; `publish-boundary` kontrolü
-sentetik dosyalarla gerçek publish çıktısını sınar. Teknik belgeler GitHub’da
-kalır, uygulama paketine kopyalanmaz.
+sentetik dosyalarla gerçek publish çıktısını sınar. `docs/` belgeleri GitHub'a
+ve uygulama paketine dahil edilmez.
 
 Gerçek `.env`, cookie ve Data Protection anahtarlarını eklemeyin.
 [Oturum ve geçmiş riski](docs/DEPLOYMENT_SECURITY.md#f54--git-takibi-ve-geçmişteki-oturum-kayıtları)

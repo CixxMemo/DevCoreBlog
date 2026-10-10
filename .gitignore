@@ -9,15 +9,8 @@ obj/
 
 ## Personal development plans, records and acceptance evidence (kept locally)
 /.local/devcoreblog_vol1/
-/docs/*
-# This technical contract is public; all other untracked docs remain private by default.
-!/docs/ICERIK_BELGESI_V1.md
-/docs/GELISTIRME_PLANI_*/
-/docs/uygulama-kayitlari/
-/docs/kanitlar/
-/docs/arsiv/
-/docs/PROJE_INCELEME_RAPORU_*.md
-/docs/SON_KABUL_RAPORU_*.md
+# All documentation under docs stays local, including technical contracts.
+/docs/
 
 ## Reproducible frontend dependencies and build output
 node_modules/
