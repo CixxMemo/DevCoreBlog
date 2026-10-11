@@ -92,7 +92,7 @@ body.admin-drawer-open {
         border-right: 2px solid #000;
         transform: translateX(-105%);
         visibility: hidden;
-        transition: transform 160ms ease, visibility 160ms ease;
+        transition: transform 160ms ease;
         overflow-y: auto;
         overscroll-behavior: contain;
     }

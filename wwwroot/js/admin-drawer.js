@@ -7,7 +7,9 @@
 
     if (!sidebar || !toggle || !pageContent || !header || !backdrop) return;
 
-    const mobileQuery = window.matchMedia('(max-width: 767.98px)');
+    // Match the rendered navigation control, including Safari's scrollbar boundary.
+    const isMobileLayout = () => toggle.getClientRects().length > 0;
+    let mobileLayout = isMobileLayout();
     let isOpen = false;
     let returnFocusToToggle = false;
 
@@ -18,10 +20,10 @@
     }
 
     function setOpen(nextOpen, restoreFocus = false) {
-        isOpen = mobileQuery.matches && nextOpen;
+        isOpen = isMobileLayout() && nextOpen;
         sidebar.classList.toggle('is-open', isOpen);
-        sidebar.setAttribute('aria-hidden', String(mobileQuery.matches && !isOpen));
-        sidebar.inert = mobileQuery.matches && !isOpen;
+        sidebar.setAttribute('aria-hidden', String(isMobileLayout() && !isOpen));
+        sidebar.inert = isMobileLayout() && !isOpen;
         pageContent.inert = isOpen;
         [...header.children].forEach(child => {
             if (child !== toggle) child.inert = isOpen;
@@ -72,10 +74,15 @@
         }
     });
 
-    mobileQuery.addEventListener('change', () => {
+    function syncLayout() {
+        const nextMobileLayout = isMobileLayout();
+        if (nextMobileLayout === mobileLayout) return;
+        mobileLayout = nextMobileLayout;
         returnFocusToToggle = sidebar.contains(document.activeElement);
         setOpen(false, returnFocusToToggle);
-    });
+    }
+    window.addEventListener('resize', syncLayout);
+    new ResizeObserver(syncLayout).observe(document.documentElement);
 
     setOpen(false);
 })();

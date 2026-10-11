@@ -10,7 +10,9 @@
     const search = document.getElementById('global-search-input');
     if (!sidebar || !toggle || !close || !backdrop || !main || !header || !skip) return;
 
-    const mobile = window.matchMedia('(max-width: 767.98px)');
+    // Use the rendered control: Safari's scrollbar can make matchMedia disagree with CSS.
+    const isMobileLayout = () => toggle.getClientRects().length > 0;
+    let mobileLayout;
     const background = [main, header, skip];
     let isOpen = false;
     let lastFocused = document.activeElement;
@@ -22,7 +24,7 @@
 
     // One state transition owns visibility, semantics, scroll and focus boundaries.
     function setOpen(nextOpen, restoreFocus = false) {
-        isOpen = mobile.matches && nextOpen;
+        isOpen = isMobileLayout() && nextOpen;
         sidebar.classList.toggle('is-open', isOpen);
         toggle.setAttribute('aria-expanded', String(isOpen));
         background.forEach(element => { element.inert = isOpen; });
@@ -38,8 +40,8 @@
             sidebar.setAttribute('role', 'complementary');
             sidebar.removeAttribute('aria-modal');
             if (restoreFocus) toggle.focus({ preventScroll: true });
-            sidebar.inert = mobile.matches;
-            if (mobile.matches) sidebar.setAttribute('aria-hidden', 'true');
+            sidebar.inert = isMobileLayout();
+            if (isMobileLayout()) sidebar.setAttribute('aria-hidden', 'true');
             else sidebar.removeAttribute('aria-hidden');
         }
     }
@@ -80,17 +82,24 @@
         if (isOpen && !sidebar.contains(event.target)) close.focus({ preventScroll: true });
     });
 
-    mobile.addEventListener('change', () => {
+    function syncLayout() {
+        const nextMobileLayout = isMobileLayout();
+        if (nextMobileLayout === mobileLayout) return;
+        mobileLayout = nextMobileLayout;
         // CSS may hide the focused element before the media-query event runs.
         const focusedInSidebar = sidebar.contains(lastFocused);
         const focusedOnToggle = lastFocused === toggle;
         const focusedOnClose = lastFocused === close;
-        setOpen(false, mobile.matches && focusedInSidebar);
-        if (!mobile.matches && (focusedOnToggle || focusedOnClose)) {
+        setOpen(false, mobileLayout && focusedInSidebar);
+        if (!mobileLayout && (focusedOnToggle || focusedOnClose)) {
             sidebar.querySelector('nav a[href]')?.focus({ preventScroll: true });
         }
-    });
+    }
+    window.addEventListener('resize', syncLayout);
+    // A scrollbar appearing after fonts/content load also changes Safari's layout width.
+    new ResizeObserver(syncLayout).observe(document.documentElement);
 
     document.documentElement.classList.add('public-navigation-ready');
+    mobileLayout = isMobileLayout();
     setOpen(false);
 })();
