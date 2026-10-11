@@ -10,6 +10,9 @@ public sealed class DocumentPostFormInput
 {
     public int Id { get; set; }
     public long EditVersion { get; set; }
+    [StringLength(36, ErrorMessage = "Taslak kayıt kimliği geçersiz.")]
+    [RegularExpression("^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$", ErrorMessage = "Taslak kayıt kimliği geçersiz.")]
+    public string? RecoveryRevision { get; set; }
     [Required(ErrorMessage = "Başlık gereklidir.")]
     [StringLength(PostContentRules.MaximumTitleLength, ErrorMessage = "Başlık en çok 200 karakter olabilir.")]
     public string Title { get; set; } = string.Empty;
@@ -32,4 +35,5 @@ public sealed class DocumentPostFormInput
     [BindNever] public string? BlockingMessage { get; set; }
     [BindNever] public string Slug { get; set; } = string.Empty;
     [BindNever] public bool EditorEnabled { get; set; }
+    [BindNever] public DocumentRecoveryReceipt? RecoveryReceipt { get; set; }
 }

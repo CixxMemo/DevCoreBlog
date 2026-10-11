@@ -6,6 +6,7 @@ using DevCoreBlog.Services.Publishing;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Text.Json;
 
 namespace DevCoreBlog.Controllers;
 
@@ -69,8 +70,13 @@ public sealed class AdminWritingController(PostWritingService writing, ICategory
         if (result.Status == EditorPostSaveStatus.NotFound) return NotFound();
         if (result.Status == EditorPostSaveStatus.Saved)
         {
+            if (result.Id is not int savedId || savedId <= 0)
+                throw new InvalidOperationException("A committed writing result requires a persisted identity.");
             TempData["DocumentSaved"] = "Yazı kaydedildi.";
-            return RedirectToAction(nameof(Edit), new { id = result.Id, returnUrl = input.ReturnUrl });
+            // Only a committed save can issue a receipt; route-bound identity owns its source key.
+            if (input.RecoveryRevision is { Length: 36 } revision)
+                TempData["DocumentRecoveryReceipt"] = JsonSerializer.Serialize(new DocumentRecoveryReceipt(savedId, input.Id, revision));
+            return RedirectToAction(nameof(Edit), new { id = savedId, returnUrl = input.ReturnUrl });
         }
         Response.StatusCode = result.Status switch { EditorPostSaveStatus.Limit => 413, EditorPostSaveStatus.Conflict => 409,
             EditorPostSaveStatus.Unavailable => 503, _ => 400 };
@@ -80,6 +86,15 @@ public sealed class AdminWritingController(PostWritingService writing, ICategory
 
     private async Task<IActionResult> ShowAsync(DocumentPostFormInput input)
     {
+        if (Request.Method == "GET" && TempData.Peek("DocumentRecoveryReceipt") is string serialized)
+        {
+            var receipt = JsonSerializer.Deserialize<DocumentRecoveryReceipt>(serialized);
+            if (receipt is not null && receipt.PostId == input.Id)
+            {
+                input.RecoveryReceipt = receipt;
+                TempData.Remove("DocumentRecoveryReceipt");
+            }
+        }
         input.SiteTimeZoneId = zone.Id;
         input.EditorEnabled = input.BlockingMessage is null && !string.IsNullOrWhiteSpace(input.DocumentJson) &&
             validator.Validate(input.DocumentJson).Document is not null;

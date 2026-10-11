@@ -84,6 +84,7 @@ try:
         if run('build',build+['DevCoreBlog.csproj'],source)[0]: raise RuntimeError('Application build failed')
         if run('editor-distribution',['node','scripts/verification/editor_build_probe.mjs'],source)[0]: raise RuntimeError('Editor distribution integrity failed')
         if run('tiptap-distribution',['node','scripts/verification/tiptap_build_probe.mjs'],source)[0]: raise RuntimeError('Tiptap distribution integrity failed')
+        if run('document-recovery-store',['node','scripts/verification/document_recovery_store_probe.mjs'],source)[0]: raise RuntimeError('Recovery race/failure checks failed')
         if run('publish-boundary',['python3','scripts/verification/publish_boundary_probe.py','--source',str(source)],source)[0]: raise RuntimeError('Private files entered SDK items or publish output')
         for project in ('DevCoreBlog.csproj','DevCoreBlog.Core/DevCoreBlog.Core.csproj','DevCoreBlog.Data/DevCoreBlog.Data.csproj','DevCoreBlog.Services/DevCoreBlog.Services.csproj'):
             json_audit('nuget-'+Path(project).stem,['dotnet','package','list','--project',project,'--include-transitive','--vulnerable','--format','json','--no-restore'],source,'nuget')
@@ -121,8 +122,9 @@ try:
             tables_http=json.loads((report/'document-tables-http.json').read_text())
             images_http=json.loads((report/'document-images-http.json').read_text())
             youtube_http=json.loads((report/'document-youtube-http.json').read_text())
+            recovery_http=json.loads((report/'document-recovery-http.json').read_text())
             stages['document-persistence']['passed']=code==0 and len(document_checks)>=5 and all(document_checks.values()) and all(
-                bool(data['checks']) and data['count']==len(data['checks']) and all(data['checks'].values()) for data in (document_db,document_http,writing_http,tables_http,images_http,youtube_http))
+                bool(data['checks']) and data['count']==len(data['checks']) and all(data['checks'].values()) for data in (document_db,document_http,writing_http,tables_http,images_http,youtube_http,recovery_http))
         except (OSError,ValueError,KeyError,TypeError):
             stages['document-persistence']['passed']=False
         if args.final_acceptance:

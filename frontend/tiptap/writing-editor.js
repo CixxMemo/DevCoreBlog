@@ -6,6 +6,8 @@ import { writingImageExtensions, supportedImage } from './images.js';
 import { mountImageUpload } from './image-upload.js';
 import { writingYoutubeExtensions, supportedYoutube } from './youtube.js';
 import { mountYoutubeInput } from './youtube-input.js';
+import { mountDocumentRecovery } from './recovery-form.js';
+import { recoveryFields } from './recovery-store.js';
 
 // Preserve supported stored attributes without dynamic style attributes or new alignment tools.
 const Alignment = Extension.create({
@@ -49,7 +51,7 @@ function supportedDocument(envelope) {
     return true;
 }
 
-export function mountWritingEditor(form) {
+export async function mountWritingEditor(form) {
     const input = form.querySelector('[name="DocumentJson"]');
     const original = JSON.parse(input.value);
     if (!supportedDocument(original)) throw new Error('Unsupported document; retain original');
@@ -82,6 +84,30 @@ export function mountWritingEditor(form) {
     function synchronize() {
         input.value = JSON.stringify({ version: 1, document: editor.getJSON() });
     }
+    const recovery = await mountDocumentRecovery(form, { synchronize,
+        blocked: () => contentError || media.busy() || saves.every(button => button.disabled),
+        markDirty: () => { dirty = true; },
+        apply: fields => {
+            try {
+                const envelope = JSON.parse(fields.DocumentJson);
+                if (!supportedDocument(envelope)) return false;
+                const document = editor.schema.nodeFromJSON(envelope.document);
+                document.check();
+                // Check browser normalization before touching any existing document or metadata.
+                const fieldsToApply = recoveryFields.filter(key => key !== 'DocumentJson').map(key => {
+                    const field = key === 'IsActive' ? form.querySelector('[name=IsActive][type=checkbox]') : form.elements.namedItem(key);
+                    const copy = field.cloneNode(true);
+                    if (key !== 'IsActive') { copy.value = fields[key]; if (copy.value !== fields[key]) throw new Error('Unrepresentable recovery field'); }
+                    return [key, field];
+                });
+                if (!editor.commands.setContent(document, { emitUpdate: false, errorOnInvalidContent: true })) return false;
+                for (const [key, field] of fieldsToApply) {
+                    if (key === 'IsActive') field.checked = fields[key]; else field.value = fields[key];
+                }
+                synchronize(); controls(); editor.commands.focus(); return true;
+            } catch { return false; }
+        },
+    });
     function controls() {
         for (const button of buttons) {
             const command = button.dataset.writingCommand;
@@ -116,12 +142,16 @@ export function mountWritingEditor(form) {
             }
         }
     });
-    editor.on('update', () => { synchronize(); dirty = true; status.textContent = 'Kaydedilmemiş değişiklikler var.'; });
+    editor.on('update', () => { synchronize(); dirty = true; recovery.changed(); status.textContent = 'Kaydedilmemiş değişiklikler var.'; });
     editor.on('transaction', controls);
     form.addEventListener('input', event => {
-        if (event.target !== input) { dirty = true; status.textContent = 'Kaydedilmemiş değişiklikler var.'; }
+        if (event.target !== input && recoveryFields.includes(event.target.name)) {
+            dirty = true; recovery.changed(); status.textContent = 'Kaydedilmemiş değişiklikler var.';
+        }
     });
+    form.addEventListener('change', event => { if (recoveryFields.includes(event.target.name)) { dirty = true; recovery.changed(); } });
     form.addEventListener('submit', event => {
+        if (event.defaultPrevented) return;
         if (contentError || media.busy() || saves.every(button => button.disabled)) { event.preventDefault(); return; }
         synchronize();
         dirty = false;
@@ -129,7 +159,7 @@ export function mountWritingEditor(form) {
     });
     window.addEventListener('beforeunload', event => { if (dirty) { event.preventDefault(); event.returnValue = ''; } });
     window.addEventListener('pagehide', event => { media.cancel(); if (!event.persisted) editor.destroy(); });
-    // Expose neither a mutable global editor nor a client storage recovery format.
+    // Keep the editor private; local recovery uses its own bounded, versioned format.
     mount.hidden = false;
     form.querySelector('[data-document-fallback]').hidden = true;
     saves.forEach(button => { button.disabled = false; });

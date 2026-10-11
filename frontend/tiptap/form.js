@@ -4,7 +4,7 @@ if (form) {
     try {
         if (form.dataset.editorEnabled !== 'true') throw new Error('Document unavailable');
         const { mountWritingEditor } = await import('./writing-editor.js');
-        mountWritingEditor(form);
+        await mountWritingEditor(form);
     } catch {
         form.querySelector('[data-writing-status]').textContent =
             'Editör güvenle açılamadı. Kaydetme kapalı; içerik belgesi aşağıda korunuyor. Güncel yazıyı yeniden açın.';

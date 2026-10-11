@@ -123,8 +123,9 @@ function canonical(node) {
     await page.goto(base + '/AdminWriting/Edit/' + http.fixturePostId); await editor.waitFor();
     const complexBefore = JSON.parse(await page.locator('[name=DocumentJson]').inputValue()).document;
     await title.fill('F09 bütün temel biçimler');
-    await page.getByRole('button', { name: 'Değişiklikleri kaydet', exact: true }).click();
-    await page.waitForLoadState(); await editor.waitFor();
+    await Promise.all([page.waitForNavigation({ waitUntil: 'domcontentloaded' }),
+        page.getByRole('button', { name: 'Değişiklikleri kaydet', exact: true }).click()]);
+    await editor.waitFor();
     const complexAfter = JSON.parse(await page.locator('[name=DocumentJson]').inputValue()).document;
     check('all_basic_nodes_marks_attributes_round_trip_without_loss', JSON.stringify(canonical(complexBefore)) === JSON.stringify(canonical(complexAfter)));
     check('literal_script_text_stays_text', await page.locator('[data-editor-mount] script').count() === 0 && (await editor.innerText()).includes('<script> metin'));
@@ -175,7 +176,7 @@ function canonical(node) {
     check('legacy_native_save_keeps_its_existing_endpoint', await page.getByRole('link', { name: 'F09 korunan legacy form', exact: true }).count() === 1);
     check('no_runtime_or_console_errors', errors.length === 0);
     check('no_csp_violations', violations.length === 0);
-})().catch(e => { checks.completed = false; console.error(e.name + ': verification interrupted; inspect boolean checks.'); process.exitCode = 1; })
+})().catch(e => { checks.completed = false; fs.writeFileSync(path.join(report, 'writing-browser-failure.txt'), e.stack+'\n'); console.error(e.name + ': verification interrupted; inspect boolean checks.'); process.exitCode = 1; })
 .finally(async () => {
     if (browser) await browser.close();
     fs.writeFileSync(path.join(report, 'writing-browser.json'), JSON.stringify({ count: Object.keys(checks).length, checks, errors, violations, scope: 'Real Chrome keyboard/toolbar/MVC round trip; disposable PostgreSQL. Future-schema response and dependency-load fault are controlled simulations. No media provider or JSON recovery claim.' }, null, 2) + '\n');

@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace DevCoreBlog.Controllers;
 
-/// <summary>Authorized, non-persistent document preview; it never reads or writes posts.</summary>
+/// <summary>Authorized document preview and recovery admission; neither reads or writes posts.</summary>
 [Authorize]
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
 public sealed class AdminDocumentController(ContentDocumentValidator validator, DocumentWebRenderer renderer) : Controller
@@ -16,6 +16,21 @@ public sealed class AdminDocumentController(ContentDocumentValidator validator, 
 
     [HttpGet]
     public IActionResult Preview() => PreviewView(new(), null);
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [RequestSizeLimit(FormRequestBytes)]
+    [RequestFormLimits(ValueLengthLimit = FormRequestBytes, ValueCountLimit = 8)]
+    public IActionResult ValidateRecovery([Bind(Prefix = "Input")] DocumentPreviewInput input)
+    {
+        // Recovery uses exactly the same bounded validator before touching the editing DOM.
+        Response.Headers["X-Robots-Tag"] = "noindex, nofollow, noarchive";
+        if (!ModelState.IsValid) return BadRequest();
+        var validation = validator.Validate(input.DocumentJson);
+        if (validation.Document is null)
+            return StatusCode(validation.Error?.Kind == DocumentFailureKind.Limit ? 413 : 400);
+        return Json(new { valid = true, version = DocumentLimits.Version });
+    }
 
     [HttpPost]
     [ValidateAntiForgeryToken]

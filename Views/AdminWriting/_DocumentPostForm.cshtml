@@ -20,9 +20,15 @@
     @if (TempData["DocumentSaved"] is string saved) { <p role="status" class="writing-notice">@saved</p> }
     <form asp-controller="AdminWriting" asp-action="@(editing ? "Edit" : "Create")" asp-route-id="@(editing ? Model.Id : (int?)null)"
           method="post" id="postForm" data-document-form data-editor-enabled="@Model.EditorEnabled.ToString().ToLowerInvariant()"
+          data-recovery-id="@Model.Id" data-recovery-time-zone="@SiteDates.BrowserTimeZoneId"
+          data-recovery-validation-url="@Url.Action("ValidateRecovery", "AdminDocument")"
           data-image-upload-url="@Url.Action("UploadEditorImage", "AdminPost")">
         <input asp-for="Id" type="hidden" />
         <input asp-for="EditVersion" type="hidden" />
+        <input asp-for="RecoveryRevision" type="hidden" />
+        @if (Model.RecoveryReceipt is { } receipt) {
+            <p data-document-receipt data-source-id="@receipt.SourcePostId" data-revision="@receipt.Revision" role="status">Yazı kaydedildi. Yerel taslak denetleniyor.</p>
+        }
         <input name="returnUrl" value="@Model.ReturnUrl" type="hidden" />
         @if (!ViewData.ModelState.IsValid) {
             <div asp-validation-summary="All" class="writing-errors" role="alert"></div>
@@ -33,6 +39,15 @@
         }
         <div class="writing-grid">
             <section class="writing-body" aria-label="Yazı içeriği">
+                <section class="writing-notice" data-recovery-panel hidden aria-label="Taslak kurtarma">
+                    <p data-recovery-message></p>
+                    <p data-recovery-date></p>
+                    <div class="writing-toolbar">
+                        <button type="button" data-recovery-restore disabled>Taslağı geri yükle</button>
+                        <button type="button" data-recovery-discard disabled>Yerel taslağı sil</button>
+                    </div>
+                </section>
+                <p data-recovery-status role="status" aria-live="polite">Yerel taslak kurtarma hazırlanıyor.</p>
                 <label for="post-title-input">Başlık</label>
                 <input asp-for="Title" id="post-title-input" maxlength="200" autocomplete="off" />
                 <span asp-validation-for="Title"></span>
