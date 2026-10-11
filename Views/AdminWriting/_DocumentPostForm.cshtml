@@ -61,6 +61,14 @@
                     </div>
                     <p data-image-status role="status" aria-live="polite">Görsel, yükleme başladığında seçili olan konuma eklenir. Yüklerken yazmaya devam edebilirsiniz.</p>
                 </fieldset>
+                <fieldset class="writing-media" data-writing-youtube hidden>
+                    <legend>YouTube videosu</legend>
+                    <label for="writing-youtube-url">YouTube bağlantısı</label>
+                    <input id="writing-youtube-url" type="text" inputmode="url" maxlength="2048" autocomplete="off" data-youtube-url disabled aria-describedby="writing-youtube-help writing-youtube-status" />
+                    <p id="writing-youtube-help" class="writing-help">HTTPS youtu.be, youtube.com/watch?v= veya youtube.com/embed/ bağlantısı kullanın. www.youtube-nocookie.com/embed/ de kabul edilir. Ek parametre ve embed kodu yok; belgede en fazla 10 video.</p>
+                    <button type="button" data-youtube-add disabled>Videoyu ekle</button>
+                    <p id="writing-youtube-status" data-youtube-status role="status" aria-live="polite">Video, yazıda seçili konuma metni silmeden eklenir.</p>
+                </fieldset>
                 <div data-editor-mount hidden></div>
                 @* Encoded original envelope is both startup input and an inspectable fallback. *@
                 <div data-document-fallback>

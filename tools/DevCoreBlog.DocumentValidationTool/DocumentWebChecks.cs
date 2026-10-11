@@ -74,7 +74,7 @@ internal static class DocumentWebChecks
         check("web.decorativeImage", () => Html(N("image", attrs: "{\"src\":\"https://example.test/x.png\"}")).Contains("alt=\"\""));
         foreach (var source in new[] { "https://youtu.be/abcdefghijk", "https://youtube.com/watch?v=abcdefghijk", "https://www.youtube.com/embed/abcdefghijk", "https://www.youtube-nocookie.com/embed/abcdefghijk" })
             check("web.youtube." + source.Split('/')[2], () => Html(N("youtube", attrs: "{\"src\":" + Q(source) + "}"))
-                == "<div class=\"document-video\"><iframe src=\"https://www.youtube-nocookie.com/embed/abcdefghijk\" title=\"YouTube videosu\" loading=\"lazy\" referrerpolicy=\"no-referrer\" allow=\"fullscreen\" allowfullscreen></iframe></div>");
+                == "<div class=\"document-video\"><iframe src=\"https://www.youtube-nocookie.com/embed/abcdefghijk\" title=\"YouTube videosu\" loading=\"lazy\" referrerpolicy=\"strict-origin-when-cross-origin\" allow=\"fullscreen\" allowfullscreen></iframe></div>");
         check("web.fakeEmbedRejected", () => validator.Validate(Doc(N("youtube", attrs: "{\"src\":\"https://evil.test/embed/abcdefghijk\"}"))).Document is null);
         check("web.semanticTable", () =>
         {

@@ -126,7 +126,8 @@ public sealed class DocumentWebRenderer(DocumentTextProducer textProducer)
         {
             html.Append("<div class=\"document-video\"><iframe src=\"https://www.youtube-nocookie.com/embed/");
             Encode(video.VideoId);
-            html.Append("\" title=\"YouTube videosu\" loading=\"lazy\" referrerpolicy=\"no-referrer\" allow=\"fullscreen\" allowfullscreen></iframe></div>");
+            // YouTube requires client identification; cross-origin requests expose only the site origin.
+            html.Append("\" title=\"YouTube videosu\" loading=\"lazy\" referrerpolicy=\"strict-origin-when-cross-origin\" allow=\"fullscreen\" allowfullscreen></iframe></div>");
         }
 
         private void OptionalTitle(string? title)

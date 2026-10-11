@@ -4,6 +4,8 @@ import Code from '@tiptap/extension-code';
 import { writingTableExtensions, isTableCommand, canTableCommand, runTableCommand } from './tables.js';
 import { writingImageExtensions, supportedImage } from './images.js';
 import { mountImageUpload } from './image-upload.js';
+import { writingYoutubeExtensions, supportedYoutube } from './youtube.js';
+import { mountYoutubeInput } from './youtube-input.js';
 
 // Preserve supported stored attributes without dynamic style attributes or new alignment tools.
 const Alignment = Extension.create({
@@ -22,6 +24,7 @@ const attributes = {
     tableHeader: ['colspan', 'rowspan', 'colwidth', 'align'],
     blockquote: [], bulletList: [], orderedList: ['start', 'type'], listItem: [], codeBlock: ['language'],
     image: ['src', 'alt', 'title', 'width', 'height'],
+    youtube: ['src', 'width', 'height', 'start'],
 };
 const marks = { bold: [], italic: [], underline: [], code: [], link: ['href', 'title', 'target', 'rel', 'class'] };
 
@@ -36,6 +39,7 @@ function supportedDocument(envelope) {
             Object.keys(node).some(k => !['type', 'attrs', 'content', 'text', 'marks'].includes(k)) ||
             Object.keys(node.attrs ?? {}).some(k => !attributes[node.type].includes(k))) return false;
         if (node.type === 'image' && !supportedImage(node.attrs)) return false;
+        if (node.type === 'youtube' && !supportedYoutube(node.attrs)) return false;
         for (const mark of node.marks ?? []) {
             if (!Object.hasOwn(marks, mark.type) || Object.keys(mark).some(k => !['type', 'attrs'].includes(k)) ||
                 Object.keys(mark.attrs ?? {}).some(k => !marks[mark.type].includes(k))) return false;
@@ -60,7 +64,8 @@ export function mountWritingEditor(form) {
             link: { openOnClick: false, autolink: false, linkOnPaste: false,
                 HTMLAttributes: { target: null, rel: 'noopener noreferrer', class: null } },
         }), Code.extend({ excludes: '' }), Alignment, ...writingTableExtensions(message => { status.textContent = message; }),
-        ...writingImageExtensions(message => { status.textContent = message; })],
+        ...writingImageExtensions(message => { status.textContent = message; }),
+        ...writingYoutubeExtensions(message => { status.textContent = message; })],
         content: original.document,
         onContentError: () => { contentError = true; },
         editorProps: { attributes: { class: 'writing-document', role: 'textbox',
@@ -73,6 +78,7 @@ export function mountWritingEditor(form) {
     const media = mountImageUpload(form, editor, busy => {
         saves.forEach(button => { button.disabled = busy; });
     });
+    mountYoutubeInput(form, editor);
     function synchronize() {
         input.value = JSON.stringify({ version: 1, document: editor.getJSON() });
     }

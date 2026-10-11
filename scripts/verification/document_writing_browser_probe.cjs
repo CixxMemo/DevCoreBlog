@@ -139,9 +139,23 @@ function canonical(node) {
         __RequestVerificationToken: await page.locator('#postForm [name=__RequestVerificationToken]').inputValue()
     } });
     await page.goto(unsupportedResponse.url());
+    await editor.waitFor();
+    check('server_validated_youtube_node_now_opens_without_loss', JSON.parse(await page.locator('[name=DocumentJson]').inputValue()).document.content[0].type === 'youtube');
+    // Controlled future-schema response: current server cannot persist an unknown node.
+    // Keep loss-prevention coverage independently of newly supported node types.
+    const future = unsupported.replace('"youtube"', '"futureVideo"');
+    const futureRoute = async route => {
+        const response = await route.fetch();
+        const encoded = future.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
+        const body = (await response.text()).replace(/(<textarea[^>]*name="DocumentJson"[^>]*>)[\s\S]*?(<\/textarea>)/u, '$1' + encoded + '$2');
+        await route.fulfill({ response, body });
+    };
+    await context.route(unsupportedResponse.url(), futureRoute);
+    await page.goto(unsupportedResponse.url());
     await page.getByText('Editör güvenle açılamadı.', { exact: false }).waitFor();
-    check('unsupported_stored_node_is_retained_and_saving_fails_closed', await page.locator('[name=DocumentJson]').inputValue() === unsupported &&
+    check('controlled_future_node_is_retained_and_saving_fails_closed', await page.locator('[name=DocumentJson]').inputValue() === future &&
         await page.locator('[data-writing-save]:not([disabled])').count() === 0 && await page.locator('[data-editor-mount] .ProseMirror').count() === 0);
+    await context.unroute(unsupportedResponse.url(), futureRoute);
     await context.route('**/generated/tiptap/chunks/**', r => r.abort());
     await page.goto(base + '/AdminWriting/Create');
     await page.getByText('Editör güvenle açılamadı.', { exact: false }).waitFor();
@@ -164,6 +178,6 @@ function canonical(node) {
 })().catch(e => { checks.completed = false; console.error(e.name + ': verification interrupted; inspect boolean checks.'); process.exitCode = 1; })
 .finally(async () => {
     if (browser) await browser.close();
-    fs.writeFileSync(path.join(report, 'writing-browser.json'), JSON.stringify({ count: Object.keys(checks).length, checks, errors, violations, scope: 'Real Chrome keyboard/toolbar/MVC round trip; disposable PostgreSQL. No media provider or JSON recovery claim.' }, null, 2) + '\n');
+    fs.writeFileSync(path.join(report, 'writing-browser.json'), JSON.stringify({ count: Object.keys(checks).length, checks, errors, violations, scope: 'Real Chrome keyboard/toolbar/MVC round trip; disposable PostgreSQL. Future-schema response and dependency-load fault are controlled simulations. No media provider or JSON recovery claim.' }, null, 2) + '\n');
     console.log(JSON.stringify({ count: Object.keys(checks).length, failed: Object.keys(checks).filter(k => !checks[k]) }));
 });
