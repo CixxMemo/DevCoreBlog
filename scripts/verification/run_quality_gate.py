@@ -39,10 +39,10 @@ def json_audit(name,command,source,kind):
     try:
         data=json.loads(output)
         if kind=='npm':
-            valid='metadata' in data and 'vulnerabilities' in data and not data.get('error')
-            policy=evaluate_npm_audit(data,code,json.loads((source/'package-lock.json').read_text()),json.loads((source/'package.json').read_text()))
-            clean=valid and policy['passed']
-            stages[name]['exception_policy']=policy
+            policy=evaluate_npm_audit(data,code)
+            valid=policy['response_valid']
+            clean=policy['passed']
+            stages[name]['audit_policy']=policy
         else:
             valid=bool(data.get('projects')) and not data.get('problems')
             clean=valid and not any(package.get('vulnerabilities') for project in data['projects'] for framework in project.get('frameworks',[]) for group in ('topLevelPackages','transitivePackages') for package in framework.get(group,[]))
@@ -52,7 +52,7 @@ def json_audit(name,command,source,kind):
     except (ValueError,KeyError,TypeError):
         stages[name]['passed']=False
         stages[name]['advisory_response_valid']=False
-    label='PASS_WITH_ACCEPTED_BUILD_RISK' if stages[name].get('exception_policy',{}).get('accepted') and stages[name]['passed'] else ('PASS' if stages[name]['passed'] else 'FAIL/UNVERIFIED')
+    label='PASS' if stages[name]['passed'] else 'FAIL/UNVERIFIED'
     print(name+': advisory '+label,flush=True)
 
 try:
@@ -69,9 +69,14 @@ try:
             if path.is_symlink(): raise RuntimeError('Source symlink not supported: '+name)
             if path.is_file():
                 dest=source/name;dest.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(path,dest)
+        # Use only the public registry; never read the host user's npm credentials.
+        npm_global=Path(owned)/'npm-global.conf';npm_global.write_text('')
+        env.update(NPM_CONFIG_USERCONFIG='/dev/null',NPM_CONFIG_GLOBALCONFIG=str(npm_global),NPM_CONFIG_REGISTRY='https://registry.npmjs.org/')
         run('sdk',['dotnet','--version'],source)
         if run('npm-install',['npm','ci','--ignore-scripts','--no-fund','--no-audit'],source)[0]: raise RuntimeError('Frontend install failed')
         json_audit('npm-audit',['npm','audit','--json'],source,'npm')
+        if run('npm-audit-policy',['python3','scripts/verification/f55_audit_policy_probe.py','--audit',str(report/'npm-audit.json'),'--report',str(report/'npm-audit-policy.json')],source)[0]:
+            raise RuntimeError('Strict npm audit policy regression failed')
         # Explicit public source: no user NuGet credential feeds are inherited.
         (source/'NuGet.Config').write_text('<configuration><packageSources><clear/><add key="nuget.org" value="https://api.nuget.org/v3/index.json"/></packageSources></configuration>')
         build=['dotnet','build','--no-restore','--disable-build-servers','-m:1','-nodeReuse:false','-p:NuGetAudit=false']

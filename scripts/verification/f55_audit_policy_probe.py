@@ -1,28 +1,79 @@
 #!/usr/bin/env python3
-"""Regress acceptance boundaries against the real captured npm advisory report."""
-import argparse,copy,json
-from datetime import date
+"""Check strict audit boundaries with explicitly synthetic negative responses."""
+import argparse
+import copy
+import json
 from pathlib import Path
+
 from npm_audit_policy import evaluate_npm_audit
-p=argparse.ArgumentParser();p.add_argument('--audit',type=Path,required=True);p.add_argument('--report',type=Path,required=True);a=p.parse_args()
-root=Path(__file__).resolve().parents[2]
-data=json.loads(a.audit.read_text());lock=json.loads((root/'package-lock.json').read_text());manifest=json.loads((root/'package.json').read_text());checks={}
-def test(name,change,expected=False,code=1,today=date(2026,10,5)):
- d,l,m=copy.deepcopy(data),copy.deepcopy(lock),copy.deepcopy(manifest);change(d,l,m)
- checks[name]=evaluate_npm_audit(d,code,l,m,today)['passed'] is expected
-noop=lambda d,l,m:None
-test('exact_known_graph_accepted',noop,True)
-test('network_error_rejected',lambda d,l,m:d.update(error={'code':'NETWORK'}))
-test('timeout_rejected',noop,code=124)
-test('exit_two_rejected',noop,code=2)
-test('new_advisory_rejected',lambda d,l,m:d['vulnerabilities']['braces']['via'].append({'url':'https://github.com/advisories/GHSA-new-advisory'}))
-test('new_package_rejected',lambda d,l,m:(d['vulnerabilities'].update(other={'name':'other'}),d['metadata']['vulnerabilities'].update(total=6)))
-test('changed_version_rejected',lambda d,l,m:l['packages']['node_modules/braces'].update(version='3.0.4'))
-test('runtime_scope_rejected',lambda d,l,m:l['packages']['node_modules/braces'].update(dev=False))
-test('runtime_dependency_rejected',lambda d,l,m:m.update(dependencies={'braces':'3.0.3'}))
-test('nested_unknown_node_rejected',lambda d,l,m:d['vulnerabilities']['braces'].update(nodes=['node_modules/other/node_modules/braces']))
-test('expired_exception_rejected',noop,today=date(2026,11,6))
-test('cycle_rejected',lambda d,l,m:d['vulnerabilities']['braces'].update(via=['tailwindcss']))
-test('malformed_count_rejected',lambda d,l,m:d['metadata']['vulnerabilities'].update(total=0))
-test('clean_scan_needs_no_exception',lambda d,l,m:(d.update(vulnerabilities={}),d['metadata']['vulnerabilities'].update(total=0)),True,code=0)
-a.report.write_text(json.dumps({'checks':checks,'count':len(checks)},indent=2)+'\n');print(json.dumps(checks));assert all(checks.values())
+
+
+def check_policy(clean):
+    """Require clean audit success and reject the retired graph and invalid responses."""
+    checks = {}
+
+    def check(name, data, code=0, expected=False):
+        result = evaluate_npm_audit(data, code)
+        checks[name] = result['passed'] is expected and result['accepted'] == []
+
+    check('real_clean_audit_accepted_without_exception', clean, expected=True)
+    for code in (1, 2, 124, -15, True, None):
+        check('empty_audit_exit_' + str(code) + '_rejected', clean, code)
+    for name, data in (
+        ('non_object', []), ('invalid_json_text', '{'), ('null', None),
+        ('missing_fields', {}), ('metadata_list', {**clean, 'metadata': []}),
+        ('findings_list', {**clean, 'vulnerabilities': []}),
+        ('network_error', {**clean, 'error': {'code': 'NETWORK'}}),
+        ('empty_error', {**clean, 'error': {}}),
+        ('unknown_version', {**clean, 'auditReportVersion': 3}),
+        ('boolean_version', {**clean, 'auditReportVersion': True}),
+    ):
+        check(name + '_rejected', data)
+    for field, value in (('total', 1), ('total', -1), ('total', True), ('total', '0'),
+                         ('high', 1), ('high', -1), ('low', False), ('critical', None)):
+        data = copy.deepcopy(clean)
+        data['metadata']['vulnerabilities'][field] = value
+        check(field + '_' + str(value) + '_rejected', data)
+    data = copy.deepcopy(clean)
+    del data['metadata']['vulnerabilities']['low']
+    check('missing_severity_count_rejected', data)
+    # The former dev-only recursive graph is now rejected regardless of lock scope/date.
+    old = copy.deepcopy(clean)
+    names = ('braces', 'chokidar', 'fast-glob', 'micromatch', 'tailwindcss')
+    old['vulnerabilities'] = {
+        name: {'name': name, 'severity': 'high', 'nodes': ['node_modules/' + name],
+               'via': ([{'name': 'braces', 'dependency': 'braces', 'severity': 'high',
+                         'range': '<=3.0.3', 'url': 'https://github.com/advisories/GHSA-vfj7-8cjw-p6xm'}]
+                       if name == 'braces' else ['braces'])}
+        for name in names
+    }
+    old['metadata']['vulnerabilities'].update(high=5, total=5)
+    check('retired_braces_graph_rejected', old, 1)
+    check('retired_graph_with_exit_zero_rejected', old)
+    for severity in ('info', 'low', 'moderate', 'high', 'critical'):
+        data = copy.deepcopy(clean)
+        data['vulnerabilities'] = {'new-package': {'name': 'new-package', 'severity': severity}}
+        data['metadata']['vulnerabilities'].update({severity: 1, 'total': 1})
+        check('new_' + severity + '_finding_rejected', data)
+    return checks
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--audit', type=Path, required=True)
+    parser.add_argument('--report', type=Path, required=True)
+    args = parser.parse_args()
+    clean = json.loads(args.audit.read_text())
+    if not evaluate_npm_audit(clean, 0)['passed']:
+        raise SystemExit('Probe requires a valid clean audit capture; it does not replace a real audit exit check.')
+    checks = check_policy(clean)
+    args.report.write_text(json.dumps({
+        'scope': 'Captured clean response plus synthetic policy negatives; not provider/platform integration',
+        'checks': checks, 'count': len(checks),
+    }, indent=2) + '\n')
+    print(json.dumps(checks))
+    raise SystemExit(0 if all(checks.values()) else 1)
+
+
+if __name__ == '__main__':
+    main()
