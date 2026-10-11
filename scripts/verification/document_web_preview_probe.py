@@ -77,10 +77,13 @@ for key, value in {'Content-Length': str(1048576 * 3 + 65537),
 connection.endheaders()
 wire_response = connection.getresponse()
 # ASP.NET antiforgery can translate the bounded form-read failure to 400 before the action.
-checks['wire_body_limit_rejected_before_rendering'] = wire_response.status in (400, 413) and 'no-store' in (wire_response.getheader('Cache-Control') or '') and 'class="document-content"' not in wire_response.read().decode('utf-8')
+wire_status = wire_response.status
+wire_cache = wire_response.getheader('Cache-Control') or ''
+wire_rendered = 'class="document-content"' in wire_response.read().decode('utf-8')
+checks['wire_body_limit_rejected_before_rendering'] = wire_status in (400, 413) and 'no-store' in wire_cache and not wire_rendered
 connection.close()
 checks['all_rows_versions_counters_unchanged'] = snapshot() == before
 from pathlib import Path
-Path(a.report).write_text(json.dumps({'count': len(checks), 'checks': checks, 'scope': 'Owned synthetic PostgreSQL only; no real dotenv or credentials.'}, indent=2) + '\n')
+Path(a.report).write_text(json.dumps({'count': len(checks), 'checks': checks, 'wire': {'status': wire_status, 'cacheControl': wire_cache, 'rendered': wire_rendered}, 'scope': 'Owned synthetic PostgreSQL only; no real dotenv or credentials.'}, indent=2) + '\n')
 print(json.dumps({'count': len(checks), 'failed': [k for k, v in checks.items() if not v]}))
 assert all(checks.values()), 'Document preview acceptance failed'

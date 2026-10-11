@@ -56,9 +56,10 @@ public sealed class AdminDocumentController(ContentDocumentValidator validator, 
         return PreviewView(input, renderer.Render(document));
     }
 
-    private ViewResult PreviewView(DocumentPreviewInput input, RenderedContentDocument? rendered)
+    private ViewResult PreviewView(DocumentPreviewInput? input, RenderedContentDocument? rendered)
     {
         Response.Headers["X-Robots-Tag"] = "noindex, nofollow, noarchive";
-        return View("Preview", new DocumentPreviewModel(input, rendered));
+        // A rejected form read can leave complex input unbound; keep its real 400 response renderable.
+        return View("Preview", new DocumentPreviewModel(input ?? new(), rendered));
     }
 }

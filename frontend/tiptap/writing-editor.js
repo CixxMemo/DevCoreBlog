@@ -8,6 +8,7 @@ import { writingYoutubeExtensions, supportedYoutube } from './youtube.js';
 import { mountYoutubeInput } from './youtube-input.js';
 import { mountDocumentRecovery } from './recovery-form.js';
 import { recoveryFields } from './recovery-store.js';
+import { mountDocumentPreview } from './preview.js';
 
 // Preserve supported stored attributes without dynamic style attributes or new alignment tools.
 const Alignment = Extension.create({
@@ -75,15 +76,19 @@ export async function mountWritingEditor(form) {
     });
     if (contentError) { editor.destroy(); throw new Error('Invalid content'); }
     const saves = [...form.querySelectorAll('[data-writing-save]')];
+    const preview = form.querySelector('[data-writing-preview]');
     const buttons = [...form.querySelectorAll('[data-writing-command]')];
     let dirty = false;
     const media = mountImageUpload(form, editor, busy => {
         saves.forEach(button => { button.disabled = busy; });
+        preview.disabled = busy;
     });
     mountYoutubeInput(form, editor);
     function synchronize() {
         input.value = JSON.stringify({ version: 1, document: editor.getJSON() });
     }
+    mountDocumentPreview(form, { readJson: () => { synchronize(); return input.value; },
+        blocked: () => contentError || media.busy() || saves.every(button => button.disabled) });
     const recovery = await mountDocumentRecovery(form, { synchronize,
         blocked: () => contentError || media.busy() || saves.every(button => button.disabled),
         markDirty: () => { dirty = true; },
@@ -163,6 +168,7 @@ export async function mountWritingEditor(form) {
     mount.hidden = false;
     form.querySelector('[data-document-fallback]').hidden = true;
     saves.forEach(button => { button.disabled = false; });
+    preview.disabled = false;
     controls();
     status.textContent = 'Editör hazır. Değişiklikler kaydettiğinizde sunucuya yazılır.';
 }
