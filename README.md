@@ -1,6 +1,6 @@
 # DevCoreBlog
 
-ASP.NET Core MVC (.NET 10), PostgreSQL ve Razor/Tailwind kullanan blog projesi. Mevcut kapsam; yazı/kategori yönetimi, Markdown içerik, Cloudinary görselleri, yönetici oturumu, webhook ve portföy beslemesidir.
+ASP.NET Core MVC (.NET 10), PostgreSQL ve Razor/Tailwind kullanan blog projesi. Mevcut kapsam; yazı/kategori yönetimi, Türkçe Tiptap JSON yazım formu, Cloudinary görselleri, yönetici oturumu, webhook ve portföy beslemesidir. Markdown/Toast UI akışı geçiş süresince korunur; public JSON gösterimi henüz tamamlanmadı.
 
 ## Agent ile çalışma
 
@@ -17,9 +17,9 @@ açık göreviyle çalışır. Kullanıcının kod/terminal komutu yazması gere
 |---|---|
 | Web | C#, ASP.NET Core MVC, net10.0, nullable açık |
 | Veri | EF Core 10 + Npgsql + PostgreSQL |
-| Arayüz | Razor, Tailwind, gerekli JavaScript |
+| Arayüz | Razor, Tailwind CSS 4.3.3, küçük vanilla JavaScript modülleri |
 | Oturum | ASP.NET Core Cookie Authentication |
-| İçerik | Markdig, Toast UI Editor, Prism |
+| İçerik | Tiptap 3.31.4 ve sürümlü JSON; geçişte Markdig/Toast UI; Prism |
 | Medya/config | CloudinaryDotNet, environment, yerelde DotNetEnv |
 
 ```text
@@ -35,9 +35,9 @@ wwwroot/                         Statik varlıklar
 docs/                            Yerel teknik sözleşmeler ve işletim belgeleri; Git dışında
 ```
 
-Dört proje korunur: Data ve Services, Core sözleşmelerine bağımlıdır; Services Data'ya, Core vendor SDK'larına referans vermez. Gerçek paket sürümleri .csproj dosyalarından doğrulanır.
+Dört proje korunur: Data ve Services, Core sözleşmelerine bağımlıdır; Services Data'ya, Core vendor SDK'larına referans vermez. .NET paket sürümleri `.csproj`, frontend sürümleri `package.json`/`package-lock.json` dosyalarından doğrulanır.
 
-## Frontend derlemesi (F35)
+## Frontend derlemesi — Tailwind 4 / PostCSS
 
 Build ortamında .NET SDK yanında Node.js 22 veya üzeri ve npm gerekir. Sabit paketler `package.json`/`package-lock.json` içindedir. İlk kurulum:
 
@@ -53,11 +53,15 @@ npm run build
 
 `dotnet build DevCoreBlog.csproj` ve `dotnet publish DevCoreBlog.csproj` aynı derlemeyi otomatik çalıştırır; eksik veya lockfile'dan eski npm kurulumu önce `npm ci` ile hazırlanır. `dotnet run --no-build` öncesinde build yapılmalıdır. Razor/JS sınıfı değişince yeniden build gerekir; tarayıcıda Tailwind derleyicisi yoktur.
 
-- Tarama: `Views/**/*.cshtml`, `wwwroot/js/**/*.js`; inline Razor script'leri de taranır. Sınıf adlarını tam literal olarak yaz; `bg-${color}-600` gibi birleştirme kullanma. Toast/drawer durumları mevcut sonlu literal adları kullanır.
-- `frontend/tailwind.public.cjs` ve `tailwind.admin.cjs` mevcut iki layout temasını korur; ortak font/tarama ayarı `tailwind.shared.cjs` içindedir. Eski kullanılmayan browser `wwwroot/tailwind.config.js` kaldırıldı.
-- Tailwind 3.4.17 resmi CLI ve Prism 1.30.0 npm lock'tan gelir. Mevcut Toast UI 3.2.2 dağıtımı [kaynak/hash/lisans kaydıyla](frontend/vendor/toastui/README.md) yerelde tutulur. Toolbar, Show Language'den önce yüklenir; Prism dilleri yerel components dizininden otomatik açılır.
+- Tailwind CSS **4.3.3**, resmî `@tailwindcss/postcss` **4.3.3** ve PostCSS **8.5.29** exact sürümlerle kilitlidir. `scripts/frontend/build.mjs`, `scripts/frontend/tailwind-bundle.mjs` üzerinden resmî PostCSS API'sini çağırır. CLI/watch bağımlılığı kullanılmaz. [Resmî PostCSS entegrasyonu](https://tailwindcss.com/docs/installation/using-postcss).
+- `frontend/tailwind.public.css` ve `frontend/tailwind.admin.css` iki giriş dosyasıdır; ortak `frontend/tailwind.css`, `source(none)` ile otomatik taramayı kapatır. Yalnız `Views/**/*.cshtml` ve `wwwroot/js/**/*.js` taranır. Sınıf adlarını tam literal yaz; `bg-${color}-600` gibi birleştirme kullanma.
+- Girişlerin `@config` ile yüklediği `frontend/tailwind.public.cjs` ve `frontend/tailwind.admin.cjs` iki layout temasını korur; `frontend/tailwind.shared.cjs` ortak fontları tanımlar. Public koyu tema class ile çalışır. `frontend/tailwind.compat.css` mevcut görünümü koruyan sınırlı uyumluluk kurallarını taşır.
+- Çıktılar `wwwroot/generated/tailwind-public.css` ve `wwwroot/generated/tailwind-admin.css` dosyalarıdır. Tailwind MIT lisansı `wwwroot/generated/TAILWIND-LICENSE` olarak yayımlanır. Prism 1.30.0 ve Tiptap 3.31.4 aynı kilitli yerel build'e dahildir; Tiptap bundle/chunk, lisans ve build receipt'i `wwwroot/generated/tiptap/` altındadır.
+- Mevcut Toast UI 3.2.2 dağıtımı [kaynak/hash/lisans kaydıyla](frontend/vendor/toastui/README.md) yerelde tutulur; build sırasında kilitli DOMPurify modülüyle hazırlanır. Prism toolbar, Show Language'den önce yüklenir; diller yerel components dizininden otomatik açılır.
 - Çıktı `wwwroot/generated/` içine yazılır; bu klasör ve `node_modules/` Git'e eklenmez. Temiz checkout'ta build üretir ve publish'e dahil eder. Uygulama çalışma ortamında Node/npm gerekmez. Yerel CSS/JS URL'leri `asp-append-version` ile cache busting kullanır.
-- Temiz kurulum, aynı hash ile ikinci derleme ve temiz publish kabul kontrolü: `sh scripts/verification/run_f35_assets.sh`. Yalnız geçici kaynak kopyasında çalışır; gerçek `.env` kopyalanmaz.
+- Temiz scriptsiz kurulum, aynı platformda aynı hash ile ikinci derleme, temiz publish ve değişen kaynak/chunk için incremental publish kontrolü: `sh scripts/verification/run_f35_assets.sh`. Yalnız geçici kaynak kopyasında çalışır; gerçek `.env` kopyalanmaz. Yeni publish dizini doğrulanır; eski dağıtım dizinindeki artık dosyaların temizliği ayrıca yönetilir.
+
+Tailwind 4'ün resmî tarayıcı hedefi **Safari 16.4+, Chrome 111+, Firefox 128+** seviyesidir. [Geçiş rehberi ve tarayıcı sınırları](https://tailwindcss.com/docs/upgrade-guide). 11 Ekim 2026 kabulünde gerçek Chrome 154.0.8037.98, patched Gecko Firefox 153.0 ve native macOS Safari 26.0.1 kullanıldı. Masaüstü ve dar viewport ölçümleri fiziksel mobil cihaz veya bütün tarihsel tarayıcı sürümlerinde test yapıldığı anlamına gelmez. Uygulama server-side MVC/Razor olarak kalır.
 
 ## Agent için yerel doğrulama başlangıcı
 
@@ -120,10 +124,26 @@ açıklar.
 
 `python3 scripts/verification/run_quality_gate.py --report-dir /tmp/devcore-quality-report`
 temiz build, gerçek advisory taraması ve sentetik PostgreSQL/HTTP kontrollerini
-tek akışta çalıştırır. Gereksinimler, kapsam ve kullanıcı onaylı dar build-time risk istisnası
-[kalite kapısı belgesindedir](docs/KALITE_KAPISI.md); kırmızı sonuç başarı sayılmaz.
-GitHub Actions aynı kontrolleri push/PR'da çalıştırır; yerel başarı uzak CI sonucu
-yerine geçmez. Tam kabul için `--final-acceptance` seçeneğini kullanın.
+tek akışta çalıştırır. Rapor dizini boş olmalıdır. Gereksinimler ve ayrıntılı kapsam
+[yerel kalite kapısı belgesindedir](docs/KALITE_KAPISI.md).
+
+Npm audit istisnasızdır: geçerli ve tutarlı v2 JSON, sıfır bulgu ve gerçek exit0
+gerekir. Her severity'deki eski/yeni bulgu, erişim/parse/count hatası veya boş
+yanıt+exit1 kapıyı durdurur. Önceki braces risk kabulü kaldırıldı; mevcut lock'ta
+braces zinciri yoktur. Sıfır bilinen bulgu mutlak güvenlik garantisi değildir.
+`npm-audit-policy` aşamasının sentetik olumsuz kontrolleri gerçek registry,
+PostgreSQL, Cloudinary veya tarayıcı entegrasyonu yerine sayılmaz.
+
+Normal kapı 31, `--final-acceptance` kapısı 33 aşamadır. 11 Ekim 2026 Tailwind
+geçişi kabulünde gerçek macOS 15.7.4 ARM64 ve Ubuntu 24.04.4 Linux ARM64 üzerinde
+final kapı **33/33**, npm audit exit0/sıfır bulgu ve temiz/incremental asset
+build/publish kontrolleri geçti. Bunlar yerel kabul sonuçlarıdır; Linux x64 veya
+canlı sunucu kabulü değildir. Bu README güncellemesinde testler yeniden çalıştırılmadı.
+
+GitHub Actions'ın [.github/workflows/quality.yml](.github/workflows/quality.yml)
+dosyası aynı final kapıyı push/PR ve manuel dispatch için tanımlar; yerel başarı
+uzak workflow'un çalıştığını göstermez. Tam kabul için `--final-acceptance`
+seçeneğini kullanın; kırmızı sonuç başarı sayılmaz.
 
 ## Yedek ve yayınlama (F56)
 
