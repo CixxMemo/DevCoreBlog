@@ -1,0 +1,19 @@
+/* Restore semantic email defaults after the admin reset, without changing the email HTML. */
+.email-preview-page { min-width: 0; }
+.email-preview-body { min-width: 0; }
+.email-preview-body p, .email-preview-body pre, .email-preview-body blockquote,
+.email-preview-body ul, .email-preview-body ol { margin-block: 1em; }
+.email-preview-body h2, .email-preview-body h3, .email-preview-body h4 { font-weight: 700; margin-block: 1em .5em; }
+.email-preview-body h2 { font-size: 1.5em; }
+.email-preview-body h3 { font-size: 1.17em; }
+.email-preview-body h4 { font-size: 1em; }
+.email-preview-body ul { list-style-type: disc; padding-inline-start: 2em; }
+.email-preview-body ol { list-style-type: decimal; padding-inline-start: 2em; }
+.email-preview-body a { text-decoration: underline; }
+.email-preview-body blockquote { margin-inline: 2em; }
+.email-preview-body strong { font-weight: 700; }
+.email-preview-body em { font-style: italic; }
+.email-preview-text { min-width: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.email-preview-page :focus-visible { outline: 3px solid #2563eb; outline-offset: 3px; }
+/* Admin data tables use a mobile minimum width; email content must fit its own body. */
+#admin-page-content .email-preview-body table { min-width: 0; }

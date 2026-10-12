@@ -13,7 +13,7 @@ internal sealed class EmailHtmlWriter(EmailRenderContext context, DocumentReadin
 
     internal string Render(DocumentNode root)
     {
-        html.Append("<div style=\"font-family:Arial,sans-serif;line-height:1.6;color:#111111;overflow-wrap:anywhere;\">");
+        html.Append("<div style=\"").Append(EmailDocumentStyles.Body).Append("\">");
         Write(root);
         if (context.Unsubscribe is { } exit)
         {
@@ -42,12 +42,12 @@ internal sealed class EmailHtmlWriter(EmailRenderContext context, DocumentReadin
                 Children(node); html.Append("</ol>"); break;
             case DocumentNodeKind.ListItem: Element("li", node); break;
             case DocumentNodeKind.CodeBlock:
-                html.Append("<pre style=\"white-space:pre-wrap;overflow-wrap:anywhere;font-family:monospace;\"><code>");
+                html.Append("<pre style=\"").Append(EmailDocumentStyles.Code).Append("\"><code>");
                 Children(node); html.Append("</code></pre>"); break;
             case DocumentNodeKind.Image: Image(Attributes<ImageAttributes>(node)); break;
             case DocumentNodeKind.YouTube: Video(Attributes<YouTubeAttributes>(node)); break;
             case DocumentNodeKind.Table:
-                html.Append("<table style=\"width:100%;table-layout:fixed;border-collapse:collapse;\"><tbody>");
+                html.Append("<table style=\"").Append(EmailDocumentStyles.Table).Append("\"><tbody>");
                 Children(node); html.Append("</tbody></table>"); break;
             case DocumentNodeKind.TableRow: Element("tr", node); break;
             case DocumentNodeKind.TableCell: Aligned("td", Attributes<TableCellAttributes>(node).Alignment, node); break;
@@ -66,13 +66,8 @@ internal sealed class EmailHtmlWriter(EmailRenderContext context, DocumentReadin
     {
         html.Append('<').Append(tag);
         if (id is not null) { html.Append(" id=\""); Encode(id); html.Append('"'); }
-        html.Append(" style=\"text-align:").Append(alignment switch
-        {
-            DocumentAlignment.Left => "left", DocumentAlignment.Center => "center", DocumentAlignment.Right => "right",
-            _ => throw new InvalidOperationException("Unsupported validated alignment.")
-        });
-        if (tag is "td" or "th") html.Append(";border:1px solid #cccccc;padding:8px;vertical-align:top;overflow-wrap:anywhere");
-        html.Append(";\">"); Children(node); html.Append("</").Append(tag).Append('>');
+        html.Append(" style=\"").Append(EmailDocumentStyles.Alignment(alignment, tag is "td" or "th"));
+        html.Append("\">"); Children(node); html.Append("</").Append(tag).Append('>');
     }
 
     private void Text(DocumentNode node)
@@ -97,14 +92,14 @@ internal sealed class EmailHtmlWriter(EmailRenderContext context, DocumentReadin
     {
         html.Append("<img src=\""); Encode(image.Source); html.Append("\" alt=\""); Encode(image.Alt ?? "");
         html.Append('"'); Title(image.Title);
-        html.Append(" style=\"display:block;max-width:100%;height:auto;border:0;\">");
+        html.Append(" style=\"").Append(EmailDocumentStyles.Image).Append("\">");
     }
 
     private void Video(YouTubeAttributes video)
     {
         html.Append("<p><a href=\"https://www.youtube.com/watch?v="); Encode(video.VideoId);
         html.Append("\" rel=\"noopener noreferrer\"><img src=\"https://i.ytimg.com/vi/"); Encode(video.VideoId);
-        html.Append("/hqdefault.jpg\" alt=\"YouTube videosunu izle\" style=\"display:block;max-width:100%;height:auto;border:0;\">YouTube videosunu izle</a></p>");
+        html.Append("/hqdefault.jpg\" alt=\"YouTube videosunu izle\" style=\"").Append(EmailDocumentStyles.Image).Append("\">YouTube videosunu izle</a></p>");
     }
 
     private void Title(string? title)

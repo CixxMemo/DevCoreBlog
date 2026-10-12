@@ -1,0 +1,33 @@
+@model DevCoreBlog.Models.Admin.EmailPreviewModel
+@{
+    ViewData["Title"] = "E-posta önizlemesi";
+}
+<link rel="stylesheet" href="~/css/email-preview.css" asp-append-version="true" />
+<section class="email-preview-page document-preview" lang="tr" aria-labelledby="email-preview-title">
+    <h1 id="email-preview-title" class="text-2xl font-bold mb-4">E-posta önizlemesi</h1>
+    <p class="mb-4">Bu önizleme e-posta göndermez, yazıyı kaydetmez ve yayımlamaz.</p>
+    <p class="mb-4">Bu görünüm, açtığınız andaki içeriktir. Yazmaya devam etmek için yazım sekmesine dönün; yeni değişiklikler için yeniden önizleme açın.</p>
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div asp-validation-summary="All" class="text-red-700 mb-4" role="alert"></div>
+    }
+    @if (Model.Rendered is { } rendered)
+    {
+        <p class="text-sm mb-4">@rendered.Reading.WordCount kelime · Tahmini @rendered.Reading.ReadingMinutes dakika</p>
+        <p class="text-sm mb-4">Kaydedilmemiş içerikte bölüm bağlantıları site ana adresini kullanır. Abonelikten çıkma bağlantısı gerçek gönderim sırasında eklenir.</p>
+        <section class="border-2 border-black bg-white p-4 md:p-6 min-w-0" aria-labelledby="email-html-title">
+            <h2 id="email-html-title" class="font-bold mb-3">HTML görünümü</h2>
+            <div class="email-preview-body">@Html.Raw(rendered.Html)</div>
+        </section>
+        <details class="border-2 border-black bg-white p-4 mt-6 min-w-0">
+            <summary class="font-bold cursor-pointer">Düz metin alternatifini göster</summary>
+            <pre class="email-preview-text text-sm mt-4">@rendered.PlainText</pre>
+        </details>
+        <p class="text-sm mt-4">Görünüm e-posta uygulamasına göre değişebilir.</p>
+    }
+    else if (ViewData.ModelState.IsValid)
+    {
+        <p>İçeriğinizi yazım ekranındaki e-posta önizleme düğmesiyle açın.</p>
+        <a asp-controller="AdminWriting" asp-action="Create" class="underline">Yeni yazı hazırlayın</a>
+    }
+</section>

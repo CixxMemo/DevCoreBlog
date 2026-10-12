@@ -1,4 +1,7 @@
 using Microsoft.AspNetCore.Mvc.Controllers;
+using DevCoreBlog.Services.Documents;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace DevCoreBlog.Middlewares;
 
@@ -14,6 +17,10 @@ public sealed class SecurityHeadersMiddleware(RequestDelegate next)
         "frame-src https://www.youtube-nocookie.com; object-src 'none'; " +
         "base-uri 'none'; form-action 'self'; frame-ancestors 'none'; ";
 
+    private static readonly string EmailStylePolicy = "style-src-attr 'unsafe-hashes' " +
+        string.Join(' ', EmailDocumentStyles.All.Select(style => "'sha256-" +
+            Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(style))) + "'"));
+
     public async Task InvokeAsync(HttpContext context)
     {
         context.Response.OnStarting(() =>
@@ -21,14 +28,22 @@ public sealed class SecurityHeadersMiddleware(RequestDelegate next)
             context.Response.Headers["X-Content-Type-Options"] = "nosniff";
             context.Response.Headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
             context.Response.Headers["X-Frame-Options"] = "DENY";
+            var action = context.GetEndpoint()?.Metadata.GetMetadata<ControllerActionDescriptor>();
+            if (action?.ControllerName == "AdminEmail")
+            {
+                context.Response.Headers["Cache-Control"] = "no-store";
+                context.Response.Headers["X-Robots-Tag"] = "noindex, nofollow, noarchive";
+            }
             if (context.Response.ContentType?.StartsWith("text/html", StringComparison.OrdinalIgnoreCase) == true)
             {
-                var action = context.GetEndpoint()?.Metadata.GetMetadata<ControllerActionDescriptor>();
                 // The pinned editor sets dynamic sizing/position style attributes; other pages need none.
                 var isEditor = context.Response.StatusCode == StatusCodes.Status200OK &&
                     action?.ControllerName == "AdminPost" && action.ActionName is "Create" or "Edit";
                 context.Response.Headers["Content-Security-Policy"] = CommonPolicy +
-                    (isEditor ? "style-src-attr 'unsafe-inline'" : "style-src-attr 'none'");
+                    (isEditor ? "style-src-attr 'unsafe-inline'" :
+                        context.Response.StatusCode == StatusCodes.Status200OK &&
+                        action?.ControllerName == "AdminEmail" && action.ActionName == "Preview"
+                            ? EmailStylePolicy : "style-src-attr 'none'");
             }
             return Task.CompletedTask;
         });

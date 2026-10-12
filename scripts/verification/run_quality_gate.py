@@ -124,9 +124,10 @@ try:
             youtube_http=json.loads((report/'document-youtube-http.json').read_text())
             recovery_http=json.loads((report/'document-recovery-http.json').read_text())
             preview_http=json.loads((report/'document-preview-http.json').read_text())
+            email_preview_http=json.loads((report/'document-email-preview-http.json').read_text())
             public_document_http=json.loads((report/'public-document-http.json').read_text())
             stages['document-persistence']['passed']=code==0 and len(document_checks)>=5 and all(document_checks.values()) and all(
-                bool(data['checks']) and data['count']==len(data['checks']) and all(data['checks'].values()) for data in (document_db,document_http,writing_http,tables_http,images_http,youtube_http,recovery_http,preview_http,public_document_http))
+                bool(data['checks']) and data['count']==len(data['checks']) and all(data['checks'].values()) for data in (document_db,document_http,writing_http,tables_http,images_http,youtube_http,recovery_http,preview_http,email_preview_http,public_document_http))
         except (OSError,ValueError,KeyError,TypeError):
             stages['document-persistence']['passed']=False
         code,output=run('webhook-documents',['sh','scripts/verification/run_f17_visibility.sh'],source,timeout=600,export=False,extra={

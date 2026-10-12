@@ -1,12 +1,12 @@
 // Submit an isolated snapshot to the existing trusted renderer; the writing form never submits.
 export function mountDocumentPreview(form, { readJson, blocked }) {
-    const button = form.querySelector('[data-writing-preview]');
+    const buttons = [...form.querySelectorAll('[data-writing-preview], [data-writing-email-preview]')];
     const status = form.querySelector('[data-preview-status]');
-    button.addEventListener('click', () => {
+    for (const button of buttons) button.addEventListener('click', () => {
         if (blocked()) { status.textContent = 'Editör hazır değil veya görsel yükleniyor. Yazınız korunuyor; önizlemeyi daha sonra açın.'; return; }
         let request;
         try {
-            const url = new URL(form.dataset.documentPreviewUrl, location.origin);
+            const url = new URL(button.hasAttribute('data-writing-email-preview') ? form.dataset.emailPreviewUrl : form.dataset.documentPreviewUrl, location.origin);
             if (url.origin !== location.origin || url.search || url.hash) throw new Error('Preview endpoint');
             request = document.createElement('form');
             request.method = 'post'; request.action = url.href;

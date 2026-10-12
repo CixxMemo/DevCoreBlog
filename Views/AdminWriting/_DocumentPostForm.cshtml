@@ -23,6 +23,7 @@
           data-recovery-id="@Model.Id" data-recovery-time-zone="@SiteDates.BrowserTimeZoneId"
           data-recovery-validation-url="@Url.Action("ValidateRecovery", "AdminDocument")"
           data-document-preview-url="@Url.Action("Preview", "AdminDocument")"
+          data-email-preview-url="@Url.Action("Preview", "AdminEmail")"
           data-image-upload-url="@Url.Action("UploadEditorImage", "AdminPost")">
         <input asp-for="Id" type="hidden" />
         <input asp-for="EditVersion" type="hidden" />
@@ -110,6 +111,7 @@
                 <span asp-validation-for="PublishDate"></span>
                 <label class="writing-checkbox"><input asp-for="IsActive" /> Yazı etkin</label>
                 <button type="button" data-writing-preview disabled aria-describedby="writing-preview-status">Web önizlemesi (yeni sekme)</button>
+                <button type="button" data-writing-email-preview disabled aria-describedby="writing-preview-status">E-posta önizlemesi (yeni sekme)</button>
                 <p id="writing-preview-status" data-preview-status class="writing-help" role="status" aria-live="polite">Kaydetmeden içerik görünümünü ayrı sekmede inceleyin. Bu işlem yazıyı yayımlamaz.</p>
                 <div class="writing-actions">
                     @if (editing) { <button type="submit" name="SaveAction" value="Save" data-writing-save disabled>Değişiklikleri kaydet</button> }

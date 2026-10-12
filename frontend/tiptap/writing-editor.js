@@ -76,12 +76,12 @@ export async function mountWritingEditor(form) {
     });
     if (contentError) { editor.destroy(); throw new Error('Invalid content'); }
     const saves = [...form.querySelectorAll('[data-writing-save]')];
-    const preview = form.querySelector('[data-writing-preview]');
+    const previews = [...form.querySelectorAll('[data-writing-preview], [data-writing-email-preview]')];
     const buttons = [...form.querySelectorAll('[data-writing-command]')];
     let dirty = false;
     const media = mountImageUpload(form, editor, busy => {
         saves.forEach(button => { button.disabled = busy; });
-        preview.disabled = busy;
+        previews.forEach(button => { button.disabled = busy; });
     });
     mountYoutubeInput(form, editor);
     function synchronize() {
@@ -168,7 +168,7 @@ export async function mountWritingEditor(form) {
     mount.hidden = false;
     form.querySelector('[data-document-fallback]').hidden = true;
     saves.forEach(button => { button.disabled = false; });
-    preview.disabled = false;
+    previews.forEach(button => { button.disabled = false; });
     controls();
     status.textContent = 'Editör hazır. Değişiklikler kaydettiğinizde sunucuya yazılır.';
 }
