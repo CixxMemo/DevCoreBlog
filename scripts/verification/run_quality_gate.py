@@ -90,7 +90,7 @@ try:
             json_audit('nuget-'+Path(project).stem,['dotnet','package','list','--project',project,'--include-transitive','--vulnerable','--format','json','--no-restore'],source,'nuget')
         if run('tool-restore',['dotnet','tool','restore','--configfile','NuGet.Config'],source)[0]: raise RuntimeError('EF tool restore failed')
         if run('ef-version',['dotnet','ef','--version'],source)[0]: raise RuntimeError('EF tool unavailable')
-        for tool in ('PasswordHash','ContentRules','ImageUploadPolicy','Operations','DocumentValidation','DocumentTransition'):
+        for tool in ('PasswordHash','ContentRules','ImageUploadPolicy','Operations','DocumentValidation','DocumentTransition','MediaInventory'):
             project=f'tools/DevCoreBlog.{tool}Tool/DevCoreBlog.{tool}Tool.csproj'
             if run('restore-'+tool,['dotnet','restore',project,'--configfile','NuGet.Config','-p:NuGetAudit=false'],source)[0]: raise RuntimeError('Test tool restore failed')
             if run('build-'+tool,build+[project],source)[0]: raise RuntimeError('Test tool build failed')
@@ -145,6 +145,12 @@ try:
             stages['document-transition']['passed']=code==0 and transition['passed'] and transition['count']==len(transition['checks']) and all(transition['checks'].values())
         except (OSError,ValueError,KeyError,TypeError):
             stages['document-transition']['passed']=False
+        code,output=run('media-inventory',['python3','scripts/verification/media_inventory_probe.py','--port','55504','--report',str(report/'media-inventory.json')],source,timeout=180,export=False)
+        try:
+            media=json.loads((report/'media-inventory.json').read_text())
+            stages['media-inventory']['passed']=code==0 and media['passed'] and media['count']==len(media['checks']) and all(media['checks'].values())
+        except (OSError,ValueError,KeyError,TypeError):
+            stages['media-inventory']['passed']=False
         if args.final_acceptance:
             code,output=run('final-security-data',['sh','scripts/verification/run_f17_visibility.sh'],source,timeout=480,export=False,extra={'DEVCORE_F49_PROBE':'1','DEVCORE_F57_PROBE':'1','DEVCORE_F57_REPORT':str(report/'final-regression.json'),'DEVCORE_F17_PG_PORT':'55461','DEVCORE_F17_APP_PORT':'15199'})
             try:

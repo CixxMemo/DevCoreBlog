@@ -149,11 +149,11 @@ braces zinciri yoktur. Sıfır bilinen bulgu mutlak güvenlik garantisi değildi
 `npm-audit-policy` aşamasının sentetik olumsuz kontrolleri gerçek registry,
 PostgreSQL, Cloudinary veya tarayıcı entegrasyonu yerine sayılmaz.
 
-Normal kapı 31, `--final-acceptance` kapısı 33 aşamadır. 11 Ekim 2026 Tailwind
+Güncel normal kapı 39, `--final-acceptance` kapısı 41 aşamadır. 11 Ekim 2026 Tailwind
 geçişi kabulünde gerçek macOS 15.7.4 ARM64 ve Ubuntu 24.04.4 Linux ARM64 üzerinde
 final kapı **33/33**, npm audit exit0/sıfır bulgu ve temiz/incremental asset
 build/publish kontrolleri geçti. Bunlar yerel kabul sonuçlarıdır; Linux x64 veya
-canlı sunucu kabulü değildir. Bu README güncellemesinde testler yeniden çalıştırılmadı.
+canlı sunucu kabulü değildir. Bu tarihsel sonuç yeni kaynaklar için otomatik kabul değildir.
 
 GitHub Actions'ın [.github/workflows/quality.yml](.github/workflows/quality.yml)
 dosyası aynı final kapıyı push/PR ve manuel dispatch için tanımlar; yerel başarı
@@ -163,3 +163,30 @@ seçeneğini kullanın; kırmızı sonuç başarı sayılmaz.
 ## Yedek ve yayınlama (F56)
 
 [Prosedür ve izole restore komutu](docs/YEDEK_VE_YAYIN_PROSEDURU.md) DB/medya/anahtar kapsamını, staging sırasını ve önceki binary uyumluluğunu açıklar. Test aracı canlı DB kabul etmez; canlı deploy/restore için ayrı açık yetki gerekir.
+
+## Salt okunur medya envanteri
+
+`tools/DevCoreBlog.MediaInventoryTool` operatörün aynı sağlayıcı hesabından
+aldığı export'taki kimlik ve açık HTTPS alias'larını kapak, legacy alanlar ve
+ortak doğrulayıcıdan geçmiş JSON görselleriyle eşleştirir. Taslak, pasif ve özel
+yazılar da taranır. Bilinmeyen/bozuk/tutarsız belgeler belirsizliktir; eşleşmeyen
+varlıklar incelemeye bırakılır. URL'den PublicId tahmin edilmez.
+
+```sh
+dotnet build tools/DevCoreBlog.MediaInventoryTool --disable-build-servers
+# MEDIA_INVENTORY_CONNECTION yalnız repo dışındaki güvenli environment'tan gelir.
+dotnet run --no-build --project tools/DevCoreBlog.MediaInventoryTool -- provider-inventory.json > media-dry-run.json
+```
+
+Araç PostgreSQL repeatable-read/read-only snapshot kullanır; DB veya sağlayıcıya
+write yapmaz. En çok10.000 yazı/32Mi code-unit toplam metin/30s deadline ve
+10s DB command timeout; kaynak sınırı aşılırsa kısmi başarı raporu vermez.
+Export4MiB/1000asset/varlık başına10alias ile sınırlıdır. Rapor ve export'u özel
+saklayın. **Referans bulunmaması silme yetkisi değildir.** Kayıtsız editör/kurtarma,
+harici kullanım ve snapshot sonrası değişiklikler kapsam dışıdır. Ayrıntılar
+[yerel medya sözleşmesindedir](docs/MEDYA_BAKIM_SOZLESMESI.md).
+
+`python3 scripts/verification/media_inventory_probe.py --report /tmp/media-report.json`
+yeni owned PostgreSQL cluster'ında sentetik JSON/kapak/legacy/bozuk belge,
+kaynak sınırları ve salt SELECT hesabını sınar; gerçek sağlayıcı export'u olduğu
+iddiasını yapmaz. Bu probe normal kalite kapısına da dahildir.

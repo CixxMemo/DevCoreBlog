@@ -17,10 +17,11 @@ internal sealed class ReferenceMatch(InventoryAsset asset)
     private int _references;
     private int _possibleReferences;
 
-    public void Observe(int id, string? coverId, string[] texts)
+    public void Observe(int id, string? coverId, string[] texts, string[] imageSources)
     {
         // HTML entities and percent encoding are presentation variants, not identity inference.
         var confirmed = coverId == asset.PublicId ||
+            _urls.Any(url => imageSources.Contains(url, StringComparer.Ordinal)) ||
             _urls.Any(url => texts.Any(text => text.Contains(url, StringComparison.Ordinal)));
         var possible = !confirmed && texts.Any(text => text.Contains(asset.PublicId, StringComparison.Ordinal));
         if (!confirmed && !possible) return;
@@ -28,11 +29,11 @@ internal sealed class ReferenceMatch(InventoryAsset asset)
         if (_postIds.Count < 20) _postIds.Add(id);
     }
 
-    public object Report() => new
+    public object Report(int uncertainPosts) => new
     {
         publicId = asset.PublicId,
-        status = _references > 0 ? "Referenced" : _possibleReferences > 0 ? "Review required" : "No stored reference found",
-        referencingPosts = _references, possibleReferencingPosts = _possibleReferences,
+        status = _references > 0 ? "Referenced" : _possibleReferences > 0 || uncertainPosts > 0 ? "Review required" : "No stored reference found",
+        uncertainPosts, referencingPosts = _references, possibleReferencingPosts = _possibleReferences,
         samplePostIds = _postIds, samplesTruncated = _references + _possibleReferences > _postIds.Count
     };
 
