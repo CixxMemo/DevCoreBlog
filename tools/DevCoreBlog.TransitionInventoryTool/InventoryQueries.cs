@@ -34,7 +34,8 @@ internal static class InventoryQueries
             FROM information_schema.columns WHERE table_schema='public' AND table_name='Posts'
               AND column_name IN ('Id','Title','Content','Summary','Excerpt','Slug','CategoryId',
                 'IsActive','IsPublished','PublishDate','ThumbnailUrl','ThumbnailPublicId',
-                'ThumbnailWidth','ThumbnailHeight','ThumbnailAlt','EditVersion','UpdatedDate','ContentKind','AccessScope')), '[]'),
+                'ThumbnailWidth','ThumbnailHeight','ThumbnailAlt','EditVersion','UpdatedDate','ContentKind','AccessScope',
+                'DocumentVersion','DocumentJson','DocumentPlainText','DocumentWordCount','DocumentReadingMinutes')), '[]'),
           'postSlugUniqueValidUnfiltered', EXISTS(SELECT 1 FROM pg_index i
             JOIN pg_attribute a ON a.attrelid=i.indrelid AND a.attnum=ANY(i.indkey)
             WHERE i.indrelid=to_regclass('public."Posts"') AND i.indisunique AND i.indisvalid
@@ -60,6 +61,12 @@ internal static class InventoryQueries
             ? "count(*) FILTER (WHERE p.\"ThumbnailWidth\">0 AND p.\"ThumbnailHeight\">0)" : "NULL::bigint";
         var hasAccess = columns.Contains("ContentKind") && columns.Contains("AccessScope");
         var publicBody = hasAccess ? "p.\"AccessScope\"=0 AND p.\"ContentKind\" IN (0,1,2,3)" : "true";
+        var hasDocuments = columns.Contains("DocumentVersion");
+        var allNull = "p.\"DocumentVersion\" IS NULL AND p.\"DocumentJson\" IS NULL AND p.\"DocumentPlainText\" IS NULL AND p.\"DocumentWordCount\" IS NULL AND p.\"DocumentReadingMinutes\" IS NULL";
+        var v1Facts = "p.\"DocumentVersion\"=1 AND p.\"DocumentJson\" IS NOT NULL AND p.\"DocumentPlainText\" IS NOT NULL AND p.\"DocumentWordCount\" IS NOT NULL AND p.\"DocumentReadingMinutes\" IS NOT NULL";
+        var activeLegacy = hasDocuments ? $"count(*) FILTER (WHERE p.\"IsActive\" AND ({allNull}))" : "count(*) FILTER (WHERE p.\"IsActive\")";
+        var activeV1 = hasDocuments ? $"count(*) FILTER (WHERE p.\"IsActive\" AND ({v1Facts}))" : "NULL::bigint";
+        var storageContract = hasDocuments ? "explicit_versioned_document_facts_with_legacy_null_set" : "legacy_markdown_text_not_inferred_json";
         var accessContract = hasAccess ? "explicit_kind_and_access" : "legacy_schema_without_access_metadata";
         var privateBodies = hasAccess ? "count(*) FILTER (WHERE p.\"AccessScope\"=1)" : "NULL::bigint";
         var invalidAccess = hasAccess
@@ -67,7 +74,9 @@ internal static class InventoryQueries
             : "NULL::bigint";
         return $$"""
             SELECT jsonb_build_object(
-              'storageContract','legacy_markdown_text_not_inferred_json',
+              'storageContract','{{storageContract}}',
+              'activeLegacyBodies',{{activeLegacy}},'activeV1DocumentFacts',{{activeV1}},
+              'documentFactsMeaning','column_facts_only_full_validator_verification_is_separate',
               'accessContract','{{accessContract}}', 'subscriberBodies',{{privateBodies}}, 'invalidAccessMetadata',{{invalidAccess}},
               'total',count(*), 'active',count(*) FILTER (WHERE p."IsActive"),
               'inactiveByPostOrCategory',count(*) FILTER (WHERE NOT p."IsActive" OR NOT coalesce(c."IsActive",false)),

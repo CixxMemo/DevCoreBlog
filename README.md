@@ -11,6 +11,12 @@ V2 işlem kayıtları oluştuktan sonra eski tek anahtar varsayımlı binary ile
 geri dönüş uyumlu sayılmaz; sürüm kapsamını bilen binary/forward repair gerekir.
 
 
+Sonlu mevcut içerik geçişi için `tools/DevCoreBlog.DocumentTransitionTool` bulunur.
+Açık, kayıt hash'ine bağlı JSON manifesti ve doğrulanmış yedek/restore kanıtıyla
+dry-run/apply çalışır; eski Content ve metadata korunur. Genel Markdown dönüştürücü
+veya uygulama startup'ında otomatik veri göçü yoktur. Bağlantı yalnız process environment
+içinde, özel snapshot/manifest/yedekler Git ve publish dışında tutulur.
+
 ## Agent ile çalışma
 
 **Önce [AGENTS.md](AGENTS.md) dosyasını oku.** Güncel mimari, SOLID, güvenlik, kod kalitesi ve doğrulama kuralları buradadır. .agents/AGENTS.md yalnızca köke yönlendirir; eski planlar aktif değildir.

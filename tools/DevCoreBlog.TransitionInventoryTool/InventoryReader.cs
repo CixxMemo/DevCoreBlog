@@ -55,6 +55,9 @@ internal static class InventoryReader
         if (columns.Contains("ContentKind") != columns.Contains("AccessScope"))
             throw new InvalidOperationException();
 
+        var documentColumns = new[] { "DocumentVersion", "DocumentJson", "DocumentPlainText", "DocumentWordCount", "DocumentReadingMinutes" };
+        var presentDocuments = documentColumns.Count(columns.Contains);
+        if (presentDocuments is not (0 or 5)) throw new InvalidOperationException();
         var totals = await Read("totals", InventoryQueries.Totals);
         if (totals.GetProperty("posts").GetInt64() > 50000 ||
             totals.GetProperty("contentBytes").GetInt64() > 67108864)
