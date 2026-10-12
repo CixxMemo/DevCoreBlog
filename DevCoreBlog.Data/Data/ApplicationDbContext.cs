@@ -34,9 +34,12 @@ public class ApplicationDbContext : DbContext
 
     public DbSet<WebhookReceipt> WebhookReceipts { get; set; }
 
+    public DbSet<DevCoreBlog.Core.Subscriptions.Subscriber> Subscribers { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+        modelBuilder.ApplyConfiguration(new Subscriptions.SubscriberConfiguration());
 
         var receipt = modelBuilder.Entity<WebhookReceipt>();
         receipt.HasKey(item => new { item.ContractVersion, item.Key });

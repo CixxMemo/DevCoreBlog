@@ -152,6 +152,12 @@ try:
             stages['media-inventory']['passed']=code==0 and media['passed'] and media['count']==len(media['checks']) and all(media['checks'].values())
         except (OSError,ValueError,KeyError,TypeError):
             stages['media-inventory']['passed']=False
+        code,output=run('subscriber-lifecycle',['python3','scripts/verification/subscriber_lifecycle_probe.py','--port','55520','--report',str(report/'subscriber-migration.json')],source,timeout=180,export=False)
+        try:
+            subscriber=json.loads((report/'subscriber-migration.json').read_text())
+            stages['subscriber-lifecycle']['passed']=code==0 and subscriber['passed'] and subscriber['count']==len(subscriber['checks']) and all(subscriber['checks'].values())
+        except (OSError,ValueError,KeyError,TypeError):
+            stages['subscriber-lifecycle']['passed']=False
         if args.final_acceptance:
             code,output=run('final-security-data',['sh','scripts/verification/run_f17_visibility.sh'],source,timeout=480,export=False,extra={'DEVCORE_F49_PROBE':'1','DEVCORE_F57_PROBE':'1','DEVCORE_F57_REPORT':str(report/'final-regression.json'),'DEVCORE_F17_PG_PORT':'55461','DEVCORE_F17_APP_PORT':'15199'})
             try:

@@ -229,6 +229,61 @@ namespace DevCoreBlog.Migrations
                         });
                 });
 
+            modelBuilder.Entity("DevCoreBlog.Core.Subscriptions.Subscriber", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AddressKey")
+                        .IsRequired()
+                        .HasMaxLength(254)
+                        .HasColumnType("character varying(254)")
+                        .UseCollation("C");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("EmailAddress")
+                        .IsRequired()
+                        .HasMaxLength(254)
+                        .HasColumnType("character varying(254)")
+                        .UseCollation("C");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Suppression")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("UnsubscribedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("UpdatedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("VerifiedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AddressKey")
+                        .IsUnique();
+
+                    b.ToTable("Subscribers", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Subscribers_Address", "octet_length(\"EmailAddress\") BETWEEN 3 AND 254\nAND \"EmailAddress\" ~ '^[A-Za-z0-9!#$%&''*+/=?^_`{|}~.-]+@[A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)+$'\nAND length(split_part(\"EmailAddress\", '@', 1)) BETWEEN 1 AND 64\nAND split_part(\"EmailAddress\", '@', 1) NOT LIKE '.%'\nAND split_part(\"EmailAddress\", '@', 1) NOT LIKE '%.'\nAND position('..' in split_part(\"EmailAddress\", '@', 1)) = 0\nAND split_part(\"EmailAddress\", '@', 2) !~ '(^|\\.)-|-(\\.|$)|[A-Za-z0-9-]{64}'\nAND \"AddressKey\" = lower(\"EmailAddress\" COLLATE \"C\")");
+
+                            t.HasCheckConstraint("CK_Subscribers_State", "\"Status\" IN (0,1,2) AND \"Suppression\" BETWEEN 0 AND 7 AND \"Version\" > 0\nAND (\"Status\" <> 0 OR \"VerifiedUtc\" IS NULL)\nAND (\"Status\" <> 1 OR \"VerifiedUtc\" IS NOT NULL)\nAND (\"Status\" <> 2 OR \"UnsubscribedUtc\" IS NOT NULL)\nAND (\"Status\" <> 1 OR \"UnsubscribedUtc\" IS NULL OR \"VerifiedUtc\" >= \"UnsubscribedUtc\")");
+
+                            t.HasCheckConstraint("CK_Subscribers_Time", "isfinite(\"CreatedUtc\") AND isfinite(\"UpdatedUtc\") AND \"UpdatedUtc\" >= \"CreatedUtc\"\nAND (\"VerifiedUtc\" IS NULL OR (isfinite(\"VerifiedUtc\") AND \"VerifiedUtc\" BETWEEN \"CreatedUtc\" AND \"UpdatedUtc\"))\nAND (\"UnsubscribedUtc\" IS NULL OR (isfinite(\"UnsubscribedUtc\") AND \"UnsubscribedUtc\" BETWEEN \"CreatedUtc\" AND \"UpdatedUtc\"))");
+                        });
+                });
+
             modelBuilder.Entity("DevCoreBlog.Core.Entities.Post", b =>
                 {
                     b.HasOne("DevCoreBlog.Core.Entities.Category", "Category")
