@@ -27,7 +27,7 @@ fi
 if [ "${DEVCORE_F25_PROBE:-0}" = 1 ] || [ "${DEVCORE_F29_PROBE:-0}" = 1 ]; then
     task_ef_command_log_level=Information
 fi
-if [ -n "${DEVCORE_F27_PROBE:-}" ] || [ "${DEVCORE_F28_PROBE:-0}" = 1 ]; then
+if [ -n "${DEVCORE_F27_PROBE:-}" ] || [ "${DEVCORE_F28_PROBE:-0}" = 1 ] || [ -n "${DEVCORE_VOL1_F17_REPORT_DIR:-}" ]; then
     task_webhook_rate_limit=20
 fi
 task_app_pid=
@@ -172,7 +172,7 @@ pg_ctl -D "$task_pgdata" -l "$task_tmp/postgres.log" \
     -o "-p $task_pg_port -h 127.0.0.1 -k $task_socket" -w start >/dev/null
 task_pg_started=1
 createdb -h 127.0.0.1 -p "$task_pg_port" -U "$task_pg_user" "$task_db"
-if [ "${DEVCORE_F44_PROBE:-0}" = 1 ] || [ "${DEVCORE_F49_PROBE:-0}" = 1 ] || [ -n "${DEVCORE_VOL1_F04_REPORT_DIR:-}" ] || [ -n "${DEVCORE_VOL1_F08_REPORT_DIR:-}" ]; then
+if [ "${DEVCORE_F44_PROBE:-0}" = 1 ] || [ "${DEVCORE_F49_PROBE:-0}" = 1 ] || [ -n "${DEVCORE_VOL1_F04_REPORT_DIR:-}" ] || [ -n "${DEVCORE_VOL1_F08_REPORT_DIR:-}" ] || [ -n "${DEVCORE_VOL1_F17_REPORT_DIR:-}" ]; then
     # Verify both a clean migration chain and the immediately preceding schema with synthetic rows.
     createdb -h 127.0.0.1 -p "$task_pg_port" -U "$task_pg_user" f44_empty
     (
@@ -185,6 +185,7 @@ if [ "${DEVCORE_F44_PROBE:-0}" = 1 ] || [ "${DEVCORE_F49_PROBE:-0}" = 1 ] || [ -
                 if [ "${DEVCORE_F49_PROBE:-0}" = 1 ]; then task_target=20261004180016_ReadOrderingIndexes; fi
                 if [ -n "${DEVCORE_VOL1_F04_REPORT_DIR:-}" ]; then task_target=20261004183254_CoverMetadata; fi
                 if [ -n "${DEVCORE_VOL1_F08_REPORT_DIR:-}" ]; then task_target=20261010065908_ContentAccess; fi
+                if [ -n "${DEVCORE_VOL1_F17_REPORT_DIR:-}" ]; then task_target=20261010122743_ContentDocuments; fi
             fi
             DB_CONNECTION_STRING="$task_connection" dotnet ef database update $task_target \
                 --no-build --project DevCoreBlog.csproj --startup-project DevCoreBlog.csproj \
@@ -205,6 +206,16 @@ if [ "${DEVCORE_F44_PROBE:-0}" = 1 ] || [ "${DEVCORE_F49_PROBE:-0}" = 1 ] || [ -
         # F04 must preserve every prior field, including cover metadata, dates and concurrency.
         task_snapshot_sql='SELECT to_jsonb(p) - $$ContentKind$$ - $$AccessScope$$  - $$DocumentVersion$$ - $$DocumentJson$$ - $$DocumentPlainText$$ - $$DocumentWordCount$$ - $$DocumentReadingMinutes$$ FROM "Posts" p ORDER BY "Id"; SELECT to_jsonb(c) FROM "Categories" c ORDER BY "Id";'
     fi
+    if [ -n "${DEVCORE_VOL1_F17_REPORT_DIR:-}" ]; then
+        # Seed both attached and deleted-post legacy receipt identities in the immediate prior schema.
+        psql -X -h 127.0.0.1 -p "$task_pg_port" -U "$task_pg_user" -d "$task_db" -v ON_ERROR_STOP=1 -c '
+            INSERT INTO "WebhookReceipts" ("Key","PayloadHash","CreatedAt","CreatedPostId","Title","Slug","IsPublished","PublishDate","PostId")
+            SELECT $$prior-attached$$,repeat($$A$$,64),"CreatedDate","Id","Title","Slug","IsPublished","PublishDate","Id" FROM "Posts" WHERE "Id"=2003;
+            INSERT INTO "WebhookReceipts" ("Key","PayloadHash","CreatedAt","CreatedPostId","Title","Slug","IsPublished","PublishDate","PostId")
+            VALUES ($$prior-deleted$$,repeat($$B$$,64),$$2020-01-01T00:00:00Z$$,9999,$$Prior deleted$$,$$prior-deleted$$,false,$$2020-01-01T00:00:00Z$$,NULL);' >/dev/null
+        task_snapshot_sql='SELECT to_jsonb(p) FROM "Posts" p ORDER BY "Id"; SELECT to_jsonb(c) FROM "Categories" c ORDER BY "Id";'
+        psql -X -h 127.0.0.1 -p "$task_pg_port" -U "$task_pg_user" -d "$task_db" -At -c 'SELECT to_jsonb(r) FROM "WebhookReceipts" r ORDER BY "Key";' > "$task_tmp/prior-receipts.txt"
+    fi
     psql -X -h 127.0.0.1 -p "$task_pg_port" -U "$task_pg_user" -d "$task_db" \
         -At -c "$task_snapshot_sql" > "$task_tmp/prior-data.txt"
     (
@@ -219,6 +230,14 @@ if [ "${DEVCORE_F44_PROBE:-0}" = 1 ] || [ "${DEVCORE_F49_PROBE:-0}" = 1 ] || [ -
     psql -X -h 127.0.0.1 -p "$task_pg_port" -U "$task_pg_user" -d "$task_db" \
         -At -c "$task_snapshot_sql" > "$task_tmp/upgraded-data.txt"
     cmp "$task_tmp/prior-data.txt" "$task_tmp/upgraded-data.txt"
+    if [ -n "${DEVCORE_VOL1_F17_REPORT_DIR:-}" ]; then
+        psql -X -h 127.0.0.1 -p "$task_pg_port" -U "$task_pg_user" -d "$task_db" -At -c 'SELECT to_jsonb(r) - $$ContractVersion$$ FROM "WebhookReceipts" r ORDER BY "Key";' > "$task_tmp/upgraded-receipts.txt"
+        cmp "$task_tmp/prior-receipts.txt" "$task_tmp/upgraded-receipts.txt"
+        task_v1_receipts=$(psql -X -h 127.0.0.1 -p "$task_pg_port" -U "$task_pg_user" -d "$task_db" -At -c 'SELECT count(*) FROM "WebhookReceipts" WHERE "ContractVersion"=1;')
+        [ "$task_v1_receipts" = 2 ]
+        printf 'vol1_f17_empty_and_immediate_prior_migration=true\nvol1_f17_prior_post_and_receipts_unchanged=true\nvol1_f17_old_receipts_default_version_one=true\n'
+    fi
+
     task_backfill_count=$(psql -X -h 127.0.0.1 -p "$task_pg_port" -U "$task_pg_user" -d "$task_db" \
         -At -c 'SELECT count(*) FROM "Posts" WHERE "UpdatedDate" IS NOT NULL;')
     [ "$task_backfill_count" = 0 ]
@@ -457,6 +476,45 @@ if [ "${DEVCORE_F28_PROBE:-0}" = 1 ]; then
     python3 "$task_source/scripts/verification/f28_webhook_probe.py" \
         --base-url "http://127.0.0.1:$task_app_port" --mode restart \
         --pg-port "$task_pg_port" --pg-user "$task_pg_user"
+fi
+
+if [ -n "${DEVCORE_VOL1_F17_REPORT_DIR:-}" ]; then
+    python3 "$task_source/scripts/verification/webhook_document_http_probe.py" \
+        --base-url "http://127.0.0.1:$task_app_port" --database-port "$task_pg_port" \
+        --mode acceptance --report "$DEVCORE_VOL1_F17_REPORT_DIR/webhook-document-http.json"
+    cp "$task_tmp/application.log" "$DEVCORE_VOL1_F17_REPORT_DIR/application-acceptance.log"
+    kill "$task_app_pid"; wait "$task_app_pid" || true
+    DEVCORE_F27_ALLOW_PUBLISH=true
+    start_app
+    python3 "$task_source/scripts/verification/webhook_document_http_probe.py" \
+        --base-url "http://127.0.0.1:$task_app_port" --database-port "$task_pg_port" \
+        --mode restart --report "$DEVCORE_VOL1_F17_REPORT_DIR/webhook-document-restart.json"
+    cp "$task_tmp/application.log" "$DEVCORE_VOL1_F17_REPORT_DIR/application-restart.log"
+    kill "$task_app_pid"; wait "$task_app_pid" || true
+    DEVCORE_F27_WEBHOOK_SECRET=
+    start_app
+    python3 "$task_source/scripts/verification/webhook_document_http_probe.py" \
+        --base-url "http://127.0.0.1:$task_app_port" --database-port "$task_pg_port" \
+        --mode missing --report "$DEVCORE_VOL1_F17_REPORT_DIR/webhook-document-missing.json"
+    task_before_down=$(psql -X -h 127.0.0.1 -p "$task_pg_port" -U "$task_pg_user" -d "$task_db" -At -c 'SELECT to_jsonb(r) FROM "WebhookReceipts" r ORDER BY "ContractVersion","Key";')
+    if (
+        cd "$task_source"
+        DB_CONNECTION_STRING="Host=127.0.0.1;Port=$task_pg_port;Database=$task_db;Username=$task_pg_user" \
+        dotnet ef database update 20261010122743_ContentDocuments --no-build --project DevCoreBlog.csproj \
+        --startup-project DevCoreBlog.csproj --context ApplicationDbContext --no-color
+    ) > "$task_tmp/versioned-down.log" 2>&1; then
+        printf 'vol1_f17_down_with_versioned_receipts_rejected=false\n'; exit 1
+    fi
+    rg -q 'Versioned webhook receipts must be retained' "$task_tmp/versioned-down.log"
+    task_after_down=$(psql -X -h 127.0.0.1 -p "$task_pg_port" -U "$task_pg_user" -d "$task_db" -At -c 'SELECT to_jsonb(r) FROM "WebhookReceipts" r ORDER BY "ContractVersion","Key";')
+    [ "$task_before_down" = "$task_after_down" ]
+    printf 'vol1_f17_down_with_versioned_receipts_rejected=true\nvol1_f17_refused_down_preserves_receipts=true\n'
+    cp "$task_tmp/versioned-down.log" "$DEVCORE_VOL1_F17_REPORT_DIR/versioned-down.log"
+    # App logs contain only controlled fixture credentials; assert they still never leak.
+    if rg -q 'f17-webhook|DocumentJson|F17_SECRET_BODY|synthetic failure|Npgsql' "$task_tmp/application.log" "$DEVCORE_VOL1_F17_REPORT_DIR/application-acceptance.log" "$DEVCORE_VOL1_F17_REPORT_DIR/application-restart.log"; then
+        printf 'vol1_f17_ingress_log_privacy=false\n'; exit 1
+    fi
+    printf 'vol1_f17_ingress_log_privacy=true\n'
 fi
 
 if [ -n "${DEVCORE_F27_PROBE:-}" ]; then

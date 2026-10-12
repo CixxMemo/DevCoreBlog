@@ -1,9 +1,9 @@
 using System.Security.Cryptography;
-using System.Text;
 using System.Text.Json;
 using DevCoreBlog.Configuration;
 using DevCoreBlog.Core.Entities;
 using DevCoreBlog.Services.Interfaces;
+using DevCoreBlog.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -43,12 +43,12 @@ public sealed class WebhookController : ControllerBase
     [RequestSizeLimit(WebhookIngressOptions.MaximumRequestBodyBytes)]
     public async Task<IActionResult> IngestPost(CancellationToken cancellationToken)
     {
-        if (!HasValidSecret())
+        if (!WebhookRequestAuthentication.HasValidSecret(Request, _options))
         {
             return Unauthorized(new { success = false, message = "Unauthorized." });
         }
 
-        if (!TryReadIdempotencyKey(out var key))
+        if (!WebhookRequestAuthentication.TryReadKey(Request, out var key))
         {
             return BadRequest(new { success = false, message = "Idempotency-Key must contain 1 to 128 ASCII letters, digits, dots, underscores or hyphens." });
         }
@@ -150,47 +150,6 @@ public sealed class WebhookController : ControllerBase
             publishDate = saved.PublishDate,
             message = saved.IsPublished ? "Post created and published." : "Post saved as draft."
         });
-    }
-
-    // Missing headers preserve the old contract; present headers must be unambiguous and bounded.
-    private bool TryReadIdempotencyKey(out string? key)
-    {
-        key = null;
-        if (!Request.Headers.TryGetValue("Idempotency-Key", out var header))
-        {
-            return true;
-        }
-
-        if (header.Count != 1 || header[0] is not { Length: >= 1 and <= 128 } value ||
-            value.Any(character => !char.IsAsciiLetterOrDigit(character) &&
-                character is not '.' and not '_' and not '-'))
-        {
-            return false;
-        }
-
-        key = value;
-        return true;
-    }
-
-    private bool HasValidSecret()
-    {
-        if (string.IsNullOrWhiteSpace(_options.Secret) ||
-            !Request.Headers.TryGetValue("X-DevCore-Secret", out var providedHeader) ||
-            providedHeader.Count != 1)
-        {
-            return false;
-        }
-
-        var providedSecret = providedHeader[0];
-        if (string.IsNullOrWhiteSpace(providedSecret))
-        {
-            return false;
-        }
-
-        var providedBytes = Encoding.UTF8.GetBytes(providedSecret);
-        var expectedBytes = Encoding.UTF8.GetBytes(_options.Secret);
-        return providedBytes.Length == expectedBytes.Length &&
-            CryptographicOperations.FixedTimeEquals(providedBytes, expectedBytes);
     }
 
     private sealed record WebhookFieldError(string Field, string Message);

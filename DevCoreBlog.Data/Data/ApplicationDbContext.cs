@@ -39,7 +39,9 @@ public class ApplicationDbContext : DbContext
         base.OnModelCreating(modelBuilder);
 
         var receipt = modelBuilder.Entity<WebhookReceipt>();
-        receipt.HasKey(item => item.Key);
+        receipt.HasKey(item => new { item.ContractVersion, item.Key });
+        receipt.Property(item => item.ContractVersion).HasDefaultValue(1);
+        receipt.ToTable(table => table.HasCheckConstraint("CK_WebhookReceipts_ContractVersion", "\"ContractVersion\" IN (1, 2)"));
         receipt.Property(item => item.Key).HasMaxLength(128).HasAnnotation("Relational:Collation", "C");
         receipt.Property(item => item.PayloadHash).HasMaxLength(64);
         receipt.Property(item => item.Title).HasMaxLength(200);

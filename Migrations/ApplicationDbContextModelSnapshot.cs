@@ -180,6 +180,11 @@ namespace DevCoreBlog.Migrations
 
             modelBuilder.Entity("DevCoreBlog.Core.Entities.WebhookReceipt", b =>
                 {
+                    b.Property<int>("ContractVersion")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(1);
+
                     b.Property<string>("Key")
                         .HasMaxLength(128)
                         .HasColumnType("character varying(128)")
@@ -214,11 +219,14 @@ namespace DevCoreBlog.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
-                    b.HasKey("Key");
+                    b.HasKey("ContractVersion", "Key");
 
                     b.HasIndex("PostId");
 
-                    b.ToTable("WebhookReceipts");
+                    b.ToTable("WebhookReceipts", t =>
+                        {
+                            t.HasCheckConstraint("CK_WebhookReceipts_ContractVersion", "\"ContractVersion\" IN (1, 2)");
+                        });
                 });
 
             modelBuilder.Entity("DevCoreBlog.Core.Entities.Post", b =>

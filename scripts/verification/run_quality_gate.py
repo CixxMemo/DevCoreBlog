@@ -129,6 +129,16 @@ try:
                 bool(data['checks']) and data['count']==len(data['checks']) and all(data['checks'].values()) for data in (document_db,document_http,writing_http,tables_http,images_http,youtube_http,recovery_http,preview_http,public_document_http))
         except (OSError,ValueError,KeyError,TypeError):
             stages['document-persistence']['passed']=False
+        code,output=run('webhook-documents',['sh','scripts/verification/run_f17_visibility.sh'],source,timeout=600,export=False,extra={
+            'DEVCORE_VOL1_F17_REPORT_DIR':str(report),'DEVCORE_F17_PG_PORT':'55492','DEVCORE_F17_APP_PORT':'15422'})
+        webhook_checks={line.split('=')[0]:line.endswith('=true') for line in output.splitlines() if line.startswith('vol1_f17_') and line.endswith(('=true','=false'))}
+        (report/'webhook-documents-fixture.json').write_text(json.dumps({'checks':webhook_checks,'exit_code':code},indent=2)+'\n')
+        try:
+            webhook_reports=[json.loads((report/name).read_text()) for name in ['webhook-document-http.json','webhook-document-restart.json','webhook-document-missing.json']]
+            stages['webhook-documents']['passed']=code==0 and len(webhook_checks)>=6 and all(webhook_checks.values()) and all(
+                data['passed'] and data['count']==len(data['checks']) and bool(data['checks']) and all(data['checks'].values()) for data in webhook_reports)
+        except (OSError,ValueError,KeyError,TypeError):
+            stages['webhook-documents']['passed']=False
         if args.final_acceptance:
             code,output=run('final-security-data',['sh','scripts/verification/run_f17_visibility.sh'],source,timeout=480,export=False,extra={'DEVCORE_F49_PROBE':'1','DEVCORE_F57_PROBE':'1','DEVCORE_F57_REPORT':str(report/'final-regression.json'),'DEVCORE_F17_PG_PORT':'55461','DEVCORE_F17_APP_PORT':'15199'})
             try:

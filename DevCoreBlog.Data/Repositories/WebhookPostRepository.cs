@@ -8,15 +8,16 @@ namespace DevCoreBlog.Data.Repositories;
 /// <summary>Commits the post and receipt together; PostgreSQL arbitrates concurrent keys.</summary>
 public sealed class WebhookPostRepository(ApplicationDbContext context) : IWebhookPostRepository
 {
-    public Task<WebhookReceipt?> FindAsync(string key, CancellationToken cancellationToken) =>
+    public Task<WebhookReceipt?> FindAsync(string key, CancellationToken cancellationToken, int contractVersion = 1) =>
         context.WebhookReceipts.AsNoTracking().SingleOrDefaultAsync(
-            receipt => receipt.Key == key, cancellationToken);
+            receipt => receipt.ContractVersion == contractVersion && receipt.Key == key, cancellationToken);
 
     public async Task<WebhookInsertResult?> TryCreateAsync(
-        Post post, string key, string payloadHash, CancellationToken cancellationToken)
+        Post post, string key, string payloadHash, CancellationToken cancellationToken, int contractVersion = 1)
     {
         var receipt = new WebhookReceipt
         {
+            ContractVersion = contractVersion,
             Key = key,
             PayloadHash = payloadHash,
             CreatedAt = post.CreatedDate,
@@ -55,7 +56,7 @@ public sealed class WebhookPostRepository(ApplicationDbContext context) : IWebho
                 return null;
             }
 
-            var winner = await FindAsync(key, cancellationToken)
+            var winner = await FindAsync(key, cancellationToken, contractVersion)
                 ?? throw new InvalidOperationException("Committed webhook receipt was not found.");
             return new(winner, false);
         }

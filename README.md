@@ -2,6 +2,15 @@
 
 ASP.NET Core MVC (.NET 10), PostgreSQL ve Razor/Tailwind kullanan blog projesi. Mevcut kapsam; yazı/kategori yönetimi, Türkçe Tiptap JSON yazım formu, Cloudinary görselleri, yönetici oturumu, webhook ve portföy beslemesidir. Public JSON detay, görünür metin araması, tür filtreleri ve türetilmiş okuma/SEO çıktıları desteklenir. Markdown/Toast UI akışı kontrollü geçiş süresince korunur.
 
+Sürümlü JSON içerik girişi `POST /api/webhooks/v2/posts` adresindedir. Secret ve
+zorunlu `Idempotency-Key` ile çalışır; `documentJson` kanonik JSON string zarfıdır.
+V1 Markdown endpoint'i `/api/webhooks/posts` ayrı sözleşmesiyle korunur. V2 yazı ve
+işlem kaydı atomik saklanır; varsayılan taslak, yayımlama e-posta göndermez.
+`ScopedWebhookReceipts` migration'ı koddan önce doğrulanmış hedefe uygulanmalıdır.
+V2 işlem kayıtları oluştuktan sonra eski tek anahtar varsayımlı binary ile otomatik
+geri dönüş uyumlu sayılmaz; sürüm kapsamını bilen binary/forward repair gerekir.
+
+
 ## Agent ile çalışma
 
 **Önce [AGENTS.md](AGENTS.md) dosyasını oku.** Güncel mimari, SOLID, güvenlik, kod kalitesi ve doğrulama kuralları buradadır. .agents/AGENTS.md yalnızca köke yönlendirir; eski planlar aktif değildir.

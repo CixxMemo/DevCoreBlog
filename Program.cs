@@ -187,6 +187,7 @@ builder.Services.AddScoped<IAdminDashboardReadRepository, AdminDashboardReadRepo
 // Register services with Scoped lifetime (one instance per HTTP request).
 // Services depend on repositories, which are also scoped.
 // Controllers will depend on service interfaces (IPostService, ICategoryService).
+builder.Services.AddScoped<DevCoreBlog.Services.Documents.WebhookDocumentService>();
 builder.Services.AddScoped<PostService>();
 builder.Services.AddScoped<IPostService>(serviceProvider =>
     serviceProvider.GetRequiredService<PostService>());
