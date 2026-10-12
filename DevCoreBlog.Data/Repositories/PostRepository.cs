@@ -138,41 +138,50 @@ public class PostRepository : GenericRepository<Post>, IPostRepository
             .ThenBy(post => post.Id)
             .Take(3)
             .Select(post => new PublicPostSummary(post.Id, post.Title, post.Slug, post.Summary,
-                post.ThumbnailUrl, post.Category.Name, post.PublishDate, post.ViewCount))
+                post.ThumbnailUrl, post.Category.Name, post.PublishDate, post.ViewCount, post.ContentKind,
+                post.DocumentVersion == 1 ? post.DocumentReadingMinutes : null))
             .ToListAsync(cancellationToken);
 
     public Task<PublicPostPage> GetPublishedPostsPagedAsync(int page, int pageSize, DateTime utcNow,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default, PostContentKind? contentKind = null)
     {
+        PublicContentFilter.Validate(contentKind);
         PublicListBounds.Validate(page, pageSize);
-        return ReadPageAsync(PublicPosts(utcNow).OrderByDescending(post => post.PublishDate)
+        return ReadPageAsync(FilterKind(PublicPosts(utcNow), contentKind).OrderByDescending(post => post.PublishDate)
             .ThenBy(post => post.Id), page, pageSize, cancellationToken);
     }
 
     public Task<PublicPostPage> GetPostsByCategorySlugPagedAsync(string categorySlug, int page, int pageSize,
-        DateTime utcNow, CancellationToken cancellationToken = default)
+        DateTime utcNow, CancellationToken cancellationToken = default, PostContentKind? contentKind = null)
     {
+        PublicContentFilter.Validate(contentKind);
         PublicListBounds.Validate(page, pageSize, category: categorySlug);
-        return ReadPageAsync(PublicPosts(utcNow).Where(post => post.Category.Slug == categorySlug)
+        return ReadPageAsync(FilterKind(PublicPosts(utcNow), contentKind).Where(post => post.Category.Slug == categorySlug)
             .OrderByDescending(post => post.PublishDate).ThenBy(post => post.Id), page, pageSize, cancellationToken);
     }
 
     // Literal substring matching uses the database locale, with LIKE metacharacters escaped.
     public Task<PublicPostPage> SearchPostsPagedAsync(string query, string? categorySlug, int page, int pageSize,
-        DateTime utcNow, CancellationToken cancellationToken = default)
+        DateTime utcNow, CancellationToken cancellationToken = default, PostContentKind? contentKind = null)
     {
+        PublicContentFilter.Validate(contentKind);
         PublicListBounds.Validate(page, pageSize, query, categorySlug);
         if (string.IsNullOrWhiteSpace(query)) return Task.FromResult(new PublicPostPage([], 0));
         var literal = query.Replace("\\", "\\\\").Replace("%", "\\%").Replace("_", "\\_");
         var pattern = $"%{literal}%";
-        var posts = PublicPosts(utcNow);
+        var posts = FilterKind(PublicPosts(utcNow), contentKind);
         if (!string.IsNullOrEmpty(categorySlug)) posts = posts.Where(post => post.Category.Slug == categorySlug);
         return ReadPageAsync(posts.Where(post => EF.Functions.ILike(post.Title, pattern, "\\") ||
-                EF.Functions.ILike(post.Content, pattern, "\\"))
+                (post.DocumentVersion == null && post.DocumentJson == null && post.DocumentPlainText == null &&
+                 post.DocumentWordCount == null && post.DocumentReadingMinutes == null && EF.Functions.ILike(post.Content, pattern, "\\")) ||
+                (post.DocumentVersion == 1 && post.DocumentPlainText != null && EF.Functions.ILike(post.DocumentPlainText, pattern, "\\")))
             .OrderByDescending(post => EF.Functions.ILike(post.Title, literal, "\\"))
             .ThenByDescending(post => EF.Functions.ILike(post.Title, pattern, "\\"))
             .ThenByDescending(post => post.PublishDate).ThenBy(post => post.Id), page, pageSize, cancellationToken);
     }
+
+    private static IQueryable<Post> FilterKind(IQueryable<Post> posts, PostContentKind? kind) =>
+        kind is null ? posts : posts.Where(post => post.ContentKind == kind.Value);
 
     // Count and limited card projection share the already-filtered SQL query.
     private static async Task<PublicPostPage> ReadPageAsync(IQueryable<Post> query, int page, int pageSize,
@@ -182,7 +191,8 @@ public class PostRepository : GenericRepository<Post>, IPostRepository
         if (page > 1 && (page - 1) * pageSize >= count) return new PublicPostPage([], count);
         var posts = await query.Skip((page - 1) * pageSize).Take(pageSize)
             .Select(post => new PublicPostSummary(post.Id, post.Title, post.Slug, post.Summary,
-                post.ThumbnailUrl, post.Category.Name, post.PublishDate, post.ViewCount))
+                post.ThumbnailUrl, post.Category.Name, post.PublishDate, post.ViewCount, post.ContentKind,
+                post.DocumentVersion == 1 ? post.DocumentReadingMinutes : null))
             .ToListAsync(cancellationToken);
         return new PublicPostPage(posts.AsReadOnly(), count);
     }

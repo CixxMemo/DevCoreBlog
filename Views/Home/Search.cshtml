@@ -13,6 +13,7 @@
     </header>
     <form action="/ara" method="get" aria-label="Search filters" class="public-list-filters">
         <input type="hidden" name="query" value="@Model.Paging.Query" />
+        <partial name="_PublicKindFilter" model='new PublicKindFilterModel("search-kind", Model.Paging.Kind)' />
         <div>
             <label for="search-category">Category</label>
             <select id="search-category" name="category">
@@ -46,7 +47,7 @@
     else
     {
         <partial name="_PublicEmptyState" model='string.IsNullOrWhiteSpace(Model.Paging.Query) ? "Enter a search term to find articles." : "No articles match these filters. Try another term or category."' />
-        <a asp-controller="Home" asp-action="Search" asp-route-query="@Model.Paging.Query" asp-route-pageSize="@(Model.Paging.PageSize == 9 ? null : Model.Paging.PageSize)" class="underline">Clear category filter</a>
+        <a asp-controller="Home" asp-action="Search" asp-route-query="@Model.Paging.Query" asp-route-pageSize="@(Model.Paging.PageSize == 9 ? null : Model.Paging.PageSize)" asp-route-kind="@Model.Paging.Kind" class="underline">Clear category filter</a>
         <a href="/" class="underline ml-4">Back to Home</a>
     }
     <partial name="_PublicPaging" model="Model.Paging" />

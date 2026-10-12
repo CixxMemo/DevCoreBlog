@@ -66,14 +66,15 @@ public class HomeController : Controller
     {
         Response.Headers.CacheControl = "no-store";
         if (!ModelState.IsValid) return InvalidListRequest();
-        var result = await _postService.GetPublishedPostsPagedAsync(input.Page, input.PageSize, cancellationToken);
+        var result = await _postService.GetPublishedPostsPagedAsync(input.Page, input.PageSize, cancellationToken, input.ContentKind);
         if (input.Page > 1 && result.Posts.Count == 0) return NotFound();
+        ViewData["SearchKind"] = input.Kind;
         var mostRead = await _postService.GetMostReadPublicPostsAsync(cancellationToken);
 
-        ViewData["Metadata"] = _metadata.Home(input.Page, input.PageSize);
+        ViewData["Metadata"] = _metadata.Home(input.Page, input.PageSize, input.ContentKind);
 
         // Pass the list of posts to the view
-        return View(new HomePageModel(result.Posts, mostRead, input.Page, input.PageSize, result.TotalCount));
+        return View(new HomePageModel(result.Posts, mostRead, input.Page, input.PageSize, result.TotalCount, input.Kind));
     }
 
     // GET: /post/{slug}; visible aliases redirect without incrementing the counter.
@@ -85,7 +86,7 @@ public class HomeController : Controller
     [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public async Task<IActionResult> Detail(
         string slug, CancellationToken cancellationToken,
-        [FromServices] ISafeMarkdownRenderer markdownRenderer)
+        [FromServices] DevCoreBlog.Services.Documents.PublicPostContentService contentService)
     {
         // Step 1: Get the post by slug from service layer
         var post = await _postService.GetPostBySlugAsync(slug);
@@ -98,6 +99,9 @@ public class HomeController : Controller
 
         var redirect = RedirectToCanonicalPath(_publicUrls.PostPath(post.Slug));
         if (redirect is not null) return redirect;
+
+        var content = contentService.Render(post);
+        if (content is null) return StatusCode(StatusCodes.Status503ServiceUnavailable);
 
         var viewCount = post.ViewCount;
         if (HttpMethods.IsGet(Request.Method) &&
@@ -117,10 +121,9 @@ public class HomeController : Controller
         // Preserve the visible view count without replacing the filtered content snapshot.
         post.ViewCount = viewCount;
 
-        var content = markdownRenderer.RenderDocument(post.Content);
         var relatedPosts = await _postService.GetRelatedPostsAsync(post.Id, post.CategoryId, cancellationToken);
 
-        ViewData["Metadata"] = _metadata.Article(post);
+        ViewData["Metadata"] = _metadata.Article(post, content.Document?.Reading);
 
         // Pass the post to the Detail view
         ViewData["HideSidebar"] = true;
@@ -140,11 +143,12 @@ public class HomeController : Controller
         if (category is null) return NotFound();
         var redirect = RedirectToCanonicalPath(_publicUrls.CategoryPath(category.Slug));
         if (redirect is not null) return redirect;
-        var result = await _postService.GetPostsByCategorySlugPagedAsync(slug, input.Page, input.PageSize, cancellationToken);
+        var result = await _postService.GetPostsByCategorySlugPagedAsync(slug, input.Page, input.PageSize, cancellationToken, input.ContentKind);
         if (input.Page > 1 && result.Posts.Count == 0) return NotFound();
-        ViewData["Metadata"] = _metadata.Category(category, input.Page, input.PageSize);
+        ViewData["SearchKind"] = input.Kind;
+        ViewData["Metadata"] = _metadata.Category(category, input.Page, input.PageSize, input.ContentKind);
         return View(new PublicListPageModel(result,
-            new PublicPagingModel("Category", slug, null, null, input.Page, input.PageSize, result.TotalCount), category.Name, []));
+            new PublicPagingModel("Category", slug, null, null, input.Page, input.PageSize, result.TotalCount, input.Kind), category.Name, []));
     }
 
     [Route("ara")]
@@ -156,16 +160,17 @@ public class HomeController : Controller
         var categorySlug = string.IsNullOrWhiteSpace(input.Category) ? null : input.Category.Trim();
         var category = categorySlug is null ? null : await _categoryService.GetActiveCategoryBySlugAsync(categorySlug);
         if (categorySlug is not null && category is null) return NotFound();
-        var result = await _postService.SearchPostsPagedAsync(term, categorySlug, input.Page, input.PageSize, cancellationToken);
+        var result = await _postService.SearchPostsPagedAsync(term, categorySlug, input.Page, input.PageSize, cancellationToken, input.ContentKind);
         if (input.Page > 1 && result.Posts.Count == 0) return NotFound();
         ViewData["SearchQuery"] = term;
         ViewData["SearchCategory"] = categorySlug;
         ViewData["SearchPageSize"] = input.PageSize;
+        ViewData["SearchKind"] = input.Kind;
         var categories = await _categoryService.GetActiveCategoriesAsync();
-        ViewData["Metadata"] = _metadata.Search(term, categorySlug, input.Page, input.PageSize);
+        ViewData["Metadata"] = _metadata.Search(term, categorySlug, input.Page, input.PageSize, input.ContentKind);
         Response.Headers["X-Robots-Tag"] = "noindex, nofollow, noarchive";
         return View(new PublicListPageModel(result,
-            new PublicPagingModel("Search", null, term, categorySlug, input.Page, input.PageSize, result.TotalCount),
+            new PublicPagingModel("Search", null, term, categorySlug, input.Page, input.PageSize, result.TotalCount, input.Kind),
             category?.Name, categories.ToList()));
     }
 

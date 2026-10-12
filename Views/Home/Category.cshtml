@@ -9,6 +9,7 @@
         <p>@Model.Result.TotalCount articles · @Model.Result.Posts.Count on this page · Page @Model.Paging.Page of @Model.Paging.TotalPages</p>
     </header>
     <form method="get" class="public-list-filters" aria-label="Category filters">
+        <partial name="_PublicKindFilter" model='new PublicKindFilterModel("category-kind", Model.Paging.Kind)' />
         <div>
             <label for="category-page-size">Articles per page</label>
             <select id="category-page-size" name="pageSize">
@@ -19,7 +20,7 @@
             </select>
         </div>
         <button type="submit">Apply filters</button>
-        <a asp-controller="Home" asp-action="Search" asp-route-category="@Model.Paging.Slug" class="underline">Search this category</a>
+        <a asp-controller="Home" asp-action="Search" asp-route-category="@Model.Paging.Slug" asp-route-kind="@Model.Paging.Kind" class="underline">Search this category</a>
     </form>
     @if (Model.Result.Posts.Count > 0)
     {

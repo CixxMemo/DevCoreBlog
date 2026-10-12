@@ -1,6 +1,6 @@
 # DevCoreBlog
 
-ASP.NET Core MVC (.NET 10), PostgreSQL ve Razor/Tailwind kullanan blog projesi. Mevcut kapsam; yazı/kategori yönetimi, Türkçe Tiptap JSON yazım formu, Cloudinary görselleri, yönetici oturumu, webhook ve portföy beslemesidir. Markdown/Toast UI akışı geçiş süresince korunur; public JSON gösterimi henüz tamamlanmadı.
+ASP.NET Core MVC (.NET 10), PostgreSQL ve Razor/Tailwind kullanan blog projesi. Mevcut kapsam; yazı/kategori yönetimi, Türkçe Tiptap JSON yazım formu, Cloudinary görselleri, yönetici oturumu, webhook ve portföy beslemesidir. Public JSON detay, görünür metin araması, tür filtreleri ve türetilmiş okuma/SEO çıktıları desteklenir. Markdown/Toast UI akışı kontrollü geçiş süresince korunur.
 
 ## Agent ile çalışma
 

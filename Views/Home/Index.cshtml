@@ -11,6 +11,11 @@
         <h1 class="font-mono font-bold text-2xl mb-2">DevCoreBlog</h1>
         <p class="font-mono text-sm">@Model.TotalCount articles · @Model.Posts.Count on this page · Page @Model.CurrentPage of @Model.TotalPages</p>
     </header>
+    <form method="get" class="public-list-filters" aria-label="Yazı türü filtresi">
+        <partial name="_PublicKindFilter" model='new PublicKindFilterModel("home-kind", Model.Kind)' />
+        @if (Model.PageSize != 9) { <input type="hidden" name="pageSize" value="@Model.PageSize" /> }
+        <button type="submit">Türü uygula</button>
+    </form>
     <div class="flex flex-col xl:flex-row gap-8 min-w-0">
         <div class="flex-1 min-w-0">
             @if (features.Count > 0)
@@ -46,7 +51,7 @@
             {
                 <partial name="_PublicEmptyState" model='"No articles published yet."' />
             }
-            <partial name="_PublicPaging" model='new PublicPagingModel("Index", null, null, null, Model.CurrentPage, Model.PageSize, Model.TotalCount)' />
+            <partial name="_PublicPaging" model='new PublicPagingModel("Index", null, null, null, Model.CurrentPage, Model.PageSize, Model.TotalCount, Model.Kind)' />
         </div>
         <aside aria-label="Discover articles" class="w-full xl:w-80 flex-shrink-0 flex flex-col gap-6">
             <partial name="_MostRead" model="Model.MostRead" />

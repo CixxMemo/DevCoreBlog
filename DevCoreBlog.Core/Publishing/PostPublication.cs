@@ -11,6 +11,11 @@ public static class PostPublication
             ? PostPublicationState.Inactive : !published ? PostPublicationState.Draft
             : date > now ? PostPublicationState.Scheduled : PostPublicationState.Published;
     private static readonly Func<bool, bool, bool, DateTime, DateTime, PostPublicationState> EvaluateState = StateRule.Compile();
+    private static readonly Func<Post, bool> Eligible = EligibleForPublicPublication().Compile();
+
+    /// <summary>Snapshot rendering uses the same eligibility expression as public SQL, without a DB read.</summary>
+    public static bool IsVisibleAt(Post post, DateTime utcNow) =>
+        post.Category is not null && Eligible(post) && post.PublishDate <= utcNow;
 
     public static PostPublicationState StateAt(Post post, bool categoryIsActive, DateTime utcNow) =>
         EvaluateState(post.IsActive, categoryIsActive, post.IsPublished, post.PublishDate, utcNow);

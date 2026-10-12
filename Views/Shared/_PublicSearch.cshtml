@@ -12,6 +12,10 @@
     {
         <input type="hidden" name="pageSize" value="@size" />
     }
+    @if (ViewData["SearchKind"] is string kind && !string.IsNullOrEmpty(kind))
+    {
+        <input type="hidden" name="kind" value="@kind" />
+    }
     <button type="submit">Search</button>
     <kbd class="public-search-shortcut" aria-hidden="true">Ctrl + K / ⌘K</kbd>
 </form>

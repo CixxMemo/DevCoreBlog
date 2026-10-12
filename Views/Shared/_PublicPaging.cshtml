@@ -5,14 +5,14 @@
         @if (Model.Page > 1)
         {
             <a asp-controller="Home" asp-action="@Model.Action" asp-route-slug="@Model.Slug"
-               asp-route-query="@Model.Query" asp-route-category="@Model.Category"
+               asp-route-kind="@Model.Kind" asp-route-query="@Model.Query" asp-route-category="@Model.Category"
                asp-route-page="@(Model.Page - 1)" asp-route-pageSize="@(Model.PageSize == 9 ? null : Model.PageSize)" class="underline">&lt; Previous</a>
         }
         <span>Page @Model.Page of @Model.TotalPages</span>
         @if (Model.Page < Model.TotalPages)
         {
             <a asp-controller="Home" asp-action="@Model.Action" asp-route-slug="@Model.Slug"
-               asp-route-query="@Model.Query" asp-route-category="@Model.Category"
+               asp-route-kind="@Model.Kind" asp-route-query="@Model.Query" asp-route-category="@Model.Category"
                asp-route-page="@(Model.Page + 1)" asp-route-pageSize="@(Model.PageSize == 9 ? null : Model.PageSize)" class="underline">Next &gt;</a>
         }
     </nav>

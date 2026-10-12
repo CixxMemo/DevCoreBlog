@@ -47,13 +47,13 @@ public interface IPostService
 
     // Search posts by title or content (only published posts)
     Task<PublicPostPage> SearchPostsPagedAsync(string query, string? categorySlug, int page, int pageSize,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default, PostContentKind? contentKind = null);
 
     // Get published posts with pagination
-    Task<PublicPostPage> GetPublishedPostsPagedAsync(int page, int pageSize, CancellationToken cancellationToken = default);
+    Task<PublicPostPage> GetPublishedPostsPagedAsync(int page, int pageSize, CancellationToken cancellationToken = default, PostContentKind? contentKind = null);
 
     // Get published posts by category with pagination
-    Task<PublicPostPage> GetPostsByCategorySlugPagedAsync(string categorySlug, int page, int pageSize, CancellationToken cancellationToken = default);
+    Task<PublicPostPage> GetPostsByCategorySlugPagedAsync(string categorySlug, int page, int pageSize, CancellationToken cancellationToken = default, PostContentKind? contentKind = null);
 
     // Get related posts in the same category (excluding the current post)
     Task<IReadOnlyList<PublicPostSummary>> GetRelatedPostsAsync(int currentPostId, int categoryId,

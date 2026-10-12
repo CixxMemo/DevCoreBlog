@@ -85,27 +85,30 @@ public class PostService : IPostService, IPublicationSchedule, IWebhookPostServi
 
     // Validate even non-HTTP callers before bounded persistence queries run.
     public Task<PublicPostPage> SearchPostsPagedAsync(string query, string? categorySlug, int page, int pageSize,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default, PostContentKind? contentKind = null)
     {
         PublicListBounds.Validate(page, pageSize, query, categorySlug);
+        PublicContentFilter.Validate(contentKind);
         return _postRepository.SearchPostsPagedAsync(query.Trim(), categorySlug, page, pageSize,
-            _timeProvider.GetUtcNow().UtcDateTime, cancellationToken);
+            _timeProvider.GetUtcNow().UtcDateTime, cancellationToken, contentKind);
     }
 
     public Task<PublicPostPage> GetPublishedPostsPagedAsync(int page, int pageSize,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default, PostContentKind? contentKind = null)
     {
         PublicListBounds.Validate(page, pageSize);
+        PublicContentFilter.Validate(contentKind);
         return _postRepository.GetPublishedPostsPagedAsync(
-            page, pageSize, _timeProvider.GetUtcNow().UtcDateTime, cancellationToken);
+            page, pageSize, _timeProvider.GetUtcNow().UtcDateTime, cancellationToken, contentKind);
     }
 
     public Task<PublicPostPage> GetPostsByCategorySlugPagedAsync(string categorySlug, int page, int pageSize,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default, PostContentKind? contentKind = null)
     {
         PublicListBounds.Validate(page, pageSize, category: categorySlug);
+        PublicContentFilter.Validate(contentKind);
         return _postRepository.GetPostsByCategorySlugPagedAsync(
-            categorySlug, page, pageSize, _timeProvider.GetUtcNow().UtcDateTime, cancellationToken);
+            categorySlug, page, pageSize, _timeProvider.GetUtcNow().UtcDateTime, cancellationToken, contentKind);
     }
 
     // Get related posts in the same category (excluding the current post)

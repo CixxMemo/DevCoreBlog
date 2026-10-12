@@ -1,0 +1,9 @@
+@model DevCoreBlog.Services.Documents.PublicPostContent
+@if (Model.Document is { } document)
+{
+    <partial name="_RenderedContentDocument" model="document" />
+}
+else if (Model.Markdown is { } markdown)
+{
+    <partial name="_RenderedMarkdown" model="markdown" />
+}

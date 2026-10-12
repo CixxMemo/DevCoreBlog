@@ -34,18 +34,7 @@ public sealed class PostDocumentService(IPostDocumentRepository repository, Cont
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(postId);
         var stored = await repository.FindAsync(postId, cancellationToken);
         if (stored is null) return new(PostDocumentReadStatus.NotFound);
-        if (stored is { Version: null, Json: null, PlainText: null, WordCount: null, ReadingMinutes: null })
-            return new(PostDocumentReadStatus.Legacy, stored.EditVersion);
-        if (stored.Version != DocumentLimits.Version || stored.Json is null)
-            return new(PostDocumentReadStatus.Inconsistent, stored.EditVersion);
-        var validation = validator.Validate(stored.Json);
-        if (validation.Document is not { } document)
-            return new(PostDocumentReadStatus.Inconsistent, stored.EditVersion);
-        var reading = textProducer.Produce(document);
-        if (reading.PlainText != stored.PlainText || reading.WordCount != stored.WordCount ||
-            reading.ReadingMinutes != stored.ReadingMinutes)
-            return new(PostDocumentReadStatus.Inconsistent, stored.EditVersion);
-        return new(PostDocumentReadStatus.Ready, stored.EditVersion, document, reading, stored.Json);
+        return StoredDocumentReader.Read(stored, validator, textProducer);
     }
 }
 

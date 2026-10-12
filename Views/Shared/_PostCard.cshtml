@@ -13,6 +13,8 @@
     <partial name="_PostCardMedia" model="Model" />
     <div class="post-card-body">
         <span class="post-category">@Model.Post.CategoryName</span>
+        @if (PublicContentLabels.Label(Model.Post.ContentKind) is { Length: > 0 } label)
+        { <span class="post-category">@label</span> }
         @if (Model.Presentation == PostCardPresentation.Featured)
         {
             <h2 class="post-card-title">@Model.Post.Title</h2>

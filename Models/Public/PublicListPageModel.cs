@@ -10,7 +10,7 @@ public sealed record PublicListPageModel(PublicPostPage Result, PublicPagingMode
 
 /// <summary>Native navigation preserves only validated filters.</summary>
 public sealed record PublicPagingModel(string Action, string? Slug, string? Query, string? Category,
-    int Page, int PageSize, int TotalCount)
+    int Page, int PageSize, int TotalCount, string? Kind = null)
 {
     public int ActualTotalPages => Math.Max(1, (int)Math.Ceiling((double)TotalCount / PageSize));
     public int TotalPages => Math.Min(PublicListBounds.MaximumPage, ActualTotalPages);

@@ -3,6 +3,7 @@
 @model PostDetailModel
 @{
     var post = Model.Post;
+    var jsonContent = Model.Content.Document is not null;
     ViewData["Title"] = post.Title;
     ViewData["TerminalPath"] = $"posts/{post.Slug}";
 }
@@ -15,7 +16,8 @@
         {
             <span>Updated <time datetime="@updated.ToString("O", CultureInfo.InvariantCulture)">@SiteDates.Date(updated)</time></span>
         }
-        <span>@Model.Content.ReadingMinutes min read</span>
+        @if (jsonContent) { <span>@Model.Content.ReadingMinutes dk okuma</span> }
+        else { <span>@Model.Content.ReadingMinutes min read</span> }
         <span>@post.ViewCount views</span>
     </div>
     @if (!string.IsNullOrEmpty(post.ThumbnailUrl))
@@ -24,10 +26,10 @@
             <img src="@post.ThumbnailUrl" alt="@post.ThumbnailAlt" class="public-detail-cover" width="1600" height="900" loading="eager" fetchpriority="high" decoding="async" />
         </div>
     }
-    @if (Model.Content.Headings.Count >= 3)
+    @if (Model.Content.Headings.Count >= (jsonContent ? 1 : 3))
     {
-        <nav class="article-toc" aria-label="Table of contents">
-            <h2 class="font-mono font-bold mb-3">On this page</h2>
+        <nav class="article-toc" aria-label="@(jsonContent ? "İçindekiler" : "Table of contents")">
+            <h2 class="font-mono font-bold mb-3">@(jsonContent ? "İçindekiler" : "On this page")</h2>
             <ol>
                 @foreach (var heading in Model.Content.Headings)
                 {
@@ -36,7 +38,7 @@
             </ol>
         </nav>
     }
-    <partial name="_RenderedMarkdown" model="Model.Content" />
+    <partial name="_RenderedPublicPostContent" model="Model.Content" />
     @if (Model.RelatedPosts.Count > 0)
     {
         <section class="mt-12" aria-labelledby="related-heading">

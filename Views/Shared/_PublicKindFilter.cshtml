@@ -1,0 +1,14 @@
+@model DevCoreBlog.Models.Public.PublicKindFilterModel
+@using DevCoreBlog.Core.Publishing
+@using DevCoreBlog.Models.Public
+<div>
+    <label for="@Model.Id">İçerik türü</label>
+    <select id="@Model.Id" name="kind">
+        <option value="">Tüm yazılar</option>
+        @foreach (var kind in PublicContentFilter.Choices)
+        {
+            var key = PublicContentFilter.Key(kind);
+            <option value="@key" selected="@(key == Model.Kind)">@PublicContentLabels.Label(kind)</option>
+        }
+    </select>
+</div>

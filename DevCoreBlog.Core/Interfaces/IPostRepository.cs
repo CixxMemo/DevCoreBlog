@@ -22,11 +22,11 @@ public interface IPostRepository
     Task<Post?> GetPostBySlugAsync(string slug, DateTime utcNow);
     Task<IEnumerable<Post>> GetPostsByCategorySlugAsync(string categorySlug, DateTime utcNow);
     Task<PublicPostPage> SearchPostsPagedAsync(string query, string? categorySlug, int page, int pageSize,
-        DateTime utcNow, CancellationToken cancellationToken = default);
+        DateTime utcNow, CancellationToken cancellationToken = default, PostContentKind? contentKind = null);
     Task<PublicPostPage> GetPublishedPostsPagedAsync(
-        int page, int pageSize, DateTime utcNow, CancellationToken cancellationToken = default);
+        int page, int pageSize, DateTime utcNow, CancellationToken cancellationToken = default, PostContentKind? contentKind = null);
     Task<PublicPostPage> GetPostsByCategorySlugPagedAsync(
-        string categorySlug, int page, int pageSize, DateTime utcNow, CancellationToken cancellationToken = default);
+        string categorySlug, int page, int pageSize, DateTime utcNow, CancellationToken cancellationToken = default, PostContentKind? contentKind = null);
     Task<IReadOnlyList<PublicPostSummary>> GetRelatedPostsAsync(
         int currentPostId, int categoryId, DateTime utcNow, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<PublicFeedPost>> GetLatestPublicPostsAsync(

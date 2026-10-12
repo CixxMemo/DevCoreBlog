@@ -213,6 +213,7 @@ builder.Services.AddSingleton<ISafeMarkdownRenderer, SafeMarkdownRenderer>();
 builder.Services.AddSingleton<DevCoreBlog.Services.Documents.ContentDocumentValidator>();
 builder.Services.AddSingleton<DevCoreBlog.Services.Documents.DocumentTextProducer>();
 builder.Services.AddSingleton<DevCoreBlog.Services.Documents.DocumentWebRenderer>();
+builder.Services.AddScoped<DevCoreBlog.Services.Documents.PublicPostContentService>();
 builder.Services.AddScoped<DevCoreBlog.Core.Documents.IPostDocumentRepository, PostDocumentRepository>();
 builder.Services.AddScoped<DevCoreBlog.Services.Documents.PostDocumentService>();
 builder.Services.AddScoped<DevCoreBlog.Core.Documents.IEditorPostRepository, EditorPostRepository>();
