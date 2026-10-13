@@ -11,14 +11,14 @@
     <h1 class="text-2xl sm:text-4xl font-bold tracking-tight mb-6 font-sans leading-tight sm:leading-10">@post.Title</h1>
     <div class="public-detail-meta">
         <a class="post-category" href="@PublicUrls.CategoryPath(post.Category.Slug)">@post.Category.Name</a>
-        <span>Published <time datetime="@post.PublishDate.ToString("O", CultureInfo.InvariantCulture)">@SiteDates.Date(post.PublishDate)</time></span>
+        <span>Yayın: <time datetime="@post.PublishDate.ToString("O", CultureInfo.InvariantCulture)">@SiteDates.Date(post.PublishDate)</time></span>
         @if (post.UpdatedDate is { } updated)
         {
-            <span>Updated <time datetime="@updated.ToString("O", CultureInfo.InvariantCulture)">@SiteDates.Date(updated)</time></span>
+            <span>Güncelleme: <time datetime="@updated.ToString("O", CultureInfo.InvariantCulture)">@SiteDates.Date(updated)</time></span>
         }
         @if (jsonContent) { <span>@Model.Content.ReadingMinutes dk okuma</span> }
-        else { <span>@Model.Content.ReadingMinutes min read</span> }
-        <span>@post.ViewCount views</span>
+        else { <span>@Model.Content.ReadingMinutes dk okuma</span> }
+        <span>@post.ViewCount görüntüleme</span>
     </div>
     @if (!string.IsNullOrEmpty(post.ThumbnailUrl))
     {
@@ -28,12 +28,12 @@
     }
     @if (Model.Content.Headings.Count >= (jsonContent ? 1 : 3))
     {
-        <nav class="article-toc" aria-label="@(jsonContent ? "İçindekiler" : "Table of contents")">
-            <h2 class="font-mono font-bold mb-3">@(jsonContent ? "İçindekiler" : "On this page")</h2>
+        <nav class="article-toc" aria-label="İçindekiler">
+            <h2 class="font-mono font-bold mb-3">İçindekiler</h2>
             <ol>
                 @foreach (var heading in Model.Content.Headings)
                 {
-                    <li class="@(heading.Level > 2 ? "toc-nested" : null)"><a href="#@heading.Id">@(string.IsNullOrWhiteSpace(heading.Title) ? "Section" : heading.Title)</a></li>
+                    <li class="@(heading.Level > 2 ? "toc-nested" : null)"><a href="#@heading.Id">@(string.IsNullOrWhiteSpace(heading.Title) ? "Bölüm" : heading.Title)</a></li>
                 }
             </ol>
         </nav>
@@ -42,7 +42,7 @@
     @if (Model.RelatedPosts.Count > 0)
     {
         <section class="mt-12" aria-labelledby="related-heading">
-            <h2 id="related-heading" class="font-mono font-bold text-xl mb-6">Related articles</h2>
+            <h2 id="related-heading" class="font-mono font-bold text-xl mb-6">İlgili yazılar</h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 @foreach (var related in Model.RelatedPosts)
                 {
@@ -52,7 +52,7 @@
         </section>
     }
     <div class="mt-12 pt-6 border-t-2 border-gray-900 dark:border-zinc-700">
-        <a href="/" class="underline font-mono">← Back to Home</a>
+        <a href="/" class="underline font-mono">← Ana sayfaya dön</a>
     </div>
 </article>
 @section Scripts {

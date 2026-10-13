@@ -2,6 +2,6 @@
 @using System.Globalization
 <div class="post-metadata">
     <time datetime="@Model.PublishDate.ToString("O", CultureInfo.InvariantCulture)">@SiteDates.Date(Model.PublishDate)</time>
-    <span>@Model.ViewCount views</span>
+    <span>@Model.ViewCount görüntüleme</span>
     @if (Model.ReadingMinutes is { } minutes) { <span>@minutes dk okuma</span> }
 </div>

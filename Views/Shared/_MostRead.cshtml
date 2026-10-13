@@ -1,7 +1,7 @@
 @model IReadOnlyList<DevCoreBlog.Core.ReadModels.TopReadPost>
 <section id="most-read" aria-labelledby="most-read-heading" class="bg-white dark:bg-[#121215] border-2 border-gray-900 dark:border-zinc-700 p-4">
-    <h2 id="most-read-heading" class="font-mono font-bold text-lg mb-2">Most Read</h2>
-    <p class="text-sm mb-4">All-time article requests, including bots.</p>
+    <h2 id="most-read-heading" class="font-mono font-bold text-lg mb-2">En çok görüntülenen</h2>
+    <p class="text-sm mb-4">Tüm zamanlardaki yazı görüntüleme istekleri; botlar da dahildir.</p>
     @if (Model.Count > 0)
     {
         <ol>
@@ -9,7 +9,7 @@
             {
                 var post = Model[index];
                 <li class="border-t border-gray-200 dark:border-zinc-700 py-3">
-                    <span class="text-sm font-mono">@(index + 1). @post.ViewCount views</span>
+                    <span class="text-sm font-mono">@(index + 1). @post.ViewCount görüntüleme</span>
                     <a href="@PublicUrls.PostPath(post.Slug)" class="block font-bold underline mt-1 break-words">@post.Title</a>
                     <span class="text-sm">@post.CategoryName</span>
                 </li>
@@ -18,6 +18,6 @@
     }
     else
     {
-        <p class="text-sm">No published articles to rank yet.</p>
+        <p class="text-sm">Henüz sıralanabilecek yayımlanmış yazı yok.</p>
     }
 </section>

@@ -519,3 +519,8 @@ html.dark .public-site .text-primary { color: var(--accent); }
 .public-list-filters :is(select,button) { max-width: 100%; border: var(--public-rule); background: var(--bg-card); color: var(--text-primary); padding: 0.5rem 0.75rem; }
 .public-list-filters > div { min-width: 0; max-width: 100%; }
 .public-site select:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+
+/* Honor the reader's motion preference on the public shell and controls. */
+@media (prefers-reduced-motion: reduce) {
+  .public-site, .public-site * { transition: none !important; scroll-behavior: auto !important; }
+}

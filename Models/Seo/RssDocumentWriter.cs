@@ -1,4 +1,5 @@
 using System.Globalization;
+using DevCoreBlog.Models.Public;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Xml;
@@ -23,9 +24,9 @@ public sealed class RssDocumentWriter(PublicUrlBuilder urls, ISafeMarkdownRender
             xml.WriteStartElement("rss");
             xml.WriteAttributeString("version", "2.0");
             xml.WriteStartElement("channel");
-            xml.WriteElementString("title", "DevCoreBlog");
+            xml.WriteElementString("title", SiteIdentity.SiteName);
             xml.WriteElementString("link", urls.AbsolutePath("/"));
-            xml.WriteElementString("description", "Latest articles from DevCoreBlog.");
+            xml.WriteElementString("description", $"{SiteIdentity.SiteName} son yazıları.");
             xml.WriteStartElement("atom", "link", "http://www.w3.org/2005/Atom");
             xml.WriteAttributeString("href", urls.RssUrl());
             xml.WriteAttributeString("rel", "self");

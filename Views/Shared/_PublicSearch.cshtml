@@ -1,9 +1,9 @@
 @* A native GET form remains usable without JavaScript on every public page. *@
-<form action="/ara" method="get" role="search" aria-label="Article search" class="public-search">
-    <label for="global-search-input" class="sr-only">Search articles</label>
+<form action="/ara" method="get" role="search" aria-label="Yazı arama" class="public-search">
+    <label for="global-search-input" class="sr-only">Yazılarda ara</label>
     <input type="search" id="global-search-input" name="query" maxlength="100"
            value="@(ViewData["SearchQuery"] as string ?? string.Empty)"
-           placeholder="Search articles, concepts, or tags..." autocomplete="off" />
+           placeholder="Yazılarda ara…" autocomplete="off" />
     @if (ViewData["SearchCategory"] is string categorySlug)
     {
         <input type="hidden" name="category" value="@categorySlug" />
@@ -16,6 +16,6 @@
     {
         <input type="hidden" name="kind" value="@kind" />
     }
-    <button type="submit">Search</button>
+    <button type="submit">Ara</button>
     <kbd class="public-search-shortcut" aria-hidden="true">Ctrl + K / ⌘K</kbd>
 </form>

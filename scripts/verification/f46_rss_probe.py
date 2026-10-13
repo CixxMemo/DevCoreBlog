@@ -70,7 +70,7 @@ check('RSS_version_and_one_channel',doc.tag=='rss' and doc.attrib=={'version':'2
 check('RSS_content_type',headers['Content-Type']=='application/rss+xml; charset=utf-8')
 check('RSS_no_store', 'no-store' in headers['Cache-Control'])
 channel=doc.find('channel')
-check('required_channel_metadata',channel.findtext('title')=='DevCoreBlog' and channel.findtext('link')==origin+'/' and bool(channel.findtext('description')))
+check('required_channel_metadata',channel.findtext('title')=='Aether Notes' and channel.findtext('link')==origin+'/' and bool(channel.findtext('description')))
 check('Atom_self_link_is_trusted_RSS',channel.find('{http://www.w3.org/2005/Atom}link').attrib=={'href':origin+'/rss.xml','rel':'self','type':'application/rss+xml'})
 check('twenty_items_max_even_with_extra_query',len(items)==20 and len(ET.fromstring(fetch('/rss.xml?count=100000&page=2')[2]).find('channel').findall('item'))==20)
 expected=sql('''SELECT p."Slug" FROM "Posts" p JOIN "Categories" c ON c."Id"=p."CategoryId" WHERE p."IsActive" AND p."IsPublished" AND c."IsActive" AND p."PublishDate" <= CURRENT_TIMESTAMP ORDER BY p."PublishDate" DESC,p."Id" LIMIT 20''').splitlines()
@@ -142,7 +142,7 @@ active=json.loads(sql('SELECT json_agg("Id") FROM "Categories" WHERE "IsActive"'
 sql('UPDATE "Categories" SET "IsActive"=false')
 try:
     empty_doc,empty_items,_,_=feed()
-    check('empty_blog_still_valid_RSS_channel',not empty_items and empty_doc.find('channel/title').text=='DevCoreBlog')
+    check('empty_blog_still_valid_RSS_channel',not empty_items and empty_doc.find('channel/title').text=='Aether Notes')
 finally:
     sql('UPDATE "Categories" SET "IsActive"=true WHERE "Id" IN ('+','.join(str(i) for i in active)+')')
 check('empty_blog_probe_preserves_all_post_rows',snapshot()==snapshot_before_empty)

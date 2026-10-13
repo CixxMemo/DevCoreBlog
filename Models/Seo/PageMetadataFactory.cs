@@ -1,4 +1,5 @@
 using System.Globalization;
+using DevCoreBlog.Models.Public;
 using System.Text.Json;
 using DevCoreBlog.Core.Entities;
 using DevCoreBlog.Core.Publishing;
@@ -13,13 +14,13 @@ namespace DevCoreBlog.Models.Seo;
 public sealed class PageMetadataFactory(PublicUrlBuilder urls, ISafeMarkdownRenderer renderer)
 {
     public PageMetadata Home(int page, int size, PostContentKind? kind = null) => new(
-        $"DevCoreBlog — Articles{PageLabel(page)}",
-        $"Browse articles on DevCoreBlog{PageLabel(page)}.",
+        $"{SiteIdentity.SiteName} — Yazılar{PageLabel(page)}",
+        $"{SiteIdentity.SiteName} yazılarını keşfedin{PageLabel(page)}.",
         ListUrl("/", page, size, kind));
 
     public PageMetadata Category(Category category, int page, int size, PostContentKind? kind = null) => new(
-        $"{category.Name} — Articles{PageLabel(page)} — DevCoreBlog",
-        Description($"Browse articles in {category.Name} on DevCoreBlog{PageLabel(page)}."),
+        $"{category.Name} — Yazılar{PageLabel(page)} — {SiteIdentity.SiteName}",
+        Description($"{category.Name} kategorisindeki {SiteIdentity.SiteName} yazıları{PageLabel(page)}."),
         ListUrl(urls.CategoryPath(category.Slug), page, size, kind));
 
     public PageMetadata Article(Post post, DocumentReading? reading = null)
@@ -28,7 +29,7 @@ public sealed class PageMetadataFactory(PublicUrlBuilder urls, ISafeMarkdownRend
         var description = Description(post.Summary, reading is not null);
         if (description.Length == 0) description = Description(post.Excerpt, reading is not null);
         if (description.Length == 0 && reading is not null) description = Description(reading.PlainText, true);
-        if (description.Length == 0) description = Description($"Read {post.Title} on DevCoreBlog.");
+        if (description.Length == 0) description = Description($"{post.Title} — {SiteIdentity.SiteName} yazısı.");
         var image = SafeImage(post.ThumbnailUrl);
         var schema = new Dictionary<string, object>
         {
@@ -42,7 +43,7 @@ public sealed class PageMetadataFactory(PublicUrlBuilder urls, ISafeMarkdownRend
         if (image is not null) schema["image"] = image;
         if (reading is not null) schema["wordCount"] = reading.WordCount;
         // Default System.Text.Json escapes HTML-sensitive characters, including script terminators.
-        return new($"{post.Title} — DevCoreBlog", description, url, "article", image,
+        return new($"{post.Title} — {SiteIdentity.SiteName}", description, url, "article", image,
             JsonSerializer.Serialize(schema));
     }
 
@@ -53,16 +54,16 @@ public sealed class PageMetadataFactory(PublicUrlBuilder urls, ISafeMarkdownRend
         if (page > 1) fields.Add(new("page", page.ToString(CultureInfo.InvariantCulture)));
         if (size != 9) fields.Add(new("pageSize", size.ToString(CultureInfo.InvariantCulture)));
         if (PublicContentFilter.Key(kind) is { } key) fields.Add(new("kind", key));
-        return new($"Search — DevCoreBlog", "Search articles on DevCoreBlog.",
+        return new($"Arama — {SiteIdentity.SiteName}", $"{SiteIdentity.SiteName} yazılarında arayın.",
             urls.AbsolutePath("/ara" + QueryString.Create(fields).ToUriComponent()), NoIndex: true);
     }
 
     // Information pages use the same trusted origin as articles and feeds.
     public PageMetadata Information(string title, string description, string path) => new(
-        $"{title} — DevCoreBlog", Description(description), urls.AbsolutePath(path));
+        $"{title} — {SiteIdentity.SiteName}", Description(description), urls.AbsolutePath(path));
 
     public PageMetadata Private(string title, string path) => new(
-        $"{title} — DevCoreBlog", "Private DevCoreBlog page.", urls.AbsolutePath(path), NoIndex: true);
+        $"{title} — {SiteIdentity.SiteName}", "Özel sayfa.", urls.AbsolutePath(path), NoIndex: true);
 
     private string Description(string value, bool plainText = false) => string.Concat(
         (plainText ? value : renderer.ToPlainText(value)).EnumerateRunes().Take(160).Select(rune => rune.ToString()));
@@ -76,7 +77,7 @@ public sealed class PageMetadataFactory(PublicUrlBuilder urls, ISafeMarkdownRend
         return urls.AbsolutePath(path + QueryString.Create(fields).ToUriComponent());
     }
 
-    private static string PageLabel(int page) => page > 1 ? $" — Page {page}" : string.Empty;
+    private static string PageLabel(int page) => page > 1 ? $" — Sayfa {page}" : string.Empty;
 
     // Existing valid HTTPS covers are used; missing or legacy unsafe URLs add no invented fallback.
     private static string? SafeImage(string value) =>

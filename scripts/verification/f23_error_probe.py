@@ -3,6 +3,7 @@
 
 import argparse
 import json
+import html
 import time
 import urllib.error
 import urllib.request
@@ -42,8 +43,8 @@ def main():
         headers={"Content-Type": "application/json", "X-DevCore-Secret": "f23-webhook"},
     )
     checks = {
-        "unknown_url_is_404_html": status_404 == 404 and "text/html" in headers_404.get("Content-Type", "") and "Page not found" in body_404,
-        "db_failure_is_500_html": html_status == 500 and "text/html" in html_headers.get("Content-Type", "") and "Something went wrong" in html_body and "Request ID:" in html_body,
+        "unknown_url_is_404_html": status_404 == 404 and "text/html" in headers_404.get("Content-Type", "") and "Sayfa bulunamadı" in html.unescape(body_404),
+        "db_failure_is_500_html": html_status == 500 and "text/html" in html_headers.get("Content-Type", "") and "Bir hata oluştu" in html.unescape(html_body) and "İstek kimliği:" in html.unescape(html_body),
         "db_failure_is_500_json": status_500 == 500 and "application/json" in headers_500.get("Content-Type", "") and json.loads(body_500)["success"] is False,
         "public_feed_failure_is_500_json": feed_status == 500 and "application/json" in feed_headers.get("Content-Type", "") and json.loads(feed_body)["success"] is False,
         "invalid_json_is_400_json": invalid_status == 400 and "json" in invalid_headers.get("Content-Type", ""),
@@ -53,7 +54,7 @@ def main():
         ),
     }
     if args.fallback:
-        checks["static_500_fallback_used"] = "<title>Server error</title>" in html_body
+        checks["static_500_fallback_used"] = "<title>Sunucu hatası · Aether Notes</title>" in html_body
     print(json.dumps({"statuses": [status_404, html_status, status_500, feed_status, invalid_status], "checks": checks}, sort_keys=True))
     return 0 if args.baseline or all(checks.values()) else 1
 

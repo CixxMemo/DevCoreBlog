@@ -180,7 +180,7 @@ public class HomeController : Controller
             ? null : LocalRedirectPermanent(path + Request.QueryString.ToUriComponent());
 
     private BadRequestObjectResult InvalidListRequest() =>
-        BadRequest("Use a search term up to 100 characters, page 1–1000, and page size 9, 18, or 27.");
+        BadRequest("Arama ifadesi en çok 100 karakter; sayfa 1–1000 ve sayfa boyutu 9, 18 veya 27 olmalıdır.");
 
     // -------------------------------------------------------------------------
     // API ENDPOINTS (for Phase 3 Terminal CLI)

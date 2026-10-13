@@ -11,7 +11,7 @@ public sealed class InformationController(PageMetadataFactory metadata) : Contro
     [HttpHead("/about")]
     public IActionResult About()
     {
-        ViewData["Metadata"] = metadata.Information("About", "Meet Mehmet Can, the person behind DevCoreBlog.", "/about");
+        ViewData["Metadata"] = metadata.Information("Hakkında", "Aether Notes ve Mehmet Can hakkında.", "/about");
         return View();
     }
 
@@ -19,7 +19,7 @@ public sealed class InformationController(PageMetadataFactory metadata) : Contro
     [HttpHead("/contact")]
     public IActionResult Contact()
     {
-        ViewData["Metadata"] = metadata.Information("Contact", "Contact Mehmet Can by email or find his projects on GitHub.", "/contact");
+        ViewData["Metadata"] = metadata.Information("İletişim", "Mehmet Can ile e-posta üzerinden iletişime geçin veya GitHub projelerine bakın.", "/contact");
         return View();
     }
 }

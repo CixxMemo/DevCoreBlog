@@ -1,8 +1,8 @@
 @using DevCoreBlog.Models.Public
 <section aria-labelledby="about-title" class="w-full max-w-3xl border-2 border-gray-900 dark:border-zinc-700 bg-white dark:bg-[#121215] p-6 space-y-6">
-    <h1 id="about-title" class="text-3xl font-mono font-bold">About DevCoreBlog</h1>
+    <h1 id="about-title" class="text-3xl font-mono font-bold">@DevCoreBlog.Models.Public.SiteIdentity.SiteName hakkında</h1>
     <h2 class="text-xl font-bold">@SiteIdentity.Name</h2>
     <p class="leading-relaxed">@SiteIdentity.Biography</p>
-    <p><a href="@SiteIdentity.GitHubUrl" target="_blank" rel="noopener noreferrer" class="text-primary underline">Find me on GitHub<span class="sr-only"> (opens in a new tab)</span></a></p>
-    <p><a href="/contact" class="text-primary underline">Get in touch</a></p>
+    <p><a href="@SiteIdentity.GitHubUrl" target="_blank" rel="noopener noreferrer" class="text-primary underline">GitHub profilim<span class="sr-only"> (yeni sekmede açılır)</span></a></p>
+    <p><a href="/contact" class="text-primary underline">İletişime geçin</a></p>
 </section>

@@ -1,23 +1,23 @@
 @using DevCoreBlog.Models.Public
 @model PublicListPageModel
 @{
-    ViewData["Title"] = "Search Results";
+    ViewData["Title"] = "Arama sonuçları";
     ViewData["SearchQuery"] = Model.Paging.Query;
 }
 <div class="w-full max-w-5xl mx-auto">
     <header class="border-b-2 border-gray-900 dark:border-zinc-700 pb-4 mb-6">
-        <h1 class="text-2xl font-mono font-bold mb-3">Search Results</h1>
-        <p class="break-words">Search query: <strong>@Model.Paging.Query</strong></p>
-        <p>Category: @(Model.CategoryName ?? "All categories")</p>
-        <p>@Model.Result.TotalCount articles found · @Model.Result.Posts.Count on this page · Page @Model.Paging.Page of @Model.Paging.TotalPages</p>
+        <h1 class="text-2xl font-mono font-bold mb-3">Arama sonuçları</h1>
+        <p class="break-words">Aranan ifade: <strong>@Model.Paging.Query</strong></p>
+        <p>Kategori: @(Model.CategoryName ?? "Tüm kategoriler")</p>
+        <p>@Model.Result.TotalCount yazı bulundu · Bu sayfada @Model.Result.Posts.Count yazı · Sayfa @Model.Paging.Page / @Model.Paging.TotalPages</p>
     </header>
-    <form action="/ara" method="get" aria-label="Search filters" class="public-list-filters">
+    <form action="/ara" method="get" aria-label="Arama filtreleri" class="public-list-filters">
         <input type="hidden" name="query" value="@Model.Paging.Query" />
         <partial name="_PublicKindFilter" model='new PublicKindFilterModel("search-kind", Model.Paging.Kind)' />
         <div>
-            <label for="search-category">Category</label>
+            <label for="search-category">Kategori</label>
             <select id="search-category" name="category">
-                <option value="">All categories</option>
+                <option value="">Tüm kategoriler</option>
                 @foreach (var category in Model.Categories)
                 {
                     <option value="@category.Slug" selected="@(category.Slug == Model.Paging.Category)">@category.Name</option>
@@ -25,7 +25,7 @@
             </select>
         </div>
         <div>
-            <label for="search-page-size">Articles per page</label>
+            <label for="search-page-size">Sayfa başına yazı</label>
             <select id="search-page-size" name="pageSize">
                 @foreach (var size in DevCoreBlog.Core.Validation.PublicListBounds.PageSizes)
                 {
@@ -33,7 +33,7 @@
                 }
             </select>
         </div>
-        <button type="submit">Apply filters</button>
+        <button type="submit">Filtreleri uygula</button>
     </form>
     @if (Model.Result.Posts.Count > 0)
     {
@@ -46,9 +46,9 @@
     }
     else
     {
-        <partial name="_PublicEmptyState" model='string.IsNullOrWhiteSpace(Model.Paging.Query) ? "Enter a search term to find articles." : "No articles match these filters. Try another term or category."' />
-        <a asp-controller="Home" asp-action="Search" asp-route-query="@Model.Paging.Query" asp-route-pageSize="@(Model.Paging.PageSize == 9 ? null : Model.Paging.PageSize)" asp-route-kind="@Model.Paging.Kind" class="underline">Clear category filter</a>
-        <a href="/" class="underline ml-4">Back to Home</a>
+        <partial name="_PublicEmptyState" model='string.IsNullOrWhiteSpace(Model.Paging.Query) ? "Yazıları bulmak için bir arama ifadesi girin." : "Bu filtrelere uygun yazı bulunamadı. Başka bir ifade veya kategori deneyin."' />
+        <a asp-controller="Home" asp-action="Search" asp-route-query="@Model.Paging.Query" asp-route-pageSize="@(Model.Paging.PageSize == 9 ? null : Model.Paging.PageSize)" asp-route-kind="@Model.Paging.Kind" class="underline">Kategori filtresini kaldır</a>
+        <a href="/" class="underline ml-4">Ana sayfaya dön</a>
     }
     <partial name="_PublicPaging" model="Model.Paging" />
 </div>

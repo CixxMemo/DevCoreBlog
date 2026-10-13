@@ -1,11 +1,11 @@
 @model ErrorViewModel
 @{
     Layout = "_ErrorLayout";
-    ViewData["Title"] = "Page not found";
+    ViewData["Title"] = "Sayfa bulunamadı";
 }
-<h1>Page not found</h1>
-<p>The page you requested could not be found.</p>
+<h1>Sayfa bulunamadı</h1>
+<p>İstenen sayfa bulunamadı veya kamuya açık değil.</p>
 @if (Model.ShowRequestId)
 {
-    <p class="request-id">Request ID: <code>@Model.RequestId</code></p>
+    <p class="request-id">İstek kimliği: <code>@Model.RequestId</code></p>
 }

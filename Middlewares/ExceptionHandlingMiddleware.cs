@@ -1,4 +1,5 @@
 using System.Text.Encodings.Web;
+using DevCoreBlog.Models.Public;
 using Microsoft.AspNetCore.Http;
 
 namespace DevCoreBlog.Middlewares;
@@ -67,8 +68,8 @@ public sealed class ExceptionHandlingMiddleware
                 context.Response.ContentType = "text/html; charset=utf-8";
                 context.Response.Headers.CacheControl = "no-store";
                 await context.Response.WriteAsync(
-                    "<!doctype html><html lang=\"en\"><meta charset=\"utf-8\"><title>Server error</title>" +
-                    "<main><h1>Something went wrong</h1><p>Please try again later.</p><p>Request ID: " +
+                    $"<!doctype html><html lang=\"tr\"><meta charset=\"utf-8\"><title>Sunucu hatası · {SiteIdentity.SiteName}</title>" +
+                    "<main><h1>Bir hata oluştu</h1><p>Lütfen daha sonra yeniden deneyin.</p><p>İstek kimliği: " +
                     HtmlEncoder.Default.Encode(context.TraceIdentifier) + "</p></main></html>");
             }
         }

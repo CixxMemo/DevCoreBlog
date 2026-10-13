@@ -11,8 +11,8 @@ public sealed class ReaderAccountController(PageMetadataFactory metadata) : Cont
     [HttpHead("/sign-in")]
     public IActionResult SignIn()
     {
-        ViewData["Metadata"] = metadata.Information("Sign In",
-            "For now, enjoy DevCoreBlog without signing in.", "/sign-in") with { NoIndex = true };
+        ViewData["Metadata"] = metadata.Information("Okuyucu girişi",
+            "Aether Notes’taki kamuya açık yazıları giriş yapmadan okuyabilirsiniz.", "/sign-in") with { NoIndex = true };
         return View();
     }
 }

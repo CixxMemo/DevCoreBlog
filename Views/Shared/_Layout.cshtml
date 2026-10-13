@@ -7,23 +7,23 @@
 @* ============================================================================= *@
 
 <!DOCTYPE html>
-<html lang="en" class="public-root">
+<html lang="tr" class="public-root">
 <head>
     <script src="~/js/public-theme.js" asp-append-version="true"></script>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <partial name="_SeoHead" model='@(ViewData["Metadata"] as DevCoreBlog.Models.Seo.PageMetadata ?? PageMetadata.Private(ViewData["Title"]?.ToString() ?? "Page", Context.Request.Path.ToUriComponent()))' />
+    <partial name="_SeoHead" model='@(ViewData["Metadata"] as DevCoreBlog.Models.Seo.PageMetadata ?? PageMetadata.Private(ViewData["Title"]?.ToString() ?? "Sayfa", Context.Request.Path.ToUriComponent()))' />
 
-    <link rel="alternate" type="application/rss+xml" title="DevCoreBlog RSS" href="@PublicUrls.RssUrl()" />
+    <link rel="alternate" type="application/rss+xml" title="@DevCoreBlog.Models.Public.SiteIdentity.SiteName RSS" href="@PublicUrls.RssUrl()" />
 
     @* Google Fonts — JetBrains Mono for tech headings/UI, Inter for body text *@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
-    
+
     @* Compiled Tailwind CSS — existing public theme *@
     <link rel="stylesheet" href="~/generated/tailwind-public.css" asp-append-version="true" />
-    
+
     @* Site Custom CSS *@
 
     @* Prism.js Syntax Highlighting Styles *@
@@ -33,7 +33,7 @@
 </head>
 <body class="public-site bg-[#f9fafb] dark:bg-[#09090b] min-h-screen text-gray-900 dark:text-zinc-100 font-sans transition-colors duration-150 flex flex-col md:flex-row">
 
-    <a id="skip-content" class="public-skip-link" href="#main-content">Skip to content</a>
+    <a id="skip-content" class="public-skip-link" href="#main-content">İçeriğe geç</a>
 
     @* ============================================================================= *@
     @* MOBILE TOP BAR — Sticky header visible only on mobile/tablet viewports (<768px)*@
@@ -41,13 +41,13 @@
     <header id="public-header" class="md:hidden sticky top-0 z-30 flex items-center justify-between px-4 py-3 bg-white dark:bg-[#121215] border-b-2 border-gray-900 dark:border-zinc-800">
         @* Mobile Brand Logo *@
         <a href="/" class="font-mono font-black text-lg tracking-tight text-gray-900 dark:text-white no-underline">
-            <span class="text-primary">DEV</span>CORE<span class="text-xs ml-1 font-mono uppercase bg-gray-900 dark:bg-zinc-700 text-white px-1.5 py-0.5">BLOG</span>
+            @DevCoreBlog.Models.Public.SiteIdentity.SiteName
         </a>
 
         @* Mobile Hamburger Menu Button *@
-        <button type="button" 
+        <button type="button"
                 id="mobile-menu-btn"
-                aria-label="Open navigation menu" 
+                aria-label="Gezinme menüsünü aç"
                 aria-controls="main-sidebar" aria-expanded="false"
                 class="public-menu-control p-1.5 border-2 border-gray-900 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-900 dark:text-zinc-100 hover:bg-gray-900 hover:text-white dark:hover:bg-primary dark:hover:text-white focus:outline-none rounded-none cursor-pointer">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -57,7 +57,7 @@
     </header>
 
     @* Mobile Drawer Backdrop Overlay *@
-    <div id="sidebar-backdrop" 
+    <div id="sidebar-backdrop"
          class="public-drawer-backdrop"
          aria-hidden="true"></div>
 
@@ -65,19 +65,19 @@
     @* LEFT SIDEBAR — Responsive Off-Canvas Drawer (Mobile) & Fixed Rail (Desktop)   *@
     @* ============================================================================= *@
     <div id="main-sidebar" role="complementary"
-           aria-label="Reader navigation"
+           aria-label="Okuyucu gezinmesi"
            class="public-sidebar bg-white dark:bg-[#121215] border-r-2 border-gray-900 dark:border-zinc-800 flex flex-col justify-between">
         <div>
             @* Logo & Mobile Close Header *@
             <div class="p-4 border-b-2 border-gray-900 dark:border-zinc-800 bg-white dark:bg-[#121215] flex items-center justify-between">
                 <a href="/" class="block font-mono font-black text-xl tracking-tight text-gray-900 dark:text-white no-underline hover:text-primary">
-                    <span class="text-primary">DEV</span>CORE<span class="text-xs ml-1 font-mono uppercase bg-gray-900 dark:bg-zinc-700 text-white px-1.5 py-0.5">BLOG</span>
+                    @DevCoreBlog.Models.Public.SiteIdentity.SiteName
                 </a>
 
                 @* Close Button for Mobile Drawer *@
-                <button type="button" 
+                <button type="button"
                         id="mobile-close-btn"
-                        aria-label="Close navigation menu" 
+                        aria-label="Gezinme menüsünü kapat"
                         class="public-menu-control p-1 text-gray-600 dark:text-zinc-400 hover:text-black dark:hover:text-white border border-gray-900 dark:border-zinc-700 bg-white dark:bg-zinc-800 cursor-pointer">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -86,23 +86,23 @@
             </div>
 
             @* Navigation Menu Links — Merlin'in Kazanı style list with sharp hover *@
-            <nav aria-label="Main navigation" class="flex flex-col">
+            <nav aria-label="Ana gezinme" class="flex flex-col">
                 <a href="/" aria-current="@(Context.Request.Path == "/" ? "page" : null)" class="block py-3 px-4 hover:bg-gray-900 hover:text-white dark:hover:bg-primary dark:hover:text-white rounded-none border-b border-gray-200 dark:border-zinc-800 transition-none font-bold text-sm text-gray-900 dark:text-zinc-200 no-underline">
-                    Home
+                    Ana sayfa
                 </a>
                 @await Component.InvokeAsync("PublicCategoryNavigation")
             </nav>
         </div>
 
-        @* Site information and RSS stay together in the sidebar footer. *@
+        @* Site bilgileri and RSS stay together in the sidebar footer. *@
         <div class="p-4 border-t-2 border-gray-900 dark:border-zinc-800 bg-gray-50 dark:bg-[#121215] flex flex-col gap-3 transition-colors duration-150">
-            <nav aria-label="Site information" class="flex flex-wrap gap-4 text-sm font-bold">
-                <a href="/about" aria-current="@(Context.Request.Path == "/about" ? "page" : null)" class="text-primary underline">About</a>
-                <a href="/contact" aria-current="@(Context.Request.Path == "/contact" ? "page" : null)" class="text-primary underline">Contact</a>
+            <nav aria-label="Site bilgileri" class="flex flex-wrap gap-4 text-sm font-bold">
+                <a href="/about" aria-current="@(Context.Request.Path == "/about" ? "page" : null)" class="text-primary underline">Hakkında</a>
+                <a href="/contact" aria-current="@(Context.Request.Path == "/contact" ? "page" : null)" class="text-primary underline">İletişim</a>
             </nav>
             <div class="flex items-center justify-between">
                 <a id="rss-follow-link" href="@DevCoreBlog.Routing.PublicUrlBuilder.RssPath" class="text-xs font-mono font-bold text-primary hover:underline no-underline">
-                    Follow via RSS
+                    RSS ile takip et
                 </a>
                 <span class="text-xs font-mono text-gray-500 dark:text-zinc-500">
                     &copy; @DateTime.Now.Year
@@ -110,9 +110,9 @@
             </div>
 
             @* Theme Toggle Action Button *@
-            <button type="button" 
+            <button type="button"
                     id="theme-toggle-btn"
-                    aria-label="Toggle dark/light theme" 
+                    aria-label="Açık ve koyu tema arasında geçiş yap"
                     class="flex items-center justify-center gap-2 py-2 px-3 w-full border-2 border-gray-900 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-900 dark:text-zinc-100 hover:bg-gray-900 hover:text-white dark:hover:bg-primary dark:hover:text-white font-mono text-xs font-bold cursor-pointer transition-none rounded-none">
                 <svg class="theme-icon-dark w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
@@ -120,7 +120,7 @@
                 <svg class="theme-icon-light w-4 h-4 hidden" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4.22 4.22a1 1 0 011.415 0l.884.884a1 1 0 01-1.414 1.415l-.884-.884a1 1 0 010-1.415zM10 6a4 4 0 100 8 4 4 0 000-8zm-4.22 8.22a1 1 0 01-1.415 0l-.884-.884a1 1 0 011.414-1.415l.884.884a1 1 0 010 1.415zM2 10a1 1 0 011-1h1a1 1 0 110 2H3a1 1 0 01-1-1zm15 0a1 1 0 011-1h1a1 1 0 110 2h-1a1 1 0 01-1-1zM4.22 4.22a1 1 0 010 1.415l-.884.884a1 1 0 01-1.414-1.415l.884-.884a1 1 0 011.415 0zM15.78 15.78a1 1 0 010 1.415l-.884.884a1 1 0 01-1.414-1.415l.884-.884a1 1 0 011.415 0z"></path>
                 </svg>
-                <span>Toggle Theme</span>
+                <span>Temayı değiştir</span>
             </button>
         </div>
     </div>
@@ -131,7 +131,7 @@
     <main id="main-content" tabindex="-1" class="flex-1 w-full md:ml-64 p-4 sm:p-6 lg:p-8 min-w-0">
         <div class="public-toolbar">
             <partial name="_PublicSearch" />
-            <a id="reader-sign-in-link" asp-controller="ReaderAccount" asp-action="SignIn" class="public-sign-in" aria-current="@(Context.Request.Path == "/sign-in" ? "page" : null)">Sign In</a>
+            <a id="reader-sign-in-link" asp-controller="ReaderAccount" asp-action="SignIn" class="public-sign-in" aria-current="@(Context.Request.Path == "/sign-in" ? "page" : null)">Okuyucu girişi</a>
         </div>
         <div class="flex gap-8 min-w-0">
             @RenderBody()

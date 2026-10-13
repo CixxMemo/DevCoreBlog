@@ -1,7 +1,8 @@
 #!/bin/sh
 set -eu
 
-# Explicit synthetic configuration shared with the HTTP probes; no real dotenv path.
+# Explicit synthetic configuration; Development avoids requiring a live proxy for rendering tests.
+# The owned empty dotenv and unreachable test DB never load application credentials.
 export ADMIN_LOGIN_PATH=/fixture-admin/login
 export DEVCORE_TEST_ADMIN_LOGIN_PATH=/fixture-admin/login
 
@@ -57,7 +58,8 @@ task_hash=$(printf '%s\n' 'f23-isolated-password' | (
 ))
 (
     cd "$task_source"
-    exec env -u ADMIN_PASSWORD ASPNETCORE_ENVIRONMENT=Production DOTNET_ENVIRONMENT=Production \
+    exec env -u ADMIN_PASSWORD ASPNETCORE_ENVIRONMENT=Development DOTNET_ENVIRONMENT=Development \
+        SITE_URL=https://blog.example.test \
         ASPNETCORE_URLS="http://127.0.0.1:$task_port" \
         DATA_PROTECTION_KEYS_PATH="$task_tmp/keys" \
         DB_CONNECTION_STRING='Host=127.0.0.1;Port=55499;Database=f23_unavailable;Username=f23;Timeout=1' \

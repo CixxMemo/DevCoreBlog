@@ -1,11 +1,11 @@
 @model ErrorViewModel
 @{
     Layout = "_ErrorLayout";
-    ViewData["Title"] = "Server error";
+    ViewData["Title"] = "Sunucu hatası";
 }
-<h1>Something went wrong</h1>
-<p>Please try again later.</p>
+<h1>Bir hata oluştu</h1>
+<p>Lütfen daha sonra yeniden deneyin.</p>
 @if (Model.ShowRequestId)
 {
-    <p class="request-id">Request ID: <code>@Model.RequestId</code></p>
+    <p class="request-id">İstek kimliği: <code>@Model.RequestId</code></p>
 }
