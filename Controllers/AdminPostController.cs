@@ -249,7 +249,8 @@ public class AdminPostController : Controller
             return NotFound();
 
         if (post.DocumentVersion is not null)
-            return RedirectToAction("Edit", "AdminWriting", new { id, returnUrl });
+            return RedirectToAction("Edit", post.ContentKind == PostContentKind.Newsletter ? "AdminNewsletter" : "AdminWriting",
+                new { id, returnUrl = post.ContentKind == PostContentKind.Newsletter ? null : returnUrl });
 
         // Get all categories for the dropdown
         var categoryIsActive = await PopulateCategorySelectAsync(post.CategoryId);

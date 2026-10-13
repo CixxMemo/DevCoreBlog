@@ -3,6 +3,7 @@ import { clearDocumentRecovery, createDocumentRecovery, recoveryFields } from '.
 // Bind local persistence to one form. Only a server-admitted document can replace current writing.
 export async function mountDocumentRecovery(form, { synchronize, apply, blocked, markDirty }) {
     const id = Number(form.dataset.recoveryId);
+    const scope = form.dataset.recoveryScope || 'post';
     const panel = form.querySelector('[data-recovery-panel]');
     const message = form.querySelector('[data-recovery-message]');
     const date = form.querySelector('[data-recovery-date]');
@@ -14,7 +15,7 @@ export async function mountDocumentRecovery(form, { synchronize, apply, blocked,
         removeItem: key => localStorage.removeItem(key) };
     const receipt = form.querySelector('[data-document-receipt]');
     if (receipt) {
-        const cleared = await clearDocumentRecovery({ id: receipt.dataset.sourceId, revision: receipt.dataset.revision, storage, locks: navigator.locks });
+        const cleared = await clearDocumentRecovery({ id: receipt.dataset.sourceId, scope, revision: receipt.dataset.revision, storage, locks: navigator.locks });
         receipt.textContent = cleared ? 'Yazı kaydedildi. Bu kayda ait yerel taslak temizlendi.' : 'Yazı kaydedildi. Daha yeni veya okunamayan yerel taslak korundu.';
     }
     function readFields() {
@@ -37,7 +38,7 @@ export async function mountDocumentRecovery(form, { synchronize, apply, blocked,
             offer: 'Yerel kayıt, seçiminizi bekliyor.', conflict: 'Sekme çakışması: yerel kayıt duraklatıldı.', unknown: 'Okunamayan taslak korundu; yerel kayıt duraklatıldı.' };
         status.textContent = messages[kind];
     }
-    const session = createDocumentRecovery({ id, storage, locks: navigator.locks, readFields, notify,
+    const session = createDocumentRecovery({ id, scope, storage, locks: navigator.locks, readFields, notify,
         revision: () => crypto.randomUUID(), now: () => new Date().toISOString() });
     let timer, dirty = false, preparing = false, submitting = false, closed = false, validationController;
     function changed() {

@@ -1,6 +1,7 @@
 @model DevCoreBlog.Models.Admin.DocumentPostFormInput
 @{
     var editing = Model.Id > 0;
+    var writingController = Model.IsNewsletter ? "AdminNewsletter" : "AdminWriting";
     var commands = new (string Key, string Label)[] {
         ("bold", "Kalın"), ("italic", "İtalik"), ("underline", "Altı çizili"), ("code", "Satır içi kod"),
         ("paragraph", "Paragraf"), ("h2", "Başlık 2"), ("h3", "Başlık 3"), ("h4", "Başlık 4"),
@@ -16,11 +17,11 @@
     };
 }
 <main class="writing-page" lang="tr">
-    <h1>@(editing ? "Yazıyı düzenle" : "Yeni yazı")</h1>
+    <h1>@(Model.IsNewsletter ? (editing ? "Bülteni düzenle" : "Yeni bülten") : (editing ? "Yazıyı düzenle" : "Yeni yazı"))</h1>
     @if (TempData["DocumentSaved"] is string saved) { <p role="status" class="writing-notice">@saved</p> }
-    <form asp-controller="AdminWriting" asp-action="@(editing ? "Edit" : "Create")" asp-route-id="@(editing ? Model.Id : (int?)null)"
+    <form asp-controller="@writingController" asp-action="@(editing ? "Edit" : "Create")" asp-route-id="@(editing ? Model.Id : (int?)null)"
           method="post" id="postForm" data-document-form data-editor-enabled="@Model.EditorEnabled.ToString().ToLowerInvariant()"
-          data-recovery-id="@Model.Id" data-recovery-time-zone="@SiteDates.BrowserTimeZoneId"
+          data-recovery-id="@Model.Id" data-recovery-scope="@(Model.IsNewsletter ? "newsletter" : "post")" data-recovery-time-zone="@SiteDates.BrowserTimeZoneId"
           data-recovery-validation-url="@Url.Action("ValidateRecovery", "AdminDocument")"
           data-document-preview-url="@Url.Action("Preview", "AdminDocument")"
           data-email-preview-url="@Url.Action("Preview", "AdminEmail")"
@@ -37,7 +38,7 @@
         }
         @if (Model.BlockingMessage is not null) { <p role="alert">@Model.BlockingMessage</p> }
         @if (editing) {
-            <a asp-controller="AdminWriting" asp-action="Edit" asp-route-id="@Model.Id" asp-route-returnUrl="@Model.ReturnUrl">Güncel yazıyı yeniden aç</a>
+            <a asp-controller="@writingController" asp-action="Edit" asp-route-id="@Model.Id" asp-route-returnUrl="@Model.ReturnUrl">Güncel yazıyı yeniden aç</a>
         }
         <div class="writing-grid">
             <section class="writing-body" aria-label="Yazı içeriği">
@@ -50,7 +51,7 @@
                     </div>
                 </section>
                 <p data-recovery-status role="status" aria-live="polite">Yerel taslak kurtarma hazırlanıyor.</p>
-                <label for="post-title-input">Başlık</label>
+                <label for="post-title-input">@(Model.IsNewsletter ? "Konu ve sayı başlığı" : "Başlık")</label>
                 <input asp-for="Title" id="post-title-input" maxlength="200" autocomplete="off" />
                 <span asp-validation-for="Title"></span>
                 <div class="writing-toolbar" role="group" aria-label="Metin biçimi">
@@ -97,8 +98,15 @@
                 <p class="writing-help">Henüz kaydedilmemiş değişiklikler bu sayfadadır. Sayfadan ayrılmadan kaydedin.</p>
             </section>
             <aside aria-label="Yazı bilgileri">
+                @if (Model.IsNewsletter) {
+                    <p class="writing-notice">Erişim: Abonelere özel. Okuyucu arşivi henüz kullanıma açık değil.</p>
+                    <p>E-posta gönderimi: Başlatılmadı. Kaydetmek veya sitede yayımlamak e-posta göndermez.</p>
+                }
+                @if (Model.RecordedState is { } state) {
+                    <p data-site-publication-state>Site yayını: <partial name="~/Views/AdminWriting/_PublicationState.cshtml" model="state" /></p>
+                }
                 <label asp-for="CategoryId">Kategori</label>
-                <select asp-for="CategoryId" asp-items="ViewBag.CategoryId"><option value="">Kategori seçin</option></select>
+                <select asp-for="CategoryId" asp-items="@(new Microsoft.AspNetCore.Mvc.Rendering.SelectList(Model.Categories, "Id", "Name", Model.CategoryId))"><option value="">Kategori seçin</option></select>
                 <span asp-validation-for="CategoryId"></span>
                 <label asp-for="Summary">Özet</label><textarea asp-for="Summary" maxlength="500" rows="4"></textarea>
                 <span asp-validation-for="Summary"></span>
@@ -109,7 +117,7 @@
                 <label asp-for="PublishDate">Site yayın zamanı (@Model.SiteTimeZoneId)</label>
                 <input asp-for="PublishDate" asp-format="{0:yyyy-MM-ddTHH:mm:ss}" type="datetime-local" step="1" />
                 <span asp-validation-for="PublishDate"></span>
-                <label class="writing-checkbox"><input asp-for="IsActive" /> Yazı etkin</label>
+                <label class="writing-checkbox"><input asp-for="IsActive" /> @(Model.IsNewsletter ? "Bülten etkin" : "Yazı etkin")</label>
                 <button type="button" data-writing-preview disabled aria-describedby="writing-preview-status">Web önizlemesi (yeni sekme)</button>
                 <button type="button" data-writing-email-preview disabled aria-describedby="writing-preview-status">E-posta önizlemesi (yeni sekme)</button>
                 <p id="writing-preview-status" data-preview-status class="writing-help" role="status" aria-live="polite">Kaydetmeden içerik görünümünü ayrı sekmede inceleyin. Bu işlem yazıyı yayımlamaz.</p>
@@ -121,7 +129,7 @@
                 </div>
                 <span asp-validation-for="SaveAction"></span>
                 <p class="writing-help">Değişiklikleri kaydet mevcut yayın durumunu ve tarihini korur. Sitede yayımlamak e-posta göndermez.</p>
-                <a href="@(Model.ReturnUrl ?? Url.Action("Index", "AdminPost"))">Yazı listesine dön</a>
+                <a href="@(Model.ReturnUrl ?? Url.Action("Index", Model.IsNewsletter ? "AdminNewsletter" : "AdminPost"))">@(Model.IsNewsletter ? "Bülten listesine dön" : "Yazı listesine dön")</a>
             </aside>
         </div>
     </form>

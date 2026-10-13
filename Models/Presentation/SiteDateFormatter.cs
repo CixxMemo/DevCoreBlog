@@ -10,6 +10,10 @@ public sealed class SiteDateFormatter(PublicationTimeZone timeZone)
     public string BrowserTimeZoneId => TimeZoneInfo.TryConvertWindowsIdToIanaId(timeZone.Id, out var ianaId)
         ? ianaId : timeZone.Id;
 
+    /// <summary>New Turkish publishing surfaces include the configured site time.</summary>
+    public string TurkishDateTime(DateTime storedUtc) => timeZone.ToSiteTime(storedUtc)
+        .ToString("dd MMMM yyyy HH:mm", CultureInfo.GetCultureInfo("tr-TR"));
+
     public string Date(DateTime storedUtc) => timeZone.ToSiteTime(storedUtc)
         .ToString("MMM dd, yyyy", CultureInfo.GetCultureInfo("en-US"));
 }

@@ -221,6 +221,10 @@ builder.Services.AddScoped<DevCoreBlog.Core.Documents.IPostDocumentRepository, P
 builder.Services.AddScoped<DevCoreBlog.Services.Documents.PostDocumentService>();
 builder.Services.AddScoped<DevCoreBlog.Core.Documents.IEditorPostRepository, EditorPostRepository>();
 builder.Services.AddScoped<DevCoreBlog.Services.Documents.PostWritingService>();
+builder.Services.AddScoped<DevCoreBlog.Core.Documents.IWritingCategoryChoices, WritingCategoryChoicesRepository>();
+builder.Services.AddScoped<DevCoreBlog.Services.Documents.WritingCategoryService>();
+builder.Services.AddScoped<DevCoreBlog.Core.Newsletters.INewsletterInventory, NewsletterInventory>();
+builder.Services.AddScoped<DevCoreBlog.Services.Newsletters.NewsletterWritingService>();
 builder.Services.AddScoped<IImageService, ImageService>();
 builder.Services.AddSingleton<IImageDecoder, ProcessImageDecoder>();
 builder.Services.AddSingleton<ImageUploadPolicy>();

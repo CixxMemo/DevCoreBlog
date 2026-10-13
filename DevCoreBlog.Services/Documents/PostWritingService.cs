@@ -10,23 +10,31 @@ namespace DevCoreBlog.Services.Documents;
 /// <summary>Coordinates one validated document/metadata save, with no upload or email side effects.</summary>
 public sealed class PostWritingService(IEditorPostRepository repository, IActiveCategoryLookup categories,
     PostDocumentService documents, ContentDocumentValidator validator, DocumentTextProducer text,
-    PublicationTimeZone zone, TimeProvider clock, PublicListCacheInvalidator cache)
+    PublicationTimeZone zone, TimeProvider clock, PublicListCacheInvalidator cache) : IPostWritingUseCase
 {
     /// <summary>Exposes original JSON only when independently read facts share one consistent revision.</summary>
-    public async Task<EditorPostRead?> ReadAsync(int id, CancellationToken cancellationToken)
+    public Task<EditorPostRead?> ReadAsync(int id, CancellationToken cancellationToken) =>
+        ReadAsync(id, WritingPurpose.Article, cancellationToken);
+
+    public async Task<EditorPostRead?> ReadAsync(int id, WritingPurpose purpose, CancellationToken cancellationToken)
     {
         if (id <= 0) return null;
         var metadata = await repository.FindMetadataAsync(id, cancellationToken);
-        if (metadata is null) return null;
+        if (metadata is null || !MatchesPurpose(metadata, purpose)) return null;
         var document = await documents.ReadAsync(id, cancellationToken);
         return new(metadata, document.Status == PostDocumentReadStatus.Ready &&
-            document.EditVersion == metadata.EditVersion ? document.Json : null);
+            document.EditVersion == metadata.EditVersion ? document.Json : null,
+            DevCoreBlog.Core.Publishing.PostPublication.StateAt(metadata,
+                await categories.IsActiveCategoryAsync(metadata.CategoryId, cancellationToken), clock.GetUtcNow().UtcDateTime));
     }
 
     /// <summary>Validates intent before the atomic write; failures never adopt a newer edit revision.</summary>
-    public async Task<EditorPostSave> SaveAsync(EditorPostInput input, CancellationToken cancellationToken)
+    public Task<EditorPostSave> SaveAsync(EditorPostInput input, CancellationToken cancellationToken) =>
+        SaveAsync(input, WritingPurpose.Article, cancellationToken);
+
+    public async Task<EditorPostSave> SaveAsync(EditorPostInput input, WritingPurpose purpose, CancellationToken cancellationToken)
     {
-        try { return await SaveValidatedAsync(input, cancellationToken); }
+        try { return await SaveValidatedAsync(input, purpose, cancellationToken); }
         catch (EditorPostStorageException)
         {
             return new(EditorPostSaveStatus.Unavailable,
@@ -34,12 +42,14 @@ public sealed class PostWritingService(IEditorPostRepository repository, IActive
         }
     }
 
-    private async Task<EditorPostSave> SaveValidatedAsync(EditorPostInput input, CancellationToken cancellationToken)
+    private async Task<EditorPostSave> SaveValidatedAsync(EditorPostInput input, WritingPurpose purpose, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
+        if (!Enum.IsDefined(purpose)) return Failed("", "Geçerli bir yazım alanı seçin.");
         if (input.Id < 0 || (input.Id > 0 && (input.EditVersion <= 0 || input.EditVersion == long.MaxValue)))
             return Failed("", "Yazıyı yeniden açıp tekrar deneyin.");
         var stored = input.Id > 0 ? await repository.FindMetadataAsync(input.Id, cancellationToken) : null;
+        if (stored is not null && !MatchesPurpose(stored, purpose)) return new(EditorPostSaveStatus.NotFound, []);
         if (input.Id > 0 && stored is null) return new(EditorPostSaveStatus.NotFound, []);
         if (stored is not null)
         {
@@ -49,6 +59,8 @@ public sealed class PostWritingService(IEditorPostRepository repository, IActive
                 return new(EditorPostSaveStatus.Conflict, [new("", "Yazı değişti veya belge güvenle açılamıyor. Değişiklikleriniz korunuyor; güncel yazıyı yeniden açın.")]);
         }
         if (string.IsNullOrWhiteSpace(input.DocumentJson)) return Failed("DocumentJson", "İçerik belgesi gereklidir.");
+        if (purpose == WritingPurpose.Newsletter && input.Title.Any(char.IsControl))
+            return Failed("Title", "Bülten konusu satır sonu veya kontrol karakteri içeremez.");
         var validation = validator.Validate(input.DocumentJson);
         if (validation.Document is not { } document)
             return new(validation.Error?.Kind == DocumentFailureKind.Limit ? EditorPostSaveStatus.Limit : EditorPostSaveStatus.Invalid,
@@ -58,8 +70,8 @@ public sealed class PostWritingService(IEditorPostRepository repository, IActive
             CategoryId = input.CategoryId, IsActive = input.IsActive, PublishDate = input.PublishDate,
             ThumbnailAlt = input.ThumbnailAlt, ThumbnailUrl = stored?.ThumbnailUrl ?? string.Empty,
             ThumbnailPublicId = stored?.ThumbnailPublicId, ThumbnailWidth = stored?.ThumbnailWidth,
-            ThumbnailHeight = stored?.ThumbnailHeight, ContentKind = stored?.ContentKind ?? PostContentKind.Unclassified,
-            AccessScope = stored?.AccessScope ?? PostAccessScope.Public
+            ThumbnailHeight = stored?.ThumbnailHeight, ContentKind = stored?.ContentKind ?? (purpose == WritingPurpose.Newsletter ? PostContentKind.Newsletter : PostContentKind.Unclassified),
+            AccessScope = stored?.AccessScope ?? (purpose == WritingPurpose.Newsletter ? PostAccessScope.Subscribers : PostAccessScope.Public)
         };
         PostContentRules.Normalize(post);
         if (stored is not null)
@@ -118,6 +130,14 @@ public sealed class PostWritingService(IEditorPostRepository repository, IActive
         return new(EditorPostSaveStatus.Saved, [], post.Id);
     }
 
+    private static bool MatchesPurpose(Post post, WritingPurpose purpose) => purpose switch
+    {
+        WritingPurpose.Newsletter => post.ContentKind == PostContentKind.Newsletter && post.AccessScope == PostAccessScope.Subscribers,
+        WritingPurpose.Article => Enum.IsDefined(post.ContentKind) && post.ContentKind != PostContentKind.Newsletter
+            && Enum.IsDefined(post.AccessScope),
+        _ => false
+    };
+
     private static EditorPostSave Failed(string field, string message) => new(EditorPostSaveStatus.Invalid, [new(field, message)]);
 }
 
@@ -125,6 +145,6 @@ public sealed class PostWritingService(IEditorPostRepository repository, IActive
 public sealed record EditorPostInput(int Id, long EditVersion, string Title, string DocumentJson,
     int CategoryId, string Summary, string Excerpt, string? ThumbnailAlt, bool IsActive,
     DateTime PublishDate, PostSaveAction SaveAction);
-public sealed record EditorPostRead(Post Metadata, string? Json);
+public sealed record EditorPostRead(Post Metadata, string? Json, DevCoreBlog.Core.Publishing.PostPublicationState? State = null);
 public enum EditorPostSaveStatus { Saved, Invalid, Limit, NotFound, Conflict, Unavailable }
 public sealed record EditorPostSave(EditorPostSaveStatus Status, IReadOnlyList<ContentValidationError> Errors, int? Id = null);

@@ -36,7 +36,8 @@ public sealed class EditorPostRepository(ApplicationDbContext context, IPostRepo
         // Never overwrite legacy content, ownership, slug, creation time or the independently updated counter.
         try
         {
-            var affected = await context.Posts.Where(p => p.Id == post.Id && p.EditVersion == expectedVersion && p.DocumentVersion == 1)
+            var affected = await context.Posts.Where(p => p.Id == post.Id && p.EditVersion == expectedVersion && p.DocumentVersion == 1
+                && p.ContentKind == post.ContentKind && p.AccessScope == post.AccessScope)
                 .ExecuteUpdateAsync(s => s
                     .SetProperty(p => p.Title, post.Title).SetProperty(p => p.Summary, post.Summary)
                     .SetProperty(p => p.Excerpt, post.Excerpt).SetProperty(p => p.CategoryId, post.CategoryId)

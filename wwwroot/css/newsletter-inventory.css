@@ -1,0 +1,3 @@
+/* Long authored metadata must stay inside the private inventory at narrow widths. */
+.newsletter-inventory .writing-notice { overflow-wrap: anywhere; }
+.newsletter-inventory h2 { font-size: 1.125rem; font-weight: 700; }

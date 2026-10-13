@@ -112,7 +112,7 @@ try:
         except (OSError,ValueError,KeyError,TypeError):
             stages['content-access']['passed']=False
         code,output=run('document-persistence',['sh','scripts/verification/run_f17_visibility.sh'],source,timeout=480,export=False,extra={
-            'DEVCORE_VOL1_F08_REPORT_DIR':str(report),'DEVCORE_F17_PG_PORT':'55478','DEVCORE_F17_APP_PORT':'15408'})
+            'DEVCORE_VOL1_F08_REPORT_DIR':str(report),'DEVCORE_VOL1_F33_REPORT_DIR':str(report),'DEVCORE_F17_PG_PORT':'55478','DEVCORE_F17_APP_PORT':'15408'})
         document_checks={line.split('=')[0]:line.endswith('=true') for line in output.splitlines() if line.startswith('f08_') and line.endswith(('=true','=false'))}
         (report/'document-migration-fixture.json').write_text(json.dumps({'checks':document_checks,'exit_code':code},indent=2)+'\n')
         try:
@@ -126,8 +126,9 @@ try:
             preview_http=json.loads((report/'document-preview-http.json').read_text())
             email_preview_http=json.loads((report/'document-email-preview-http.json').read_text())
             public_document_http=json.loads((report/'public-document-http.json').read_text())
+            newsletter_http=json.loads((report/'newsletter-writing-http.json').read_text())
             stages['document-persistence']['passed']=code==0 and len(document_checks)>=5 and all(document_checks.values()) and all(
-                bool(data['checks']) and data['count']==len(data['checks']) and all(data['checks'].values()) for data in (document_db,document_http,writing_http,tables_http,images_http,youtube_http,recovery_http,preview_http,email_preview_http,public_document_http))
+                bool(data['checks']) and data['count']==len(data['checks']) and all(data['checks'].values()) for data in (document_db,document_http,writing_http,tables_http,images_http,youtube_http,recovery_http,preview_http,email_preview_http,public_document_http,newsletter_http))
         except (OSError,ValueError,KeyError,TypeError):
             stages['document-persistence']['passed']=False
         code,output=run('webhook-documents',['sh','scripts/verification/run_f17_visibility.sh'],source,timeout=600,export=False,extra={

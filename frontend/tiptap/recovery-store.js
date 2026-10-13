@@ -9,9 +9,10 @@ const bytes = value => new TextEncoder().encode(value).length;
 const plain = value => !!value && typeof value === 'object' && !Array.isArray(value);
 const exactKeys = (value, keys) => plain(value) && Object.keys(value).length === keys.length && keys.every(k => Object.hasOwn(value, k));
 
-export function recoveryKey(id) {
+export function recoveryKey(id, scope = 'post') {
+    if (!['post', 'newsletter'].includes(scope)) return null;
     return /^(0|[1-9]\d{0,9})$/u.test(String(id)) && Number(id) <= 2147483647
-        ? `devcore_document_draft_v1_${Number(id) === 0 ? 'create' : 'edit_' + id}` : null;
+        ? `devcore_document_draft_v1_${Number(id) === 0 ? (scope === 'newsletter' ? 'newsletter_create' : 'create') : 'edit_' + id}` : null;
 }
 
 export function validRecoveryFields(fields) {
@@ -51,8 +52,8 @@ export async function withRecoveryLock(locks, key, action) {
 const sameFields = (left, right) => recoveryFields.every(key => left?.[key] === right?.[key]);
 
 // Every writer, restore choice and commit cleanup compares under the same origin lock.
-export function createDocumentRecovery({ id, storage, locks, readFields, notify, revision, now }) {
-    const key = recoveryKey(id);
+export function createDocumentRecovery({ id, scope = 'post', storage, locks, readFields, notify, revision, now }) {
+    const key = recoveryKey(id, scope);
     let expectedRaw = null, pending = false;
     function observe(raw, conflict = false) {
         expectedRaw = raw;
@@ -111,8 +112,8 @@ export function createDocumentRecovery({ id, storage, locks, readFields, notify,
     return Object.freeze({ save, restore, discard, refresh, key });
 }
 
-export async function clearDocumentRecovery({ id, revision, storage, locks }) {
-    const key = recoveryKey(id);
+export async function clearDocumentRecovery({ id, scope = 'post', revision, storage, locks }) {
+    const key = recoveryKey(id, scope);
     if (typeof revision !== 'string' || !uuid.test(revision)) return false;
     try {
         return await withRecoveryLock(locks, key, () => {

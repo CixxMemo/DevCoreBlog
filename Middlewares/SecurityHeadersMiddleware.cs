@@ -29,7 +29,7 @@ public sealed class SecurityHeadersMiddleware(RequestDelegate next)
             context.Response.Headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
             context.Response.Headers["X-Frame-Options"] = "DENY";
             var action = context.GetEndpoint()?.Metadata.GetMetadata<ControllerActionDescriptor>();
-            if (action?.ControllerName == "AdminEmail")
+            if (action?.ControllerName is "AdminEmail" or "AdminNewsletter" or "AdminWriting")
             {
                 context.Response.Headers["Cache-Control"] = "no-store";
                 context.Response.Headers["X-Robots-Tag"] = "noindex, nofollow, noarchive";

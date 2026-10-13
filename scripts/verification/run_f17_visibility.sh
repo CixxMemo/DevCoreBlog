@@ -599,6 +599,12 @@ if [ -n "${DEVCORE_VOL1_F08_REPORT_DIR:-}" ]; then
     python3 "$task_source/scripts/verification/document_email_preview_http_probe.py" \
         --base-url "http://127.0.0.1:$task_app_port" --database-port "$task_pg_port" \
         --report "$DEVCORE_VOL1_F08_REPORT_DIR/document-email-preview-http.json"
+    if [ -n "${DEVCORE_VOL1_F33_REPORT_DIR:-}" ]; then
+        DEVCORE_TEST_ADMIN_USERNAME=f17-admin DEVCORE_TEST_ADMIN_PASSWORD="$task_admin_password" \
+        python3 "$task_source/scripts/verification/newsletter_writing_http_probe.py" \
+            --base-url "http://127.0.0.1:$task_app_port" --database-port "$task_pg_port" \
+            --report "$DEVCORE_VOL1_F33_REPORT_DIR/newsletter-writing-http.json"
+    fi
     task_before_down=$(psql -X -h 127.0.0.1 -p "$task_pg_port" -U "$task_pg_user" -d "$task_db" -At -c 'SELECT to_jsonb(p) FROM "Posts" p WHERE "Id" = 2003;')
     if (
         cd "$task_source"
@@ -612,6 +618,16 @@ if [ -n "${DEVCORE_VOL1_F08_REPORT_DIR:-}" ]; then
     task_after_down=$(psql -X -h 127.0.0.1 -p "$task_pg_port" -U "$task_pg_user" -d "$task_db" -At -c 'SELECT to_jsonb(p) FROM "Posts" p WHERE "Id" = 2003;')
     [ "$task_before_down" = "$task_after_down" ]
     printf 'f08_down_with_document_data_is_rejected=true\nf08_refused_down_preserves_document=true\n'
+    # Earlier empty additive down steps may commit before the document guard refuses.
+    # Bring the owned fixture back to the current model before any further browser use.
+    (
+        cd "$task_source"
+        DB_CONNECTION_STRING="Host=127.0.0.1;Port=$task_pg_port;Database=$task_db;Username=$task_pg_user" \
+        dotnet ef database update --no-build --project DevCoreBlog.csproj \
+            --startup-project DevCoreBlog.csproj --context ApplicationDbContext --no-color
+    ) > "$task_tmp/document-forward.log" 2>&1
+    printf 'f08_forward_after_refused_down_matches_current_model=true\n'
+
 fi
 
 if [ "${DEVCORE_F17_HOLD_FOR_BROWSER:-0}" = 1 ]; then

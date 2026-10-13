@@ -1,0 +1,3 @@
+@model DevCoreBlog.Core.Publishing.PostPublicationState
+@using DevCoreBlog.Core.Publishing
+@(Model switch { PostPublicationState.Draft => "Taslak", PostPublicationState.Scheduled => "Planlandı", PostPublicationState.Published => "Yayımlandı", _ => "Etkin değil" })

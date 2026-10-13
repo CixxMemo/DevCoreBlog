@@ -30,6 +30,9 @@ public sealed class DocumentPostFormInput
     public DateTime PublishDate { get; set; }
     [EnumDataType(typeof(PostSaveAction), ErrorMessage = "Geçerli bir kayıt eylemi seçin.")]
     public PostSaveAction SaveAction { get; set; } = PostSaveAction.SaveDraft;
+    [BindNever] public bool IsNewsletter { get; set; }
+    [BindNever] public DevCoreBlog.Core.Publishing.PostPublicationState? RecordedState { get; set; }
+    [BindNever] public IReadOnlyList<DevCoreBlog.Core.Documents.WritingCategoryOption> Categories { get; set; } = [];
     [BindNever] public string? ReturnUrl { get; set; }
     [BindNever] public string SiteTimeZoneId { get; set; } = string.Empty;
     [BindNever] public string? BlockingMessage { get; set; }

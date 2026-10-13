@@ -1,0 +1,27 @@
+@model DevCoreBlog.Core.Newsletters.NewsletterListPage
+@using DevCoreBlog.Core.Newsletters
+@{ ViewData["Title"] = "Bültenler"; }
+<link rel="stylesheet" href="~/generated/tiptap/editor.css" asp-append-version="true" />
+<link rel="stylesheet" href="~/css/newsletter-inventory.css" asp-append-version="true" />
+<main class="writing-page newsletter-inventory" lang="tr">
+    <h1>Bültenler</h1>
+    <p class="writing-notice">Site yayını ve e-posta gönderimi ayrı işlemlerdir. Bu ekranda hazırlama ve site yayınını yönetebilirsiniz. E-posta gönderimi henüz hazır değil.</p>
+    <p><a asp-action="Create" class="writing-list-link">Yeni bülten hazırla</a></p>
+    @if (Model.Items.Count == 0) { <p>Bu sayfada bülten bulunmuyor.</p> }
+    @foreach (var item in Model.Items) {
+        <article class="writing-notice">
+            <h2><a asp-action="Edit" asp-route-id="@item.Newsletter.Id">@item.Newsletter.Title</a></h2>
+            <p>@item.Newsletter.Summary</p>
+            <p>Site yayını: <partial name="~/Views/AdminWriting/_PublicationState.cshtml" model="item.State" /> — Abone erişimi</p>
+            <p>Site yayın zamanı: @SiteDates.TurkishDateTime(item.Newsletter.PublishDate)</p>
+            <p>E-posta gönderimi: Başlatılmadı</p>
+        </article>
+    }
+    <nav aria-label="Bülten sayfaları">
+        @if (Model.Page > 1) { <a asp-action="Index" asp-route-page="@(Model.Page - 1)">Önceki sayfa</a> }
+        <span>Sayfa @Model.Page · Toplam @Model.TotalCount bülten</span>
+        @if (Model.Page < NewsletterPage.MaximumPage && (long)Model.Page * NewsletterPage.PageSize < Model.TotalCount) {
+            <a asp-action="Index" asp-route-page="@(Model.Page + 1)">Sonraki sayfa</a>
+        }
+    </nav>
+</main>

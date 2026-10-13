@@ -43,4 +43,12 @@ check('missing_locks_never_writes',await uncoordinated.instance.save()===null &&
 check('invalid_identity_never_writes',await session(-1).instance.save()===null);
 data.set(key,raw); const raced=session(); data.set(key,JSON.stringify({...JSON.parse(raw),revision:randomUUID()}));
 check('discard_compares_unseen_raw_before_removing',await raced.instance.discard()===false && data.has(key));
+data.clear();
+const postDraft=session(),newsletterDraft=session(0,initial(),{scope:'newsletter'});
+postDraft.fields.Title='Makale taslağı';newsletterDraft.fields.Title='Bülten taslağı';
+const postRevision=await postDraft.instance.save(),newsletterRevision=await newsletterDraft.instance.save();
+check('newsletter_create_and_article_create_are_isolated',postDraft.instance.key!==newsletterDraft.instance.key && data.size===2);
+check('newsletter_commit_cannot_clear_article_create',await clearDocumentRecovery({id:0,scope:'newsletter',revision:newsletterRevision,storage,locks}) && data.has(recoveryKey(0)) && !data.has(recoveryKey(0,'newsletter')));
+check('article_commit_cannot_clear_other_newsletter_copy',await clearDocumentRecovery({id:0,revision:postRevision,storage,locks}) && data.size===0);
+check('unknown_recovery_scope_is_fail_closed',recoveryKey(0,'other')===null);
 console.log(JSON.stringify({count:Object.keys(checks).length,checks},null,2));
