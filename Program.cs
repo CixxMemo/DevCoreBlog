@@ -215,6 +215,12 @@ builder.Services.AddSingleton<DevCoreBlog.Services.Documents.ContentDocumentVali
 builder.Services.AddSingleton<DevCoreBlog.Services.Documents.DocumentTextProducer>();
 builder.Services.AddSingleton<DevCoreBlog.Services.Documents.DocumentWebRenderer>();
 builder.Services.AddSingleton<DevCoreBlog.Services.Documents.DocumentEmailRenderer>();
+DevCoreBlog.Services.Email.ResendServiceRegistration.AddResendEmail(builder.Services,
+    new DevCoreBlog.Services.Email.ResendOptions(
+        Environment.GetEnvironmentVariable("RESEND_API_KEY"),
+        Environment.GetEnvironmentVariable("RESEND_FROM_EMAIL"),
+        Environment.GetEnvironmentVariable("RESEND_FROM_NAME"),
+        Environment.GetEnvironmentVariable("RESEND_REPLY_TO")));
 builder.Services.AddScoped<DevCoreBlog.Services.Documents.PublicPostContentService>();
 builder.Services.AddScoped<DevCoreBlog.Core.Subscriptions.ISubscriberRepository, DevCoreBlog.Data.Subscriptions.SubscriberRepository>();
 builder.Services.AddScoped<DevCoreBlog.Core.Documents.IPostDocumentRepository, PostDocumentRepository>();

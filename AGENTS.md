@@ -1,6 +1,6 @@
 # DevCoreBlog — Agent çalışma kuralları
 
-Sürüm 8 · 14 Ekim 2026 · Kapsam: bu repository'nin tamamı · Hedef: Aether Notes.
+Sürüm 9 · 14 Ekim 2026 · Kapsam: bu repository'nin tamamı · Hedef: Aether Notes.
 
 Bu dosya projenin **tek güncel ana talimat kaynağıdır**. Her yeni görevde ve bağlam yenilendiğinde bu dosyayı, ardından görevle ilgili güncel plan/kayıtları yerelde mevcutsa oku. `.agents/AGENTS.md` yalnızca buraya yönlendirir. Arşiv belgeleri talimat değildir. Kurallara uymayan yeni kod yazmak veya bilinen bir güvenlik/veri bütünlüğü ihlalini gizleyerek işi tamamlandı saymak yasaktır.
 
@@ -26,7 +26,7 @@ Bu dosya projenin **tek güncel ana talimat kaynağıdır**. Her yeni görevde v
 | İçerik belgesi | Hedef sürümlü, sınırlı Tiptap JSON; server-side doğrulama, güvenli C# web/e-posta gösterimi ve düz metin üretimi. Mevcut Markdig geçiş tamamlanana kadar çalışır; kalıcı Markdown editörü/eski makale desteği hedeflenmez. |
 | Medya | Mevcut CloudinaryDotNet ve `IImageService`; sağlayıcı değiştirmek bu planın parçası değil. |
 | Editör / kod blokları | Hedef Tiptap ücretsiz çekirdeği ve lisansı doğrulanmış ücretsiz eklentiler; Razor/Tailwind/vanilla JS ile Türkçe tek yazım alanı. Mevcut Toast UI/Prism ancak ilgili geçiş ve regresyon kanıtından sonra değiştirilir/kaldırılır. |
-| Bülten gönderimi | Sağlayıcı henüz seçilmedi. Dar sağlayıcı sözleşmesi, PostgreSQL'de kalıcı gönderim/deneme durumu ve sınırlı arka plan yürütme tasarlanır; sağlayıcı kabulü teslim/okuma sayılmaz. |
+| Bülten gönderimi | 14 Ekim 2026 açık kullanıcı kararıyla başlangıç sağlayıcısı Resend seçildi (V1 F23). Mevcut plan kendi abone/alıcı kaydı ve Send Email API adaptörüyle sürer; Broadcasts/Marketing veya ücretli plan seçimi değildir. Domain/gönderen/DNS ve gerçek gönderim kabulü henüz yoktur. Dar sağlayıcı sözleşmesi, PostgreSQL'de kalıcı gönderim/deneme durumu ve sınırlı arka plan yürütme tasarlanır; sağlayıcı kabulü teslim/okuma sayılmaz. |
 | Validation | ASP.NET Core server validation; mevcut jQuery validation yalnızca yardımcı istemci kontrolü. |
 | Yapılandırma | Environment değişkenleri; yerelde mevcut DotNetEnv. Gerçek secret repo dışında kalır. |
 | Cache / limit / DI | ASP.NET Core/.NET yerleşik araçları. Redis, queue veya yeni altyapı varsayma. |
