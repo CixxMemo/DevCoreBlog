@@ -12,8 +12,8 @@ public sealed class SubscriberRepository(ApplicationDbContext context) : ISubscr
         var pending = Subscriber.CreatePending(address, utcNow);
         // The unique index resolves races. A duplicate must not change an existing subscription.
         await context.Database.ExecuteSqlInterpolatedAsync($"""
-            INSERT INTO "Subscribers" ("Id", "EmailAddress", "AddressKey", "Status", "Suppression", "CreatedUtc", "UpdatedUtc", "Version")
-            VALUES ({pending.Id}, {pending.EmailAddress}, {pending.AddressKey}, 0, 0, {utcNow}, {utcNow}, 1)
+            INSERT INTO "Subscribers" ("Id", "PeriodId", "EmailAddress", "AddressKey", "Status", "Suppression", "CreatedUtc", "UpdatedUtc", "Version")
+            VALUES ({pending.Id}, {pending.PeriodId}, {pending.EmailAddress}, {pending.AddressKey}, 0, 0, {utcNow}, {utcNow}, 1)
             ON CONFLICT ("AddressKey") DO NOTHING
             """, cancellationToken);
         // Separate Read Committed statement sees a concurrent winning insert after conflict resolution.
@@ -51,10 +51,11 @@ public sealed class SubscriberRepository(ApplicationDbContext context) : ISubscr
                 .SetProperty(item => item.VerifiedUtc, stored.VerifiedUtc)
                 .SetProperty(item => item.UnsubscribedUtc, stored.UnsubscribedUtc)
                 .SetProperty(item => item.UpdatedUtc, stored.UpdatedUtc)
+                .SetProperty(item => item.PeriodId, stored.PeriodId)
                 .SetProperty(item => item.Version, stored.Version), cancellationToken);
         return affected == 1 ? SubscriberWriteOutcome.Changed : SubscriberWriteOutcome.Conflict;
     }
 
     internal static SubscriberSnapshot Snapshot(Subscriber item) => new(item.Id, item.EmailAddress, item.AddressKey,
-        item.Status, item.Suppression, item.CreatedUtc, item.UpdatedUtc, item.VerifiedUtc, item.UnsubscribedUtc, item.Version);
+        item.Status, item.Suppression, item.CreatedUtc, item.UpdatedUtc, item.VerifiedUtc, item.UnsubscribedUtc, item.Version, item.PeriodId);
 }

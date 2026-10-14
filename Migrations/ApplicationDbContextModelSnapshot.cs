@@ -362,6 +362,11 @@ namespace DevCoreBlog.Migrations
                         .HasColumnType("character varying(254)")
                         .UseCollation("C");
 
+                    b.Property<Guid>("PeriodId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasDefaultValueSql("gen_random_uuid()");
+
                     b.Property<int>("Status")
                         .HasColumnType("integer");
 
@@ -389,6 +394,8 @@ namespace DevCoreBlog.Migrations
                     b.ToTable("Subscribers", null, t =>
                         {
                             t.HasCheckConstraint("CK_Subscribers_Address", "octet_length(\"EmailAddress\") BETWEEN 3 AND 254\nAND \"EmailAddress\" ~ '^[A-Za-z0-9!#$%&''*+/=?^_`{|}~.-]+@[A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)+$'\nAND length(split_part(\"EmailAddress\", '@', 1)) BETWEEN 1 AND 64\nAND split_part(\"EmailAddress\", '@', 1) NOT LIKE '.%'\nAND split_part(\"EmailAddress\", '@', 1) NOT LIKE '%.'\nAND position('..' in split_part(\"EmailAddress\", '@', 1)) = 0\nAND split_part(\"EmailAddress\", '@', 2) !~ '(^|\\.)-|-(\\.|$)|[A-Za-z0-9-]{64}'\nAND \"AddressKey\" = lower(\"EmailAddress\" COLLATE \"C\")");
+
+                            t.HasCheckConstraint("CK_Subscribers_Period", "\"PeriodId\" <> '00000000-0000-0000-0000-000000000000'::uuid");
 
                             t.HasCheckConstraint("CK_Subscribers_State", "\"Status\" IN (0,1,2) AND \"Suppression\" BETWEEN 0 AND 7 AND \"Version\" > 0\nAND (\"Status\" <> 0 OR \"VerifiedUtc\" IS NULL)\nAND (\"Status\" <> 1 OR \"VerifiedUtc\" IS NOT NULL)\nAND (\"Status\" <> 2 OR \"UnsubscribedUtc\" IS NOT NULL)\nAND (\"Status\" <> 1 OR \"UnsubscribedUtc\" IS NULL OR \"VerifiedUtc\" >= \"UnsubscribedUtc\")");
 

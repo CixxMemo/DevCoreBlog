@@ -22,6 +22,8 @@ public sealed class Subscriber
     public DateTime? VerifiedUtc { get; private set; }
     public DateTime? UnsubscribedUtc { get; private set; }
     public long Version { get; private set; }
+    // Stable across suppression and exit; a new application starts a distinct subscription period.
+    public Guid PeriodId { get; private set; }
     public bool IsSendEligible => SubscriberSendingRules.IsEligible(Status, VerifiedUtc, Suppression);
 
     public static Subscriber CreatePending(SubscriberAddress address, DateTime utcNow)
@@ -30,7 +32,7 @@ public sealed class Subscriber
         if (!IsFiniteUtc(utcNow)) throw new ArgumentException("Finite UTC is required.", nameof(utcNow));
         return new Subscriber
         {
-            Id = Guid.NewGuid(), EmailAddress = address.Address, AddressKey = address.Key,
+            Id = Guid.NewGuid(), PeriodId = Guid.NewGuid(), EmailAddress = address.Address, AddressKey = address.Key,
             CreatedUtc = utcNow, UpdatedUtc = utcNow, Version = 1
         };
     }
@@ -65,6 +67,8 @@ public sealed class Subscriber
         if (status == Status && verified == VerifiedUtc && exited == UnsubscribedUtc && suppression == Suppression)
             return SubscriberTransition.Unchanged;
         if (Version == long.MaxValue) return SubscriberTransition.InvalidTransition;
+        if (change == SubscriberChange.RequestReconfirmation && Status == SubscriptionStatus.Unsubscribed)
+            PeriodId = Guid.NewGuid();
         Status = status; VerifiedUtc = verified; UnsubscribedUtc = exited; Suppression = suppression;
         UpdatedUtc = utcNow; Version++;
         return SubscriberTransition.Changed;

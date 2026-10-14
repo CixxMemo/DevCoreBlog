@@ -12,6 +12,7 @@ public sealed class SubscriberVerificationLinks
 {
     public const string Path = "/abonelik/dogrula";
     private readonly string origin;
+    public string Origin => origin;
     public SubscriberVerificationLinks(string trustedOrigin)
     {
         if (!Uri.TryCreate(trustedOrigin, UriKind.Absolute, out var uri) || uri.UserInfo.Length != 0
@@ -24,7 +25,7 @@ public sealed class SubscriberVerificationLinks
 }
 
 /// <summary>Creates one purpose-bound proof and encrypted mail without network or database access.</summary>
-public sealed class SubscriberVerificationMessageFactory(TransactionalEmailProtector protection, SubscriberVerificationLinks links)
+public sealed class SubscriberVerificationMessageFactory(TransactionalEmailProtector protection, SubscriberVerificationLinks links, SubscriberExitLinks exits)
 {
     public PreparedSubscriberVerification Prepare(SubscriberSnapshot subscriber, DateTime now)
     {
@@ -35,10 +36,12 @@ public sealed class SubscriberVerificationMessageFactory(TransactionalEmailProte
         var draft = new SubscriberVerificationDraft(id, subscriber.Id, subscriber.Version,
             SubscriberVerificationRules.Digest(bytes), SubscriberVerificationRules.AddressBinding(subscriber.AddressKey), now);
         var url = links.Create(token);
+        var exitUrl = exits.Create(subscriber);
         var html = "<p>Aether Notes bülten aboneliği için e-posta adresinizi doğrulayın.</p><p><a href=\"" +
             HtmlEncoder.Default.Encode(url) + "\">E-posta adresimi doğrula</a></p><p>Bu bağlantı 24 saat geçerlidir. Talep size ait değilse bu e-postayı yok sayabilirsiniz.</p>";
+        html += "<p><a href=\"" + HtmlEncoder.Default.Encode(exitUrl) + "\">Abonelik talebini iptal et / bülten aboneliğinden çık</a></p>";
         var text = "Aether Notes bülten aboneliği için e-posta adresinizi doğrulayın:\n" + url +
-            "\nBu bağlantı 24 saat geçerlidir. Talep size ait değilse bu e-postayı yok sayabilirsiniz.";
+            "\nBu bağlantı 24 saat geçerlidir. Talep size ait değilse bu e-postayı yok sayabilirsiniz.\nAbonelik talebini iptal et / bülten aboneliğinden çık:\n" + exitUrl;
         var email = protection.Prepare(id, subscriber, "Aether Notes — E-posta adresinizi doğrulayın", html, text, now, draft.ExpiresUtc);
         return new(draft, email);
     }

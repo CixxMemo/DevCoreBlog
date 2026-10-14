@@ -29,7 +29,7 @@ public sealed class SecurityHeadersMiddleware(RequestDelegate next)
             context.Response.Headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
             context.Response.Headers["X-Frame-Options"] = "DENY";
             var action = context.GetEndpoint()?.Metadata.GetMetadata<ControllerActionDescriptor>();
-            if (action?.ControllerName is "SubscriberVerification" or "SubscriptionRegistration")
+            if (action?.ControllerName is "SubscriberVerification" or "SubscriptionRegistration" or "SubscriberUnsubscription")
             {
                 context.Response.Headers["Referrer-Policy"] = "no-referrer";
                 context.Response.Headers["Cache-Control"] = "no-store";

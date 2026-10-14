@@ -37,7 +37,7 @@ try:
         def connection(database): return f'Host=127.0.0.1;Port={args.port};Database={database};Username={getpass.getuser()};Timeout=5;Command Timeout=10;Include Error Detail=false'
         def sql(database,query,required=True): return run(['psql','-X','-h','127.0.0.1','-p',args.port,'-d',database,'-At','-v','ON_ERROR_STOP=1','-c',query],required=required).stdout.strip()
         def migrate(database,target,required=True): return run(['dotnet','ef','database','update',target,'--no-build','--project','DevCoreBlog.csproj','--context','ApplicationDbContext'],{'DB_CONNECTION_STRING':connection(database)},required=required)
-        def snapshot(database): return '\n'.join(sql(database,f'SELECT to_jsonb(t)::text FROM "{table}" t ORDER BY 1') for table in ('Posts','Categories','WebhookReceipts','Subscribers'))
+        def snapshot(database): return '\n'.join(sql(database,f'SELECT (to_jsonb(t)-\'PeriodId\')::text FROM "{table}" t ORDER BY 1') for table in ('Posts','Categories','WebhookReceipts','Subscribers'))
         try:
             run(['initdb','-D',str(fixture/'pg'),'--auth=trust','--encoding=UTF8','--locale=en_US.UTF-8'])
             run(['pg_ctl','-D',str(fixture/'pg'),'-l',str(fixture/'pg.log'),'-o',f'-h 127.0.0.1 -p {args.port} -k {fixture}/socket','-w','start']); started=True
@@ -54,33 +54,34 @@ try:
                 INSERT INTO "TransactionalEmailAttempts" ("JobId","Number","LeaseId","StartedUtc","CompletedUtc","Outcome","Reason")
                 VALUES ('00000000-0000-0000-0000-000000000002',1,'00000000-0000-0000-0000-000000000003','2026-01-01Z','2026-01-01Z',3,13)''')
             def preserved():
-                return sql('verification_prior', """SELECT to_jsonb(t)::text FROM "Subscribers" t WHERE "Id"='00000000-0000-0000-0000-000000000001';
-                    SELECT to_jsonb(t)::text FROM "TransactionalEmailJobs" t WHERE "Id"='00000000-0000-0000-0000-000000000002';
-                    SELECT to_jsonb(t)::text FROM "TransactionalEmailAttempts" t WHERE "JobId"='00000000-0000-0000-0000-000000000002'""")
+                return sql('verification_prior', """SELECT (to_jsonb(t)-\'PeriodId\')::text FROM "Subscribers" t WHERE "Id"='00000000-0000-0000-0000-000000000001';
+                    SELECT (to_jsonb(t)-\'PeriodId\')::text FROM "TransactionalEmailJobs" t WHERE "Id"='00000000-0000-0000-0000-000000000002';
+                    SELECT (to_jsonb(t)-\'PeriodId\')::text FROM "TransactionalEmailAttempts" t WHERE "JobId"='00000000-0000-0000-0000-000000000002'""")
             prior_evidence=preserved()
             before=snapshot('verification_prior'); history=sql('verification_prior','SELECT "MigrationId" FROM "__EFMigrationsHistory" ORDER BY 1').splitlines()
             migrate('verification_empty',current); migrate('verification_empty',previous)
             check('empty_down_safe',sql('verification_empty',"SELECT to_regclass('\"SubscriberVerificationTokens\"') IS NULL")=='t')
             for database in ('verification_empty','verification_prior'):
                 migrate(database,current)
+                migrate(database,'20261014124542_SubscriberUnsubscriptionPeriod')
                 safe_report(run(['dotnet',str(root/'tools/DevCoreBlog.ContentRulesTool/bin/Debug/net10.0/DevCoreBlog.ContentRulesTool.dll'),'--verification'],
                     {'DB_CONNECTION_STRING':connection(database),'OUTBOX_TEST_KEYS':str(fixture/'keys')},required=False),database)
             # New synthetic test identities are expected; baseline rows remain byte-for-byte intact.
             check('prior_subscriber_preserved',sql('verification_prior', 'SELECT "EmailAddress" || \':\' || "Version" FROM "Subscribers" WHERE "Id"=\'00000000-0000-0000-0000-000000000001\'')=='preserved@example.test:1')
             check('prior_lifecycle_and_outbox_journal_preserved',prior_evidence==preserved())
-            check('history_additive',sql('verification_prior','SELECT "MigrationId" FROM "__EFMigrationsHistory" ORDER BY 1').splitlines()==history+[current])
+            check('history_additive',sql('verification_prior','SELECT "MigrationId" FROM "__EFMigrationsHistory" ORDER BY 1').splitlines()==history+[p.stem for p in sorted((root/'Migrations').glob('*.cs')) if not p.name.endswith('.Designer.cs') and current <= p.stem <= '20261014124542_SubscriberUnsubscriptionPeriod'])
             count=sql('verification_prior','SELECT count(*) FROM "SubscriberVerificationTokens"')
             rejected=migrate('verification_prior',previous,False)
             check('nonempty_down_refuses_data_loss',rejected.returncode!=0 and sql('verification_prior','SELECT count(*) FROM "SubscriberVerificationTokens"')==count)
             run(['createdb','-h','127.0.0.1','-p',args.port,'verification_http'])
-            migrate('verification_http',current)
+            migrate('verification_http','20261014124542_SubscriberUnsubscriptionPeriod')
             run_http_fixture(root,fixture,env,connection('verification_http'),args.port,args.report.parent,checks,args.browser_module,args.browser_executable)
             if args.env_file:
                 if args.env_file.is_symlink() or args.env_file.stat().st_mode & 0o077: raise RuntimeError('Private credential file required')
                 values=[line.split('=',1)[1].strip().strip('\"\'') for line in args.env_file.read_text().splitlines() if line.startswith('RESEND_API_KEY=')]
                 if len(values)!=1 or not re.fullmatch(r're_[A-Za-z0-9_-]+',values[0]): raise RuntimeError('Valid local credential required')
                 run(['createdb','-h','127.0.0.1','-p',args.port,'verification_live'])
-                migrate('verification_live',current)
+                migrate('verification_live','20261014124542_SubscriberUnsubscriptionPeriod')
                 safe_report(run(['dotnet',str(root/'tools/DevCoreBlog.ContentRulesTool/bin/Debug/net10.0/DevCoreBlog.ContentRulesTool.dll'),'--verification-live'],
                     {'DB_CONNECTION_STRING':connection('verification_live'),'OUTBOX_TEST_KEYS':str(fixture/'keys'),'RESEND_API_KEY':values[0]},required=False),'real_resend_verification')
 

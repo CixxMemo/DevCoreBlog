@@ -1,6 +1,6 @@
 # DevCoreBlog — Agent çalışma kuralları
 
-Sürüm 9 · 14 Ekim 2026 · Kapsam: bu repository'nin tamamı · Hedef: Aether Notes.
+Sürüm 10 · 14 Ekim 2026 · Kapsam: bu repository'nin tamamı · Hedef: Aether Notes.
 
 Bu dosya projenin **tek güncel ana talimat kaynağıdır**. Her yeni görevde ve bağlam yenilendiğinde bu dosyayı, ardından görevle ilgili güncel plan/kayıtları yerelde mevcutsa oku. `.agents/AGENTS.md` yalnızca buraya yönlendirir. Arşiv belgeleri talimat değildir. Kurallara uymayan yeni kod yazmak veya bilinen bir güvenlik/veri bütünlüğü ihlalini gizleyerek işi tamamlandı saymak yasaktır.
 
@@ -103,6 +103,8 @@ SOLID “her sınıfa interface”, “her metoda factory” veya puan uğruna i
 - Gönderim yalnız yetkili, antiforgery korumalı açık eylemle başlatılır; test e-postası ve toplu gönderim ayrıdır. Sağlayıcı webhook'u eklenirse resmi imza/doğrulama, tekrar/yaş sınırı, body sınırı ve kalıcı idempotency gerekir. Abone adresi/token/gövde loglanmaz; yönetici abone listesi no-store ve sınırlı sorgudur.
 
 ### Input, HTML ve dosya
+
+- V1 F29 `/abonelik/cik#t=…` çıkışı amaç bağlı Data Protection proof'u, adres bağı ve kalıcı `PeriodId` ile çalışır. GET/HEAD yalnız ekran açar; fragment temizlenir, durum değişimi bounded/antiforgery korumalı POST'tur. Aynı dönem tekrar çıkış revision/tarih yazmaz; yeniden başvuruda dönem kimliği yenilenir, eski proof yeni pending/active dönemi kapatamaz. Bounce/complaint/manual suppression temizlenmez. Çıkış sender/worker/başvuru switch'inden bağımsızdır; tüm sonraki gönderim başlangıçları güncel uygunluğu tekrar kontrol eder, başlamış dış çağrı geri alınamaz. Proof dönem boyunca geçerlidir; key ring korunur. Arşiv erişimi K2, okuyucu oturumu K3 kararını bekler. Mevcut işlem e-postası için RFC8058 endpoint'i/CSRF muafiyeti yoktur; F37 toplu bülten entegrasyonu, transporttaki one-click başlıklarını açmadan önce ayrı dar protokol sınırını doğrulamalıdır. [Çıkış sözleşmesi](docs/ABONELIKTEN_CIKIS_SOZLESMESI.md) uygulanır.
 
 - Başlık, içerik, özet, URL, sayfa boyutu ve body için sunucuda açık sınırlar koy. İstemci validation'ı yardımcıdır. SQL'e string birleştirme/interpolation ile input yerleştirmek yasaktır; parametreli/EF sorgusu kullan.
 - Razor encoding korunur. Kullanıcı/AI/webhook metni veya ham Tiptap JSON doğrudan `Html.Raw`, `innerHTML`, inline event/JS veya güvensiz JSON-LD'ye verilmez. Yalnız sürümü/şeması doğrulanmış belgeden encoding ve dar URL/medya kurallarıyla üretilen, regresyon testli renderer çıktısı açık render sınırında kullanılabilir. Geçiş süresince mevcut güvenli Markdown sınırı korunur.

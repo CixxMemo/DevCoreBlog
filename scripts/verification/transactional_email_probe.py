@@ -34,7 +34,7 @@ try:
         def connection(database): return f'Host=127.0.0.1;Port={args.port};Database={database};Username={getpass.getuser()};Timeout=5;Command Timeout=10;Include Error Detail=false'
         def sql(database,query,required=True): return run(['psql','-X','-h','127.0.0.1','-p',args.port,'-d',database,'-At','-v','ON_ERROR_STOP=1','-c',query],required=required).stdout.strip()
         def migrate(database,target,required=True): return run(['dotnet','ef','database','update',target,'--no-build','--project','DevCoreBlog.csproj','--context','ApplicationDbContext'],{'DB_CONNECTION_STRING':connection(database)},required=required)
-        def snapshot(database): return '\n'.join(sql(database,f'SELECT to_jsonb(t)::text FROM "{table}" t ORDER BY 1') for table in ('Posts','Categories','WebhookReceipts','Subscribers'))
+        def snapshot(database): return '\n'.join(sql(database,f'SELECT (to_jsonb(t)-\'PeriodId\')::text FROM "{table}" t ORDER BY 1') for table in ('Posts','Categories','WebhookReceipts','Subscribers'))
         try:
             run(['initdb','-D',str(fixture/'pg'),'--auth=trust','--encoding=UTF8','--locale=en_US.UTF-8'])
             run(['pg_ctl','-D',str(fixture/'pg'),'-l',str(fixture/'pg.log'),'-o',f'-h 127.0.0.1 -p {args.port} -k {fixture}/socket','-w','start']); started=True
@@ -51,11 +51,12 @@ try:
             check('empty_down_safe',sql('outbox_empty',"SELECT to_regclass('\"TransactionalEmailJobs\"') IS NULL")=='t')
             for database in ('outbox_empty','outbox_prior'):
                 migrate(database,current)
+                migrate(database,'20261014124542_SubscriberUnsubscriptionPeriod')
                 safe_report(run(['dotnet',str(root/'tools/DevCoreBlog.ContentRulesTool/bin/Debug/net10.0/DevCoreBlog.ContentRulesTool.dll'),'--transactional-email'],
                     {'DB_CONNECTION_STRING':connection(database),'OUTBOX_TEST_KEYS':str(fixture/'keys')},required=False),database)
             # New synthetic test identities are expected; baseline rows remain byte-for-byte intact.
             check('prior_subscriber_preserved',sql('outbox_prior', 'SELECT "EmailAddress" || \':\' || "Version" FROM "Subscribers" WHERE "Id"=\'00000000-0000-0000-0000-000000000001\'')=='preserved@example.test:1')
-            check('history_additive',sql('outbox_prior','SELECT "MigrationId" FROM "__EFMigrationsHistory" ORDER BY 1').splitlines()==history+[current])
+            check('history_additive',sql('outbox_prior','SELECT "MigrationId" FROM "__EFMigrationsHistory" ORDER BY 1').splitlines()==history+[p.stem for p in sorted((root/'Migrations').glob('*.cs')) if not p.name.endswith('.Designer.cs') and current <= p.stem <= '20261014124542_SubscriberUnsubscriptionPeriod'])
             count=sql('outbox_prior','SELECT count(*) FROM "TransactionalEmailJobs"')
             rejected=migrate('outbox_prior',previous,False)
             check('nonempty_down_refuses_data_loss',rejected.returncode!=0 and sql('outbox_prior','SELECT count(*) FROM "TransactionalEmailJobs"')==count)

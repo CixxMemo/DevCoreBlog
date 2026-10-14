@@ -234,6 +234,9 @@ builder.Services.AddScoped<DevCoreBlog.Services.Subscriptions.SubscriptionRegist
 builder.Services.AddSingleton(new DevCoreBlog.Services.Subscriptions.SubscriberVerificationLinks(siteUrl.Origin));
 builder.Services.AddScoped<DevCoreBlog.Services.Subscriptions.SubscriberVerificationIssuer>();
 builder.Services.AddScoped<DevCoreBlog.Services.Subscriptions.SubscriberVerificationConsumer>();
+builder.Services.AddScoped<DevCoreBlog.Core.Subscriptions.ISubscriberUnsubscriptionStore, DevCoreBlog.Data.Subscriptions.SubscriberUnsubscriptionStore>();
+builder.Services.AddSingleton<DevCoreBlog.Services.Subscriptions.SubscriberExitLinks>();
+builder.Services.AddScoped<DevCoreBlog.Services.Subscriptions.SubscriberUnsubscriptionService>();
 builder.Services.AddScoped<DevCoreBlog.Data.Email.TransactionalEmailStore>();
 builder.Services.AddScoped<DevCoreBlog.Core.Email.ITransactionalEmailQueue>(services => services.GetRequiredService<DevCoreBlog.Data.Email.TransactionalEmailStore>());
 builder.Services.AddScoped<DevCoreBlog.Core.Email.ITransactionalEmailWorkStore>(services => services.GetRequiredService<DevCoreBlog.Data.Email.TransactionalEmailStore>());
@@ -447,6 +450,14 @@ builder.Services.AddRateLimiter(options =>
     options.AddPolicy("VerificationLimiter", httpContext =>
         RateLimitPartition.GetFixedWindowLimiter(
             partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown-verification-client",
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                AutoReplenishment = true, PermitLimit = 20, QueueLimit = 0, Window = TimeSpan.FromMinutes(1)
+            }));
+
+    options.AddPolicy("UnsubscriptionLimiter", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown-exit-client",
             factory: _ => new FixedWindowRateLimiterOptions
             {
                 AutoReplenishment = true, PermitLimit = 20, QueueLimit = 0, Window = TimeSpan.FromMinutes(1)

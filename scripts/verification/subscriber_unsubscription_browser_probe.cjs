@@ -1,0 +1,63 @@
+// Real Chrome on owned MVC/PostgreSQL; synthetic proof is never written to the report or console.
+const fs=require('node:fs'),cp=require('node:child_process');
+const {chromium}=require(process.env.DEVCORE_PLAYWRIGHT_MODULE||'playwright');
+const base=process.env.UNSUBSCRIPTION_TEST_BASE,report=process.env.UNSUBSCRIPTION_TEST_REPORT;
+const seed=JSON.parse(fs.readFileSync(process.env.UNSUBSCRIPTION_TEST_PROOF_FILE,'utf8'));
+const checks={},errors=[],csp=[],requests=[];
+let browser,failureType,stage='initial';
+function checkpoint(){fs.writeFileSync(report,JSON.stringify({passed:false,count:Object.keys(checks).length,checks,stage,failureType},null,2)+'\n');}
+function check(name,value){checks[name]=!!value;stage=name;checkpoint();if(!value)throw new Error(name);}
+const sql=q=>cp.execFileSync('psql',['-X','-h','127.0.0.1','-p',process.env.UNSUBSCRIPTION_TEST_PG_PORT||'55524','-d','unsubscription_http','-At','-v','ON_ERROR_STOP=1','-c',q],{encoding:'utf8'}).trim();
+const state=()=>sql(`SELECT "Status" || ':' || "Version" FROM "Subscribers" WHERE "Id"='${seed.subscriberId}'`);
+(async()=>{
+ check('owned_fixture',new URL(base).hostname==='127.0.0.1' && /^[0-9a-f-]{36}$/.test(seed.subscriberId));
+ stage='browser_launch';checkpoint();
+ browser=await chromium.launch({headless:true,executablePath:process.env.DEVCORE_BROWSER_EXECUTABLE||undefined,timeout:20000});
+ stage='browser_context';checkpoint();
+ const context=await browser.newContext({viewport:{width:1440,height:900}});
+ context.setDefaultTimeout(10000);context.setDefaultNavigationTimeout(15000);
+ stage='context_binding';checkpoint();
+ await context.exposeBinding('__proofCsp',(_s,d)=>csp.push(d));
+ await context.addInitScript(()=>document.addEventListener('securitypolicyviolation',e=>window.__proofCsp(e.effectiveDirective)));
+ context.on('request',r=>requests.push({url:r.url(),headers:r.headers(),method:r.method()}));
+ stage='new_page';checkpoint();
+ let page=await context.newPage();page.on('pageerror',()=>errors.push('page-error'));
+ stage='open_exit_link';checkpoint();
+ const response=await page.goto(base+'/abonelik/cik#t='+seed.token);
+ const button=page.getByRole('button',{name:'Bülten aboneliğinden çık',exact:true});
+ await button.waitFor();await page.waitForFunction(()=>!document.getElementById('exit-submit').disabled);
+ check('desktop_ready_200',response.status()===200 && await button.isEnabled());
+ check('opening_link_is_read_only',state()==='1:2');
+ check('hash_and_query_removed',new URL(page.url()).hash===''&&new URL(page.url()).search==='');
+ check('token_only_hidden_form_field',await page.locator('#exit-token').inputValue()===seed.token && !(await page.locator('body').innerText()).includes(seed.token));
+ check('no_proof_in_browser_storage',await page.evaluate(token=>!JSON.stringify({...localStorage}).includes(token)&&!JSON.stringify({...sessionStorage}).includes(token),seed.token));
+ check('no_proof_in_urls_or_referrer',requests.every(r=>!r.url.includes(seed.token)&&!(r.headers.referer||'').includes(seed.token)));
+ check('standalone_no_third_party_requests',requests.every(r=>r.url.startsWith(base+'/')));
+ await page.screenshot({path:process.env.UNSUBSCRIPTION_TEST_SCREENSHOT,fullPage:true});
+ await page.setViewportSize({width:390,height:844});
+ check('mobile_no_horizontal_overflow',await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth));
+ await page.screenshot({path:process.env.UNSUBSCRIPTION_TEST_MOBILE_SCREENSHOT,fullPage:true});
+ await button.focus();
+ check('keyboard_focus_visible',await button.evaluate(b=>b===document.activeElement&&getComputedStyle(b).outlineStyle!=='none'));
+ await Promise.all([page.waitForNavigation(),page.keyboard.press('Enter')]);
+ check('keyboard_submit_confirms',state()==='2:3'&&(await page.locator('body').innerText()).includes('Bülten aboneliğinden çıktınız'));
+ check('success_no_token_or_form',!page.url().includes(seed.token)&&!(await page.content()).includes(seed.token)&&await page.locator('form').count()===0);
+ check('no_admin_or_reader_auth_cookie',(await context.cookies()).every(c=>!c.name.includes('Admin')&&!c.name.includes('Reader')&&c.name!=='.AspNetCore.Cookies'));
+ await page.close();page=await context.newPage();page.on('pageerror',()=>errors.push('page-error'));
+ await page.goto(base+'/abonelik/cik#t='+seed.token);await page.waitForFunction(()=>!document.getElementById('exit-submit').disabled);
+ const replay=await Promise.all([page.waitForNavigation(),page.getByRole('button',{name:'Bülten aboneliğinden çık'}).click()]);
+ check('replay_real_200_no_new_revision',replay[0].status()===200&&state()==='2:3'&&(await page.locator('body').innerText()).includes('Bülten aboneliğinden çıktınız'));
+ await page.close();page=await context.newPage();
+ await page.goto(base+'/abonelik/cik#t=invalid');
+ check('invalid_fragment_stays_disabled',await page.locator('#exit-submit').isDisabled()&&await page.locator('#exit-token').inputValue()===''&&new URL(page.url()).hash==='');
+ const nojs=await browser.newContext({javaScriptEnabled:false});const safe=await nojs.newPage();
+ await safe.goto(base+'/abonelik/cik#t='+seed.token);
+ check('javascript_disabled_safe',await safe.locator('#exit-submit').isDisabled()&&(await safe.locator('noscript').innerText()).includes('JavaScript')&&state()==='2:3');
+ check('csp_and_console_clean',csp.length===0&&errors.length===0);
+ await nojs.close();await context.close();
+})().catch(error=>{failureType=error.name;checks.completed=false;process.exitCode=1;}).finally(async()=>{
+ const passed=Object.keys(checks).length>0&&Object.values(checks).every(Boolean);
+ fs.writeFileSync(report,JSON.stringify({passed,count:Object.keys(checks).length,checks,stage,failureType,cspViolations:csp,pageErrors:errors.length,scope:'Real Chrome desktop/mobile/keyboard on isolated MVC/PostgreSQL; synthetic proof only.'},null,2)+'\n');
+ if(browser)await browser.close();
+ if(!passed)process.exitCode=1;
+});

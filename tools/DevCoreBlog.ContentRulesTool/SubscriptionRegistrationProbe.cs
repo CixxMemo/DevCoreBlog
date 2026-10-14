@@ -21,7 +21,7 @@ internal static class SubscriptionRegistrationProbe
     {
         var provider=DataProtectionProvider.Create(new DirectoryInfo(Environment.GetEnvironmentVariable("OUTBOX_TEST_KEYS")??throw new InvalidOperationException()));
         var submission=new ResendOptions("re_synthetic","sender@example.test","Synthetic");
-        var messages=new SubscriberVerificationMessageFactory(new(provider,submission),new("https://aether.example.test"));
+        var messages=new SubscriberVerificationMessageFactory(new(provider,submission),new("https://aether.example.test"),new(provider,new("https://aether.example.test")));
         var now=new DateTime(2026,10,14,12,0,0,DateTimeKind.Utc);
         var checks=new Dictionary<string,bool>();
         await using var db=new ApplicationDbContext(options);

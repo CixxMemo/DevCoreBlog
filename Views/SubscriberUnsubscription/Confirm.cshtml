@@ -1,0 +1,49 @@
+@model DevCoreBlog.Models.Subscriptions.SubscriberUnsubscriptionPage
+@using DevCoreBlog.Models.Subscriptions
+@{ Layout = null; }
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow, noarchive" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Abonelikten çıkış — Aether Notes</title>
+    <link rel="stylesheet" href="~/generated/tailwind-public.css" asp-append-version="true" />
+    @if (Model == SubscriberUnsubscriptionPage.Ready)
+    {
+        <script src="~/js/subscriber-unsubscription.js" asp-append-version="true" defer></script>
+    }
+</head>
+<body class="min-h-screen bg-white text-gray-900 font-sans p-4 sm:p-8">
+    <main class="max-w-xl mx-auto border-2 border-gray-900 p-6 sm:p-8 space-y-6" aria-labelledby="exit-heading">
+        <a href="/" class="font-mono font-bold underline">Aether Notes</a>
+        <h1 id="exit-heading" class="text-2xl sm:text-3xl font-bold">Abonelikten çıkış</h1>
+        @if (Model == SubscriberUnsubscriptionPage.Ready)
+        {
+            <p>Aether Notes bülten e-postalarını almayı durdurmak için aşağıdaki düğmeye basın. Bu sayfayı açmak aboneliğinizi değiştirmez.</p>
+            <p id="exit-status" role="status">Çıkış bağlantısı kontrol ediliyor.</p>
+            <form action="/abonelik/cik" method="post" id="exit-form">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="Token" id="exit-token" value="" autocomplete="off" />
+                <button type="submit" id="exit-submit" disabled class="border-2 border-gray-900 px-4 py-3 font-bold bg-gray-900 text-white disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-4">Bülten aboneliğinden çık</button>
+            </form>
+            <noscript><p>Güvenli çıkış bağlantısını kullanmak için JavaScript’i etkinleştirip e-postadaki bağlantıyı yeniden açın.</p></noscript>
+            <p>Çıkmak istemiyorsanız bu sayfayı kapatabilirsiniz.</p>
+        }
+        else if (Model == SubscriberUnsubscriptionPage.Unsubscribed)
+        {
+            <p role="status">Bülten aboneliğinden çıktınız. Yeni bülten gönderimleri için adresiniz kullanılmayacak. İşleme alınmış bir e-posta yine de ulaşabilir.</p>
+        }
+        else if (Model == SubscriberUnsubscriptionPage.Unavailable)
+        {
+            <p role="alert">Çıkış şu anda tamamlanamıyor. Daha sonra e-postadaki bağlantıyı yeniden deneyin.</p>
+        }
+        else
+        {
+            <p role="alert">Bu çıkış bağlantısı geçersiz veya önceki bir abonelik dönemine ait olabilir. En son aldığınız e-postadaki bağlantıyı kullanın.</p>
+        }
+        <a href="/" class="inline-block underline font-bold">Ana sayfaya dön</a>
+    </main>
+</body>
+</html>

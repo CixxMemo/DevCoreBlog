@@ -75,6 +75,7 @@ try:
             check('prior_schema_upgrade_preserves_all_old_rows', before == snapshot('subscriber_prior'))
             check('migration_history_is_additive', sql('subscriber_prior', 'SELECT "MigrationId" FROM "__EFMigrationsHistory" ORDER BY 1').splitlines() == history + [current])
             for database in ('subscriber_empty', 'subscriber_prior'):
+                migrate(database, '20261014124542_SubscriberUnsubscriptionPeriod')
                 result = run(['dotnet', str(root / 'tools/DevCoreBlog.ContentRulesTool/bin/Debug/net10.0/DevCoreBlog.ContentRulesTool.dll'), '--subscribers'],
                              {'DB_CONNECTION_STRING': connection(database)}, required=False)
                 try:
@@ -86,11 +87,12 @@ try:
                 args.report.parent.mkdir(parents=True, exist_ok=True)
                 (args.report.parent / (database + '.json')).write_text(json.dumps(report, indent=2) + '\n')
                 check(database + '_domain_and_races', valid)
+            runtime_history = sql('subscriber_prior', 'SELECT "MigrationId" FROM "__EFMigrationsHistory" ORDER BY 1').splitlines()
             count = sql('subscriber_prior', 'SELECT count(*) FROM "Subscribers"')
             result = migrate('subscriber_prior', previous, required=False)
             check('nonempty_down_rejected_and_data_retained', result.returncode != 0
                   and sql('subscriber_prior', 'SELECT count(*) FROM "Subscribers"') == count
-                  and sql('subscriber_prior', 'SELECT "MigrationId" FROM "__EFMigrationsHistory" ORDER BY 1').splitlines() == history + [current])
+                  and sql('subscriber_prior', 'SELECT "MigrationId" FROM "__EFMigrationsHistory" ORDER BY 1').splitlines() == runtime_history)
             check('lifecycle_tests_do_not_touch_old_data', before == snapshot('subscriber_prior'))
             result = run(['dotnet', 'ef', 'migrations', 'has-pending-model-changes', '--no-build', '--project', 'DevCoreBlog.csproj',
                           '--startup-project', 'DevCoreBlog.csproj', '--context', 'ApplicationDbContext'], {'DB_CONNECTION_STRING': connection('subscriber_prior')})

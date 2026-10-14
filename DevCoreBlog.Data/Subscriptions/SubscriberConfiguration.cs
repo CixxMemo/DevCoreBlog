@@ -14,9 +14,11 @@ public sealed class SubscriberConfiguration : IEntityTypeConfiguration<Subscribe
         entity.Property(item => item.AddressKey).HasMaxLength(254).UseCollation("C");
         entity.HasIndex(item => item.AddressKey).IsUnique();
         entity.Property(item => item.Version).IsConcurrencyToken();
+        entity.Property(item => item.PeriodId).HasDefaultValueSql("gen_random_uuid()");
         entity.Ignore(item => item.IsSendEligible);
         entity.ToTable("Subscribers", table =>
         {
+            table.HasCheckConstraint("CK_Subscribers_Period", "\"PeriodId\" <> '00000000-0000-0000-0000-000000000000'::uuid");
             table.HasCheckConstraint("CK_Subscribers_Address", """
                 octet_length("EmailAddress") BETWEEN 3 AND 254
                 AND "EmailAddress" ~ '^[A-Za-z0-9!#$%&''*+/=?^_`{|}~.-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)+$'

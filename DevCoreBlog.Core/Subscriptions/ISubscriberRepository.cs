@@ -12,7 +12,7 @@ public interface ISubscriberRepository
 /// <summary>Immutable subscription facts; sending eligibility is independent of future archive policy.</summary>
 public sealed record SubscriberSnapshot(Guid Id, string EmailAddress, string AddressKey,
     SubscriptionStatus Status, SendingSuppression Suppression, DateTime CreatedUtc, DateTime UpdatedUtc,
-    DateTime? VerifiedUtc, DateTime? UnsubscribedUtc, long Version)
+    DateTime? VerifiedUtc, DateTime? UnsubscribedUtc, long Version, Guid PeriodId)
 {
     public bool IsSendEligible => SubscriberSendingRules.IsEligible(Status, VerifiedUtc, Suppression);
 }

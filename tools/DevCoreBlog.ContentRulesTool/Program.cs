@@ -19,6 +19,8 @@ if (string.IsNullOrWhiteSpace(connectionString))
 var options = new DbContextOptionsBuilder<ApplicationDbContext>()
     .UseNpgsql(connectionString)
     .Options;
+if (args.Contains("--unsubscription") || args.Contains("--unsubscription-seed") || args.Contains("--unsubscription-live"))
+    return await SubscriberUnsubscriptionProbe.RunAsync(options, args);
 if (args.Contains("--registration"))
     return await SubscriptionRegistrationProbe.RunAsync(options);
 if (args.Contains("--verification") || args.Contains("--verification-seed") || args.Contains("--verification-pending") || args.Contains("--verification-live"))
