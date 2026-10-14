@@ -235,6 +235,8 @@ builder.Services.AddSingleton(new DevCoreBlog.Services.Subscriptions.SubscriberV
 builder.Services.AddScoped<DevCoreBlog.Core.Newsletters.INewsletterCampaignStore, DevCoreBlog.Data.Newsletters.NewsletterCampaignStore>();
 builder.Services.AddSingleton(new DevCoreBlog.Services.Newsletters.NewsletterCampaignOrigin(siteUrl.Origin));
 builder.Services.AddScoped<DevCoreBlog.Services.Newsletters.NewsletterCampaignService>();
+builder.Services.AddScoped<DevCoreBlog.Core.Newsletters.ICampaignRecipientStore, DevCoreBlog.Data.Newsletters.CampaignRecipientStore>();
+builder.Services.AddScoped<DevCoreBlog.Services.Newsletters.CampaignRecipientService>();
 builder.Services.AddScoped<DevCoreBlog.Services.Subscriptions.SubscriberVerificationIssuer>();
 builder.Services.AddScoped<DevCoreBlog.Services.Subscriptions.SubscriberVerificationConsumer>();
 builder.Services.AddScoped<DevCoreBlog.Core.Subscriptions.ISubscriberUnsubscriptionStore, DevCoreBlog.Data.Subscriptions.SubscriberUnsubscriptionStore>();

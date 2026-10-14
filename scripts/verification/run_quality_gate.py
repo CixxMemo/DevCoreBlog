@@ -191,6 +191,12 @@ try:
             stages['newsletter-campaign']['passed']=code==0 and campaign['passed'] and campaign['count']==len(campaign['checks']) and all(campaign['checks'].values())
         except (OSError,ValueError,KeyError,TypeError):
             stages['newsletter-campaign']['passed']=False
+        code,output=run('campaign-recipients',['python3','scripts/verification/campaign_recipients_probe.py','--port','55527','--report',str(report/'recipients-migration.json')],source,timeout=480,export=False)
+        try:
+            recipients=json.loads((report/'recipients-migration.json').read_text())
+            stages['campaign-recipients']['passed']=code==0 and recipients['passed'] and recipients['count']==len(recipients['checks']) and all(recipients['checks'].values())
+        except (OSError,ValueError,KeyError,TypeError):
+            stages['campaign-recipients']['passed']=False
         code,output=run('reader-identity',['python3','scripts/verification/reader_identity_probe.py','--port','55526','--report',str(report/'reader-migration.json')],source,timeout=300,export=False)
         try:
             reader=json.loads((report/'reader-migration.json').read_text())

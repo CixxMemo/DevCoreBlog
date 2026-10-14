@@ -43,6 +43,8 @@ public class ApplicationDbContext : DbContext
 
     public DbSet<DevCoreBlog.Core.Subscriptions.SubscriptionRegistrationBudget> SubscriptionRegistrationBudgets { get; set; }
     public DbSet<DevCoreBlog.Core.Newsletters.NewsletterCampaign> NewsletterCampaigns { get; set; }
+    public DbSet<DevCoreBlog.Core.Newsletters.NewsletterRecipientSelection> NewsletterRecipientSelections { get; set; }
+    public DbSet<DevCoreBlog.Core.Newsletters.NewsletterRecipient> NewsletterRecipients { get; set; }
 
     public DbSet<DevCoreBlog.Core.Subscriptions.ReaderLoginToken> ReaderLoginTokens { get; set; }
     public DbSet<DevCoreBlog.Core.Subscriptions.ReaderSession> ReaderSessions { get; set; }
@@ -60,6 +62,8 @@ public class ApplicationDbContext : DbContext
         modelBuilder.ApplyConfiguration(new Email.TransactionalEmailConfiguration());
         modelBuilder.ApplyConfiguration(new Email.TransactionalEmailAttemptConfiguration());
         modelBuilder.ApplyConfiguration(new Newsletters.NewsletterCampaignConfiguration());
+        modelBuilder.ApplyConfiguration(new Newsletters.CampaignRecipientSelectionConfiguration());
+        modelBuilder.ApplyConfiguration(new Newsletters.CampaignRecipientConfiguration());
 
         var receipt = modelBuilder.Entity<WebhookReceipt>();
         receipt.HasKey(item => new { item.ContractVersion, item.Key });

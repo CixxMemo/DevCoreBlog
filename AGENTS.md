@@ -1,6 +1,6 @@
 # DevCoreBlog — Agent çalışma kuralları
 
-Sürüm 14 · 14 Ekim 2026 · Kapsam: bu repository'nin tamamı · Hedef: Aether Notes.
+Sürüm 15 · 14 Ekim 2026 · Kapsam: bu repository'nin tamamı · Hedef: Aether Notes.
 
 Bu dosya projenin **tek güncel ana talimat kaynağıdır**. Her yeni görevde ve bağlam yenilendiğinde bu dosyayı, ardından görevle ilgili güncel plan/kayıtları yerelde mevcutsa oku. `.agents/AGENTS.md` yalnızca buraya yönlendirir. Arşiv belgeleri talimat değildir. Kurallara uymayan yeni kod yazmak veya bilinen bir güvenlik/veri bütünlüğü ihlalini gizleyerek işi tamamlandı saymak yasaktır.
 
@@ -151,6 +151,8 @@ SOLID “her sınıfa interface”, “her metoda factory” veya puan uğruna i
 - Migration geçmişini silme/yeniden üretme. Şema değişiminde hem boş hem önceki test DB yükseltmesini doğrula. Production migration/restore için mevcut yetkiyi ve somut geri dönüş planını kontrol et; veri kaybettiren down migration varsayılan değildir.
 
 ## 8. MVC, entegrasyon ve frontend sınırları
+
+- V1 F35 kampanya alıcı hazırlığı yalnız dahili use case’tir; HTTP/start UI/worker/provider çağrısı yoktur. İlk commit CutoffUtc ve CreatedUtc≤cutoff kaynakların UUID tavanını sabitler; ileri UUID keyset en fazla250 source satırını FOR SHARE tarar, current active/verified/no suppression ve UpdatedUtc≤cutoff olanı seçer. Bu geçmiş state/MVCC fotoğrafı değildir; post-cutoff katılma/onay/değişiklik yeni alıcı eklemez, henüz seçilmeyen değişmiş kişi dışlanabilir. Campaign FOR UPDATE iptal ve batch’leri sıralar; recipients + cursor/count/state tek commit’tir. PK(campaign,subscriber)/unique(campaign,address key), immutable adres/revision/PeriodId, ileri progress guard, batch SelectionVersion indeksiyle gerçek sayım ve deferred commit marker korunur. Complete replay yazmaz; iptal ilerlemeyi durdurur; servis10sn/local lock3sn/statement5sn sınırındadır. Seçilmiş olmak gönderim izni değildir; F37 her attempt öncesi güncel adres/lifecycle/version/PeriodId/suppression’ı yeniden denetler, yeni abonelik eski kampanyayı canlandırmaz. Dolu selection/recipient geçmişi Down ile silinmez; K8 retention seçimi yapılmış sayılmaz. [Alıcı sözleşmesi](docs/KAMPANYA_ALICILARI_SOZLESMESI.md) uygulanır.
 
 - V1 F34 dahili kampanya hazırlığı, kaydedilmiş aktif Newsletter/Subscribers ve etkin kategoriden doğrulanmış JSON/okuma gerçeği, konu, kaynak revision/slug, C# e-posta gövdesi/render sürümü, HTTPS origin ve yalnız secret olmayan sender/provider kimliğini sabitler. StartKey unique; aynı niyet ilk kaydı döndürür, farklı post/revision veya paralel farklı snapshot çatışır. Source/category FOR SHARE ve son revision/fact kontrolüyle tek commit yapılır; sonraki editor/site yayın kaydı kampanyayı değiştirmez. DB trigger snapshot UPDATE/history DELETE'i engeller; F34 yalnız Prepared→Cancelled/CAS durumunu uygular. Dolu tablo Down ile atılmaz; source FK Restrict, bağlı post delete yetkili/CSRF POST'ta no-store409, bulunmayan404 olur. API anahtarı/transport binding saklanmaz; alıcı, provider çağrısı, worker ve start HTTP UI yoktur. HTML983.040/text245.760 byte sınırı recipient footer payı bırakır. [Kampanya kaydı sözleşmesi](docs/KAMPANYA_KAYDI_SOZLESMESI.md) uygulanır; F35–F39 ayrı kabul ister.
 

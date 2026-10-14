@@ -466,6 +466,91 @@ namespace DevCoreBlog.Migrations
                         });
                 });
 
+            modelBuilder.Entity("DevCoreBlog.Core.Newsletters.NewsletterRecipient", b =>
+                {
+                    b.Property<Guid>("CampaignId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("SubscriberId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AddressKey")
+                        .IsRequired()
+                        .HasMaxLength(254)
+                        .HasColumnType("character varying(254)")
+                        .UseCollation("C");
+
+                    b.Property<string>("EmailAddress")
+                        .IsRequired()
+                        .HasMaxLength(254)
+                        .HasColumnType("character varying(254)")
+                        .UseCollation("C");
+
+                    b.Property<Guid>("PeriodId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("SelectedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long>("SelectionVersion")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("SubscriberVersion")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("CampaignId", "SubscriberId");
+
+                    b.HasIndex("SubscriberId");
+
+                    b.HasIndex("CampaignId", "AddressKey")
+                        .IsUnique();
+
+                    b.HasIndex("CampaignId", "SelectionVersion");
+
+                    b.ToTable("NewsletterRecipients", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_NewsletterRecipients_Binding", "\"SubscriberId\"<>'00000000-0000-0000-0000-000000000000'::uuid AND \"PeriodId\"<>'00000000-0000-0000-0000-000000000000'::uuid\nAND \"SubscriberVersion\">0 AND \"SelectionVersion\">=2 AND isfinite(\"SelectedUtc\")\nAND octet_length(\"EmailAddress\") BETWEEN 3 AND 254 AND \"AddressKey\"=lower(\"EmailAddress\" COLLATE \"C\")");
+                        });
+                });
+
+            modelBuilder.Entity("DevCoreBlog.Core.Newsletters.NewsletterRecipientSelection", b =>
+                {
+                    b.Property<Guid>("CampaignId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CutoffUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("LastSubscriberId")
+                        .HasColumnType("uuid");
+
+                    b.Property<long>("ScannedCount")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("SelectedCount")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("State")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("UpdatedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpperSubscriberId")
+                        .HasColumnType("uuid");
+
+                    b.Property<long>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("bigint");
+
+                    b.HasKey("CampaignId");
+
+                    b.ToTable("NewsletterRecipientSelections", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_RecipientSelections_Progress", "\"CampaignId\" <> '00000000-0000-0000-0000-000000000000'::uuid AND \"Version\">0 AND \"State\" IN (0,1)\nAND isfinite(\"CutoffUtc\") AND isfinite(\"UpdatedUtc\") AND \"UpdatedUtc\">=\"CutoffUtc\"\nAND \"ScannedCount\">=0 AND \"SelectedCount\" BETWEEN 0 AND \"ScannedCount\"\nAND (\"UpperSubscriberId\" IS NULL OR \"UpperSubscriberId\"<>'00000000-0000-0000-0000-000000000000'::uuid)\nAND ((\"LastSubscriberId\" IS NULL AND \"ScannedCount\"=0) OR\n    (\"LastSubscriberId\" IS NOT NULL AND \"ScannedCount\">0 AND \"UpperSubscriberId\" IS NOT NULL\n     AND \"LastSubscriberId\">'00000000-0000-0000-0000-000000000000'::uuid AND \"LastSubscriberId\"<=\"UpperSubscriberId\"))");
+                        });
+                });
+
             modelBuilder.Entity("DevCoreBlog.Core.Subscriptions.ReaderLoginBudget", b =>
                 {
                     b.Property<int>("Id")
@@ -747,6 +832,30 @@ namespace DevCoreBlog.Migrations
                     b.HasOne("DevCoreBlog.Core.Entities.Post", null)
                         .WithMany()
                         .HasForeignKey("PostId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("DevCoreBlog.Core.Newsletters.NewsletterRecipient", b =>
+                {
+                    b.HasOne("DevCoreBlog.Core.Newsletters.NewsletterRecipientSelection", null)
+                        .WithMany()
+                        .HasForeignKey("CampaignId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("DevCoreBlog.Core.Subscriptions.Subscriber", null)
+                        .WithMany()
+                        .HasForeignKey("SubscriberId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("DevCoreBlog.Core.Newsletters.NewsletterRecipientSelection", b =>
+                {
+                    b.HasOne("DevCoreBlog.Core.Newsletters.NewsletterCampaign", null)
+                        .WithMany()
+                        .HasForeignKey("CampaignId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
