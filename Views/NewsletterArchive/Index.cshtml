@@ -1,0 +1,23 @@
+@using System.Globalization
+@inject DevCoreBlog.Services.Publishing.PublicationTimeZone SiteTimeZone
+@model DevCoreBlog.Models.Public.NewsletterArchiveListModel
+@{ Layout = "_ArchiveLayout"; ViewData["Title"] = "Bülten arşivi"; }
+<h1>Bülten arşivi</h1>
+<p>Aktif aboneliğinizle yayımlanmış sayıların tamamını okuyabilirsiniz.</p>
+@if (Model.Result.Items.Count == 0) { <p role="status">Henüz yayımlanmış bülten yok.</p> }
+@foreach (var item in Model.Result.Items)
+{
+    <article class="archive-card">
+        <h2><a href="/bulten/@item.Slug">@item.Title</a></h2>
+        <p><time datetime="@item.PublishedUtc.ToString("O", CultureInfo.InvariantCulture)">@SiteTimeZone.ToSiteTime(item.PublishedUtc).ToString("dd MMM yyyy", CultureInfo.GetCultureInfo("tr-TR"))</time></p>
+        @if (!string.IsNullOrWhiteSpace(item.Summary)) { <p>@item.Summary</p> }
+    </article>
+}
+@if (Model.Page > 1 || Model.HasNext)
+{
+    <nav class="archive-paging" aria-label="Bülten arşivi sayfaları">
+        @if (Model.Page > 1) { <a href="/bultenler?page=@(Model.Page - 1)">Önceki</a> }
+        <span>Sayfa @Model.Page</span>
+        @if (Model.HasNext) { <a href="/bultenler?page=@(Model.Page + 1)">Sonraki</a> }
+    </nav>
+}

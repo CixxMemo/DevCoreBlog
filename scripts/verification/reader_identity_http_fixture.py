@@ -1,6 +1,7 @@
 """Owned source copy injects a clearly simulated mailbox; production registration remains untouched."""
 import http.cookiejar,json,os,re,shutil,signal,subprocess,time,urllib.error,urllib.parse,urllib.request
 from pathlib import Path
+from newsletter_archive_http_fixture import run_archive_checks
 
 def run_http_fixture(root,fixture,base_env,connection,pg_port,report_dir,checks,browser_module,browser_executable):
  source=fixture/'source';source.mkdir();mailbox=fixture/'mailbox.jsonl';log_file=fixture/'web.log';proof_file=fixture/'proof.json'
@@ -16,6 +17,25 @@ def run_http_fixture(root,fixture,base_env,connection,pg_port,report_dir,checks,
  program=source/'Program.cs';text=program.read_text();anchor='var app = builder.Build();'
  if text.count(anchor)!=1:raise RuntimeError('Mailbox registration anchor changed')
  program.write_text(text.replace(anchor,'builder.Services.AddSingleton<DevCoreBlog.Core.Email.IEmailSender, ReaderFixtureMailbox>();\n'+anchor))
+ text=program.read_text()
+ if text.count('options.UseNpgsql(')!=1:raise RuntimeError('Archive SQL capture anchor changed')
+ program.write_text(text.replace('options.UseNpgsql(','options.AddInterceptors(new ArchiveSqlCapture()).UseNpgsql('))
+ archive_controller=source/'Controllers/NewsletterArchiveController.cs'
+ text=archive_controller.read_text();fault_anchor='var result = await archive.ReadAsync(await SessionAsync(), slug, cancellationToken);'
+ if text.count(fault_anchor)!=1:raise RuntimeError('Archive error-path injection anchor changed')
+ archive_controller.write_text(text.replace(fault_anchor,'if (slug == "f31-forced-fault") throw new InvalidOperationException("F31_FORCED_EXCEPTION_SECRET");\n        '+fault_anchor))
+ (source/'ArchiveSqlCapture.cs').write_text('''using System.Data.Common;
+using Microsoft.EntityFrameworkCore.Diagnostics;
+internal sealed class ArchiveSqlCapture : DbCommandInterceptor
+{
+ public override ValueTask<InterceptionResult<DbDataReader>> ReaderExecutingAsync(DbCommand command,CommandEventData data,InterceptionResult<DbDataReader> result,CancellationToken ct=default)
+ {
+  if(command.CommandText.Contains("F31 archive"))
+   File.AppendAllText(Environment.GetEnvironmentVariable("ARCHIVE_TEST_SQL")??throw new InvalidOperationException(),"--F31--\\n"+command.CommandText+"\\n");
+  return ValueTask.FromResult(result);
+ }
+}
+''')
  (source/'ReaderFixtureMailbox.cs').write_text('''using System.Text.Json;
 using System.Text.RegularExpressions;
 using DevCoreBlog.Core.Email;
@@ -36,7 +56,7 @@ internal sealed class ReaderFixtureMailbox : IEmailSender
   'SITE_TIME_ZONE':'Europe/Istanbul','ADMIN_USERNAME':'fixture-admin','ADMIN_PASSWORD_HASH':password,'ADMIN_LOGIN_PATH':'/fixture-admin/login',
   'DATA_PROTECTION_KEYS_PATH':str(fixture/'keys'),'SUBSCRIPTIONS_ENABLED':'false','READER_LOGIN_ENABLED':'true',
   'TRANSACTIONAL_EMAIL_WORKER_ENABLED':'true','RESEND_API_KEY':'re_synthetic','RESEND_FROM_EMAIL':'sender@example.test',
-  'RESEND_FROM_NAME':'Synthetic','READER_TEST_MAILBOX':str(mailbox),'Logging__LogLevel__Microsoft.AspNetCore.Mvc.ModelBinding':'Trace'}
+  'RESEND_FROM_NAME':'Synthetic','READER_TEST_MAILBOX':str(mailbox),'ARCHIVE_TEST_SQL':str(fixture/'archive-sql.txt'),'Logging__LogLevel__Microsoft.AspNetCore.Mvc.ModelBinding':'Trace'}
  class NoRedirect(urllib.request.HTTPRedirectHandler):
   def redirect_request(self,*args,**kwargs):return None
  def new_client():
@@ -141,6 +161,8 @@ internal sealed class ReaderFixtureMailbox : IEmailSender
    run(['pg_ctl','-D',str(fixture/'pg'),'-m','fast','-w','stop'],cwd=root)
    try:
     status,h,body=request('/abonelik/oturum');checks['http_storage_outage_is_private_503']=status==503 and private(h) and outage['token'] not in body and 'SELECT' not in body
+    for path in ('/bultenler','/bulten/unavailable'):
+     status,h,body=request(path);checks['archive_identity_outage_private_503_'+path]=status==503 and private(h) and outage['token'] not in body
    finally:run(['pg_ctl','-D',str(fixture/'pg'),'-l',str(fixture/'pg.log'),'-o',f'-h 127.0.0.1 -p {pg_port} -k {fixture}/socket','-w','start'],cwd=root)
    checks['http_storage_recovery_keeps_session_retryable']=request('/abonelik/oturum')[0]==200
    jar,client=new_client();start();anti=csrf();statuses=[request(data={'Email':'unknown@example.test','__RequestVerificationToken':anti})[0] for _ in range(6)]
@@ -164,7 +186,11 @@ internal sealed class ReaderFixtureMailbox : IEmailSender
    checks['http_oversized_proof_rejected_without_echo']=status==400 and 'x'*44 not in body
    checks['http_body_and_media_limits_preserved']=request('/abonelik/giris',raw=b'Token='+b'x'*5000,headers={'Content-Type':'application/x-www-form-urlencoded'})[0] in (400,413) and request('/abonelik/giris',raw=b'{}',headers={'Content-Type':'application/json'})[0] in (400,415)
    start()
+   run_archive_checks(root,fixture,report_dir,request,sql,seed,login,csrf,new_client,start,private,base_env,browser_module,browser_executable)
+   checks['archive_real_HTTP_and_SQL_acceptance']=json.loads((report_dir/'archive-http.json').read_text())['passed']
    if browser_module:
+    # Independent browser stories must not share the previous story's proof rate-limit window.
+    start()
     seed(True)
     browser_env={**base_env,'DEVCORE_PLAYWRIGHT_MODULE':str(browser_module),'DEVCORE_BROWSER_EXECUTABLE':str(browser_executable) if browser_executable else '',
      'READER_TEST_BASE':base,'READER_TEST_PROOF_FILE':str(proof_file),'READER_TEST_MAILBOX':str(mailbox),'READER_TEST_REPORT':str(report_dir/'browser.json'),

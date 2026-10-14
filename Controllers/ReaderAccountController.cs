@@ -110,7 +110,7 @@ public sealed class ReaderAccountController(ReaderIdentityService identity, Read
 
     private bool ValidReturn(string? value) => value is null || (value.Length is > 0 and <= 512 && Url.IsLocalUrl(value)
         && !value.Any(c => char.IsControl(c) || c is '\\' or '%' or '?' or '#')
-        && (value == "/abonelik/oturum" || value == "/bulten" || value.StartsWith("/bulten/", StringComparison.Ordinal)));
+        && (value == "/abonelik/oturum" || value == "/bulten" || value == "/bultenler" || value.StartsWith("/bulten/", StringComparison.Ordinal)));
     private ViewResult LoginResult(int status, bool accepted = false, bool failed = false, string? error = null)
     {
         Response.StatusCode = status;

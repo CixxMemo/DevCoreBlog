@@ -3,7 +3,7 @@ const fs=require('node:fs');
 const {chromium}=require(process.env.DEVCORE_PLAYWRIGHT_MODULE||'playwright');
 const base=process.env.READER_TEST_BASE,report=process.env.READER_TEST_REPORT;
 const seed=JSON.parse(fs.readFileSync(process.env.READER_TEST_PROOF_FILE,'utf8'));
-const checks={},errors=[],csp=[],requests=[];let browser,stage='initial',failureType;
+const checks={},errors=[],csp=[],requests=[],proofStatuses=[];let browser,stage='initial',failureType;
 function check(name,value){checks[name]=!!value;stage=name;if(!value)throw new Error(name);}
 (async()=>{
  check('owned_fixture',new URL(base).hostname==='127.0.0.1');
@@ -12,6 +12,7 @@ function check(name,value){checks[name]=!!value;stage=name;if(!value)throw new E
  await context.exposeBinding('__readerCsp',(_s,d)=>csp.push(d));
  await context.addInitScript(()=>document.addEventListener('securitypolicyviolation',e=>window.__readerCsp(e.effectiveDirective)));
  context.on('request',r=>requests.push({url:r.url(),headers:r.headers()}));
+ context.on('response',r=>{if(new URL(r.url()).pathname==='/abonelik/giris')proofStatuses.push(r.status());});
  const page=await context.newPage();page.on('pageerror',()=>errors.push('page-error'));
  const initial=await page.goto(base+'/sign-in');
  check('desktop_form_200',initial.status()===200&&await page.getByLabel('E-posta adresiniz',{exact:true}).isVisible());
@@ -57,6 +58,6 @@ function check(name,value){checks[name]=!!value;stage=name;if(!value)throw new E
  check('csp_and_runtime_clean',csp.length===0&&errors.length===0);await nojs.close();await context.close();
 })().catch(e=>{failureType=e.name;checks.completed=false;process.exitCode=1;}).finally(async()=>{
  const passed=Object.keys(checks).length>0&&Object.values(checks).every(Boolean);
- fs.writeFileSync(report,JSON.stringify({passed,count:Object.keys(checks).length,checks,stage,failureType,cspViolations:csp,pageErrors:errors.length,scope:'Real Chrome desktop/mobile/keyboard on owned MVC/PostgreSQL with simulated mailbox.'},null,2)+'\n');
+ fs.writeFileSync(report,JSON.stringify({passed,count:Object.keys(checks).length,checks,stage,failureType,cspViolations:csp,pageErrors:errors.length,proofStatuses,scope:'Real Chrome desktop/mobile/keyboard on owned MVC/PostgreSQL with simulated mailbox.'},null,2)+'\n');
  if(browser)await browser.close();if(!passed)process.exitCode=1;
 });

@@ -23,13 +23,16 @@ public sealed class SecurityHeadersMiddleware(RequestDelegate next)
 
     public async Task InvokeAsync(HttpContext context)
     {
+        // Error-page re-execution changes endpoint metadata before OnStarting; retain archive privacy for that response.
+        var privateArchivePath = context.Request.Path.Equals("/bultenler", StringComparison.OrdinalIgnoreCase)
+            || (context.Request.Path.StartsWithSegments("/bulten", StringComparison.OrdinalIgnoreCase, out var remainder) && remainder.HasValue);
         context.Response.OnStarting(() =>
         {
             context.Response.Headers["X-Content-Type-Options"] = "nosniff";
             context.Response.Headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
             context.Response.Headers["X-Frame-Options"] = "DENY";
             var action = context.GetEndpoint()?.Metadata.GetMetadata<ControllerActionDescriptor>();
-            if (action?.ControllerName is "SubscriberVerification" or "SubscriptionRegistration" or "SubscriberUnsubscription" or "ReaderAccount")
+            if (privateArchivePath || action?.ControllerName is "SubscriberVerification" or "SubscriptionRegistration" or "SubscriberUnsubscription" or "ReaderAccount" or "NewsletterArchive")
             {
                 context.Response.Headers["Referrer-Policy"] = "no-referrer";
                 context.Response.Headers["Cache-Control"] = "no-store";

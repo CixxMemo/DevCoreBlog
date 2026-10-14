@@ -1,6 +1,7 @@
 @{ Layout = "_ReaderLayout"; ViewData["Title"] = "Okuyucu oturumu"; }
 <h1 class="text-2xl sm:text-3xl font-bold">Okuyucu oturumunuz açık</h1>
-<p role="status">Aktif aboneliğiniz doğrulandı. Özel arşiv sayfaları henüz kullanıma açılmadı.</p>
+<p role="status">Aktif aboneliğiniz doğrulandı.</p>
+<p><a href="/bultenler" class="font-bold underline">Tam bülten arşivini aç</a></p>
 <p>Abonelikten çıktığınızda özel arşiv erişiminiz de kapanır. Oturumunuz en fazla 7 gün sürer; gerektiğinde yeni bir bağlantıyla giriş yapabilirsiniz.</p>
 <form action="/abonelik/oturumu-kapat" method="post">
     @Html.AntiForgeryToken()

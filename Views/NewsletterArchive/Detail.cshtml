@@ -1,0 +1,12 @@
+@using System.Globalization
+@inject DevCoreBlog.Services.Publishing.PublicationTimeZone SiteTimeZone
+@model DevCoreBlog.Services.Newsletters.NewsletterArchiveDetail
+@{ Layout = "_ArchiveLayout"; ViewData["Title"] = "Bülten sayısı"; }
+<article class="archive-issue">
+    <header>
+        <p><a href="/bultenler">Bülten arşivine dön</a></p>
+        <h1>@Model.Title</h1>
+        <p><time datetime="@Model.PublishedUtc.ToString("O", CultureInfo.InvariantCulture)">@SiteTimeZone.ToSiteTime(Model.PublishedUtc).ToString("dd MMM yyyy", CultureInfo.GetCultureInfo("tr-TR"))</time> · @Model.Content.Reading.ReadingMinutes dk okuma</p>
+    </header>
+    <partial name="_RenderedContentDocument" model="Model.Content" />
+</article>
