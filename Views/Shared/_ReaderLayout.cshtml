@@ -1,0 +1,19 @@
+@{ Layout = null; }
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow, noarchive" />
+    <meta name="referrer" content="no-referrer" />
+    <title>@ViewData["Title"] — Aether Notes</title>
+    <link rel="stylesheet" href="~/generated/tailwind-public.css" asp-append-version="true" />
+</head>
+<body class="min-h-screen bg-white text-gray-900 font-sans p-4 sm:p-8">
+    <main class="max-w-xl mx-auto border-2 border-gray-900 p-6 sm:p-8 space-y-6">
+        <a href="/" class="font-mono font-bold underline">Aether Notes</a>
+        @RenderBody()
+        <p><a href="/" class="underline font-bold">Ana sayfaya dön</a></p>
+    </main>
+</body>
+</html>

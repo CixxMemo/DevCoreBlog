@@ -1,7 +1,25 @@
-<section aria-labelledby="reader-sign-in-title" class="w-full max-w-3xl border-2 border-gray-900 dark:border-zinc-700 bg-white dark:bg-[#121215] p-6 space-y-6">
-    <h1 id="reader-sign-in-title" class="text-3xl font-mono font-bold">Okuyucu girişi</h1>
-    <p class="leading-relaxed">Okuyucu girişi henüz hazır değil. Aether Notes’taki kamuya açık yazıları giriş yapmadan okuyabilirsiniz.</p>
-    <p class="leading-relaxed">Özel bülten arşivi henüz kullanıma açılmadı.</p>
-    <p><a href="/abone-ol" class="text-primary underline font-bold">Bültene abone ol</a></p>
-    <p><a href="/" class="text-primary underline font-bold">Yazıları keşfet</a></p>
-</section>
+@model DevCoreBlog.Models.Subscriptions.ReaderLoginPage
+@{ Layout = "_ReaderLayout"; ViewData["Title"] = "Okuyucu girişi"; }
+<h1 class="text-2xl sm:text-3xl font-bold">Okuyucu girişi</h1>
+<p>Şifre kullanmadan, e-posta adresinize gelen bağlantıyla giriş yapın. Özel bülten arşivi aktif abonelere açıktır.</p>
+@if (Model.Accepted)
+{
+    <p role="status">Adresiniz girişe uygunsa size bir bağlantı göndereceğiz. Gelen kutunuzu ve spam klasörünü kontrol edin. Bağlantı 15 dakika geçerlidir. Yeni bağlantı istemeden önce 15 dakika bekleyin.</p>
+}
+else
+{
+    @if (Model.Failed) { <p role="alert">Giriş bağlantısı şu anda gönderilemiyor. Daha sonra yeniden deneyin.</p> }
+    @if (Model.Error is { } error) { <p role="alert" id="login-error">@error</p> }
+    @if (Model.Available)
+    {
+        <form action="/sign-in" method="post" class="space-y-4">
+            @Html.AntiForgeryToken()
+            <label for="reader-email" class="block font-bold">E-posta adresiniz</label>
+            <input type="email" name="Email" id="reader-email" autocomplete="email" required maxlength="254" aria-describedby="reader-help" class="block w-full border-2 border-gray-900 p-3 focus-visible:outline-2 focus-visible:outline-offset-4" />
+            <p id="reader-help">Abone olduğunuz e-posta adresini kullanın. Giriş bağlantınızı kimseyle paylaşmayın.</p>
+            <button type="submit" class="border-2 border-gray-900 px-4 py-3 font-bold bg-gray-900 text-white focus-visible:outline-2 focus-visible:outline-offset-4">Giriş bağlantısı gönder</button>
+        </form>
+    }
+    else { <p role="status">E-posta ile giriş henüz kullanıma açılmadı.</p> }
+}
+<p><a href="/abone-ol" class="underline font-bold">Henüz abone değil misiniz? Bültene abone olun</a></p>

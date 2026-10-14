@@ -1,0 +1,26 @@
+@model DevCoreBlog.Models.Subscriptions.ReaderLoginConfirmation
+@using DevCoreBlog.Models.Subscriptions
+@{ Layout = "_ReaderLayout"; ViewData["Title"] = "Girişi onayla"; }
+<script src="~/js/reader-login.js" asp-append-version="true" defer></script>
+<h1 class="text-2xl sm:text-3xl font-bold">Girişi onayla</h1>
+@if (Model == ReaderLoginConfirmation.Ready)
+{
+    <p>Giriş talebi size aitse devam edin. Bu cihazdaki okuyucu oturumunuz en fazla 7 gün açık kalır. Ortak bir cihaz kullanıyorsanız işiniz bitince oturumu kapatın.</p>
+    <p id="reader-proof-status" role="status">Giriş bağlantısı kontrol ediliyor.</p>
+    <form action="/abonelik/giris" method="post" id="reader-proof-form">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="Token" id="reader-proof-token" value="" autocomplete="off" />
+        <input type="hidden" name="ReturnUrl" value="@(ViewData["ReturnUrl"] ?? "/abonelik/oturum")" />
+        <button type="submit" id="reader-proof-submit" disabled class="border-2 border-gray-900 px-4 py-3 font-bold bg-gray-900 text-white disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-4">Bu cihazda giriş yap</button>
+    </form>
+    <noscript><p>Güvenli giriş bağlantısını kullanmak için JavaScript’i etkinleştirip e-postadaki bağlantıyı yeniden açın.</p></noscript>
+}
+else if (Model == ReaderLoginConfirmation.Unavailable)
+{
+    <p role="alert">Giriş şu anda tamamlanamıyor. Daha sonra yeniden deneyin. Bağlantıyı kullandıysanız yeni bir giriş bağlantısı isteyin.</p>
+}
+else
+{
+    <p role="alert">Bu giriş bağlantısı geçersiz, kullanılmış veya süresi dolmuş olabilir.</p>
+}
+<p><a href="/sign-in" class="underline font-bold">Giriş bağlantısı iste</a></p>

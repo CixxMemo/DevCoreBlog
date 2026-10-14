@@ -44,10 +44,17 @@ public class ApplicationDbContext : DbContext
     public DbSet<DevCoreBlog.Core.Subscriptions.SubscriptionRegistrationBudget> SubscriptionRegistrationBudgets { get; set; }
     public DbSet<DevCoreBlog.Core.Newsletters.NewsletterCampaign> NewsletterCampaigns { get; set; }
 
+    public DbSet<DevCoreBlog.Core.Subscriptions.ReaderLoginToken> ReaderLoginTokens { get; set; }
+    public DbSet<DevCoreBlog.Core.Subscriptions.ReaderSession> ReaderSessions { get; set; }
+    public DbSet<DevCoreBlog.Core.Subscriptions.ReaderLoginBudget> ReaderLoginBudgets { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfiguration(new Subscriptions.SubscriberConfiguration());
+        modelBuilder.ApplyConfiguration(new Subscriptions.ReaderLoginTokenConfiguration());
+        modelBuilder.ApplyConfiguration(new Subscriptions.ReaderSessionConfiguration());
+        modelBuilder.ApplyConfiguration(new Subscriptions.ReaderLoginBudgetConfiguration());
         modelBuilder.ApplyConfiguration(new Subscriptions.SubscriptionRegistrationBudgetConfiguration());
         modelBuilder.ApplyConfiguration(new Subscriptions.SubscriberVerificationConfiguration());
         modelBuilder.ApplyConfiguration(new Email.TransactionalEmailConfiguration());

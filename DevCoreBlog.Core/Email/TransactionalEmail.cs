@@ -1,5 +1,7 @@
 namespace DevCoreBlog.Core.Email;
 
+public enum TransactionalEmailPurpose { Verification = 0, ReaderLogin = 1 }
+
 public enum TransactionalEmailState { Pending, Claimed, Sending, Accepted, Rejected, Held, Expired, Cancelled }
 public enum TransactionalEmailProblem { None, LeaseLost, InvalidPayload, ConfigurationChanged, SubscriberChanged, Suppressed, AttemptsExhausted, ProviderUncertain, ConfigurationUnavailable, LifetimeEnded }
 public enum EmailQueueOutcome { Queued, AlreadyQueued, Conflict, Ineligible }
@@ -13,6 +15,15 @@ public static class TransactionalEmailRules
     public static readonly TimeSpan MaximumLifetime = TimeSpan.FromDays(1);
     public static readonly TimeSpan MaximumRetryAge = TimeSpan.FromHours(23);
     public static readonly TimeSpan MinimumSendLifetime = TimeSpan.FromSeconds(30);
+    public static bool CanSend(TransactionalEmailPurpose purpose, DevCoreBlog.Core.Subscriptions.SubscriptionStatus status,
+        DateTime? verified, DevCoreBlog.Core.Subscriptions.SendingSuppression suppression) =>
+        purpose switch
+        {
+            TransactionalEmailPurpose.Verification => status == DevCoreBlog.Core.Subscriptions.SubscriptionStatus.PendingVerification
+                && suppression == DevCoreBlog.Core.Subscriptions.SendingSuppression.None,
+            TransactionalEmailPurpose.ReaderLogin => DevCoreBlog.Core.Subscriptions.ReaderIdentityRules.CanAccess(status, verified, suppression),
+            _ => false
+        };
     public static void RequireUtc(DateTime value)
     {
         if (value.Kind != DateTimeKind.Utc || value == DateTime.MinValue || value == DateTime.MaxValue)
@@ -24,6 +35,7 @@ public static class TransactionalEmailRules
 public sealed class TransactionalEmailJob
 {
     public Guid Id { get; private set; }
+    public TransactionalEmailPurpose Purpose { get; private set; }
     public Guid SubscriberId { get; private set; }
     public long SubscriberVersion { get; private set; }
     public string ProtectedPayload { get; private set; } = string.Empty;
@@ -59,6 +71,7 @@ public sealed class TransactionalEmailAttempt
 public sealed class PreparedTransactionalEmail
 {
     public Guid Id { get; }
+    public TransactionalEmailPurpose Purpose { get; }
     public Guid SubscriberId { get; }
     public long SubscriberVersion { get; }
     public string ProtectedPayload { get; }
@@ -66,17 +79,17 @@ public sealed class PreparedTransactionalEmail
     public DateTime CreatedUtc { get; }
     public DateTime ExpiresUtc { get; }
     public PreparedTransactionalEmail(Guid id, Guid subscriberId, long subscriberVersion, string protectedPayload,
-        string payloadHash, DateTime createdUtc, DateTime expiresUtc)
+        string payloadHash, DateTime createdUtc, DateTime expiresUtc, TransactionalEmailPurpose purpose = TransactionalEmailPurpose.Verification)
     {
         TransactionalEmailRules.RequireUtc(createdUtc); TransactionalEmailRules.RequireUtc(expiresUtc);
-        if (id == Guid.Empty || subscriberId == Guid.Empty || subscriberVersion <= 0
+        if (!Enum.IsDefined(purpose) || id == Guid.Empty || subscriberId == Guid.Empty || subscriberVersion <= 0
             || expiresUtc - createdUtc < TransactionalEmailRules.MinimumSendLifetime
             || expiresUtc - createdUtc > TransactionalEmailRules.MaximumLifetime
             || string.IsNullOrEmpty(protectedPayload) || protectedPayload.Length > TransactionalEmailRules.MaximumProtectedBytes
             || protectedPayload.Any(c => c > 127 || char.IsWhiteSpace(c))
             || payloadHash.Length != 64 || payloadHash.Any(c => !char.IsAsciiHexDigit(c)))
             throw new ArgumentException("Invalid transactional email envelope.");
-        Id = id; SubscriberId = subscriberId; SubscriberVersion = subscriberVersion;
+        Id = id; Purpose = purpose; SubscriberId = subscriberId; SubscriberVersion = subscriberVersion;
         ProtectedPayload = protectedPayload; PayloadHash = payloadHash;
         CreatedUtc = createdUtc; ExpiresUtc = expiresUtc;
     }
@@ -87,6 +100,7 @@ public sealed record TransactionalEmailLease(Guid Id, Guid SubscriberId, long Su
     string ProtectedPayload, string PayloadHash, DateTime ExpiresUtc, DateTime? FirstAttemptUtc,
     int AttemptCount, Guid LeaseId, DateTime LeaseUntilUtc)
 {
+    public TransactionalEmailPurpose Purpose { get; init; }
     public override string ToString() => nameof(TransactionalEmailLease);
 }
 

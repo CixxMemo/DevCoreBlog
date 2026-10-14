@@ -13,20 +13,20 @@ public sealed class TransactionalEmailStore(ApplicationDbContext context) : ITra
         await using var transaction = owns ? await context.Database.BeginTransactionAsync(cancellationToken) : null;
         var subscriber = await LockSubscriber(email.SubscriberId, cancellationToken);
         if (subscriber is null || subscriber.Version != email.SubscriberVersion
-            || subscriber.Status != SubscriptionStatus.PendingVerification || subscriber.Suppression != SendingSuppression.None)
+            || !TransactionalEmailRules.CanSend(email.Purpose, subscriber.Status, subscriber.VerifiedUtc, subscriber.Suppression))
             return EmailQueueOutcome.Ineligible;
         var inserted = await context.Database.ExecuteSqlInterpolatedAsync($"""
             INSERT INTO "TransactionalEmailJobs" ("Id","SubscriberId","SubscriberVersion","ProtectedPayload","PayloadHash",
-                "CreatedUtc","UpdatedUtc","ExpiresUtc","DueUtc","State","Problem","AttemptCount")
+                "CreatedUtc","UpdatedUtc","ExpiresUtc","DueUtc","State","Problem","AttemptCount","Purpose")
             VALUES ({email.Id},{email.SubscriberId},{email.SubscriberVersion},{email.ProtectedPayload},{email.PayloadHash},
-                {email.CreatedUtc},{email.CreatedUtc},{email.ExpiresUtc},{email.CreatedUtc},0,0,0)
+                {email.CreatedUtc},{email.CreatedUtc},{email.ExpiresUtc},{email.CreatedUtc},0,0,0,{(int)email.Purpose})
             ON CONFLICT ("Id") DO NOTHING
             """, cancellationToken);
         var outcome = EmailQueueOutcome.Queued;
         if (inserted == 0)
         {
             var existing = await context.TransactionalEmailJobs.AsNoTracking().SingleAsync(x => x.Id == email.Id, cancellationToken);
-            outcome = existing.PayloadHash == email.PayloadHash && existing.SubscriberId == email.SubscriberId
+            outcome = existing.Purpose == email.Purpose && existing.PayloadHash == email.PayloadHash && existing.SubscriberId == email.SubscriberId
                 && existing.SubscriberVersion == email.SubscriberVersion && existing.ExpiresUtc == email.ExpiresUtc
                 ? EmailQueueOutcome.AlreadyQueued : EmailQueueOutcome.Conflict;
         }
@@ -75,7 +75,7 @@ public sealed class TransactionalEmailStore(ApplicationDbContext context) : ITra
             .SetProperty(x => x.LeaseUntilUtc, until).SetProperty(x => x.UpdatedUtc, utcNow), cancellationToken);
         await transaction.CommitAsync(cancellationToken);
         return new(job.Id, job.SubscriberId, job.SubscriberVersion, job.ProtectedPayload, job.PayloadHash,
-            job.ExpiresUtc, job.FirstAttemptUtc, job.AttemptCount, leaseId, until);
+            job.ExpiresUtc, job.FirstAttemptUtc, job.AttemptCount, leaseId, until) { Purpose = job.Purpose };
     }
 
     public async Task<TransactionalEmailStart?> StartAsync(TransactionalEmailLease lease, string addressKey, DateTime utcNow,
@@ -90,9 +90,13 @@ public sealed class TransactionalEmailStore(ApplicationDbContext context) : ITra
         TransactionalEmailProblem problem = TransactionalEmailProblem.None;
         var state = TransactionalEmailState.Cancelled;
         if (subscriber is null || subscriber.Version != job.SubscriberVersion || subscriber.AddressKey != addressKey
-            || subscriber.Status != SubscriptionStatus.PendingVerification || utcNow < subscriber.UpdatedUtc)
+            || !TransactionalEmailRules.CanSend(job.Purpose, subscriber.Status, subscriber.VerifiedUtc, SendingSuppression.None) || utcNow < subscriber.UpdatedUtc)
             problem = TransactionalEmailProblem.SubscriberChanged;
         else if (subscriber.Suppression != SendingSuppression.None) problem = TransactionalEmailProblem.Suppressed;
+        else if (job.Purpose == TransactionalEmailPurpose.ReaderLogin && !await context.ReaderLoginTokens.AsNoTracking()
+            .AnyAsync(x => x.Id == job.Id && x.SubscriberId == job.SubscriberId && x.SubscriberVersion == subscriber.Version
+                && x.PeriodId == subscriber.PeriodId && x.ConsumedUtc == null && x.ExpiresUtc == job.ExpiresUtc && x.ExpiresUtc > utcNow, cancellationToken))
+            problem = TransactionalEmailProblem.SubscriberChanged;
         else if (job.ExpiresUtc <= utcNow + TransactionalEmailRules.MinimumSendLifetime)
         { problem = TransactionalEmailProblem.LifetimeEnded; state = TransactionalEmailState.Expired; }
         else if (job.AttemptCount >= TransactionalEmailRules.MaximumAttempts)

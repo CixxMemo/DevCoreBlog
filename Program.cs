@@ -258,6 +258,20 @@ builder.Services.AddSingleton(services => new DevCoreBlog.Services.Subscriptions
     services.GetRequiredService<DevCoreBlog.Core.Email.IEmailSubmissionContext>()));
 
 
+var readerLoginSetting = Environment.GetEnvironmentVariable("READER_LOGIN_ENABLED");
+if (!string.IsNullOrEmpty(readerLoginSetting) && !bool.TryParse(readerLoginSetting, out _))
+    throw new InvalidOperationException("READER_LOGIN_ENABLED must be true or false.");
+builder.Services.AddSingleton(services => new DevCoreBlog.Services.Subscriptions.ReaderLoginAvailability(
+    bool.TryParse(readerLoginSetting, out var readerEnabled) && readerEnabled, emailWorkerEnabled,
+    services.GetRequiredService<DevCoreBlog.Core.Email.IEmailSubmissionContext>()));
+builder.Services.AddScoped<DevCoreBlog.Core.Subscriptions.IReaderIdentityStore, DevCoreBlog.Data.Subscriptions.ReaderIdentityStore>();
+builder.Services.AddScoped<DevCoreBlog.Services.Subscriptions.ReaderLoginMessageFactory>();
+builder.Services.AddScoped<DevCoreBlog.Services.Subscriptions.ReaderIdentityService>();
+builder.Services.AddScoped<ReaderCookieAuthenticationEvents>();
+builder.Services.AddAuthorization(options => options.AddPolicy(ReaderCookieAuthenticationEvents.Policy, policy =>
+    policy.AddAuthenticationSchemes(ReaderCookieAuthenticationEvents.Scheme).RequireAuthenticatedUser()
+        .RequireClaim(ReaderCookieAuthenticationEvents.SessionClaim)));
+
 builder.Services.AddScoped<DevCoreBlog.Core.Documents.IPostDocumentRepository, PostDocumentRepository>();
 builder.Services.AddScoped<DevCoreBlog.Services.Documents.PostDocumentService>();
 builder.Services.AddScoped<DevCoreBlog.Core.Documents.IEditorPostRepository, EditorPostRepository>();
@@ -450,6 +464,12 @@ builder.Services.AddRateLimiter(options =>
                 Window = TimeSpan.FromMinutes(1)
             }));
 
+    options.AddPolicy("ReaderRequestLimiter", context => RateLimitPartition.GetFixedWindowLimiter(
+        context.Connection.RemoteIpAddress?.ToString() ?? "unknown-reader", _ => new FixedWindowRateLimiterOptions
+        { PermitLimit = 5, Window = TimeSpan.FromMinutes(10), QueueLimit = 0, AutoReplenishment = true }));
+    options.AddPolicy("ReaderProofLimiter", context => RateLimitPartition.GetFixedWindowLimiter(
+        context.Connection.RemoteIpAddress?.ToString() ?? "unknown-reader", _ => new FixedWindowRateLimiterOptions
+        { PermitLimit = 20, Window = TimeSpan.FromMinutes(1), QueueLimit = 0, AutoReplenishment = true }));
     options.AddPolicy("VerificationLimiter", httpContext =>
         RateLimitPartition.GetFixedWindowLimiter(
             partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown-verification-client",
@@ -556,6 +576,18 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.EventsType = typeof(AdminCookieAuthenticationEvents);
         options.LoginPath = adminLogin.Path;
         options.AccessDeniedPath = adminLogin.Path;
+    })
+    .AddCookie(ReaderCookieAuthenticationEvents.Scheme, options =>
+    {
+        options.Cookie.Name = ReaderCookieAuthenticationEvents.CookieName;
+        options.Cookie.HttpOnly = true;
+        options.Cookie.IsEssential = true;
+        options.Cookie.Path = "/";
+        options.Cookie.SameSite = SameSiteMode.Lax;
+        options.Cookie.SecurePolicy = builder.Environment.IsDevelopment() ? CookieSecurePolicy.SameAsRequest : CookieSecurePolicy.Always;
+        options.ExpireTimeSpan = DevCoreBlog.Core.Subscriptions.ReaderIdentityRules.SessionLifetime;
+        options.SlidingExpiration = false;
+        options.EventsType = typeof(ReaderCookieAuthenticationEvents);
     });
 
 // ---------------------------------------------------------------------------

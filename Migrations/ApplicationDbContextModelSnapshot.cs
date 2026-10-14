@@ -102,6 +102,11 @@ namespace DevCoreBlog.Migrations
                     b.Property<Guid?>("ProviderMessageId")
                         .HasColumnType("uuid");
 
+                    b.Property<int>("Purpose")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
                     b.Property<int>("State")
                         .HasColumnType("integer");
 
@@ -127,6 +132,8 @@ namespace DevCoreBlog.Migrations
                     b.ToTable("TransactionalEmailJobs", null, t =>
                         {
                             t.HasCheckConstraint("CK_TransactionalEmailJobs_Payload", "octet_length(\"ProtectedPayload\") BETWEEN 1 AND 4194304\nAND \"ProtectedPayload\" ~ '^[A-Za-z0-9+/=]+$' AND \"PayloadHash\" ~ '^[A-F0-9]{64}$'");
+
+                            t.HasCheckConstraint("CK_TransactionalEmailJobs_Purpose", "\"Purpose\" IN (0,1)");
 
                             t.HasCheckConstraint("CK_TransactionalEmailJobs_State", "\"State\" BETWEEN 0 AND 7 AND \"Problem\" BETWEEN 0 AND 9 AND \"SubscriberVersion\" > 0\nAND \"AttemptCount\" BETWEEN 0 AND 5\nAND ((\"AttemptCount\" = 0) = (\"FirstAttemptUtc\" IS NULL))\nAND ((\"State\" IN (1,2)) = (\"LeaseId\" IS NOT NULL AND \"LeaseUntilUtc\" IS NOT NULL))\nAND ((\"LeaseId\" IS NULL) = (\"LeaseUntilUtc\" IS NULL))\nAND (\"State\" <> 2 OR \"AttemptCount\" > 0)\nAND ((\"State\" = 3) = (\"ProviderMessageId\" IS NOT NULL))\nAND (\"ProviderMessageId\" IS NULL OR \"ProviderMessageId\" <> '00000000-0000-0000-0000-000000000000'::uuid)");
 
@@ -459,6 +466,108 @@ namespace DevCoreBlog.Migrations
                         });
                 });
 
+            modelBuilder.Entity("DevCoreBlog.Core.Subscriptions.ReaderLoginBudget", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Count")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("UpdatedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("WindowStartUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ReaderLoginBudgets", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_ReaderLoginBudgets_Valid", "\"Id\" = 1 AND \"Count\" BETWEEN 0 AND 20 AND isfinite(\"WindowStartUtc\") AND isfinite(\"UpdatedUtc\")\nAND \"WindowStartUtc\" = date_trunc('day', \"WindowStartUtc\" AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'\nAND \"UpdatedUtc\" >= \"WindowStartUtc\" AND \"UpdatedUtc\" < \"WindowStartUtc\" + interval '1 day'");
+                        });
+                });
+
+            modelBuilder.Entity("DevCoreBlog.Core.Subscriptions.ReaderLoginToken", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AddressBinding")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<DateTime?>("ConsumedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Digest")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<DateTime>("ExpiresUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("PeriodId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("SubscriberId")
+                        .HasColumnType("uuid");
+
+                    b.Property<long>("SubscriberVersion")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Digest")
+                        .IsUnique();
+
+                    b.HasIndex("SubscriberId", "CreatedUtc");
+
+                    b.ToTable("ReaderLoginTokens", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_ReaderLoginTokens_Valid", "\"Id\" <> '00000000-0000-0000-0000-000000000000'::uuid AND \"SubscriberVersion\" > 0\nAND \"PeriodId\" <> '00000000-0000-0000-0000-000000000000'::uuid\nAND \"Digest\" ~ '^[A-F0-9]{64}$' AND \"AddressBinding\" ~ '^[A-F0-9]{64}$'\nAND isfinite(\"CreatedUtc\") AND isfinite(\"ExpiresUtc\") AND \"ExpiresUtc\" = \"CreatedUtc\" + interval '15 minutes'\nAND (\"ConsumedUtc\" IS NULL OR (isfinite(\"ConsumedUtc\") AND \"ConsumedUtc\" >= \"CreatedUtc\" AND \"ConsumedUtc\" < \"ExpiresUtc\"))");
+                        });
+                });
+
+            modelBuilder.Entity("DevCoreBlog.Core.Subscriptions.ReaderSession", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("ExpiresUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("PeriodId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("RevokedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("SubscriberId")
+                        .HasColumnType("uuid");
+
+                    b.Property<long>("SubscriberVersion")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SubscriberId");
+
+                    b.ToTable("ReaderSessions", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_ReaderSessions_Valid", "\"Id\" <> '00000000-0000-0000-0000-000000000000'::uuid AND \"SubscriberVersion\" > 0\nAND \"PeriodId\" <> '00000000-0000-0000-0000-000000000000'::uuid\nAND isfinite(\"CreatedUtc\") AND isfinite(\"ExpiresUtc\") AND \"ExpiresUtc\" = \"CreatedUtc\" + interval '7 days'\nAND (\"RevokedUtc\" IS NULL OR (isfinite(\"RevokedUtc\") AND \"RevokedUtc\" >= \"CreatedUtc\"))");
+                        });
+                });
+
             modelBuilder.Entity("DevCoreBlog.Core.Subscriptions.Subscriber", b =>
                 {
                     b.Property<Guid>("Id")
@@ -638,6 +747,30 @@ namespace DevCoreBlog.Migrations
                     b.HasOne("DevCoreBlog.Core.Entities.Post", null)
                         .WithMany()
                         .HasForeignKey("PostId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("DevCoreBlog.Core.Subscriptions.ReaderLoginToken", b =>
+                {
+                    b.HasOne("DevCoreBlog.Core.Email.TransactionalEmailJob", null)
+                        .WithMany()
+                        .HasForeignKey("Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("DevCoreBlog.Core.Subscriptions.Subscriber", null)
+                        .WithMany()
+                        .HasForeignKey("SubscriberId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("DevCoreBlog.Core.Subscriptions.ReaderSession", b =>
+                {
+                    b.HasOne("DevCoreBlog.Core.Subscriptions.Subscriber", null)
+                        .WithMany()
+                        .HasForeignKey("SubscriberId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });

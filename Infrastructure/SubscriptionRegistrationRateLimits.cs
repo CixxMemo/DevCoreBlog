@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.RateLimiting;
 
 namespace DevCoreBlog.Infrastructure;
 
-/// <summary>Global admission precedes IP partitions; only the matched registration POST is affected.</summary>
+/// <summary>Global admission precedes IP partitions; registration and reader POST boundaries share the global budget.</summary>
 public static class SubscriptionRegistrationRateLimits
 {
     public const string Policy = "RegistrationLimiter";
@@ -25,5 +25,5 @@ public static class SubscriptionRegistrationRateLimits
             { PermitLimit = 5, Window = TimeSpan.FromMinutes(10), QueueLimit = 0, AutoReplenishment = true }));
     }
     private static bool IsRegistration(HttpContext context) => HttpMethods.IsPost(context.Request.Method)
-        && context.GetEndpoint()?.Metadata.GetMetadata<ControllerActionDescriptor>()?.ControllerName == "SubscriptionRegistration";
+        && context.GetEndpoint()?.Metadata.GetMetadata<ControllerActionDescriptor>()?.ControllerName is "SubscriptionRegistration" or "ReaderAccount";
 }

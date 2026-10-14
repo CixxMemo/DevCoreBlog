@@ -12,6 +12,7 @@ public sealed class TransactionalEmailConfiguration : IEntityTypeConfiguration<T
     {
         entity.ToTable("TransactionalEmailJobs", table =>
         {
+            table.HasCheckConstraint("CK_TransactionalEmailJobs_Purpose", "\"Purpose\" IN (0,1)");
             table.HasCheckConstraint("CK_TransactionalEmailJobs_State", """
                 "State" BETWEEN 0 AND 7 AND "Problem" BETWEEN 0 AND 9 AND "SubscriberVersion" > 0
                 AND "AttemptCount" BETWEEN 0 AND 5
@@ -34,6 +35,7 @@ public sealed class TransactionalEmailConfiguration : IEntityTypeConfiguration<T
                 AND "ProtectedPayload" ~ '^[A-Za-z0-9+/=]+$' AND "PayloadHash" ~ '^[A-F0-9]{64}$'
                 """);
         });
+        entity.Property(item => item.Purpose).HasDefaultValue(TransactionalEmailPurpose.Verification);
         entity.HasKey(item => item.Id);
         entity.Property(item => item.PayloadHash).HasMaxLength(64).UseCollation("C");
         entity.HasOne<Subscriber>().WithMany().HasForeignKey(item => item.SubscriberId).OnDelete(DeleteBehavior.Restrict);

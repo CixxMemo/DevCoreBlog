@@ -48,12 +48,13 @@ try:
             check('history_additive',sql('campaign_prior','SELECT "MigrationId" FROM "__EFMigrationsHistory" ORDER BY 1').splitlines()==history+[current])
             check('immutability_guard_installed',sql('campaign_prior',"SELECT count(*) FROM pg_trigger WHERE tgname='TR_NewsletterCampaigns_Immutable' AND tgenabled='O'")=='1')
             for database in ('campaign_empty','campaign_prior'):
+                migrate(database,'20261014140624_ReaderIdentity')
                 safe_report(run(['dotnet',str(root/'tools/DevCoreBlog.ContentRulesTool/bin/Debug/net10.0/DevCoreBlog.ContentRulesTool.dll'),'--campaigns'],{'DB_CONNECTION_STRING':connection(database)},required=False),database)
             count=sql('campaign_prior','SELECT count(*) FROM "NewsletterCampaigns"')
             hashes=sql('campaign_prior','SELECT "Id" || \':\' || "SnapshotHash" || \':\' || "Version" FROM "NewsletterCampaigns" ORDER BY 1')
             check('nonempty_down_retains_all_campaigns',migrate('campaign_prior',previous,False).returncode!=0 and count==sql('campaign_prior','SELECT count(*) FROM "NewsletterCampaigns"') and hashes==sql('campaign_prior','SELECT "Id" || \':\' || "SnapshotHash" || \':\' || "Version" FROM "NewsletterCampaigns" ORDER BY 1'))
             check('preexisting_source_and_subscriber_preserved_after_tests',sql('campaign_prior','SELECT "Title" || \':\' || "ViewCount" || \':\' || "EditVersion" FROM "Posts" WHERE "Id"=9001')=='Preserved:7:1' and sql('campaign_prior',"SELECT \"EmailAddress\" || ':' || \"Version\" FROM \"Subscribers\" WHERE \"Id\"='00000000-0000-0000-0000-000000000001'")=='preserved@example.test:1')
-            migrate('campaign_http',current)
+            migrate('campaign_http','20261014140624_ReaderIdentity')
             run_http_fixture(root,fixture,env,connection('campaign_http'),args.port,checks)
         finally:
             if started:run(['pg_ctl','-D',str(fixture/'pg'),'-m','fast','-w','stop'],required=False)

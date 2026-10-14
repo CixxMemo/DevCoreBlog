@@ -19,6 +19,8 @@ if (string.IsNullOrWhiteSpace(connectionString))
 var options = new DbContextOptionsBuilder<ApplicationDbContext>()
     .UseNpgsql(connectionString)
     .Options;
+if (args.Any(x => x.StartsWith("--reader-", StringComparison.Ordinal)))
+    return await ReaderIdentityProbe.RunAsync(options, args);
 if (args.Contains("--campaigns") || args.Contains("--campaign-seed"))
     return await NewsletterCampaignProbe.RunAsync(options, args.Contains("--campaign-seed"));
 if (args.Contains("--unsubscription") || args.Contains("--unsubscription-seed") || args.Contains("--unsubscription-live"))

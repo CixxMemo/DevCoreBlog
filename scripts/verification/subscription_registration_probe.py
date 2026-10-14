@@ -55,7 +55,7 @@ try:
                 VALUES ('00000000-0000-0000-0000-000000000002',1,'00000000-0000-0000-0000-000000000003','2026-01-01Z','2026-01-01Z',3,13)''')
             def preserved():
                 return sql('registration_prior', """SELECT (to_jsonb(t)-\'PeriodId\')::text FROM "Subscribers" t WHERE "Id"='00000000-0000-0000-0000-000000000001';
-                    SELECT (to_jsonb(t)-\'PeriodId\')::text FROM "TransactionalEmailJobs" t WHERE "Id"='00000000-0000-0000-0000-000000000002';
+                    SELECT (to_jsonb(t)-\'PeriodId\'-\'Purpose\')::text FROM "TransactionalEmailJobs" t WHERE "Id"='00000000-0000-0000-0000-000000000002';
                     SELECT (to_jsonb(t)-\'PeriodId\')::text FROM "TransactionalEmailAttempts" t WHERE "JobId"='00000000-0000-0000-0000-000000000002'""")
             sql('registration_prior', '''INSERT INTO "SubscriberVerificationTokens" ("Id","SubscriberId","SubscriberVersion","Purpose","Digest","AddressBinding","CreatedUtc","ExpiresUtc")
                 VALUES ('00000000-0000-0000-0000-000000000002','00000000-0000-0000-0000-000000000001',1,1,repeat('B',64),repeat('C',64),'2026-01-01Z','2026-01-02Z')''')
@@ -67,19 +67,19 @@ try:
             check('empty_down_safe',sql('registration_empty',"SELECT to_regclass('\"SubscriptionRegistrationBudgets\"') IS NULL")=='t')
             for database in ('registration_empty','registration_prior'):
                 migrate(database,current)
-                migrate(database,'20261014124542_SubscriberUnsubscriptionPeriod')
+                migrate(database,'20261014140624_ReaderIdentity')
                 safe_report(run(['dotnet',str(root/'tools/DevCoreBlog.ContentRulesTool/bin/Debug/net10.0/DevCoreBlog.ContentRulesTool.dll'),'--registration'],
                     {'DB_CONNECTION_STRING':connection(database),'OUTBOX_TEST_KEYS':str(fixture/'keys')},required=False),database)
             # New synthetic test identities are expected; baseline rows remain byte-for-byte intact.
             check('prior_subscriber_preserved',sql('registration_prior', 'SELECT "EmailAddress" || \':\' || "Version" FROM "Subscribers" WHERE "Id"=\'00000000-0000-0000-0000-000000000001\'')=='preserved@example.test:1')
             check('prior_lifecycle_and_outbox_journal_preserved',prior_evidence==preserved())
             check('prior_verification_token_preserved',token_before==sql('registration_prior',"SELECT (to_jsonb(t)-\'PeriodId\')::text FROM \"SubscriberVerificationTokens\" t WHERE \"Id\"='00000000-0000-0000-0000-000000000002'"))
-            check('history_additive',sql('registration_prior','SELECT "MigrationId" FROM "__EFMigrationsHistory" ORDER BY 1').splitlines()==history+[p.stem for p in sorted((root/'Migrations').glob('*.cs')) if not p.name.endswith('.Designer.cs') and current <= p.stem <= '20261014124542_SubscriberUnsubscriptionPeriod'])
+            check('history_additive',sql('registration_prior','SELECT "MigrationId" FROM "__EFMigrationsHistory" ORDER BY 1').splitlines()==history+[p.stem for p in sorted((root/'Migrations').glob('*.cs')) if not p.name.endswith('.Designer.cs') and current <= p.stem <= '20261014140624_ReaderIdentity'])
             count=sql('registration_prior','SELECT count(*) FROM "SubscriptionRegistrationBudgets"')
             rejected=migrate('registration_prior',previous,False)
             check('nonempty_down_refuses_data_loss',rejected.returncode!=0 and sql('registration_prior','SELECT count(*) FROM "SubscriptionRegistrationBudgets"')==count)
             run(['createdb','-h','127.0.0.1','-p',args.port,'registration_http'])
-            migrate('registration_http','20261014124542_SubscriberUnsubscriptionPeriod')
+            migrate('registration_http','20261014140624_ReaderIdentity')
             run_registration_http_fixture(root,fixture,env,connection('registration_http'),args.port,args.report.parent,checks,args.browser_module,args.browser_executable,args.env_file)
 
         finally:

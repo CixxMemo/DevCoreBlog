@@ -191,6 +191,12 @@ try:
             stages['newsletter-campaign']['passed']=code==0 and campaign['passed'] and campaign['count']==len(campaign['checks']) and all(campaign['checks'].values())
         except (OSError,ValueError,KeyError,TypeError):
             stages['newsletter-campaign']['passed']=False
+        code,output=run('reader-identity',['python3','scripts/verification/reader_identity_probe.py','--port','55526','--report',str(report/'reader-migration.json')],source,timeout=300,export=False)
+        try:
+            reader=json.loads((report/'reader-migration.json').read_text())
+            stages['reader-identity']['passed']=code==0 and reader['passed'] and reader['count']==len(reader['checks']) and all(reader['checks'].values())
+        except (OSError,ValueError,KeyError,TypeError):
+            stages['reader-identity']['passed']=False
         if args.final_acceptance:
             code,output=run('final-security-data',['sh','scripts/verification/run_f17_visibility.sh'],source,timeout=480,export=False,extra={'DEVCORE_F49_PROBE':'1','DEVCORE_F57_PROBE':'1','DEVCORE_F57_REPORT':str(report/'final-regression.json'),'DEVCORE_F17_PG_PORT':'55461','DEVCORE_F17_APP_PORT':'15199'})
             try:

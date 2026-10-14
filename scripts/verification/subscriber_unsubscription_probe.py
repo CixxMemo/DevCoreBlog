@@ -55,16 +55,17 @@ try:
             rejected=sql('unsubscription_prior',"UPDATE \"Subscribers\" SET \"PeriodId\"='00000000-0000-0000-0000-000000000000'",False)
             check('empty_period_database_constraint',sql('unsubscription_prior',"SELECT count(*) FROM \"Subscribers\" WHERE \"PeriodId\"='00000000-0000-0000-0000-000000000000'")=='0')
             for database in ('unsubscription_empty','unsubscription_prior'):
+                migrate(database,'20261014140624_ReaderIdentity')
                 safe_report(run(['dotnet',str(root/'tools/DevCoreBlog.ContentRulesTool/bin/Debug/net10.0/DevCoreBlog.ContentRulesTool.dll'),'--unsubscription'],{'DB_CONNECTION_STRING':connection(database),'OUTBOX_TEST_KEYS':str(fixture/'keys')},required=False),database)
             periods=sql('unsubscription_prior','SELECT "Id" || \':\' || "PeriodId" FROM "Subscribers" ORDER BY 1')
             check('nonempty_down_refuses_period_loss',migrate('unsubscription_prior',previous,False).returncode!=0 and periods==sql('unsubscription_prior','SELECT "Id" || \':\' || "PeriodId" FROM "Subscribers" ORDER BY 1'))
-            migrate('unsubscription_http',current)
+            migrate('unsubscription_http','20261014140624_ReaderIdentity')
             run_http_fixture(root,fixture,env,connection('unsubscription_http'),args.port,args.report.parent,checks,args.browser_module,args.browser_executable)
             if args.env_file:
                 if args.env_file.is_symlink() or args.env_file.stat().st_mode & 0o077:raise RuntimeError('Private credential file required')
                 values=[line.split('=',1)[1].strip().strip('\"\'') for line in args.env_file.read_text().splitlines() if line.startswith('RESEND_API_KEY=')]
                 if len(values)!=1 or not re.fullmatch(r're_[A-Za-z0-9_-]+',values[0]):raise RuntimeError('Valid local credential required')
-                run(['createdb','-h','127.0.0.1','-p',args.port,'unsubscription_live']);migrate('unsubscription_live',current)
+                run(['createdb','-h','127.0.0.1','-p',args.port,'unsubscription_live']);migrate('unsubscription_live','20261014140624_ReaderIdentity')
                 safe_report(run(['dotnet',str(root/'tools/DevCoreBlog.ContentRulesTool/bin/Debug/net10.0/DevCoreBlog.ContentRulesTool.dll'),'--unsubscription-live'],{'DB_CONNECTION_STRING':connection('unsubscription_live'),'OUTBOX_TEST_KEYS':str(fixture/'keys'),'RESEND_API_KEY':values[0]},required=False),'real_resend_exit')
         finally:
             if started:run(['pg_ctl','-D',str(fixture/'pg'),'-m','fast','-w','stop'],required=False)
