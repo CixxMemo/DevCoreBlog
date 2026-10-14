@@ -232,6 +232,9 @@ builder.Services.AddScoped<DevCoreBlog.Core.Subscriptions.ISubscriptionRegistrat
 builder.Services.AddScoped<DevCoreBlog.Services.Subscriptions.SubscriberVerificationMessageFactory>();
 builder.Services.AddScoped<DevCoreBlog.Services.Subscriptions.SubscriptionRegistrationService>();
 builder.Services.AddSingleton(new DevCoreBlog.Services.Subscriptions.SubscriberVerificationLinks(siteUrl.Origin));
+builder.Services.AddScoped<DevCoreBlog.Core.Newsletters.INewsletterCampaignStore, DevCoreBlog.Data.Newsletters.NewsletterCampaignStore>();
+builder.Services.AddSingleton(new DevCoreBlog.Services.Newsletters.NewsletterCampaignOrigin(siteUrl.Origin));
+builder.Services.AddScoped<DevCoreBlog.Services.Newsletters.NewsletterCampaignService>();
 builder.Services.AddScoped<DevCoreBlog.Services.Subscriptions.SubscriberVerificationIssuer>();
 builder.Services.AddScoped<DevCoreBlog.Services.Subscriptions.SubscriberVerificationConsumer>();
 builder.Services.AddScoped<DevCoreBlog.Core.Subscriptions.ISubscriberUnsubscriptionStore, DevCoreBlog.Data.Subscriptions.SubscriberUnsubscriptionStore>();

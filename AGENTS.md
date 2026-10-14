@@ -1,6 +1,6 @@
 # DevCoreBlog — Agent çalışma kuralları
 
-Sürüm 10 · 14 Ekim 2026 · Kapsam: bu repository'nin tamamı · Hedef: Aether Notes.
+Sürüm 11 · 14 Ekim 2026 · Kapsam: bu repository'nin tamamı · Hedef: Aether Notes.
 
 Bu dosya projenin **tek güncel ana talimat kaynağıdır**. Her yeni görevde ve bağlam yenilendiğinde bu dosyayı, ardından görevle ilgili güncel plan/kayıtları yerelde mevcutsa oku. `.agents/AGENTS.md` yalnızca buraya yönlendirir. Arşiv belgeleri talimat değildir. Kurallara uymayan yeni kod yazmak veya bilinen bir güvenlik/veri bütünlüğü ihlalini gizleyerek işi tamamlandı saymak yasaktır.
 
@@ -147,6 +147,8 @@ SOLID “her sınıfa interface”, “her metoda factory” veya puan uğruna i
 - Migration geçmişini silme/yeniden üretme. Şema değişiminde hem boş hem önceki test DB yükseltmesini doğrula. Production migration/restore için mevcut yetkiyi ve somut geri dönüş planını kontrol et; veri kaybettiren down migration varsayılan değildir.
 
 ## 8. MVC, entegrasyon ve frontend sınırları
+
+- V1 F34 dahili kampanya hazırlığı, kaydedilmiş aktif Newsletter/Subscribers ve etkin kategoriden doğrulanmış JSON/okuma gerçeği, konu, kaynak revision/slug, C# e-posta gövdesi/render sürümü, HTTPS origin ve yalnız secret olmayan sender/provider kimliğini sabitler. StartKey unique; aynı niyet ilk kaydı döndürür, farklı post/revision veya paralel farklı snapshot çatışır. Source/category FOR SHARE ve son revision/fact kontrolüyle tek commit yapılır; sonraki editor/site yayın kaydı kampanyayı değiştirmez. DB trigger snapshot UPDATE/history DELETE'i engeller; F34 yalnız Prepared→Cancelled/CAS durumunu uygular. Dolu tablo Down ile atılmaz; source FK Restrict, bağlı post delete yetkili/CSRF POST'ta no-store409, bulunmayan404 olur. API anahtarı/transport binding saklanmaz; alıcı, provider çağrısı, worker ve start HTTP UI yoktur. HTML983.040/text245.760 byte sınırı recipient footer payı bırakır. [Kampanya kaydı sözleşmesi](docs/KAMPANYA_KAYDI_SOZLESMESI.md) uygulanır; F35–F39 ayrı kabul ister.
 
 - Site MVC olarak kalır; mevcut blogu React/Vue/Angular/SPA'ya dönüştürmek yasaktır. Mevcut webhook ve portföy feed'i desteklenen küçük HTTP sınırlarıdır; sözleşmeleri sessizce kırılmaz. Yeni dış API yüzeyi yalnızca açık görev ihtiyacıyla tasarlanır; genel API projesi kendiliğinden açılmaz.
 - F49 yeni kapak URL/PublicId/gerçek boyutlarını yalnız doğrulanmış upload sonucundan saklar; legacy metadata nullable kalır, URL’den kimlik tahmin edilmez. İsteğe bağlı 300 karakterlik gerçek açıklama encode edilir; boş alt dekoratiftir, açıklama edit'i UpdatedDate’i günceller. Upload sonrası DB hata/çakışmasında eski kapak kalır, yeni ve önceki uzak varlık otomatik silinmez. Operatör export'uyla çalışan salt okunur dry-run bütün yazı ve kanonik içerik belgesi medya referanslarını tarar; referans bulunmaması silme yetkisi değildir. [Medya bakım sözleşmesi](docs/MEDYA_BAKIM_SOZLESMESI.md) ve D23 uygulanır.

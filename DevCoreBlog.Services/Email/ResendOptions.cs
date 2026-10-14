@@ -3,13 +3,15 @@ using DevCoreBlog.Core.Subscriptions;
 namespace DevCoreBlog.Services.Email;
 
 /// <summary>Immutable environment configuration; missing or malformed fields disable only email submission.</summary>
-public sealed class ResendOptions : DevCoreBlog.Core.Email.IEmailSubmissionContext
+public sealed class ResendOptions : DevCoreBlog.Core.Email.IEmailSubmissionContext, DevCoreBlog.Core.Email.IEmailSenderProfile
 {
     internal string? ApiKey { get; }
     internal string? From { get; }
     internal string? ReplyTo { get; }
     public bool IsConfigured { get; }
     public string? Binding { get; }
+    public DevCoreBlog.Core.Email.EmailSenderIdentity? Identity { get; }
+    public string Contract => "resend/v1";
 
     public ResendOptions(string? apiKey, string? fromEmail, string? fromName, string? replyTo = null)
     {
@@ -25,6 +27,7 @@ public sealed class ResendOptions : DevCoreBlog.Core.Email.IEmailSubmissionConte
         ApiKey = apiKey;
         From = fromName + " <" + sender.Address + ">";
         ReplyTo = replyTo;
+        Identity = new(sender.Address, fromName, replyTo);
         // Only the encrypted outbox envelope may persist this credential/configuration binding.
         // Rotating a key or sender must hold previously staged work, not silently change its wire payload.
         Binding = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(

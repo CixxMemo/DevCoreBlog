@@ -363,14 +363,17 @@ public class AdminPostController : Controller
     // DELETE — Remove a post
     // -------------------------------------------------------------------------
     // POST: /AdminPost/Delete/5
-    // Deletes a post by Id. No protection needed here (unlike categories),
-    // because deleting a post doesn't cascade-delete anything else.
+    // Campaign history keeps its source through a restrictive FK, including concurrent starts.
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Delete(int id)
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
+    public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
     {
-        // Delegate to service layer — business logic is in PostService
-        await _postService.DeletePostAsync(id);
+        if (id <= 0) return BadRequest();
+        var result = await _postService.DeletePostAsync(id, cancellationToken);
+        if (result == DevCoreBlog.Core.Interfaces.PostDeleteOutcome.Referenced)
+            return Conflict("Bu içerik kampanya geçmişinde kullanıldığı için silinemez. İçeriği pasif duruma alabilirsiniz.");
+        if (result == DevCoreBlog.Core.Interfaces.PostDeleteOutcome.NotFound) return NotFound();
         return RedirectToAction(nameof(Index));
     }
 

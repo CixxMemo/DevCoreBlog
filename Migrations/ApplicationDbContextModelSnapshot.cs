@@ -341,6 +341,124 @@ namespace DevCoreBlog.Migrations
                         });
                 });
 
+            modelBuilder.Entity("DevCoreBlog.Core.Newsletters.NewsletterCampaign", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DocumentJson")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("DocumentPlainText")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("DocumentReadingMinutes")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("DocumentVersion")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("DocumentWordCount")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Html")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("PostId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ProviderContract")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .UseCollation("C");
+
+                    b.Property<int>("RenderVersion")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ReplyTo")
+                        .HasMaxLength(254)
+                        .HasColumnType("character varying(254)")
+                        .UseCollation("C");
+
+                    b.Property<string>("SenderEmail")
+                        .IsRequired()
+                        .HasMaxLength(254)
+                        .HasColumnType("character varying(254)")
+                        .UseCollation("C");
+
+                    b.Property<string>("SenderName")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)");
+
+                    b.Property<string>("SnapshotHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .UseCollation("C");
+
+                    b.Property<long>("SourceRevision")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("SourceSlug")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<Guid>("StartKey")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("State")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Subject")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("UpdatedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("WebVersionUrl")
+                        .IsRequired()
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PostId");
+
+                    b.HasIndex("StartKey")
+                        .IsUnique();
+
+                    b.ToTable("NewsletterCampaigns", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_NewsletterCampaigns_Content", "length(btrim(\"Subject\")) BETWEEN 1 AND 300 AND \"Subject\" !~ '[[:cntrl:]]'\nAND length(btrim(\"SourceSlug\")) BETWEEN 1 AND 200 AND \"SourceSlug\" !~ '[[:cntrl:]]'\nAND \"DocumentVersion\"=1 AND octet_length(\"DocumentJson\") BETWEEN 1 AND 1048576\nAND octet_length(\"DocumentPlainText\") <= 1048576 AND \"DocumentWordCount\" BETWEEN 0 AND 200000\nAND \"DocumentReadingMinutes\"=(\"DocumentWordCount\"+199)/200 AND \"RenderVersion\"=1\nAND octet_length(\"Html\") BETWEEN 1 AND 983040 AND octet_length(\"Text\") BETWEEN 1 AND 245760\nAND \"WebVersionUrl\" ~ '^https://' AND \"WebVersionUrl\" !~ '[[:space:][:cntrl:]]'");
+
+                            t.HasCheckConstraint("CK_NewsletterCampaigns_Identity", "\"Id\" <> '00000000-0000-0000-0000-000000000000'::uuid\nAND \"StartKey\" <> '00000000-0000-0000-0000-000000000000'::uuid\nAND \"SourceRevision\" > 0 AND \"SourceRevision\" < 9223372036854775807\nAND \"SnapshotHash\" ~ '^[A-F0-9]{64}$'");
+
+                            t.HasCheckConstraint("CK_NewsletterCampaigns_Sender", "length(btrim(\"SenderName\")) BETWEEN 1 AND 80 AND \"SenderName\" !~ '[[:cntrl:]<>\"\\\\]'\nAND length(\"SenderEmail\") BETWEEN 3 AND 254 AND \"SenderEmail\" ~ '^[!-~]+@[!-~]+\\.[!-~]+$'\nAND (\"ReplyTo\" IS NULL OR (length(\"ReplyTo\") BETWEEN 3 AND 254 AND \"ReplyTo\" ~ '^[!-~]+@[!-~]+\\.[!-~]+$'))\nAND \"ProviderContract\" ~ '^[A-Za-z0-9/.-]{1,32}$'");
+
+                            t.HasCheckConstraint("CK_NewsletterCampaigns_State", "((\"State\"=0 AND \"Version\"=1 AND \"UpdatedUtc\"=\"CreatedUtc\") OR (\"State\"=1 AND \"Version\"=2))\nAND isfinite(\"CreatedUtc\") AND isfinite(\"UpdatedUtc\") AND \"UpdatedUtc\">=\"CreatedUtc\"");
+                        });
+                });
+
             modelBuilder.Entity("DevCoreBlog.Core.Subscriptions.Subscriber", b =>
                 {
                     b.Property<Guid>("Id")
@@ -513,6 +631,15 @@ namespace DevCoreBlog.Migrations
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Post");
+                });
+
+            modelBuilder.Entity("DevCoreBlog.Core.Newsletters.NewsletterCampaign", b =>
+                {
+                    b.HasOne("DevCoreBlog.Core.Entities.Post", null)
+                        .WithMany()
+                        .HasForeignKey("PostId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("DevCoreBlog.Core.Subscriptions.SubscriberVerificationToken", b =>

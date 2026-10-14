@@ -399,18 +399,11 @@ public class PostService : IPostService, IPublicationSchedule, IWebhookPostServi
     }
 
     // Delete a post by its Id
-    public async Task DeletePostAsync(int id)
+    public async Task<PostDeleteOutcome> DeletePostAsync(int id, CancellationToken cancellationToken = default)
     {
-        // Get the post by Id from repository
-        var post = await _postRepository.GetByIdAsync(id);
-
-        // If post exists, delete it
-        if (post != null)
-        {
-            await _postRepository.DeleteAsync(post);
-            await _postRepository.SaveChangesAsync();
+        var result = await _postRepository.TryDeleteAsync(id, cancellationToken);
+        if (result == PostDeleteOutcome.Deleted)
             await _publicListCache.InvalidateAsync();
-
-        }
+        return result;
     }
 }

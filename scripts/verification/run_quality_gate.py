@@ -185,6 +185,12 @@ try:
             stages['subscriber-unsubscription']['passed']=code==0 and unsubscription['passed'] and unsubscription['count']==len(unsubscription['checks']) and all(unsubscription['checks'].values())
         except (OSError,ValueError,KeyError,TypeError):
             stages['subscriber-unsubscription']['passed']=False
+        code,output=run('newsletter-campaign',['python3','scripts/verification/newsletter_campaign_probe.py','--port','55525','--report',str(report/'campaign-migration.json')],source,timeout=180,export=False)
+        try:
+            campaign=json.loads((report/'campaign-migration.json').read_text())
+            stages['newsletter-campaign']['passed']=code==0 and campaign['passed'] and campaign['count']==len(campaign['checks']) and all(campaign['checks'].values())
+        except (OSError,ValueError,KeyError,TypeError):
+            stages['newsletter-campaign']['passed']=False
         if args.final_acceptance:
             code,output=run('final-security-data',['sh','scripts/verification/run_f17_visibility.sh'],source,timeout=480,export=False,extra={'DEVCORE_F49_PROBE':'1','DEVCORE_F57_PROBE':'1','DEVCORE_F57_REPORT':str(report/'final-regression.json'),'DEVCORE_F17_PG_PORT':'55461','DEVCORE_F17_APP_PORT':'15199'})
             try:

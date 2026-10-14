@@ -16,6 +16,18 @@ public class PostRepository : GenericRepository<Post>, IPostRepository
 
     public PostRepository(ApplicationDbContext context) : base(context) { }
 
+    /// <summary>The FK is the final arbiter, including a campaign created concurrently with deletion.</summary>
+    public async Task<PostDeleteOutcome> TryDeleteAsync(int id, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            return await _context.Posts.Where(x => x.Id == id).ExecuteDeleteAsync(cancellationToken) == 1
+                ? PostDeleteOutcome.Deleted : PostDeleteOutcome.NotFound;
+        }
+        catch (PostgresException exception) when (exception.SqlState == PostgresErrorCodes.ForeignKeyViolation)
+        { return PostDeleteOutcome.Referenced; }
+    }
+
     /// <summary>Persists one edit only when its loaded content version still matches.</summary>
     public Task<bool> TrySaveVersionedEditAsync(
         Post post, long expectedVersion, CancellationToken cancellationToken = default) =>

@@ -20,6 +20,7 @@
 // =============================================================================
 
 using DevCoreBlog.Core.Entities;
+using DevCoreBlog.Core.Interfaces;
 using DevCoreBlog.Core.ReadModels;
 using DevCoreBlog.Core.Validation;
 using DevCoreBlog.Services.Publishing;
@@ -97,5 +98,5 @@ public interface IPostService
         PostSaveAction? saveAction = null);
 
     // Delete a post by its Id
-    Task DeletePostAsync(int id);
+    Task<PostDeleteOutcome> DeletePostAsync(int id, CancellationToken cancellationToken = default);
 }

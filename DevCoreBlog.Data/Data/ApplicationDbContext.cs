@@ -42,6 +42,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<DevCoreBlog.Core.Subscriptions.SubscriberVerificationToken> SubscriberVerificationTokens { get; set; }
 
     public DbSet<DevCoreBlog.Core.Subscriptions.SubscriptionRegistrationBudget> SubscriptionRegistrationBudgets { get; set; }
+    public DbSet<DevCoreBlog.Core.Newsletters.NewsletterCampaign> NewsletterCampaigns { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -51,6 +52,7 @@ public class ApplicationDbContext : DbContext
         modelBuilder.ApplyConfiguration(new Subscriptions.SubscriberVerificationConfiguration());
         modelBuilder.ApplyConfiguration(new Email.TransactionalEmailConfiguration());
         modelBuilder.ApplyConfiguration(new Email.TransactionalEmailAttemptConfiguration());
+        modelBuilder.ApplyConfiguration(new Newsletters.NewsletterCampaignConfiguration());
 
         var receipt = modelBuilder.Entity<WebhookReceipt>();
         receipt.HasKey(item => new { item.ContractVersion, item.Key });

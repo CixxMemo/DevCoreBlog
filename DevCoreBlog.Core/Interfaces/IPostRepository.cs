@@ -40,6 +40,7 @@ public interface IPostRepository
     Task<bool> TryCreateWithSlugAsync(Post post, CancellationToken cancellationToken);
     Task<bool> TrySaveVersionedEditAsync(
         Post post, long expectedVersion, CancellationToken cancellationToken = default);
-    Task DeleteAsync(Post post);
-    Task SaveChangesAsync();
+    Task<PostDeleteOutcome> TryDeleteAsync(int id, CancellationToken cancellationToken = default);
 }
+
+public enum PostDeleteOutcome { Deleted, NotFound, Referenced }
