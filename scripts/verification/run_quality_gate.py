@@ -161,6 +161,18 @@ try:
             stages['subscriber-lifecycle']['passed']=code==0 and subscriber['passed'] and subscriber['count']==len(subscriber['checks']) and all(subscriber['checks'].values())
         except (OSError,ValueError,KeyError,TypeError):
             stages['subscriber-lifecycle']['passed']=False
+        code,output=run('transactional-email',['python3','scripts/verification/transactional_email_probe.py','--port','55521','--report',str(report/'outbox-migration.json')],source,timeout=180,export=False)
+        try:
+            outbox=json.loads((report/'outbox-migration.json').read_text())
+            stages['transactional-email']['passed']=code==0 and outbox['passed'] and outbox['count']==len(outbox['checks']) and all(outbox['checks'].values())
+        except (OSError,ValueError,KeyError,TypeError):
+            stages['transactional-email']['passed']=False
+        code,output=run('subscriber-verification',['python3','scripts/verification/subscriber_verification_probe.py','--port','55522','--report',str(report/'verification-migration.json')],source,timeout=180,export=False)
+        try:
+            verification=json.loads((report/'verification-migration.json').read_text())
+            stages['subscriber-verification']['passed']=code==0 and verification['passed'] and verification['count']==len(verification['checks']) and all(verification['checks'].values())
+        except (OSError,ValueError,KeyError,TypeError):
+            stages['subscriber-verification']['passed']=False
         if args.final_acceptance:
             code,output=run('final-security-data',['sh','scripts/verification/run_f17_visibility.sh'],source,timeout=480,export=False,extra={'DEVCORE_F49_PROBE':'1','DEVCORE_F57_PROBE':'1','DEVCORE_F57_REPORT':str(report/'final-regression.json'),'DEVCORE_F17_PG_PORT':'55461','DEVCORE_F17_APP_PORT':'15199'})
             try:

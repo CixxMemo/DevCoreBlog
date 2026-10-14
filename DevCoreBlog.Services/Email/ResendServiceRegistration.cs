@@ -10,6 +10,7 @@ public static class ResendServiceRegistration
     public static IServiceCollection AddResendEmail(this IServiceCollection services, ResendOptions options)
     {
         services.AddSingleton(options);
+        services.AddSingleton<IEmailSubmissionContext>(options);
         services.TryAddSingleton(TimeProvider.System);
         services.AddHttpClient<IEmailSender, ResendEmailSender>(client =>
         {

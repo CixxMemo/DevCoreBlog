@@ -56,10 +56,12 @@ builder.Services.PostConfigure<LoggerFilterOptions>(options =>
     // Even a more-specific environment override must not print provider errors containing input/SQL.
     for (var i = options.Rules.Count - 1; i >= 0; i--)
         if (options.Rules[i].CategoryName is { } category &&
-            (category.StartsWith("Microsoft.EntityFrameworkCore", StringComparison.Ordinal) || category.StartsWith("Npgsql", StringComparison.Ordinal)))
+            (category.StartsWith("Microsoft.EntityFrameworkCore", StringComparison.Ordinal) || category.StartsWith("Npgsql", StringComparison.Ordinal) ||
+             category.StartsWith("Microsoft.AspNetCore.Mvc.ModelBinding", StringComparison.Ordinal)))
             options.Rules.RemoveAt(i);
     options.Rules.Add(new LoggerFilterRule(null, "Microsoft.EntityFrameworkCore", LogLevel.None, null));
     options.Rules.Add(new LoggerFilterRule(null, "Npgsql", LogLevel.None, null));
+    options.Rules.Add(new LoggerFilterRule(null, "Microsoft.AspNetCore.Mvc.ModelBinding", LogLevel.None, null));
 });
 // Development dotenv values fill missing variables only; production uses the service environment.
 var dotenvPath = Path.Combine(builder.Environment.ContentRootPath, ".env");
@@ -222,7 +224,23 @@ DevCoreBlog.Services.Email.ResendServiceRegistration.AddResendEmail(builder.Serv
         Environment.GetEnvironmentVariable("RESEND_FROM_NAME"),
         Environment.GetEnvironmentVariable("RESEND_REPLY_TO")));
 builder.Services.AddScoped<DevCoreBlog.Services.Documents.PublicPostContentService>();
-builder.Services.AddScoped<DevCoreBlog.Core.Subscriptions.ISubscriberRepository, DevCoreBlog.Data.Subscriptions.SubscriberRepository>();
+builder.Services.AddScoped<DevCoreBlog.Data.Subscriptions.SubscriberRepository>();
+builder.Services.AddScoped<DevCoreBlog.Core.Subscriptions.ISubscriberRepository>(services => services.GetRequiredService<DevCoreBlog.Data.Subscriptions.SubscriberRepository>());
+builder.Services.AddScoped<DevCoreBlog.Core.Subscriptions.ISubscriberVerificationStore, DevCoreBlog.Data.Subscriptions.SubscriberVerificationStore>();
+builder.Services.AddSingleton(new DevCoreBlog.Services.Subscriptions.SubscriberVerificationLinks(siteUrl.Origin));
+builder.Services.AddScoped<DevCoreBlog.Services.Subscriptions.SubscriberVerificationIssuer>();
+builder.Services.AddScoped<DevCoreBlog.Services.Subscriptions.SubscriberVerificationConsumer>();
+builder.Services.AddScoped<DevCoreBlog.Data.Email.TransactionalEmailStore>();
+builder.Services.AddScoped<DevCoreBlog.Core.Email.ITransactionalEmailQueue>(services => services.GetRequiredService<DevCoreBlog.Data.Email.TransactionalEmailStore>());
+builder.Services.AddScoped<DevCoreBlog.Core.Email.ITransactionalEmailWorkStore>(services => services.GetRequiredService<DevCoreBlog.Data.Email.TransactionalEmailStore>());
+builder.Services.AddScoped<DevCoreBlog.Services.Email.TransactionalEmailProtector>();
+builder.Services.AddScoped<DevCoreBlog.Services.Email.TransactionalEmailDispatcher>();
+var emailWorkerSetting = Environment.GetEnvironmentVariable("TRANSACTIONAL_EMAIL_WORKER_ENABLED");
+if (!string.IsNullOrEmpty(emailWorkerSetting) && !bool.TryParse(emailWorkerSetting, out _))
+    throw new InvalidOperationException("TRANSACTIONAL_EMAIL_WORKER_ENABLED must be true or false.");
+if (bool.TryParse(emailWorkerSetting, out var emailWorkerEnabled) && emailWorkerEnabled)
+    builder.Services.AddHostedService<DevCoreBlog.Infrastructure.TransactionalEmailWorker>();
+
 builder.Services.AddScoped<DevCoreBlog.Core.Documents.IPostDocumentRepository, PostDocumentRepository>();
 builder.Services.AddScoped<DevCoreBlog.Services.Documents.PostDocumentService>();
 builder.Services.AddScoped<DevCoreBlog.Core.Documents.IEditorPostRepository, EditorPostRepository>();
@@ -412,6 +430,14 @@ builder.Services.AddRateLimiter(options =>
                 PermitLimit = webhookRateLimitPermitLimit,
                 QueueLimit = 0,
                 Window = TimeSpan.FromMinutes(1)
+            }));
+
+    options.AddPolicy("VerificationLimiter", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown-verification-client",
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                AutoReplenishment = true, PermitLimit = 20, QueueLimit = 0, Window = TimeSpan.FromMinutes(1)
             }));
 
     // Portfolio Limiter: Max 30 requests per minute for public read endpoint

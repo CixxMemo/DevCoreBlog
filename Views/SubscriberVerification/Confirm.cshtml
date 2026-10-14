@@ -1,0 +1,51 @@
+@model DevCoreBlog.Models.Subscriptions.SubscriberVerificationPage
+@using DevCoreBlog.Models.Subscriptions
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow, noarchive" />
+    <meta name="referrer" content="no-referrer" />
+    <title>E-posta adresi doğrulama — Aether Notes</title>
+    <link rel="stylesheet" href="~/generated/tailwind-public.css" asp-append-version="true" />
+    @if (Model == SubscriberVerificationPage.Ready)
+    {
+        <script src="~/js/subscriber-verification.js" asp-append-version="true" defer></script>
+    }
+</head>
+<body class="min-h-screen bg-white text-gray-900 font-sans p-4 sm:p-8">
+    <main class="max-w-xl mx-auto border-2 border-gray-900 p-6 sm:p-8 space-y-6" aria-labelledby="verification-heading">
+        <a href="/" class="font-mono font-bold underline">Aether Notes</a>
+        <h1 id="verification-heading" class="text-2xl sm:text-3xl font-bold">E-posta adresi doğrulama</h1>
+        @if (Model == SubscriberVerificationPage.Ready)
+        {
+            <p>Abonelik talebi size aitse aşağıdaki düğmeyle e-posta adresinizi doğrulayabilirsiniz. Bağlantı 24 saat geçerlidir.</p>
+            <p id="verification-status" role="status">Doğrulama bağlantısı kontrol ediliyor.</p>
+            <form action="/abonelik/dogrula" method="post" id="verification-form">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="Token" id="verification-token" value="" autocomplete="off" />
+                <button type="submit" id="verification-submit" disabled class="border-2 border-gray-900 px-4 py-3 font-bold bg-gray-900 text-white disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-4">E-posta adresimi doğrula</button>
+            </form>
+            <noscript><p>Güvenli doğrulama bağlantısını kullanmak için JavaScript’i etkinleştirip e-postadaki bağlantıyı yeniden açın.</p></noscript>
+            <p>Talep size ait değilse bu sayfayı kapatabilirsiniz.</p>
+        }
+        else if (Model == SubscriberVerificationPage.Confirmed)
+        {
+            <p role="status">E-posta adresiniz doğrulandı. Aboneliğiniz etkinleştirildi.</p>
+        }
+        else if (Model == SubscriberVerificationPage.Unavailable)
+        {
+            <p role="alert">Doğrulama şu anda tamamlanamıyor. Daha sonra e-postadaki bağlantıyı yeniden deneyin.</p>
+        }
+        else
+        {
+            <p role="alert">Bu doğrulama bağlantısı geçersiz, kullanılmış veya süresi dolmuş olabilir.</p>
+        }
+        <a href="/" class="inline-block underline font-bold">Ana sayfaya dön</a>
+    </main>
+</body>
+</html>

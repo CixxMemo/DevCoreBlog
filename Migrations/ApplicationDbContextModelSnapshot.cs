@@ -22,6 +22,118 @@ namespace DevCoreBlog.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("DevCoreBlog.Core.Email.TransactionalEmailAttempt", b =>
+                {
+                    b.Property<Guid>("JobId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Number")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("CompletedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("HttpStatus")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("LeaseId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int?>("Outcome")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid?>("ProviderMessageId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int?>("Reason")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("StartedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("JobId", "Number");
+
+                    b.ToTable("TransactionalEmailAttempts", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_TransactionalEmailAttempts_Valid", "\"Number\" BETWEEN 1 AND 5 AND isfinite(\"StartedUtc\")\nAND ((\"CompletedUtc\" IS NULL) = (\"Outcome\" IS NULL))\nAND ((\"Outcome\" IS NULL) = (\"Reason\" IS NULL))\nAND (\"Outcome\" IS NULL OR \"Outcome\" BETWEEN 0 AND 4)\nAND (\"Reason\" IS NULL OR \"Reason\" BETWEEN 0 AND 15)\nAND (\"CompletedUtc\" IS NULL OR (isfinite(\"CompletedUtc\") AND \"CompletedUtc\" >= \"StartedUtc\"))\nAND (\"HttpStatus\" IS NULL OR \"HttpStatus\" BETWEEN 100 AND 599)\nAND (\"ProviderMessageId\" IS NULL OR (\"Outcome\" = 0 AND \"ProviderMessageId\" <> '00000000-0000-0000-0000-000000000000'::uuid))");
+                        });
+                });
+
+            modelBuilder.Entity("DevCoreBlog.Core.Email.TransactionalEmailJob", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("AttemptCount")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("DueUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("ExpiresUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("FirstAttemptUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("LeaseId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("LeaseUntilUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("PayloadHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .UseCollation("C");
+
+                    b.Property<int>("Problem")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ProtectedPayload")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("ProviderMessageId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("State")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("SubscriberId")
+                        .HasColumnType("uuid");
+
+                    b.Property<long>("SubscriberVersion")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("UpdatedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LeaseUntilUtc")
+                        .HasFilter("\"State\" IN (1,2)");
+
+                    b.HasIndex("SubscriberId");
+
+                    b.HasIndex("DueUtc", "Id")
+                        .HasFilter("\"State\" = 0");
+
+                    b.ToTable("TransactionalEmailJobs", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_TransactionalEmailJobs_Payload", "octet_length(\"ProtectedPayload\") BETWEEN 1 AND 4194304\nAND \"ProtectedPayload\" ~ '^[A-Za-z0-9+/=]+$' AND \"PayloadHash\" ~ '^[A-F0-9]{64}$'");
+
+                            t.HasCheckConstraint("CK_TransactionalEmailJobs_State", "\"State\" BETWEEN 0 AND 7 AND \"Problem\" BETWEEN 0 AND 9 AND \"SubscriberVersion\" > 0\nAND \"AttemptCount\" BETWEEN 0 AND 5\nAND ((\"AttemptCount\" = 0) = (\"FirstAttemptUtc\" IS NULL))\nAND ((\"State\" IN (1,2)) = (\"LeaseId\" IS NOT NULL AND \"LeaseUntilUtc\" IS NOT NULL))\nAND ((\"LeaseId\" IS NULL) = (\"LeaseUntilUtc\" IS NULL))\nAND (\"State\" <> 2 OR \"AttemptCount\" > 0)\nAND ((\"State\" = 3) = (\"ProviderMessageId\" IS NOT NULL))\nAND (\"ProviderMessageId\" IS NULL OR \"ProviderMessageId\" <> '00000000-0000-0000-0000-000000000000'::uuid)");
+
+                            t.HasCheckConstraint("CK_TransactionalEmailJobs_Time", "isfinite(\"CreatedUtc\") AND isfinite(\"UpdatedUtc\") AND isfinite(\"ExpiresUtc\") AND isfinite(\"DueUtc\")\nAND \"UpdatedUtc\" >= \"CreatedUtc\" AND \"ExpiresUtc\" >= \"CreatedUtc\" + interval '30 seconds'\nAND \"ExpiresUtc\" <= \"CreatedUtc\" + interval '1 day' AND \"DueUtc\" >= \"CreatedUtc\"\nAND (\"FirstAttemptUtc\" IS NULL OR (isfinite(\"FirstAttemptUtc\") AND \"FirstAttemptUtc\" BETWEEN \"CreatedUtc\" AND \"UpdatedUtc\"))\nAND (\"LeaseUntilUtc\" IS NULL OR isfinite(\"LeaseUntilUtc\"))");
+                        });
+                });
+
             modelBuilder.Entity("DevCoreBlog.Core.Entities.Category", b =>
                 {
                     b.Property<int>("Id")
@@ -284,6 +396,73 @@ namespace DevCoreBlog.Migrations
                         });
                 });
 
+            modelBuilder.Entity("DevCoreBlog.Core.Subscriptions.SubscriberVerificationToken", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AddressBinding")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .UseCollation("C");
+
+                    b.Property<DateTime?>("ConsumedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Digest")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .UseCollation("C");
+
+                    b.Property<DateTime>("ExpiresUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Purpose")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("SubscriberId")
+                        .HasColumnType("uuid");
+
+                    b.Property<long>("SubscriberVersion")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Digest")
+                        .IsUnique();
+
+                    b.HasIndex("SubscriberId", "SubscriberVersion", "ExpiresUtc")
+                        .HasFilter("\"ConsumedUtc\" IS NULL");
+
+                    b.ToTable("SubscriberVerificationTokens", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_SubscriberVerificationTokens_Valid", "\"Purpose\" = 1 AND \"SubscriberVersion\" > 0\nAND \"Digest\" ~ '^[A-F0-9]{64}$' AND \"AddressBinding\" ~ '^[A-F0-9]{64}$'\nAND isfinite(\"CreatedUtc\") AND isfinite(\"ExpiresUtc\") AND \"ExpiresUtc\" = \"CreatedUtc\" + interval '86400 seconds'\nAND (\"ConsumedUtc\" IS NULL OR (isfinite(\"ConsumedUtc\") AND \"ConsumedUtc\" >= \"CreatedUtc\" AND \"ConsumedUtc\" < \"ExpiresUtc\"))");
+                        });
+                });
+
+            modelBuilder.Entity("DevCoreBlog.Core.Email.TransactionalEmailAttempt", b =>
+                {
+                    b.HasOne("DevCoreBlog.Core.Email.TransactionalEmailJob", null)
+                        .WithMany()
+                        .HasForeignKey("JobId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("DevCoreBlog.Core.Email.TransactionalEmailJob", b =>
+                {
+                    b.HasOne("DevCoreBlog.Core.Subscriptions.Subscriber", null)
+                        .WithMany()
+                        .HasForeignKey("SubscriberId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("DevCoreBlog.Core.Entities.Post", b =>
                 {
                     b.HasOne("DevCoreBlog.Core.Entities.Category", "Category")
@@ -303,6 +482,21 @@ namespace DevCoreBlog.Migrations
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Post");
+                });
+
+            modelBuilder.Entity("DevCoreBlog.Core.Subscriptions.SubscriberVerificationToken", b =>
+                {
+                    b.HasOne("DevCoreBlog.Core.Email.TransactionalEmailJob", null)
+                        .WithMany()
+                        .HasForeignKey("Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("DevCoreBlog.Core.Subscriptions.Subscriber", null)
+                        .WithMany()
+                        .HasForeignKey("SubscriberId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("DevCoreBlog.Core.Entities.Category", b =>

@@ -19,6 +19,10 @@ if (string.IsNullOrWhiteSpace(connectionString))
 var options = new DbContextOptionsBuilder<ApplicationDbContext>()
     .UseNpgsql(connectionString)
     .Options;
+if (args.Contains("--verification") || args.Contains("--verification-seed") || args.Contains("--verification-pending") || args.Contains("--verification-live"))
+    return await SubscriberVerificationProbe.RunAsync(options, args.Contains("--verification-seed") || args.Contains("--verification-pending"), args.Contains("--verification-pending"), args.Contains("--verification-live"));
+if (args.Contains("--transactional-email") || args.Contains("--outbox-child") || args.Contains("--outbox-live"))
+    return await TransactionalEmailProbe.RunAsync(options, args);
 if (args.Contains("--subscribers"))
 {
     return await SubscriberPersistenceProbe.RunAsync(options);

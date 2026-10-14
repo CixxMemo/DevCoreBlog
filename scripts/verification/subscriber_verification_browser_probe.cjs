@@ -1,0 +1,54 @@
+// Real Chrome on owned MVC/PostgreSQL; synthetic proof is never written to the report or console.
+const fs=require('node:fs'),cp=require('node:child_process');
+const {chromium}=require(process.env.DEVCORE_PLAYWRIGHT_MODULE||'playwright');
+const base=process.env.VERIFICATION_TEST_BASE,report=process.env.VERIFICATION_TEST_REPORT;
+const seed=JSON.parse(fs.readFileSync(process.env.VERIFICATION_TEST_PROOF_FILE,'utf8'));
+const checks={},errors=[],csp=[],requests=[];
+let browser,failureType;
+function check(name,value){checks[name]=!!value;if(!value)throw new Error(name);}
+const sql=q=>cp.execFileSync('psql',['-X','-h','127.0.0.1','-p',process.env.VERIFICATION_TEST_PG_PORT||'55522','-d','verification_http','-At','-v','ON_ERROR_STOP=1','-c',q],{encoding:'utf8'}).trim();
+const state=()=>sql(`SELECT "Status" || ':' || "Version" FROM "Subscribers" WHERE "Id"='${seed.subscriberId}'`);
+(async()=>{
+ check('owned_fixture',new URL(base).hostname==='127.0.0.1' && /^[0-9a-f-]{36}$/.test(seed.subscriberId));
+ browser=await chromium.launch({headless:true,executablePath:process.env.DEVCORE_BROWSER_EXECUTABLE||undefined});
+ const context=await browser.newContext({viewport:{width:1440,height:900}});
+ await context.exposeBinding('__proofCsp',(_s,d)=>csp.push(d));
+ await context.addInitScript(()=>document.addEventListener('securitypolicyviolation',e=>window.__proofCsp(e.effectiveDirective)));
+ context.on('request',r=>requests.push({url:r.url(),headers:r.headers(),method:r.method()}));
+ let page=await context.newPage();page.on('pageerror',()=>errors.push('page-error'));
+ const response=await page.goto(base+'/abonelik/dogrula#t='+seed.token);
+ const button=page.getByRole('button',{name:'E-posta adresimi doğrula',exact:true});
+ await button.waitFor();await page.waitForFunction(()=>!document.getElementById('verification-submit').disabled);
+ check('desktop_ready_200',response.status()===200 && await button.isEnabled());
+ check('opening_link_is_read_only',state()==='0:1');
+ check('hash_and_query_removed',new URL(page.url()).hash===''&&new URL(page.url()).search==='');
+ check('token_only_hidden_form_field',await page.locator('#verification-token').inputValue()===seed.token && !(await page.locator('body').innerText()).includes(seed.token));
+ check('no_proof_in_browser_storage',await page.evaluate(token=>!JSON.stringify({...localStorage}).includes(token)&&!JSON.stringify({...sessionStorage}).includes(token),seed.token));
+ check('no_proof_in_urls_or_referrer',requests.every(r=>!r.url.includes(seed.token)&&!(r.headers.referer||'').includes(seed.token)));
+ check('standalone_no_third_party_requests',requests.every(r=>r.url.startsWith(base+'/')));
+ await page.screenshot({path:process.env.VERIFICATION_TEST_SCREENSHOT,fullPage:true});
+ await page.setViewportSize({width:390,height:844});
+ check('mobile_no_horizontal_overflow',await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth));
+ await button.focus();
+ check('keyboard_focus_visible',await button.evaluate(b=>b===document.activeElement&&getComputedStyle(b).outlineStyle!=='none'));
+ await Promise.all([page.waitForNavigation(),page.keyboard.press('Enter')]);
+ check('keyboard_submit_confirms',state()==='1:2'&&(await page.locator('body').innerText()).includes('E-posta adresiniz doğrulandı'));
+ check('success_no_token_or_form',!page.url().includes(seed.token)&&!(await page.content()).includes(seed.token)&&await page.locator('form').count()===0);
+ check('no_admin_or_reader_auth_cookie',(await context.cookies()).every(c=>!c.name.includes('Admin')&&!c.name.includes('Reader')&&c.name!=='.AspNetCore.Cookies'));
+ await page.close();page=await context.newPage();page.on('pageerror',()=>errors.push('page-error'));
+ await page.goto(base+'/abonelik/dogrula#t='+seed.token);await page.waitForFunction(()=>!document.getElementById('verification-submit').disabled);
+ const replay=await Promise.all([page.waitForNavigation(),page.getByRole('button',{name:'E-posta adresimi doğrula'}).click()]);
+ check('replay_real_400',replay[0].status()===400&&state()==='1:2'&&(await page.locator('body').innerText()).includes('geçersiz'));
+ await page.close();page=await context.newPage();
+ await page.goto(base+'/abonelik/dogrula#t=invalid');
+ check('invalid_fragment_stays_disabled',await page.locator('#verification-submit').isDisabled()&&await page.locator('#verification-token').inputValue()===''&&new URL(page.url()).hash==='');
+ const nojs=await browser.newContext({javaScriptEnabled:false});const safe=await nojs.newPage();
+ await safe.goto(base+'/abonelik/dogrula#t='+seed.token);
+ check('javascript_disabled_safe',await safe.locator('#verification-submit').isDisabled()&&(await safe.locator('noscript').innerText()).includes('JavaScript')&&state()==='1:2');
+ check('csp_and_console_clean',csp.length===0&&errors.length===0);
+ await nojs.close();await context.close();
+})().catch(error=>{failureType=error.name;checks.completed=false;process.exitCode=1;}).finally(async()=>{
+ if(browser)await browser.close();const passed=Object.keys(checks).length>0&&Object.values(checks).every(Boolean);
+ fs.writeFileSync(report,JSON.stringify({passed,count:Object.keys(checks).length,checks,failureType,scope:'Real Chrome desktop/mobile/keyboard on isolated MVC/PostgreSQL; synthetic proof only.'},null,2)+'\n');
+ if(!passed)process.exitCode=1;
+});
