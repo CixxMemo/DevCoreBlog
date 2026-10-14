@@ -237,6 +237,12 @@ builder.Services.AddSingleton(new DevCoreBlog.Services.Newsletters.NewsletterCam
 builder.Services.AddScoped<DevCoreBlog.Services.Newsletters.NewsletterCampaignService>();
 builder.Services.AddScoped<DevCoreBlog.Core.Newsletters.ICampaignRecipientStore, DevCoreBlog.Data.Newsletters.CampaignRecipientStore>();
 builder.Services.AddScoped<DevCoreBlog.Services.Newsletters.CampaignRecipientService>();
+builder.Services.AddSingleton(new DevCoreBlog.Services.Email.ResendWebhookOptions(
+    bool.TryParse(Environment.GetEnvironmentVariable("RESEND_WEBHOOK_ENABLED"), out var webhookEnabled) && webhookEnabled,
+    Environment.GetEnvironmentVariable("RESEND_WEBHOOK_SECRET"),
+    Environment.GetEnvironmentVariable("RESEND_WEBHOOK_ALLOWED_SENDERS")));
+builder.Services.AddScoped<DevCoreBlog.Core.Email.IProviderEmailEventStore, DevCoreBlog.Data.Email.ProviderEmailEventStore>();
+builder.Services.AddScoped<DevCoreBlog.Services.Email.ResendWebhookService>();
 builder.Services.AddScoped<DevCoreBlog.Services.Subscriptions.SubscriberVerificationIssuer>();
 builder.Services.AddScoped<DevCoreBlog.Services.Subscriptions.SubscriberVerificationConsumer>();
 builder.Services.AddScoped<DevCoreBlog.Core.Subscriptions.ISubscriberUnsubscriptionStore, DevCoreBlog.Data.Subscriptions.SubscriberUnsubscriptionStore>();
@@ -444,6 +450,9 @@ if (webhookRateLimitPermitLimit is < 1 or > 20)
 builder.Services.AddRateLimiter(options =>
 {
     DevCoreBlog.Infrastructure.SubscriptionRegistrationRateLimits.Configure(options);
+    options.AddPolicy("ResendWebhookLimiter", _ => RateLimitPartition.GetFixedWindowLimiter(
+        "resend-ingress", _ => new FixedWindowRateLimiterOptions
+        { PermitLimit = 60, Window = TimeSpan.FromMinutes(1), QueueLimit = 0, AutoReplenishment = true }));
     // Partition by the client IP resolved only through the explicit ingress trust boundary.
     options.AddPolicy("LoginLimiter", httpContext =>
         RateLimitPartition.GetFixedWindowLimiter(

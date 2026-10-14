@@ -25,7 +25,8 @@ public sealed class SecurityHeadersMiddleware(RequestDelegate next)
     {
         // Error-page re-execution changes endpoint metadata before OnStarting; retain archive privacy for that response.
         var privateArchivePath = context.Request.Path.Equals("/bultenler", StringComparison.OrdinalIgnoreCase)
-            || (context.Request.Path.StartsWithSegments("/bulten", StringComparison.OrdinalIgnoreCase, out var remainder) && remainder.HasValue);
+            || (context.Request.Path.StartsWithSegments("/bulten", StringComparison.OrdinalIgnoreCase, out var remainder) && remainder.HasValue)
+            || context.Request.Path.Equals(Controllers.ResendWebhookController.Path, StringComparison.OrdinalIgnoreCase);
         context.Response.OnStarting(() =>
         {
             context.Response.Headers["X-Content-Type-Options"] = "nosniff";

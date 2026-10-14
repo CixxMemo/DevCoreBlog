@@ -22,6 +22,98 @@ namespace DevCoreBlog.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("DevCoreBlog.Core.Email.ProviderAddressSuppression", b =>
+                {
+                    b.Property<string>("AddressKey")
+                        .HasMaxLength(254)
+                        .HasColumnType("character varying(254)")
+                        .UseCollation("C");
+
+                    b.Property<int>("Flags")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("UpdatedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("AddressKey");
+
+                    b.ToTable("ProviderAddressSuppressions", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_ProviderAddressSuppressions_Valid", "octet_length(\"AddressKey\") BETWEEN 3 AND 254 AND \"AddressKey\"=lower(\"AddressKey\" COLLATE \"C\")\nAND \"Flags\" IN (1,2,3) AND isfinite(\"UpdatedUtc\")");
+                        });
+                });
+
+            modelBuilder.Entity("DevCoreBlog.Core.Email.ProviderEmailEvent", b =>
+                {
+                    b.Property<string>("EventId")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .UseCollation("C");
+
+                    b.Property<string>("AddressKey")
+                        .IsRequired()
+                        .HasMaxLength(254)
+                        .HasColumnType("character varying(254)")
+                        .UseCollation("C");
+
+                    b.Property<int>("Kind")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("MessageId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("OccurredUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("PayloadHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .UseCollation("C");
+
+                    b.Property<DateTime>("ReceivedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("EventId");
+
+                    b.HasIndex("MessageId", "AddressKey");
+
+                    b.ToTable("ProviderEmailEvents", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_ProviderEmailEvents_Valid", "\"EventId\" ~ '^[A-Za-z0-9_-]{1,128}$' AND \"PayloadHash\" ~ '^[A-Fa-f0-9]{64}$'\nAND \"MessageId\"<>'00000000-0000-0000-0000-000000000000'::uuid AND \"Kind\" IN (0,1,2,3)\nAND octet_length(\"AddressKey\") BETWEEN 3 AND 254 AND \"AddressKey\"=lower(\"AddressKey\" COLLATE \"C\")\nAND isfinite(\"OccurredUtc\") AND isfinite(\"ReceivedUtc\") AND \"OccurredUtc\"<=\"ReceivedUtc\"+interval '5 minutes'");
+                        });
+                });
+
+            modelBuilder.Entity("DevCoreBlog.Core.Email.ProviderEmailObservation", b =>
+                {
+                    b.Property<Guid>("MessageId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AddressKey")
+                        .HasMaxLength(254)
+                        .HasColumnType("character varying(254)")
+                        .UseCollation("C");
+
+                    b.Property<DateTime?>("BouncedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("ComplainedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("DeliveredUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("TemporaryBounceUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("MessageId", "AddressKey");
+
+                    b.ToTable("ProviderEmailObservations", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_ProviderEmailObservations_Valid", "\"MessageId\"<>'00000000-0000-0000-0000-000000000000'::uuid\nAND octet_length(\"AddressKey\") BETWEEN 3 AND 254 AND \"AddressKey\"=lower(\"AddressKey\" COLLATE \"C\")\nAND (\"DeliveredUtc\" IS NOT NULL OR \"BouncedUtc\" IS NOT NULL OR \"ComplainedUtc\" IS NOT NULL OR \"TemporaryBounceUtc\" IS NOT NULL)\nAND (\"DeliveredUtc\" IS NULL OR isfinite(\"DeliveredUtc\")) AND (\"BouncedUtc\" IS NULL OR isfinite(\"BouncedUtc\"))\nAND (\"ComplainedUtc\" IS NULL OR isfinite(\"ComplainedUtc\")) AND (\"TemporaryBounceUtc\" IS NULL OR isfinite(\"TemporaryBounceUtc\"))");
+                        });
+                });
+
             modelBuilder.Entity("DevCoreBlog.Core.Email.TransactionalEmailAttempt", b =>
                 {
                     b.Property<Guid>("JobId")

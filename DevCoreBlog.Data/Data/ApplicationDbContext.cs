@@ -38,6 +38,9 @@ public class ApplicationDbContext : DbContext
 
     public DbSet<DevCoreBlog.Core.Email.TransactionalEmailJob> TransactionalEmailJobs { get; set; }
     public DbSet<DevCoreBlog.Core.Email.TransactionalEmailAttempt> TransactionalEmailAttempts { get; set; }
+    public DbSet<DevCoreBlog.Core.Email.ProviderEmailEvent> ProviderEmailEvents { get; set; }
+    public DbSet<DevCoreBlog.Core.Email.ProviderEmailObservation> ProviderEmailObservations { get; set; }
+    public DbSet<DevCoreBlog.Core.Email.ProviderAddressSuppression> ProviderAddressSuppressions { get; set; }
 
     public DbSet<DevCoreBlog.Core.Subscriptions.SubscriberVerificationToken> SubscriberVerificationTokens { get; set; }
 
@@ -61,6 +64,9 @@ public class ApplicationDbContext : DbContext
         modelBuilder.ApplyConfiguration(new Subscriptions.SubscriberVerificationConfiguration());
         modelBuilder.ApplyConfiguration(new Email.TransactionalEmailConfiguration());
         modelBuilder.ApplyConfiguration(new Email.TransactionalEmailAttemptConfiguration());
+        modelBuilder.ApplyConfiguration(new Email.ProviderEmailEventConfiguration());
+        modelBuilder.ApplyConfiguration(new Email.ProviderEmailObservationConfiguration());
+        modelBuilder.ApplyConfiguration(new Email.ProviderAddressSuppressionConfiguration());
         modelBuilder.ApplyConfiguration(new Newsletters.NewsletterCampaignConfiguration());
         modelBuilder.ApplyConfiguration(new Newsletters.CampaignRecipientSelectionConfiguration());
         modelBuilder.ApplyConfiguration(new Newsletters.CampaignRecipientConfiguration());

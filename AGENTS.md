@@ -1,6 +1,6 @@
 # DevCoreBlog — Agent çalışma kuralları
 
-Sürüm 15 · 14 Ekim 2026 · Kapsam: bu repository'nin tamamı · Hedef: Aether Notes.
+Sürüm 16 · 14 Ekim 2026 · Kapsam: bu repository'nin tamamı · Hedef: Aether Notes.
 
 Bu dosya projenin **tek güncel ana talimat kaynağıdır**. Her yeni görevde ve bağlam yenilendiğinde bu dosyayı, ardından görevle ilgili güncel plan/kayıtları yerelde mevcutsa oku. `.agents/AGENTS.md` yalnızca buraya yönlendirir. Arşiv belgeleri talimat değildir. Kurallara uymayan yeni kod yazmak veya bilinen bir güvenlik/veri bütünlüğü ihlalini gizleyerek işi tamamlandı saymak yasaktır.
 
@@ -91,6 +91,8 @@ SOLID “her sınıfa interface”, “her metoda factory” veya puan uğruna i
 ## 6. Kesin güvenlik sınırları
 
 ### Kimlik, yetki ve istek
+
+- V1 F36 `/api/webhooks/resend` yalnız cookie’den bağımsız POST’tur; dar CSRF muafiyeti yalnız bu imzalı callback içindir. Varsayılan kapalı `RESEND_WEBHOOK_ENABLED`, ayrı `RESEND_WEBHOOK_SECRET` ve en fazla4 açık gönderen mailbox’ı birlikte gerekir. Resmi MIT Svix2.8.0 verifier özgün strict UTF-8 body ve tek `svix-id/timestamp/signature` header’ını +/-5 dakika attempt yaşıyla doğrular; JSON imzadan önce yeniden üretilmez.64KiB/derinlik12/tek to adresi/duplicate field reddi, global60 POST/dakika/4 eşzamanlı,10sn HTTP/8sn store deadline/3sn lock/5sn statement sınırı korunur. Kalıcı receipt ID+body hash tekrarında no-op, değişmiş body409’dur; receipt/bağımsız message-address gözlemleri/irreversible adres suppression tek transaction ve DB guard/deferred commit’le yazılır. Yalnız hard Permanent bounce ve complaint adres engeller; Temporary bounce kaydedilir, delivered engeli kaldırmaz. Yeni subscriber INSERT aynı adres advisory kilidiyle önceki provider engelini devralır; source/ledger engeli ve dolu tarihçe Down ile silinmez. Açılma/klik olayları kayda alınmaz; attempt timestamp ile eski event created_at ayrıdır. Bu gözlem yerel kabul/okundu/kampanya gönderim durumu değildir; F37/F38 provider message ID ve frozen recipient bağını ayrıca doğrular. Callback/source payload, adres, subject, imza veya secret loglanmaz; başarılı/hatalı/HEAD/429/413 yanıtları no-store/noindex/no-referrer kalır. [Sağlayıcı olayları sözleşmesi](docs/SAGLAYICI_OLAYLARI_SOZLESMESI.md) uygulanır. Gerçek simulator kabulü production sender/domain veya kişisel mailbox teslimi kanıtı değildir.
 
 - Eksik/boş admin veya webhook config ile yetki açılmaz; fail-closed davran. Boş password, sabit demo credential ve plaintext fallback kabul edilmez. Parolalar yerleşik/doğrulanmış hash yöntemiyle, salt ve sürümlü parametrelerle doğrulanır; kendi kriptografini yazma.
 - Yönetim ve mutation işlemlerinde server-side authorization zorunlu. Menü/düğme gizlemek yetkilendirme değildir. Kullanıcıdan gelen ID ve return URL doğrulanır; açık redirect yasaktır.

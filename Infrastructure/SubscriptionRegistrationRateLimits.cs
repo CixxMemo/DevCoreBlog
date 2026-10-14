@@ -19,7 +19,12 @@ public static class SubscriptionRegistrationRateLimits
             ? RateLimitPartition.GetConcurrencyLimiter("registration-active", _ => new ConcurrencyLimiterOptions
             { PermitLimit = 8, QueueLimit = 0, QueueProcessingOrder = QueueProcessingOrder.OldestFirst })
             : RateLimitPartition.GetNoLimiter("registration-other"));
-        options.GlobalLimiter = PartitionedRateLimiter.CreateChained(requests, concurrency);
+        var providerConcurrency = PartitionedRateLimiter.Create<HttpContext, string>(context =>
+            context.GetEndpoint()?.Metadata.GetMetadata<ControllerActionDescriptor>()?.ControllerName == "ResendWebhook"
+            ? RateLimitPartition.GetConcurrencyLimiter("resend-active", _ => new ConcurrencyLimiterOptions
+            { PermitLimit = 4, QueueLimit = 0, QueueProcessingOrder = QueueProcessingOrder.OldestFirst })
+            : RateLimitPartition.GetNoLimiter("resend-other"));
+        options.GlobalLimiter = PartitionedRateLimiter.CreateChained(requests, concurrency, providerConcurrency);
         options.AddPolicy(Policy, context => RateLimitPartition.GetFixedWindowLimiter(
             context.Connection.RemoteIpAddress?.ToString() ?? "unknown-registration-client", _ => new FixedWindowRateLimiterOptions
             { PermitLimit = 5, Window = TimeSpan.FromMinutes(10), QueueLimit = 0, AutoReplenishment = true }));
