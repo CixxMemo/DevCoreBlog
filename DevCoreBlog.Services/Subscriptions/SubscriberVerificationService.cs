@@ -23,17 +23,11 @@ public sealed class SubscriberVerificationLinks
     public string Create(string token) => origin + Path + "#t=" + token;
 }
 
-/// <summary>Cryptographic proof issuance is internal; F28 will provide the bounded public registration entry point.</summary>
-public sealed class SubscriberVerificationIssuer(ISubscriberRepository subscribers, ISubscriberVerificationStore tokens,
-    TransactionalEmailProtector protection, IEmailSubmissionContext submission, SubscriberVerificationLinks links, TimeProvider clock)
+/// <summary>Creates one purpose-bound proof and encrypted mail without network or database access.</summary>
+public sealed class SubscriberVerificationMessageFactory(TransactionalEmailProtector protection, SubscriberVerificationLinks links)
 {
-    public async Task<VerificationStageOutcome> IssueAsync(Guid subscriberId, CancellationToken cancellationToken)
+    public PreparedSubscriberVerification Prepare(SubscriberSnapshot subscriber, DateTime now)
     {
-        if (!submission.IsConfigured) return VerificationStageOutcome.Ineligible;
-        var subscriber = await subscribers.FindAsync(subscriberId, cancellationToken);
-        if (subscriber is null || subscriber.Status != SubscriptionStatus.PendingVerification || subscriber.Suppression != SendingSuppression.None)
-            return VerificationStageOutcome.Ineligible;
-        var now = clock.GetUtcNow().UtcDateTime;
         now = now.AddTicks(-(now.Ticks % 10));
         var bytes = RandomNumberGenerator.GetBytes(SubscriberVerificationRules.TokenBytes);
         var token = WebEncoders.Base64UrlEncode(bytes);
@@ -46,7 +40,22 @@ public sealed class SubscriberVerificationIssuer(ISubscriberRepository subscribe
         var text = "Aether Notes bülten aboneliği için e-posta adresinizi doğrulayın:\n" + url +
             "\nBu bağlantı 24 saat geçerlidir. Talep size ait değilse bu e-postayı yok sayabilirsiniz.";
         var email = protection.Prepare(id, subscriber, "Aether Notes — E-posta adresinizi doğrulayın", html, text, now, draft.ExpiresUtc);
-        return await tokens.StageAsync(draft, email, cancellationToken);
+        return new(draft, email);
+    }
+}
+
+/// <summary>Trusted internal issuance; public registration additionally enforces durable admission limits.</summary>
+public sealed class SubscriberVerificationIssuer(ISubscriberRepository subscribers, ISubscriberVerificationStore tokens,
+    SubscriberVerificationMessageFactory messages, IEmailSubmissionContext submission, TimeProvider clock)
+{
+    public async Task<VerificationStageOutcome> IssueAsync(Guid subscriberId, CancellationToken cancellationToken)
+    {
+        if (!submission.IsConfigured) return VerificationStageOutcome.Ineligible;
+        var subscriber = await subscribers.FindAsync(subscriberId, cancellationToken);
+        if (subscriber is null || subscriber.Status != SubscriptionStatus.PendingVerification || subscriber.Suppression != SendingSuppression.None)
+            return VerificationStageOutcome.Ineligible;
+        var prepared = messages.Prepare(subscriber, clock.GetUtcNow().UtcDateTime);
+        return await tokens.StageAsync(prepared.Token, prepared.Email, cancellationToken);
     }
 }
 

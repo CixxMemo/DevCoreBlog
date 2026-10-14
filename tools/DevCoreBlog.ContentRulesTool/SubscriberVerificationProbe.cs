@@ -31,7 +31,7 @@ internal static class SubscriberVerificationProbe
         var store = new SubscriberVerificationStore(db, repo, queue);
         var protector = new TransactionalEmailProtector(provider, config);
         var links = new SubscriberVerificationLinks("https://aether.example.test");
-        var issuer = new SubscriberVerificationIssuer(repo, store, protector, config, links, clock);
+        var issuer = new SubscriberVerificationIssuer(repo, store, new SubscriberVerificationMessageFactory(protector, links), config, clock);
         var consumer = new SubscriberVerificationConsumer(store, clock);
         var checks = new Dictionary<string,bool>();
         async Task<SubscriberSnapshot> Sub()
@@ -112,7 +112,7 @@ internal static class SubscriberVerificationProbe
         {
             await using var ctx=new ApplicationDbContext(options);
             var work=new TransactionalEmailStore(ctx);var lifecycle=new SubscriberRepository(ctx);
-            return await new SubscriberVerificationIssuer(lifecycle,new SubscriberVerificationStore(ctx,lifecycle,work),protector,config,links,clock).IssueAsync(issueRace.Id,default);
+            return await new SubscriberVerificationIssuer(lifecycle,new SubscriberVerificationStore(ctx,lifecycle,work),new SubscriberVerificationMessageFactory(protector,links),config,clock).IssueAsync(issueRace.Id,default);
         }
         var issued=await Task.WhenAll(Enumerable.Range(0,10).Select(_=>IssueRace()));
         checks["ten_issuers_one_mail_and_token"] = issued.Count(x=>x==VerificationStageOutcome.Queued)==1
@@ -146,7 +146,7 @@ internal static class SubscriberVerificationProbe
         var protection=new TransactionalEmailProtector(provider,config);
         if(!SubscriberAddress.TryCreate("delivered@resend.dev",out var address)||address is null)return 2;
         var sub=await subscribers.GetOrCreatePendingAsync(address,DateTime.UtcNow,default);
-        var issuer=new SubscriberVerificationIssuer(subscribers,tokens,protection,config,new SubscriberVerificationLinks("https://aether.example.test"),TimeProvider.System);
+        var issuer=new SubscriberVerificationIssuer(subscribers,tokens,new SubscriberVerificationMessageFactory(protection,new SubscriberVerificationLinks("https://aether.example.test")),config,TimeProvider.System);
         var checks=new Dictionary<string,bool>();
         checks["real_verification_proof_and_mail_staged"]=await issuer.IssueAsync(sub.Id,default)==VerificationStageOutcome.Queued;
         await new TransactionalEmailDispatcher(queue,protection,config,sender,TimeProvider.System).RunOnceAsync(default);

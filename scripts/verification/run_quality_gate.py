@@ -173,6 +173,12 @@ try:
             stages['subscriber-verification']['passed']=code==0 and verification['passed'] and verification['count']==len(verification['checks']) and all(verification['checks'].values())
         except (OSError,ValueError,KeyError,TypeError):
             stages['subscriber-verification']['passed']=False
+        code,output=run('subscription-registration',['python3','scripts/verification/subscription_registration_probe.py','--port','55523','--report',str(report/'registration-migration.json')],source,timeout=240,export=False)
+        try:
+            registration=json.loads((report/'registration-migration.json').read_text())
+            stages['subscription-registration']['passed']=code==0 and registration['passed'] and registration['count']==len(registration['checks']) and all(registration['checks'].values())
+        except (OSError,ValueError,KeyError,TypeError):
+            stages['subscription-registration']['passed']=False
         if args.final_acceptance:
             code,output=run('final-security-data',['sh','scripts/verification/run_f17_visibility.sh'],source,timeout=480,export=False,extra={'DEVCORE_F49_PROBE':'1','DEVCORE_F57_PROBE':'1','DEVCORE_F57_REPORT':str(report/'final-regression.json'),'DEVCORE_F17_PG_PORT':'55461','DEVCORE_F17_APP_PORT':'15199'})
             try:

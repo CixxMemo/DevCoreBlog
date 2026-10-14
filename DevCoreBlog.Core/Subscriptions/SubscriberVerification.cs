@@ -55,7 +55,7 @@ public sealed class SubscriberVerificationDraft
     private static bool Hash(string value) => value is { Length: 64 } && value.All(c => c is >= '0' and <= '9' or >= 'A' and <= 'F');
 }
 
-/// <summary>Staging and consumption serialize on subscriber first, preserving the outbox transaction and single use.</summary>
+/// <summary>Staging enlists in a caller transaction when present; consumption atomically preserves single use.</summary>
 public interface ISubscriberVerificationStore
 {
     Task<VerificationStageOutcome> StageAsync(SubscriberVerificationDraft token, PreparedTransactionalEmail email, CancellationToken cancellationToken);

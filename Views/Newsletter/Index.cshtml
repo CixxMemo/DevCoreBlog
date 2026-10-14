@@ -1,10 +1,13 @@
 @model DevCoreBlog.Models.Public.NewsletterTeaserListModel
+@inject DevCoreBlog.Services.Subscriptions.SubscriptionRegistrationAvailability RegistrationAvailability
 @{ ViewData["Title"] = "Bülten"; }
 <link rel="stylesheet" href="~/css/newsletter-teasers.css" asp-append-version="true" />
 <section class="newsletter-teasers" aria-labelledby="newsletter-teaser-heading">
     <h1 id="newsletter-teaser-heading">Bülten</h1>
     <p>Yayımlanmış sayıların başlıkları ve kısa özetleri.</p>
-    <p>Tam içerik bu sayfada gösterilmez. Abonelik ve özel arşiv henüz kullanıma açılmadı.</p>
+    <p>Tam içerik bu sayfada gösterilmez. Özel arşiv henüz kullanıma açılmadı.</p>
+    @if (!RegistrationAvailability.CanRegister) { <p>Abonelik başvuruları şu anda kapalı.</p> }
+    <p><a href="/abone-ol" class="font-bold underline">Bültene abone ol</a></p>
     @if (Model.Result.Items.Count == 0)
     {
         <p class="public-empty-state">Henüz yayımlanmış bülten tanıtımı yok.</p>

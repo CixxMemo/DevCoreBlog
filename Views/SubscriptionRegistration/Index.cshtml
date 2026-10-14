@@ -1,0 +1,62 @@
+@model DevCoreBlog.Models.Subscriptions.SubscriptionRegistrationPage
+@{ Layout = null; }
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow, noarchive" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Bültene abone ol — Aether Notes</title>
+    <link rel="stylesheet" href="~/generated/tailwind-public.css" asp-append-version="true" />
+</head>
+<body class="min-h-screen bg-white text-gray-900 font-sans p-4 sm:p-8">
+    <main class="max-w-xl mx-auto border-2 border-gray-900 p-6 sm:p-8 space-y-6" aria-labelledby="registration-heading">
+        <a href="/" class="font-mono font-bold underline">Aether Notes</a>
+        <h1 id="registration-heading" class="text-2xl sm:text-3xl font-bold">Bültene abone ol</h1>
+        <p>Aether Notes’un kişisel deney bültenine ücretsiz abone olun.</p>
+        @if (Model.Accepted)
+        {
+            <p role="status">Adresiniz başvuruya uygunsa doğrulama bağlantısı e-postanıza iletilecektir. Gelen kutunuzu ve spam klasörünü kontrol edin. Mesaj ulaşmazsa daha sonra yeniden deneyin.</p>
+            <p>Abonelik, e-postadaki bağlantı üzerinden adresinizi doğruladıktan sonra etkinleşir.</p>
+        }
+        else
+        {
+            @if (!Model.Available)
+            {
+                <p role="status">Abonelik başvuruları şu anda kapalı. Daha sonra yeniden deneyebilirsiniz.</p>
+            }
+            else if (Model.Failed)
+            {
+                <p role="alert">Başvurunuz şu anda tamamlanamıyor. Daha sonra yeniden deneyin.</p>
+            }
+            <form action="/abone-ol" method="post" class="space-y-4" id="registration-form">
+                @Html.AntiForgeryToken()
+                <div id="registration-errors" class="text-red-700" role="alert" hidden="@ViewData.ModelState.IsValid">
+                    @if (!ViewData.ModelState.IsValid)
+                    {
+                        <ul>
+                            @foreach (var error in ViewData.ModelState.Values.SelectMany(value => value.Errors))
+                            {
+                                <li>@(string.IsNullOrWhiteSpace(error.ErrorMessage) ? "E-posta adresinizi kontrol edin." : error.ErrorMessage)</li>
+                            }
+                        </ul>
+                    }
+                </div>
+                <div class="space-y-2">
+                    <label asp-for="Input.Email" class="block font-bold">E-posta adresiniz</label>
+                    <input asp-for="Input.Email" name="Email" type="email" autocomplete="email" inputmode="email" maxlength="254" required disabled="@(!Model.Available)"
+                           aria-describedby="registration-help registration-errors" aria-invalid="@(!ViewData.ModelState.IsValid ? "true" : null)"
+                           class="block w-full min-w-0 border-2 border-gray-900 px-3 py-3 focus-visible:outline-2 focus-visible:outline-offset-4" />
+                    <p id="registration-help" class="text-sm">Bu adrese bir doğrulama bağlantısı göndereceğiz. Bağlantı 24 saat geçerlidir.</p>
+                </div>
+                <button type="submit" disabled="@(!Model.Available)" class="border-2 border-gray-900 px-4 py-3 font-bold bg-gray-900 text-white disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-4">Abone ol</button>
+            </form>
+        }
+        <nav aria-label="Diğer sayfalar" class="flex flex-wrap gap-4">
+            <a href="/bulten" class="underline font-bold">Bülten sayılarını keşfet</a>
+            <a href="/" class="underline font-bold">Ana sayfaya dön</a>
+        </nav>
+    </main>
+</body>
+</html>

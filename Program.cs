@@ -226,7 +226,11 @@ DevCoreBlog.Services.Email.ResendServiceRegistration.AddResendEmail(builder.Serv
 builder.Services.AddScoped<DevCoreBlog.Services.Documents.PublicPostContentService>();
 builder.Services.AddScoped<DevCoreBlog.Data.Subscriptions.SubscriberRepository>();
 builder.Services.AddScoped<DevCoreBlog.Core.Subscriptions.ISubscriberRepository>(services => services.GetRequiredService<DevCoreBlog.Data.Subscriptions.SubscriberRepository>());
-builder.Services.AddScoped<DevCoreBlog.Core.Subscriptions.ISubscriberVerificationStore, DevCoreBlog.Data.Subscriptions.SubscriberVerificationStore>();
+builder.Services.AddScoped<DevCoreBlog.Data.Subscriptions.SubscriberVerificationStore>();
+builder.Services.AddScoped<DevCoreBlog.Core.Subscriptions.ISubscriberVerificationStore>(services => services.GetRequiredService<DevCoreBlog.Data.Subscriptions.SubscriberVerificationStore>());
+builder.Services.AddScoped<DevCoreBlog.Core.Subscriptions.ISubscriptionRegistrationStore, DevCoreBlog.Data.Subscriptions.SubscriptionRegistrationStore>();
+builder.Services.AddScoped<DevCoreBlog.Services.Subscriptions.SubscriberVerificationMessageFactory>();
+builder.Services.AddScoped<DevCoreBlog.Services.Subscriptions.SubscriptionRegistrationService>();
 builder.Services.AddSingleton(new DevCoreBlog.Services.Subscriptions.SubscriberVerificationLinks(siteUrl.Origin));
 builder.Services.AddScoped<DevCoreBlog.Services.Subscriptions.SubscriberVerificationIssuer>();
 builder.Services.AddScoped<DevCoreBlog.Services.Subscriptions.SubscriberVerificationConsumer>();
@@ -240,6 +244,13 @@ if (!string.IsNullOrEmpty(emailWorkerSetting) && !bool.TryParse(emailWorkerSetti
     throw new InvalidOperationException("TRANSACTIONAL_EMAIL_WORKER_ENABLED must be true or false.");
 if (bool.TryParse(emailWorkerSetting, out var emailWorkerEnabled) && emailWorkerEnabled)
     builder.Services.AddHostedService<DevCoreBlog.Infrastructure.TransactionalEmailWorker>();
+var registrationSetting = Environment.GetEnvironmentVariable("SUBSCRIPTIONS_ENABLED");
+if (!string.IsNullOrEmpty(registrationSetting) && !bool.TryParse(registrationSetting, out _))
+    throw new InvalidOperationException("SUBSCRIPTIONS_ENABLED must be true or false.");
+builder.Services.AddSingleton(services => new DevCoreBlog.Services.Subscriptions.SubscriptionRegistrationAvailability(
+    bool.TryParse(registrationSetting, out var registrationEnabled) && registrationEnabled, emailWorkerEnabled,
+    services.GetRequiredService<DevCoreBlog.Core.Email.IEmailSubmissionContext>()));
+
 
 builder.Services.AddScoped<DevCoreBlog.Core.Documents.IPostDocumentRepository, PostDocumentRepository>();
 builder.Services.AddScoped<DevCoreBlog.Services.Documents.PostDocumentService>();
@@ -408,6 +419,7 @@ if (webhookRateLimitPermitLimit is < 1 or > 20)
 
 builder.Services.AddRateLimiter(options =>
 {
+    DevCoreBlog.Infrastructure.SubscriptionRegistrationRateLimits.Configure(options);
     // Partition by the client IP resolved only through the explicit ingress trust boundary.
     options.AddPolicy("LoginLimiter", httpContext =>
         RateLimitPartition.GetFixedWindowLimiter(

@@ -436,12 +436,36 @@ namespace DevCoreBlog.Migrations
                     b.HasIndex("Digest")
                         .IsUnique();
 
+                    b.HasIndex("SubscriberId", "CreatedUtc");
+
                     b.HasIndex("SubscriberId", "SubscriberVersion", "ExpiresUtc")
                         .HasFilter("\"ConsumedUtc\" IS NULL");
 
                     b.ToTable("SubscriberVerificationTokens", null, t =>
                         {
                             t.HasCheckConstraint("CK_SubscriberVerificationTokens_Valid", "\"Purpose\" = 1 AND \"SubscriberVersion\" > 0\nAND \"Digest\" ~ '^[A-F0-9]{64}$' AND \"AddressBinding\" ~ '^[A-F0-9]{64}$'\nAND isfinite(\"CreatedUtc\") AND isfinite(\"ExpiresUtc\") AND \"ExpiresUtc\" = \"CreatedUtc\" + interval '86400 seconds'\nAND (\"ConsumedUtc\" IS NULL OR (isfinite(\"ConsumedUtc\") AND \"ConsumedUtc\" >= \"CreatedUtc\" AND \"ConsumedUtc\" < \"ExpiresUtc\"))");
+                        });
+                });
+
+            modelBuilder.Entity("DevCoreBlog.Core.Subscriptions.SubscriptionRegistrationBudget", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Count")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("UpdatedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("WindowStartUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("SubscriptionRegistrationBudgets", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_SubscriptionRegistrationBudgets_Valid", "\"Id\"=1 AND \"Count\" BETWEEN 0 AND 20\nAND isfinite(\"WindowStartUtc\") AND isfinite(\"UpdatedUtc\")\nAND \"WindowStartUtc\" = date_trunc('day', \"WindowStartUtc\" AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'\nAND \"UpdatedUtc\" >= \"WindowStartUtc\" AND \"UpdatedUtc\" < \"WindowStartUtc\" + interval '1 day'");
                         });
                 });
 

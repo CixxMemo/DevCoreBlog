@@ -15,7 +15,8 @@ public sealed class SubscriberVerificationStore(ApplicationDbContext context, Su
         if (token.Id != email.Id || token.SubscriberId != email.SubscriberId || token.SubscriberVersion != email.SubscriberVersion
             || token.CreatedUtc != email.CreatedUtc || token.ExpiresUtc != email.ExpiresUtc)
             throw new ArgumentException("Proof and mail must share one identity.");
-        await using var transaction = await context.Database.BeginTransactionAsync(cancellationToken);
+        await using var transaction = context.Database.CurrentTransaction is null
+            ? await context.Database.BeginTransactionAsync(cancellationToken) : null;
         var subscriber = await LockSubscriber(token.SubscriberId, cancellationToken);
         if (subscriber is null || subscriber.Version != token.SubscriberVersion || subscriber.Status != SubscriptionStatus.PendingVerification
             || subscriber.Suppression != SendingSuppression.None || token.CreatedUtc < subscriber.UpdatedUtc
@@ -30,7 +31,7 @@ public sealed class SubscriberVerificationStore(ApplicationDbContext context, Su
             INSERT INTO "SubscriberVerificationTokens" ("Id","SubscriberId","SubscriberVersion","Purpose","Digest","AddressBinding","CreatedUtc","ExpiresUtc")
             VALUES ({token.Id},{token.SubscriberId},{token.SubscriberVersion},1,{token.Digest},{token.AddressBinding},{token.CreatedUtc},{token.ExpiresUtc})
             """, cancellationToken);
-        await transaction.CommitAsync(cancellationToken);
+        if (transaction is not null) await transaction.CommitAsync(cancellationToken);
         return VerificationStageOutcome.Queued;
     }
 

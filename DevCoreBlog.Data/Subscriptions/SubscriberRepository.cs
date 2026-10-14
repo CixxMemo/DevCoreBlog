@@ -55,6 +55,6 @@ public sealed class SubscriberRepository(ApplicationDbContext context) : ISubscr
         return affected == 1 ? SubscriberWriteOutcome.Changed : SubscriberWriteOutcome.Conflict;
     }
 
-    private static SubscriberSnapshot Snapshot(Subscriber item) => new(item.Id, item.EmailAddress, item.AddressKey,
+    internal static SubscriberSnapshot Snapshot(Subscriber item) => new(item.Id, item.EmailAddress, item.AddressKey,
         item.Status, item.Suppression, item.CreatedUtc, item.UpdatedUtc, item.VerifiedUtc, item.UnsubscribedUtc, item.Version);
 }

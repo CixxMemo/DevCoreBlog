@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="../../Infrastructure/SubscriptionRegistrationRateLimits.cs" Link="WebBoundary/SubscriptionRegistrationRateLimits.cs" />
     <ProjectReference Include="../../DevCoreBlog.Data/DevCoreBlog.Data.csproj" />
     <ProjectReference Include="../../DevCoreBlog.Services/DevCoreBlog.Services.csproj" />
     <FrameworkReference Include="Microsoft.AspNetCore.App" />

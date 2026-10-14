@@ -19,6 +19,7 @@ public sealed class SubscriberVerificationConfiguration : IEntityTypeConfigurati
         entity.HasKey(x => x.Id);
         entity.Property(x => x.Digest).HasMaxLength(64).UseCollation("C");
         entity.Property(x => x.AddressBinding).HasMaxLength(64).UseCollation("C");
+        entity.HasIndex(x => new { x.SubscriberId, x.CreatedUtc });
         entity.HasIndex(x => x.Digest).IsUnique();
         entity.HasIndex(x => new { x.SubscriberId, x.SubscriberVersion, x.ExpiresUtc }).HasFilter("\"ConsumedUtc\" IS NULL");
         entity.HasOne<Subscriber>().WithMany().HasForeignKey(x => x.SubscriberId).OnDelete(DeleteBehavior.Restrict);
