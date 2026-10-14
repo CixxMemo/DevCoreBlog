@@ -287,11 +287,11 @@
             <div class="border border-black p-3"><dt class="font-bold">Media storage</dt><dd id="media-status">@(Model.Overview.Media.Configured ? "Configured — access not checked" : "Not configured — uploads unavailable")</dd>
             @if (Model.Overview.Media.LastCompleted is { } completed)
             {
-                <dd>Last upload: @(Model.Overview.Media.LastSucceeded == true ? "Succeeded" : "Failed") — @completed.ToString("u", System.Globalization.CultureInfo.InvariantCulture) UTC</dd>
+                <dd>Last upload: @(Model.Overview.Media.LastSucceeded == true ? "Succeeded" : "Failed") — @SiteDates.DateAndTime(completed)</dd>
             }
             @if (Model.Overview.Media.LastSuccess is { } success)
             {
-                <dd>Last successful upload: @success.ToString("u", System.Globalization.CultureInfo.InvariantCulture) UTC</dd>
+                <dd>Last successful upload: @SiteDates.DateAndTime(success)</dd>
             }
             <dd>Upload history covers this process only; it does not prove current provider availability.</dd></div>
             <div class="border border-black p-3"><dt class="font-bold">Environment</dt><dd>@Model.EnvironmentName</dd></div>

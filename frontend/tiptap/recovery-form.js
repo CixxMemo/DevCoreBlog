@@ -1,3 +1,4 @@
+import { formatRecoveryDate } from '../../wwwroot/js/site-date.js';
 import { clearDocumentRecovery, createDocumentRecovery, recoveryFields } from './recovery-store.js';
 
 // Bind local persistence to one form. Only a server-admitted document can replace current writing.
@@ -27,7 +28,7 @@ export async function mountDocumentRecovery(form, { synchronize, apply, blocked,
         panel.hidden = !['offer', 'conflict', 'unknown'].includes(kind);
         restore.disabled = !record;
         discard.disabled = panel.hidden;
-        date.textContent = record ? recoveryDate(record.savedAt, form.dataset.recoveryTimeZone) : '';
+        date.textContent = record ? formatRecoveryDate(record.savedAt, form.dataset.recoveryTimeZone) : '';
         message.textContent = kind === 'unknown' ? 'Eski, başka yazıya ait veya okunamayan yerel taslak var. Üzerine yazılmadı; otomatik geri yükleme kapalı.'
             : kind === 'conflict' ? 'Başka sekme yerel taslağı değiştirdi. Mevcut metniniz korunuyor. Geri yükle veya sil seçimini yapana kadar yerel kayıt duraklatıldı.'
             : 'Bu yazıya ait yerel taslak bulundu. Mevcut metniniz değişmedi. Geri yüklemeyi seçebilirsiniz.';
@@ -107,13 +108,4 @@ export async function mountDocumentRecovery(form, { synchronize, apply, blocked,
     });
     window.addEventListener('pageshow', event => { if (event.persisted) session.refresh(); });
     return Object.freeze({ changed });
-}
-
-function recoveryDate(value, timeZone) {
-    try {
-        const parts = new Intl.DateTimeFormat('tr-TR', { timeZone, day: '2-digit', month: 'short', year: 'numeric',
-            hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).formatToParts(new Date(value));
-        const part = type => parts.find(p => p.type === type).value;
-        return `${part('day')} ${part('month')} ${part('year')} ${part('hour')}:${part('minute')} (${timeZone})`;
-    } catch { return 'Taslak zamanı gösterilemedi.'; }
 }

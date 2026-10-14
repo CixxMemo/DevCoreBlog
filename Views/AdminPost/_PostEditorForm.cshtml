@@ -225,7 +225,7 @@
 
                 @* Native seconds and server validation own dates; jQuery step does not support datetime-local. *@
                 <div>
-                    <label asp-for="PublishDate" class="block font-mono text-xs font-bold uppercase text-black mb-1">Schedule Date (@Model.SiteTimeZoneId)</label>
+                    <label asp-for="PublishDate" class="block font-mono text-xs font-bold uppercase text-black mb-1">Site yayın zamanı (@SiteDates.BrowserTimeZoneId)</label>
                     <input asp-for="PublishDate" asp-format="{0:yyyy-MM-ddTHH:mm:ss}" type="datetime-local" step="1" class="w-full border-2 border-black p-2 font-mono text-xs bg-white text-black focus:outline-none" />
                     <span asp-validation-for="PublishDate" class="font-mono text-xs text-rose-600 block mt-1"></span>
                 </div>

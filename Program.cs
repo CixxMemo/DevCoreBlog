@@ -225,6 +225,8 @@ builder.Services.AddScoped<DevCoreBlog.Core.Documents.IWritingCategoryChoices, W
 builder.Services.AddScoped<DevCoreBlog.Services.Documents.WritingCategoryService>();
 builder.Services.AddScoped<DevCoreBlog.Core.Newsletters.INewsletterInventory, NewsletterInventory>();
 builder.Services.AddScoped<DevCoreBlog.Services.Newsletters.NewsletterWritingService>();
+builder.Services.AddScoped<DevCoreBlog.Core.Newsletters.IPublicNewsletterTeasers, PublicNewsletterTeasers>();
+builder.Services.AddScoped<DevCoreBlog.Services.Newsletters.PublicNewsletterTeaserService>();
 builder.Services.AddScoped<IImageService, ImageService>();
 builder.Services.AddSingleton<IImageDecoder, ProcessImageDecoder>();
 builder.Services.AddSingleton<ImageUploadPolicy>();

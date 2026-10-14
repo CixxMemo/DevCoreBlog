@@ -1,6 +1,6 @@
 # DevCoreBlog — Agent çalışma kuralları
 
-Sürüm 7 · 11 Ekim 2026 · Kapsam: bu repository'nin tamamı · Hedef: Aether Notes.
+Sürüm 8 · 14 Ekim 2026 · Kapsam: bu repository'nin tamamı · Hedef: Aether Notes.
 
 Bu dosya projenin **tek güncel ana talimat kaynağıdır**. Her yeni görevde ve bağlam yenilendiğinde bu dosyayı, ardından görevle ilgili güncel plan/kayıtları yerelde mevcutsa oku. `.agents/AGENTS.md` yalnızca buraya yönlendirir. Arşiv belgeleri talimat değildir. Kurallara uymayan yeni kod yazmak veya bilinen bir güvenlik/veri bütünlüğü ihlalini gizleyerek işi tamamlandı saymak yasaktır.
 
@@ -125,7 +125,7 @@ SOLID “her sınıfa interface”, “her metoda factory” veya puan uğruna i
 
 ## 7. Veri bütünlüğü, yayın ve cache
 
-- Her public yazı sorgusu aynı yayın kuralını uygular: aktif yazı + yayın izni + PublishDate ≤ UTC şimdi + aktif kategori + kamuya açık erişim kapsamı. Tam bülten gövdesi abone erişim sınırından geçer; public detay/arama/feed/ilgili yazı/sitemap/portföy/meta/JSON-LD/cache üzerinden sızamaz. Public tanıtım başlığı/özeti yalnız izinli ayrı projection'dan gelir; tam belgeyi getirip Razor'da gizlemek yasaktır.
+- Her kamuya açık yazı gövdesi ve normal public yazı liste sorgusu aynı yayın kuralını uygular: aktif yazı + yayın izni + PublishDate ≤ UTC şimdi + aktif kategori + kamuya açık erişim kapsamı. Tam bülten gövdesi abone erişim sınırından geçer; public detay/arama/feed/ilgili yazı/sitemap/portföy/meta/JSON-LD/cache üzerinden sızamaz. Public tanıtım başlığı/özeti yalnız izinli ayrı projection'dan gelir; tam belgeyi getirip Razor'da gizlemek yasaktır. 14 Ekim 2026 K7/F32 kararıyla tanıtım yalnız yayımlanmış bülten başlığı ve en fazla 320 Unicode karakterlik özet içerir; görsel/tarih/alıntı/tam JSON-metni ve gövdeden otomatik örnek alınmaz.
 - F32 yönetici formunda Save Draft yayın iznini kapatır; Schedule gelecekte bir site zamanı ister; Publish now sunucunun UTC saatini kullanır. Edit normal Save kayıtlı yayın iznini ve tarihini korur. Eksik eylem güvenli taslak varsayımıdır; istemci IsPublished değeri yayın kararı değildir. Liste/form durumu ortak domain kuralından gelir.
 - Zamanı UTC sakla/karşılaştır; form gösterimini açık site saat dilimine dönüştür. Süreye bağlı davranış için yerleşik TimeProvider gibi testlenebilir saat kullan; eski tarihi tahminen kaydırma.
 - Sitede yayımla, taslak kaydet, site yayını planla ve abonelere gönder ayrı sunucu eylemleridir. Bülten site durumu gönderim durumundan ayrıdır. Gönderim zamanlaması eklenirse ayrı tarih/durum kullanır; site tarihi geçmiş gönderimi değiştirmez. Eksik eylem toplu gönderim başlatmaz.

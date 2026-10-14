@@ -86,6 +86,11 @@ fi
 if [ -n "${DEVCORE_VOL1_F08_REPORT_DIR:-}" ]; then
     python3 "$task_source/scripts/verification/f08_prepare_fixture.py" --source "$task_source"
 fi
+if [ -n "${DEVCORE_VOL1_F32_REPORT_DIR:-}" ]; then
+    mkdir -p "$DEVCORE_VOL1_F32_REPORT_DIR"
+    export DEVCORE_F32_SQL_CAPTURE="$DEVCORE_VOL1_F32_REPORT_DIR/sql-projection.txt"
+    python3 "$task_source/scripts/verification/f32_prepare_fixture.py" --source "$task_source"
+fi
 if [ "${DEVCORE_F30_PROBE:-0}" = 1 ]; then
     python3 "$task_source/scripts/verification/f30_prepare_fixture.py" --source "$task_source"
 fi
@@ -604,6 +609,11 @@ if [ -n "${DEVCORE_VOL1_F08_REPORT_DIR:-}" ]; then
         python3 "$task_source/scripts/verification/newsletter_writing_http_probe.py" \
             --base-url "http://127.0.0.1:$task_app_port" --database-port "$task_pg_port" \
             --report "$DEVCORE_VOL1_F33_REPORT_DIR/newsletter-writing-http.json"
+    fi
+    if [ -n "${DEVCORE_VOL1_F32_REPORT_DIR:-}" ]; then
+        python3 "$task_source/scripts/verification/newsletter_teasers_http_probe.py" \
+            --base-url "http://127.0.0.1:$task_app_port" --database-port "$task_pg_port" \
+            --report-dir "$DEVCORE_VOL1_F32_REPORT_DIR"
     fi
     task_before_down=$(psql -X -h 127.0.0.1 -p "$task_pg_port" -U "$task_pg_user" -d "$task_db" -At -c 'SELECT to_jsonb(p) FROM "Posts" p WHERE "Id" = 2003;')
     if (

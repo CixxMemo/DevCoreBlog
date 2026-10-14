@@ -114,7 +114,7 @@
                 <span asp-validation-for="Excerpt"></span>
                 <label asp-for="ThumbnailAlt">Kapak açıklaması</label><input asp-for="ThumbnailAlt" maxlength="300" />
                 <span asp-validation-for="ThumbnailAlt"></span>
-                <label asp-for="PublishDate">Site yayın zamanı (@Model.SiteTimeZoneId)</label>
+                <label asp-for="PublishDate">Site yayın zamanı (@SiteDates.BrowserTimeZoneId)</label>
                 <input asp-for="PublishDate" asp-format="{0:yyyy-MM-ddTHH:mm:ss}" type="datetime-local" step="1" />
                 <span asp-validation-for="PublishDate"></span>
                 <label class="writing-checkbox"><input asp-for="IsActive" /> @(Model.IsNewsletter ? "Bülten etkin" : "Yazı etkin")</label>

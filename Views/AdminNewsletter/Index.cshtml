@@ -13,7 +13,7 @@
             <h2><a asp-action="Edit" asp-route-id="@item.Newsletter.Id">@item.Newsletter.Title</a></h2>
             <p>@item.Newsletter.Summary</p>
             <p>Site yayını: <partial name="~/Views/AdminWriting/_PublicationState.cshtml" model="item.State" /> — Abone erişimi</p>
-            <p>Site yayın zamanı: @SiteDates.TurkishDateTime(item.Newsletter.PublishDate)</p>
+            <p>Site yayın zamanı: @SiteDates.DateAndTime(item.Newsletter.PublishDate)</p>
             <p>E-posta gönderimi: Başlatılmadı</p>
         </article>
     }

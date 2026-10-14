@@ -1,0 +1,27 @@
+@model DevCoreBlog.Models.Public.NewsletterTeaserListModel
+@{ ViewData["Title"] = "Bülten"; }
+<link rel="stylesheet" href="~/css/newsletter-teasers.css" asp-append-version="true" />
+<section class="newsletter-teasers" aria-labelledby="newsletter-teaser-heading">
+    <h1 id="newsletter-teaser-heading">Bülten</h1>
+    <p>Yayımlanmış sayıların başlıkları ve kısa özetleri.</p>
+    <p>Tam içerik bu sayfada gösterilmez. Abonelik ve özel arşiv henüz kullanıma açılmadı.</p>
+    @if (Model.Result.Items.Count == 0)
+    {
+        <p class="public-empty-state">Henüz yayımlanmış bülten tanıtımı yok.</p>
+    }
+    @foreach (var item in Model.Result.Items)
+    {
+        <article class="newsletter-teaser">
+            <h2>@item.Title</h2>
+            @if (!string.IsNullOrWhiteSpace(item.Summary)) { <p>@item.Summary</p> }
+        </article>
+    }
+    @if (Model.Page > 1 || Model.HasNext)
+    {
+        <nav aria-label="Bülten tanıtımı sayfaları">
+            @if (Model.Page > 1) { <a asp-action="Index" asp-route-page="@(Model.Page - 1)">Önceki</a> }
+            <span>Sayfa @Model.Page</span>
+            @if (Model.HasNext) { <a asp-action="Index" asp-route-page="@(Model.Page + 1)">Sonraki</a> }
+        </nav>
+    }
+</section>

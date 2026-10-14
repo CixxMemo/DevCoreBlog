@@ -6,6 +6,8 @@
 @* Supports seamless Dark and Light theme switching via the local theme module.   *@
 @* ============================================================================= *@
 
+@inject TimeProvider SiteClock
+
 <!DOCTYPE html>
 <html lang="tr" class="public-root">
 <head>
@@ -90,6 +92,7 @@
                 <a href="/" aria-current="@(Context.Request.Path == "/" ? "page" : null)" class="block py-3 px-4 hover:bg-gray-900 hover:text-white dark:hover:bg-primary dark:hover:text-white rounded-none border-b border-gray-200 dark:border-zinc-800 transition-none font-bold text-sm text-gray-900 dark:text-zinc-200 no-underline">
                     Ana sayfa
                 </a>
+                <a href="/bulten" aria-current="@(Context.Request.Path == "/bulten" ? "page" : null)" class="block py-3 px-4 hover:bg-gray-900 hover:text-white dark:hover:bg-primary dark:hover:text-white border-b border-gray-200 dark:border-zinc-800 font-bold text-sm no-underline">Bülten</a>
                 @await Component.InvokeAsync("PublicCategoryNavigation")
             </nav>
         </div>
@@ -105,7 +108,7 @@
                     RSS ile takip et
                 </a>
                 <span class="text-xs font-mono text-gray-500 dark:text-zinc-500">
-                    &copy; @DateTime.Now.Year
+                    &copy; @SiteDates.Year(SiteClock.GetUtcNow().UtcDateTime)
                 </span>
             </div>
 

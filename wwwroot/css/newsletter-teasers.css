@@ -1,0 +1,9 @@
+/* Public teasers use the existing theme tokens and contain no hidden private body. */
+.newsletter-teasers { width: 100%; min-width: 0; max-width: 72ch; margin-inline: auto; }
+.newsletter-teasers h1 { font: 700 1.75rem var(--font-mono); margin-bottom: 1rem; }
+.newsletter-teasers > p { margin-bottom: 1rem; }
+.newsletter-teaser { border: var(--public-rule); background: var(--bg-card); color: var(--text-primary); padding: 1.25rem; margin-block: 1.25rem; overflow-wrap: anywhere; }
+.newsletter-teaser h2 { font: 700 1.25rem var(--font-mono); margin-bottom: .75rem; }
+.newsletter-teaser p { line-height: var(--public-leading); white-space: pre-wrap; }
+.newsletter-teasers nav { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: space-between; padding-block: 1rem; }
+.newsletter-teasers nav a { text-decoration: underline; }
