@@ -1,0 +1,58 @@
+@using DevCoreBlog.Core.Subscriptions
+@using System.Globalization
+@model DevCoreBlog.Models.Admin.SubscriberListModel
+@{
+    ViewData["Title"] = "Aboneler";
+    var from = Model.Dates.From.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+    var to = Model.Dates.To.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+    var totals = Model.Data.Totals;
+}
+<section class="subscriber-page" lang="tr" aria-labelledby="subscriber-title">
+    <h1 id="subscriber-title">Aboneler</h1>
+    <p>Bu ekran yalnız kayıtları gösterir. E-posta göndermez ve abonelikleri değiştirmez.</p>
+    <h2>Güncel durumlar</h2>
+    <dl class="subscriber-counts">
+        <dt>Toplam adres kaydı</dt><dd data-total="all">@totals.Total</dd>
+        <dt>Doğrulama bekleyen</dt><dd data-total="pending">@totals.Pending</dd>
+        <dt>Aktif</dt><dd data-total="active">@totals.Active</dd>
+        <dt>Abonelikten çıkmış</dt><dd data-total="unsubscribed">@totals.Unsubscribed</dd>
+        <dt>Gönderim engeli bulunan</dt><dd data-total="blocked">@totals.Blocked</dd>
+        <dt>Gönderim koşullarını karşılayan</dt><dd data-total="eligible">@totals.Eligible</dd>
+    </dl>
+    <p>Aktif kayıt, doğrulanmış aboneliktir; engellenmiş olabilir. Gönderim koşulları ayrıca güncel çıkış ve engel denetiminden geçer. Sayılar, canlı gönderimin açık olduğu anlamına gelmez.</p>
+    <p>Gözlem zamanı: @SiteDates.DateAndTime(Model.Dates.ObservedUtc)</p>
+    <form asp-action="Index" method="get" class="subscriber-filters">
+        <div><label for="status">Liste durumu</label><select id="status" name="status">
+            <option value="All" selected="@(Model.Status == SubscriberListStatus.All)">Tümü</option>
+            <option value="Pending" selected="@(Model.Status == SubscriberListStatus.Pending)">Doğrulama bekleyen</option>
+            <option value="Active" selected="@(Model.Status == SubscriberListStatus.Active)">Aktif</option>
+            <option value="Unsubscribed" selected="@(Model.Status == SubscriberListStatus.Unsubscribed)">Abonelikten çıkmış</option>
+        </select></div>
+        <div><label for="from">Büyüme başlangıcı</label><input id="from" name="from" type="date" value="@from" min="1900-01-01" max="@to" required /></div>
+        <div><label for="to">Büyüme bitişi (dahil)</label><input id="to" name="to" type="date" value="@to" min="@from" required /></div>
+        <button type="submit">Filtreleri uygula</button>
+    </form>
+    <h2>Seçilen aralıkta yeni adres kayıtları</h2>
+    <p class="subscriber-growth" data-new-addresses>@Model.Data.NewAddresses</p>
+    <p>Bu sayı, seçilen site takvimi aralığında ilk kez kaydedilen adresleri sayar. Yeniden başvuru yeni adres sayılmaz. Tarihsel aktif abone veya net büyüme ölçümü değildir.</p>
+    <p>Tarih aralığı yalnız yeni kayıt sayısını değiştirir. Üstteki güncel toplamlar tüm kayıtları kapsar; aşağıdaki liste yalnız durum filtresiyle daralır.</p>
+    <h2>Abone listesi</h2><p>Bu filtrede @Model.Data.FilteredCount kayıt · Sayfa @Model.Page · Sayfada en fazla 25 adres</p>
+    @if (Model.Data.Items.Count == 0) { <p role="status">Bu durumda kayıt bulunmuyor.</p> }
+    else {
+        <ul class="subscriber-list">
+        @foreach (var item in Model.Data.Items) {
+            <li class="subscriber-row">
+                <p class="subscriber-address">@item.EmailAddress</p>
+                <p>Durum: @(item.Status switch { SubscriptionStatus.Active => "Aktif", SubscriptionStatus.Unsubscribed => "Abonelikten çıkmış", _ => "Doğrulama bekleyen" })</p>
+                <p>İlk kayıt: @SiteDates.DateAndTime(item.CreatedUtc)</p>
+                <p>Gönderim: @(item.Blocked ? "Gönderim engeli var" : item.Eligible ? "Abonelik koşulları uygun" : "Abonelik koşulları uygun değil")</p>
+            </li>
+        }
+        </ul>
+    }
+    <nav aria-label="Abone sayfaları">
+        @if (Model.Page > 1) { <a asp-action="Index" asp-route-page="@(Model.Page - 1)" asp-route-status="@Model.Status" asp-route-from="@from" asp-route-to="@to">Önceki sayfa</a> }
+        @if (Model.Page < SubscriberListQuery.MaximumPage && (long)Model.Page * SubscriberListQuery.PageSize < Model.Data.FilteredCount)
+        { <a asp-action="Index" asp-route-page="@(Model.Page + 1)" asp-route-status="@Model.Status" asp-route-from="@from" asp-route-to="@to">Sonraki sayfa</a> }
+    </nav>
+</section>

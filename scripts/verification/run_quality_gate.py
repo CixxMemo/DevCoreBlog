@@ -224,6 +224,12 @@ try:
             stages['campaign-admin']['passed']=code==0 and campaign_admin['passed'] and campaign_admin['count']==len(campaign_admin['checks']) and all(campaign_admin['checks'].values())
         except (OSError,ValueError,KeyError,TypeError):
             stages['campaign-admin']['passed']=False
+        code,output=run('subscriber-admin',['python3','scripts/verification/subscriber_admin_probe.py','--port','55535','--report',str(report/'subscriber-admin'/'report.json')],source,timeout=480,export=False)
+        try:
+            subscriber_admin=json.loads((report/'subscriber-admin'/'report.json').read_text())
+            stages['subscriber-admin']['passed']=code==0 and subscriber_admin['passed'] and subscriber_admin['count']==len(subscriber_admin['checks']) and all(subscriber_admin['checks'].values())
+        except (OSError,ValueError,KeyError,TypeError):
+            stages['subscriber-admin']['passed']=False
         code,output=run('reader-identity',['python3','scripts/verification/reader_identity_probe.py','--port','55526','--report',str(report/'reader-migration.json')],source,timeout=300,export=False)
         try:
             reader=json.loads((report/'reader-migration.json').read_text())

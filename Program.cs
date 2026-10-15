@@ -226,6 +226,8 @@ builder.Services.AddSingleton(new DevCoreBlog.Services.Newsletters.NewsletterCam
 builder.Services.AddScoped<DevCoreBlog.Services.Newsletters.NewsletterCampaignService>();
 builder.Services.AddScoped<DevCoreBlog.Core.Newsletters.ICampaignAdministrationStore, DevCoreBlog.Data.Newsletters.CampaignAdministrationStore>();
 builder.Services.AddScoped<DevCoreBlog.Services.Newsletters.CampaignAdministrationService>();
+builder.Services.AddScoped<DevCoreBlog.Core.Subscriptions.ISubscriberAdministrationStore, DevCoreBlog.Data.Subscriptions.SubscriberAdministrationStore>();
+builder.Services.AddScoped<DevCoreBlog.Services.Subscriptions.SubscriberAdministrationService>();
 builder.Services.AddScoped<DevCoreBlog.Core.Newsletters.ICampaignRecipientStore, DevCoreBlog.Data.Newsletters.CampaignRecipientStore>();
 builder.Services.AddScoped<DevCoreBlog.Services.Newsletters.CampaignRecipientService>();
 builder.Services.AddSingleton<DevCoreBlog.Services.Subscriptions.OneClickUnsubscriptionLinks>();

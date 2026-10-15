@@ -29,7 +29,8 @@ public sealed class SecurityHeadersMiddleware(RequestDelegate next)
             || context.Request.Path.Equals(Controllers.ResendWebhookController.Path, StringComparison.OrdinalIgnoreCase)
             || DevCoreBlog.Services.Subscriptions.OneClickUnsubscriptionLinks.IsPath(context.Request.Path.Value)
             || context.Request.Path.StartsWithSegments("/AdminTestEmail", StringComparison.OrdinalIgnoreCase)
-            || context.Request.Path.StartsWithSegments("/AdminCampaign", StringComparison.OrdinalIgnoreCase);
+            || context.Request.Path.StartsWithSegments("/AdminCampaign", StringComparison.OrdinalIgnoreCase)
+            || context.Request.Path.StartsWithSegments("/AdminSubscriber", StringComparison.OrdinalIgnoreCase);
         context.Response.OnStarting(() =>
         {
             context.Response.Headers["X-Content-Type-Options"] = "nosniff";

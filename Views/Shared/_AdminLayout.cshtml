@@ -26,7 +26,8 @@
         { "AdminNewsletter", "Bültenler" },
         { "AdminEmail", "E-posta önizlemesi" },
         { "AdminTestEmail", "Test e-postası" },
-        { "AdminCampaign", "Gönderimler" }
+        { "AdminCampaign", "Gönderimler" },
+        { "AdminSubscriber", "Aboneler" }
     };
 
     // Map action names to human-readable breadcrumb segments
@@ -58,6 +59,8 @@
     if (currentController == "AdminCampaign")
         currentActionLabel = currentAction == "Index" ? "Liste" : currentAction == "Compose" ? "Hazırla" : currentAction == "Details" ? "Durum" : "Sonuç";
 
+    if (currentController == "AdminSubscriber") currentActionLabel = "Liste";
+
     // Get the authenticated admin username (defaults to "Admin" if null)
     var userName = User.Identity?.Name ?? "Admin";
 
@@ -68,7 +71,7 @@
 }
 
 <!DOCTYPE html>
-<html lang="@(currentController is "AdminNewsletter" or "AdminTestEmail" or "AdminEmail" or "AdminCampaign" ? "tr" : "en")">
+<html lang="@(currentController is "AdminNewsletter" or "AdminTestEmail" or "AdminEmail" or "AdminCampaign" or "AdminSubscriber" ? "tr" : "en")">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -91,6 +94,7 @@
     @* ========================================================================= *@
     <link rel="stylesheet" href="~/css/admin-shell.css" asp-append-version="true" />
 
+    @if (currentController == "AdminSubscriber") { <link rel="stylesheet" href="~/css/subscriber-admin.css" asp-append-version="true" /> }
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/admin-mobile.css" asp-append-version="true" />
     @if (currentController == "AdminCampaign") { <link rel="stylesheet" href="~/css/campaign-admin.css" asp-append-version="true" /> }
@@ -155,6 +159,8 @@
                     <a asp-controller="AdminNewsletter" asp-action="Index" class="admin-nav-item @(currentController == "AdminNewsletter" ? "active" : "")">Bültenler</a>
 
                     <a asp-controller="AdminCampaign" asp-action="Index" class="admin-nav-item @(currentController == "AdminCampaign" ? "active" : "")">Gönderimler</a>
+
+                    <a asp-controller="AdminSubscriber" asp-action="Index" class="admin-nav-item @(currentController == "AdminSubscriber" ? "active" : "")">Aboneler</a>
 
                     @* 3. Categories *@
                     <a asp-controller="AdminCategory" asp-action="Index" 
