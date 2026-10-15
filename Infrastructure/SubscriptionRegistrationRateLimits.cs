@@ -24,7 +24,15 @@ public static class SubscriptionRegistrationRateLimits
             ? RateLimitPartition.GetConcurrencyLimiter("resend-active", _ => new ConcurrencyLimiterOptions
             { PermitLimit = 4, QueueLimit = 0, QueueProcessingOrder = QueueProcessingOrder.OldestFirst })
             : RateLimitPartition.GetNoLimiter("resend-other"));
-        options.GlobalLimiter = PartitionedRateLimiter.CreateChained(requests, concurrency, providerConcurrency);
+        var oneClickConcurrency=PartitionedRateLimiter.Create<HttpContext,string>(context=>
+            context.GetEndpoint()?.Metadata.GetMetadata<ControllerActionDescriptor>()?.ControllerName=="OneClickUnsubscription"
+            ?RateLimitPartition.GetConcurrencyLimiter("one-click-active",_=>new ConcurrencyLimiterOptions
+            {PermitLimit=8,QueueLimit=0,QueueProcessingOrder=QueueProcessingOrder.OldestFirst}):RateLimitPartition.GetNoLimiter("one-click-other"));
+        var testConcurrency = PartitionedRateLimiter.Create<HttpContext, string>(context =>
+            context.GetEndpoint()?.Metadata.GetMetadata<ControllerActionDescriptor>() is { ControllerName: "AdminTestEmail", ActionName: "Send" }
+            ? RateLimitPartition.GetConcurrencyLimiter("test-email-active", _ => new ConcurrencyLimiterOptions
+            { PermitLimit = 1, QueueLimit = 0, QueueProcessingOrder = QueueProcessingOrder.OldestFirst }) : RateLimitPartition.GetNoLimiter("test-email-other"));
+        options.GlobalLimiter = PartitionedRateLimiter.CreateChained(requests, concurrency, providerConcurrency,oneClickConcurrency,testConcurrency);
         options.AddPolicy(Policy, context => RateLimitPartition.GetFixedWindowLimiter(
             context.Connection.RemoteIpAddress?.ToString() ?? "unknown-registration-client", _ => new FixedWindowRateLimiterOptions
             { PermitLimit = 5, Window = TimeSpan.FromMinutes(10), QueueLimit = 0, AutoReplenishment = true }));

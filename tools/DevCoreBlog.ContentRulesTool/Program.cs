@@ -19,6 +19,10 @@ if (string.IsNullOrWhiteSpace(connectionString))
 var options = new DbContextOptionsBuilder<ApplicationDbContext>()
     .UseNpgsql(connectionString)
     .Options;
+if (args.Any(x => x.StartsWith("--test-email", StringComparison.Ordinal)))
+    return await TestEmailSubmissionProbe.RunAsync(options, args);
+if (args.Any(x => x.StartsWith("--campaign-delivery", StringComparison.Ordinal)))
+    return await CampaignDeliveryProbe.RunAsync(options, args);
 if (args.Any(x => x.StartsWith("--provider-events", StringComparison.Ordinal)))
     return await ProviderEmailEventProbe.RunAsync(options, args);
 if (args.Any(x => x.StartsWith("--recipients", StringComparison.Ordinal)))

@@ -7,6 +7,7 @@ from npm_audit_policy import evaluate_npm_audit
 ROOT=Path(__file__).resolve().parents[2]
 parser=argparse.ArgumentParser()
 parser.add_argument('--report-dir',type=Path,required=True)
+parser.add_argument('--nginx',type=Path,help='Supported Nginx executable for real HTTPS campaign acceptance; otherwise discover nginx on PATH.')
 parser.add_argument('--final-acceptance',action='store_true',help='Also run F57 security/data and F22 conflict regression on separate disposable clusters.')
 args=parser.parse_args(); report=args.report_dir.resolve()
 if report.exists() and any(report.iterdir()):
@@ -203,6 +204,20 @@ try:
             stages['provider-events']['passed']=code==0 and events['passed'] and events['count']==len(events['checks']) and all(events['checks'].values())
         except (OSError,ValueError,KeyError,TypeError):
             stages['provider-events']['passed']=False
+        delivery_command=['python3','scripts/verification/campaign_delivery_probe.py','--port','55530','--report',str(report/'campaign-delivery.json')]
+        if args.nginx is not None:delivery_command.extend(['--nginx',str(args.nginx.resolve())])
+        code,output=run('campaign-delivery',delivery_command,source,timeout=480,export=False)
+        try:
+            delivery=json.loads((report/'campaign-delivery.json').read_text())
+            stages['campaign-delivery']['passed']=code==0 and delivery['passed'] and delivery['count']==len(delivery['checks']) and all(delivery['checks'].values())
+        except (OSError,ValueError,KeyError,TypeError):
+            stages['campaign-delivery']['passed']=False
+        code,output=run('test-email',['python3','scripts/verification/test_email_probe.py','--port','55533','--report',str(report/'test-email'/'report.json')],source,timeout=480,export=False)
+        try:
+            test_email=json.loads((report/'test-email'/'report.json').read_text())
+            stages['test-email']['passed']=code==0 and test_email['passed'] and test_email['count']==len(test_email['checks']) and all(test_email['checks'].values())
+        except (OSError,ValueError,KeyError,TypeError):
+            stages['test-email']['passed']=False
         code,output=run('reader-identity',['python3','scripts/verification/reader_identity_probe.py','--port','55526','--report',str(report/'reader-migration.json')],source,timeout=300,export=False)
         try:
             reader=json.loads((report/'reader-migration.json').read_text())

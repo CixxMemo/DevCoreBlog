@@ -41,6 +41,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<DevCoreBlog.Core.Email.ProviderEmailEvent> ProviderEmailEvents { get; set; }
     public DbSet<DevCoreBlog.Core.Email.ProviderEmailObservation> ProviderEmailObservations { get; set; }
     public DbSet<DevCoreBlog.Core.Email.ProviderAddressSuppression> ProviderAddressSuppressions { get; set; }
+    public DbSet<DevCoreBlog.Core.Email.TestEmailSubmission> TestEmailSubmissions { get; set; }
 
     public DbSet<DevCoreBlog.Core.Subscriptions.SubscriberVerificationToken> SubscriberVerificationTokens { get; set; }
 
@@ -48,6 +49,9 @@ public class ApplicationDbContext : DbContext
     public DbSet<DevCoreBlog.Core.Newsletters.NewsletterCampaign> NewsletterCampaigns { get; set; }
     public DbSet<DevCoreBlog.Core.Newsletters.NewsletterRecipientSelection> NewsletterRecipientSelections { get; set; }
     public DbSet<DevCoreBlog.Core.Newsletters.NewsletterRecipient> NewsletterRecipients { get; set; }
+    public DbSet<DevCoreBlog.Core.Newsletters.CampaignDispatch> CampaignDispatches { get; set; }
+    public DbSet<DevCoreBlog.Core.Newsletters.CampaignDeliveryJob> CampaignDeliveryJobs { get; set; }
+    public DbSet<DevCoreBlog.Core.Newsletters.CampaignDeliveryAttempt> CampaignDeliveryAttempts { get; set; }
 
     public DbSet<DevCoreBlog.Core.Subscriptions.ReaderLoginToken> ReaderLoginTokens { get; set; }
     public DbSet<DevCoreBlog.Core.Subscriptions.ReaderSession> ReaderSessions { get; set; }
@@ -67,9 +71,13 @@ public class ApplicationDbContext : DbContext
         modelBuilder.ApplyConfiguration(new Email.ProviderEmailEventConfiguration());
         modelBuilder.ApplyConfiguration(new Email.ProviderEmailObservationConfiguration());
         modelBuilder.ApplyConfiguration(new Email.ProviderAddressSuppressionConfiguration());
+        modelBuilder.ApplyConfiguration(new Email.TestEmailSubmissionConfiguration());
         modelBuilder.ApplyConfiguration(new Newsletters.NewsletterCampaignConfiguration());
         modelBuilder.ApplyConfiguration(new Newsletters.CampaignRecipientSelectionConfiguration());
         modelBuilder.ApplyConfiguration(new Newsletters.CampaignRecipientConfiguration());
+        modelBuilder.ApplyConfiguration(new Newsletters.CampaignDispatchConfiguration());
+        modelBuilder.ApplyConfiguration(new Newsletters.CampaignDeliveryJobConfiguration());
+        modelBuilder.ApplyConfiguration(new Newsletters.CampaignDeliveryAttemptConfiguration());
 
         var receipt = modelBuilder.Entity<WebhookReceipt>();
         receipt.HasKey(item => new { item.ContractVersion, item.Key });

@@ -1,12 +1,26 @@
 # Include inside the nginx http block. Replace the domain and certificate paths together.
 # Requires an actively supported Nginx with ngx_http_ssl_module (ssl_reject_handshake >= 1.19.4).
+# Opaque one-click proofs are query values: never log $request, $request_uri, $args or Referrer.
+error_log /dev/null;
+map $uri $aether_exit_cache { default ""; ~*^/abonelik/tek-tik/*$ "no-store"; }
+map $uri $aether_exit_referrer { default ""; ~*^/abonelik/tek-tik/*$ "no-referrer"; }
+map $uri $aether_exit_robots { default ""; ~*^/abonelik/tek-tik/*$ "noindex, nofollow, noarchive"; }
+# Empty map values emit no header on ordinary site responses; early proxy errors still protect exit URLs.
+add_header Cache-Control $aether_exit_cache always;
+add_header Referrer-Policy $aether_exit_referrer always;
+add_header X-Robots-Tag $aether_exit_robots always;
+log_format aether_safe escape=json '{"time":"$time_iso8601","method":"$request_method","path":"$uri","status":$status,"requestId":"$request_id"}';
 server {
+    access_log /var/log/nginx/aethernotes-access.log aether_safe;
+    error_log /dev/null;
     listen 80 default_server;
     listen [::]:80 default_server;
     server_name _;
     return 404;
 }
 server {
+    access_log /var/log/nginx/aethernotes-access.log aether_safe;
+    error_log /dev/null;
     listen 443 ssl default_server;
     listen [::]:443 ssl default_server;
     server_name _;
@@ -14,12 +28,18 @@ server {
     ssl_reject_handshake on;
 }
 server {
+    access_log /var/log/nginx/aethernotes-access.log aether_safe;
+    error_log /dev/null;
     listen 80;
     listen [::]:80;
     server_name blog.example;
-    return 308 https://blog.example$request_uri;
+    location ~* ^/abonelik/tek-tik/*$ { return 400; }
+    location / { return 308 https://blog.example$request_uri; }
 }
 server {
+    access_log /var/log/nginx/aethernotes-access.log aether_safe;
+    # Native errors may include raw request URLs. Safe access status/requestId remains available for diagnosis.
+    error_log /dev/null;
     listen 443 ssl;
     listen [::]:443 ssl;
     server_name blog.example;

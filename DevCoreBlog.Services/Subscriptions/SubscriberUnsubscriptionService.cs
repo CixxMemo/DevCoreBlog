@@ -1,7 +1,5 @@
-using System.Security.Cryptography;
 using DevCoreBlog.Core.Subscriptions;
 using Microsoft.AspNetCore.DataProtection;
-using Microsoft.AspNetCore.WebUtilities;
 
 namespace DevCoreBlog.Services.Subscriptions;
 
@@ -24,28 +22,12 @@ public sealed class SubscriberExitLinks
     {
         if (subscriber.Id == Guid.Empty || subscriber.PeriodId == Guid.Empty || subscriber.Status == SubscriptionStatus.Unsubscribed)
             throw new ArgumentException("A current subscription period is required.");
-        var payload = subscriber.Id.ToString("N") + ":" + subscriber.PeriodId.ToString("N") + ":" +
-            SubscriberVerificationRules.AddressBinding(subscriber.AddressKey);
-        return origin + Path + "#t=" + protector.Protect(payload);
+        return Create(new SubscriberExitProof(subscriber.Id, subscriber.PeriodId, SubscriberVerificationRules.AddressBinding(subscriber.AddressKey)));
     }
 
-    public bool TryRead(string? token, out SubscriberExitProof? proof)
-    {
-        proof = null;
-        if (token is null || token.Length is < 100 or > MaximumTokenLength || token.Any(c => !char.IsAsciiLetterOrDigit(c) && c is not '-' and not '_')) return false;
-        try
-        {
-            var bytes = WebEncoders.Base64UrlDecode(token);
-            if (WebEncoders.Base64UrlEncode(bytes) != token) return false;
-            var parts = protector.Unprotect(token).Split(':');
-            if (parts.Length != 3 || !Guid.TryParseExact(parts[0], "N", out var id) || !Guid.TryParseExact(parts[1], "N", out var period)
-                || parts[2].Length != 64 || parts[2].Any(c => !char.IsAsciiHexDigit(c))) return false;
-            proof = new(id, period, parts[2]);
-            return true;
-        }
-        catch (CryptographicException) { return false; }
-        catch (FormatException) { return false; }
-    }
+    internal string Create(SubscriberExitProof proof) => origin + Path + "#t=" + SubscriberExitProofCodec.Protect(protector, proof);
+
+    public bool TryRead(string? token, out SubscriberExitProof? proof) => SubscriberExitProofCodec.TryRead(protector, token, out proof);
 }
 
 /// <summary>Validates proof before database access; exit remains available regardless of provider or worker configuration.</summary>

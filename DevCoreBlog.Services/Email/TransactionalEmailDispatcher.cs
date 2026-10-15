@@ -58,17 +58,13 @@ internal static class TransactionalEmailRetryPolicy
             ? TransactionalEmailProblem.None : TransactionalEmailProblem.ProviderUncertain;
         if (result.Outcome == EmailSendOutcome.NotConfigured) problem = TransactionalEmailProblem.ConfigurationUnavailable;
         if (result.Outcome != EmailSendOutcome.Retryable) return new(state, problem, now, result);
-        if (start.AttemptNumber >= TransactionalEmailRules.MaximumAttempts)
-            return new(TransactionalEmailState.Held, TransactionalEmailProblem.AttemptsExhausted, now, result);
-        if (result.Reason == EmailSendReason.MonthlyQuota)
-            return new(TransactionalEmailState.Held, TransactionalEmailProblem.ConfigurationUnavailable, now, result);
-        var delay = TimeSpan.FromSeconds(start.AttemptNumber switch { 1 => 30, 2 => 120, 3 => 600, _ => 1800 });
-        if (result.Reason == EmailSendReason.DailyQuota && result.RetryAfter is null) delay = TimeSpan.FromDays(1);
-        if (result.RetryAfter is { } hint && hint > delay) delay = hint;
-        var due = now.Add(delay);
-        if (due + TransactionalEmailRules.MinimumSendLifetime >= lease.ExpiresUtc
-            || due - start.FirstAttemptUtc >= TransactionalEmailRules.MaximumRetryAge)
-            return new(TransactionalEmailState.Expired, TransactionalEmailProblem.LifetimeEnded, now, result);
-        return new(TransactionalEmailState.Pending, TransactionalEmailProblem.None, due, result);
+        var retry=EmailRetrySchedule.Decide(start.AttemptNumber,start.FirstAttemptUtc,lease.ExpiresUtc,result,now);
+        return retry.Outcome switch
+        {
+            RetryScheduleOutcome.Ready=>new(TransactionalEmailState.Pending,TransactionalEmailProblem.None,retry.DueUtc,result),
+            RetryScheduleOutcome.Exhausted=>new(TransactionalEmailState.Held,TransactionalEmailProblem.AttemptsExhausted,now,result),
+            RetryScheduleOutcome.MonthlyQuota=>new(TransactionalEmailState.Held,TransactionalEmailProblem.ConfigurationUnavailable,now,result),
+            _=>new(TransactionalEmailState.Expired,TransactionalEmailProblem.LifetimeEnded,now,result)
+        };
     }
 }

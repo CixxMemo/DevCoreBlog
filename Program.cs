@@ -51,18 +51,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders();
 builder.Logging.AddJsonConsole(options => { options.IncludeScopes = true; options.UseUtcTimestamp = true; options.TimestampFormat = "yyyy-MM-ddTHH:mm:ss.fffZ"; });
 // Provider diagnostics can contain SQL/connection details; application events use safe summaries.
-builder.Services.PostConfigure<LoggerFilterOptions>(options =>
-{
-    // Even a more-specific environment override must not print provider errors containing input/SQL.
-    for (var i = options.Rules.Count - 1; i >= 0; i--)
-        if (options.Rules[i].CategoryName is { } category &&
-            (category.StartsWith("Microsoft.EntityFrameworkCore", StringComparison.Ordinal) || category.StartsWith("Npgsql", StringComparison.Ordinal) ||
-             category.StartsWith("Microsoft.AspNetCore.Mvc.ModelBinding", StringComparison.Ordinal)))
-            options.Rules.RemoveAt(i);
-    options.Rules.Add(new LoggerFilterRule(null, "Microsoft.EntityFrameworkCore", LogLevel.None, null));
-    options.Rules.Add(new LoggerFilterRule(null, "Npgsql", LogLevel.None, null));
-    options.Rules.Add(new LoggerFilterRule(null, "Microsoft.AspNetCore.Mvc.ModelBinding", LogLevel.None, null));
-});
+builder.Services.PostConfigure<LoggerFilterOptions>(DevCoreBlog.Configuration.PrivateLogFilters.Configure);
 // Development dotenv values fill missing variables only; production uses the service environment.
 var dotenvPath = Path.Combine(builder.Environment.ContentRootPath, ".env");
 if (builder.Environment.IsDevelopment())
@@ -237,6 +226,29 @@ builder.Services.AddSingleton(new DevCoreBlog.Services.Newsletters.NewsletterCam
 builder.Services.AddScoped<DevCoreBlog.Services.Newsletters.NewsletterCampaignService>();
 builder.Services.AddScoped<DevCoreBlog.Core.Newsletters.ICampaignRecipientStore, DevCoreBlog.Data.Newsletters.CampaignRecipientStore>();
 builder.Services.AddScoped<DevCoreBlog.Services.Newsletters.CampaignRecipientService>();
+builder.Services.AddSingleton<DevCoreBlog.Services.Subscriptions.OneClickUnsubscriptionLinks>();
+builder.Services.AddScoped<DevCoreBlog.Services.Subscriptions.OneClickUnsubscriptionService>();
+builder.Services.AddScoped<DevCoreBlog.Core.Newsletters.ICampaignDispatchStore,DevCoreBlog.Data.Newsletters.CampaignDispatchStore>();
+builder.Services.AddScoped<DevCoreBlog.Core.Newsletters.ICampaignDeliveryWorkStore,DevCoreBlog.Data.Newsletters.CampaignDeliveryWorkStore>();
+builder.Services.AddScoped<DevCoreBlog.Services.Newsletters.CampaignDeliveryProtector>();
+builder.Services.AddScoped<DevCoreBlog.Services.Newsletters.CampaignPreparationService>();
+builder.Services.AddScoped<DevCoreBlog.Services.Newsletters.CampaignDeliveryDispatcher>();
+var testEmailSetting = Environment.GetEnvironmentVariable("TEST_EMAIL_ENABLED");
+if (!string.IsNullOrEmpty(testEmailSetting) && !bool.TryParse(testEmailSetting, out _)) throw new InvalidOperationException("TEST_EMAIL_ENABLED must be true or false.");
+builder.Services.AddSingleton(new DevCoreBlog.Services.Email.TestEmailOptions(
+    bool.TryParse(testEmailSetting, out var testEmailEnabled) && testEmailEnabled,
+    Environment.GetEnvironmentVariable("TEST_EMAIL_RECIPIENT"), siteUrl.Origin));
+builder.Services.AddScoped<DevCoreBlog.Core.Email.ITestEmailSubmissionStore, DevCoreBlog.Data.Email.TestEmailSubmissionStore>();
+builder.Services.AddScoped<DevCoreBlog.Services.Email.TestEmailMessageFactory>();
+builder.Services.AddScoped<DevCoreBlog.Services.Email.TestEmailSubmissionService>();
+var campaignWorkerSetting=Environment.GetEnvironmentVariable("NEWSLETTER_WORKER_ENABLED");
+var deliveryReadySetting=Environment.GetEnvironmentVariable("NEWSLETTER_DELIVERY_READY");
+if(!string.IsNullOrEmpty(campaignWorkerSetting) && !bool.TryParse(campaignWorkerSetting,out _))throw new InvalidOperationException("NEWSLETTER_WORKER_ENABLED must be true or false.");
+if(!string.IsNullOrEmpty(deliveryReadySetting) && !bool.TryParse(deliveryReadySetting,out _))throw new InvalidOperationException("NEWSLETTER_DELIVERY_READY must be true or false.");
+builder.Services.AddSingleton(services=>new DevCoreBlog.Services.Newsletters.CampaignDeliveryReadiness(
+    bool.TryParse(deliveryReadySetting,out var deliveryReady) && deliveryReady,
+    services.GetRequiredService<DevCoreBlog.Core.Email.IEmailSubmissionContext>(),services.GetRequiredService<DevCoreBlog.Services.Subscriptions.OneClickUnsubscriptionLinks>()));
+if(bool.TryParse(campaignWorkerSetting,out var campaignWorkerEnabled) && campaignWorkerEnabled)builder.Services.AddHostedService<DevCoreBlog.Infrastructure.CampaignDeliveryWorker>();
 builder.Services.AddSingleton(new DevCoreBlog.Services.Email.ResendWebhookOptions(
     bool.TryParse(Environment.GetEnvironmentVariable("RESEND_WEBHOOK_ENABLED"), out var webhookEnabled) && webhookEnabled,
     Environment.GetEnvironmentVariable("RESEND_WEBHOOK_SECRET"),
@@ -450,6 +462,10 @@ if (webhookRateLimitPermitLimit is < 1 or > 20)
 builder.Services.AddRateLimiter(options =>
 {
     DevCoreBlog.Infrastructure.SubscriptionRegistrationRateLimits.Configure(options);
+    options.AddPolicy("TestEmailLimiter", _ => RateLimitPartition.GetFixedWindowLimiter("test-email-global", _ => new FixedWindowRateLimiterOptions
+    { PermitLimit = 10, Window = TimeSpan.FromMinutes(1), QueueLimit = 0, AutoReplenishment = true }));
+    options.AddPolicy("OneClickLimiter",_=>RateLimitPartition.GetFixedWindowLimiter("one-click-global",_=>new FixedWindowRateLimiterOptions
+    {PermitLimit=120,Window=TimeSpan.FromMinutes(1),QueueLimit=0,AutoReplenishment=true}));
     options.AddPolicy("ResendWebhookLimiter", _ => RateLimitPartition.GetFixedWindowLimiter(
         "resend-ingress", _ => new FixedWindowRateLimiterOptions
         { PermitLimit = 60, Window = TimeSpan.FromMinutes(1), QueueLimit = 0, AutoReplenishment = true }));
@@ -633,6 +649,7 @@ if (!app.Environment.IsDevelopment())
 }
 
 // Redirect all HTTP requests to HTTPS for secure communication
+app.UseMiddleware<OneClickTransportBoundary>();
 app.UseHttpsRedirection();
 
 // Enable URL-based routing — this must come before endpoint mapping

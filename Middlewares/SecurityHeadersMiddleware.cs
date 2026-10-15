@@ -26,20 +26,22 @@ public sealed class SecurityHeadersMiddleware(RequestDelegate next)
         // Error-page re-execution changes endpoint metadata before OnStarting; retain archive privacy for that response.
         var privateArchivePath = context.Request.Path.Equals("/bultenler", StringComparison.OrdinalIgnoreCase)
             || (context.Request.Path.StartsWithSegments("/bulten", StringComparison.OrdinalIgnoreCase, out var remainder) && remainder.HasValue)
-            || context.Request.Path.Equals(Controllers.ResendWebhookController.Path, StringComparison.OrdinalIgnoreCase);
+            || context.Request.Path.Equals(Controllers.ResendWebhookController.Path, StringComparison.OrdinalIgnoreCase)
+            || DevCoreBlog.Services.Subscriptions.OneClickUnsubscriptionLinks.IsPath(context.Request.Path.Value)
+            || context.Request.Path.StartsWithSegments("/AdminTestEmail", StringComparison.OrdinalIgnoreCase);
         context.Response.OnStarting(() =>
         {
             context.Response.Headers["X-Content-Type-Options"] = "nosniff";
             context.Response.Headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
             context.Response.Headers["X-Frame-Options"] = "DENY";
             var action = context.GetEndpoint()?.Metadata.GetMetadata<ControllerActionDescriptor>();
-            if (privateArchivePath || action?.ControllerName is "SubscriberVerification" or "SubscriptionRegistration" or "SubscriberUnsubscription" or "ReaderAccount" or "NewsletterArchive")
+            if (privateArchivePath || action?.ControllerName is "SubscriberVerification" or "SubscriptionRegistration" or "SubscriberUnsubscription" or "OneClickUnsubscription" or "ReaderAccount" or "NewsletterArchive")
             {
                 context.Response.Headers["Referrer-Policy"] = "no-referrer";
                 context.Response.Headers["Cache-Control"] = "no-store";
                 context.Response.Headers["X-Robots-Tag"] = "noindex, nofollow, noarchive";
             }
-            if (action?.ControllerName is "AdminEmail" or "AdminNewsletter" or "AdminWriting")
+            if (action?.ControllerName is "AdminEmail" or "AdminTestEmail" or "AdminNewsletter" or "AdminWriting")
             {
                 context.Response.Headers["Cache-Control"] = "no-store";
                 context.Response.Headers["X-Robots-Tag"] = "noindex, nofollow, noarchive";

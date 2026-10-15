@@ -114,6 +114,60 @@ namespace DevCoreBlog.Migrations
                         });
                 });
 
+            modelBuilder.Entity("DevCoreBlog.Core.Email.TestEmailSubmission", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AddressKey")
+                        .IsRequired()
+                        .HasMaxLength(254)
+                        .HasColumnType("character varying(254)")
+                        .UseCollation("C");
+
+                    b.Property<DateTime?>("CompletedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("HttpStatus")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("InputHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .UseCollation("C");
+
+                    b.Property<int?>("Outcome")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid?>("ProviderMessageId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int?>("Reason")
+                        .HasColumnType("integer");
+
+                    b.Property<long>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedUtc");
+
+                    b.HasIndex("ProviderMessageId")
+                        .IsUnique()
+                        .HasFilter("\"ProviderMessageId\" IS NOT NULL");
+
+                    b.ToTable("TestEmailSubmissions", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_TestEmailSubmissions_Valid", "\"Id\"<>'00000000-0000-0000-0000-000000000000'::uuid AND \"InputHash\" ~ '^[A-F0-9]{64}$'\nAND length(\"AddressKey\") BETWEEN 3 AND 254 AND \"AddressKey\"=lower(\"AddressKey\") AND \"AddressKey\" ~ '^[!-~]+@[A-Za-z0-9.-]+$'\nAND isfinite(\"CreatedUtc\") AND ((\"CompletedUtc\" IS NULL)=(\"Outcome\" IS NULL)) AND ((\"Outcome\" IS NULL)=(\"Reason\" IS NULL))\nAND ((\"Version\"=1 AND \"CompletedUtc\" IS NULL) OR (\"Version\"=2 AND \"CompletedUtc\" IS NOT NULL))\nAND (\"CompletedUtc\" IS NULL OR (isfinite(\"CompletedUtc\") AND \"CompletedUtc\">=\"CreatedUtc\" AND \"CompletedUtc\"<\"CreatedUtc\"+interval '1 minute'))\nAND (\"Outcome\" IS NULL OR \"Outcome\" BETWEEN 0 AND 4) AND (\"Reason\" IS NULL OR \"Reason\" BETWEEN 0 AND 15)\nAND (\"HttpStatus\" IS NULL OR \"HttpStatus\" BETWEEN 100 AND 599)\nAND (\"CompletedUtc\" IS NOT NULL OR \"HttpStatus\" IS NULL)\nAND ((\"Outcome\" IS NOT NULL AND \"Outcome\"=0 AND \"ProviderMessageId\" IS NOT NULL AND \"ProviderMessageId\"<>'00000000-0000-0000-0000-000000000000'::uuid)\n    OR ((\"Outcome\" IS NULL OR \"Outcome\"<>0) AND \"ProviderMessageId\" IS NULL))");
+                        });
+                });
+
             modelBuilder.Entity("DevCoreBlog.Core.Email.TransactionalEmailAttempt", b =>
                 {
                     b.Property<Guid>("JobId")
@@ -437,6 +491,192 @@ namespace DevCoreBlog.Migrations
                     b.ToTable("WebhookReceipts", t =>
                         {
                             t.HasCheckConstraint("CK_WebhookReceipts_ContractVersion", "\"ContractVersion\" IN (1, 2)");
+                        });
+                });
+
+            modelBuilder.Entity("DevCoreBlog.Core.Newsletters.CampaignDeliveryAttempt", b =>
+                {
+                    b.Property<Guid>("JobId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Number")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("CompletedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("HttpStatus")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("LeaseId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int?>("Outcome")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid?>("ProviderMessageId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int?>("Reason")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("StartedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("JobId", "Number");
+
+                    b.ToTable("CampaignDeliveryAttempts", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_CampaignDeliveryAttempts_Valid", "\"Number\" BETWEEN 1 AND 5 AND \"LeaseId\"<>'00000000-0000-0000-0000-000000000000'::uuid AND isfinite(\"StartedUtc\")\nAND ((\"CompletedUtc\" IS NULL)=(\"Outcome\" IS NULL)) AND ((\"Outcome\" IS NULL)=(\"Reason\" IS NULL))\nAND (\"Outcome\" IS NULL OR \"Outcome\" BETWEEN 0 AND 4) AND (\"Reason\" IS NULL OR \"Reason\" BETWEEN 0 AND 15)\nAND (\"CompletedUtc\" IS NULL OR (isfinite(\"CompletedUtc\") AND \"CompletedUtc\">=\"StartedUtc\"))\nAND (\"HttpStatus\" IS NULL OR \"HttpStatus\" BETWEEN 100 AND 599)\nAND (\"ProviderMessageId\" IS NULL OR (\"Outcome\"=0 AND \"ProviderMessageId\"<>'00000000-0000-0000-0000-000000000000'::uuid))");
+                        });
+                });
+
+            modelBuilder.Entity("DevCoreBlog.Core.Newsletters.CampaignDeliveryJob", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("AttemptCount")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("CampaignId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("DueUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("ExpiresUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("FirstAttemptUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("LeaseId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("LeaseUntilUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("PayloadHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .UseCollation("C");
+
+                    b.Property<Guid>("PeriodId")
+                        .HasColumnType("uuid");
+
+                    b.Property<long>("PreparationVersion")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("Problem")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ProtectedPayload")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("ProviderMessageId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("State")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("SubscriberId")
+                        .HasColumnType("uuid");
+
+                    b.Property<long>("SubscriberVersion")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("UpdatedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LeaseUntilUtc")
+                        .HasFilter("\"State\" IN (1,2)");
+
+                    b.HasIndex("ProviderMessageId")
+                        .IsUnique()
+                        .HasFilter("\"ProviderMessageId\" IS NOT NULL");
+
+                    b.HasIndex("CampaignId", "PreparationVersion");
+
+                    b.HasIndex("CampaignId", "SubscriberId")
+                        .IsUnique();
+
+                    b.HasIndex("DueUtc", "Id")
+                        .HasFilter("\"State\"=0");
+
+                    b.ToTable("CampaignDeliveryJobs", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_CampaignDeliveryJobs_Payload", "octet_length(\"ProtectedPayload\") BETWEEN 1 AND 4194304 AND \"ProtectedPayload\" ~ '^[A-Za-z0-9+/=]+$' AND \"PayloadHash\" ~ '^[A-F0-9]{64}$'");
+
+                            t.HasCheckConstraint("CK_CampaignDeliveryJobs_State", "\"Id\"<>'00000000-0000-0000-0000-000000000000'::uuid AND \"PeriodId\"<>'00000000-0000-0000-0000-000000000000'::uuid\nAND \"SubscriberVersion\">0 AND \"PreparationVersion\">=2 AND \"Version\">0 AND \"State\" BETWEEN 0 AND 7 AND \"Problem\" BETWEEN 0 AND 10\nAND \"AttemptCount\" BETWEEN 0 AND 5 AND ((\"AttemptCount\"=0)=(\"FirstAttemptUtc\" IS NULL))\nAND ((\"State\" IN (1,2))=(\"LeaseId\" IS NOT NULL AND \"LeaseUntilUtc\" IS NOT NULL))\nAND ((\"LeaseId\" IS NULL)=(\"LeaseUntilUtc\" IS NULL)) AND (\"State\"<>2 OR \"AttemptCount\">0)\nAND ((\"State\"=3)=(\"ProviderMessageId\" IS NOT NULL))\nAND (\"ProviderMessageId\" IS NULL OR \"ProviderMessageId\"<>'00000000-0000-0000-0000-000000000000'::uuid)");
+
+                            t.HasCheckConstraint("CK_CampaignDeliveryJobs_Time", "isfinite(\"CreatedUtc\") AND isfinite(\"UpdatedUtc\") AND isfinite(\"ExpiresUtc\") AND isfinite(\"DueUtc\")\nAND \"UpdatedUtc\">=\"CreatedUtc\" AND \"ExpiresUtc\">=\"CreatedUtc\"+interval '30 seconds'\nAND \"ExpiresUtc\"<=\"CreatedUtc\"+interval '1 day' AND \"DueUtc\">=\"CreatedUtc\"\nAND (\"FirstAttemptUtc\" IS NULL OR (isfinite(\"FirstAttemptUtc\") AND \"FirstAttemptUtc\" BETWEEN \"CreatedUtc\" AND \"UpdatedUtc\"))\nAND (\"LeaseUntilUtc\" IS NULL OR (isfinite(\"LeaseUntilUtc\") AND \"LeaseUntilUtc\">\"UpdatedUtc\"))");
+                        });
+                });
+
+            modelBuilder.Entity("DevCoreBlog.Core.Newsletters.CampaignDispatch", b =>
+                {
+                    b.Property<Guid>("CampaignId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ContextHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .UseCollation("C");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("ExpiresUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("LastSubscriberId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("PreparationState")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ProtectedContext")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("SnapshotHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .UseCollation("C");
+
+                    b.Property<long>("StagedCount")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("UpdatedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("bigint");
+
+                    b.HasKey("CampaignId");
+
+                    b.HasIndex("CreatedUtc", "CampaignId")
+                        .HasFilter("\"PreparationState\"=0");
+
+                    b.ToTable("CampaignDispatches", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_CampaignDispatches_Valid", "\"Version\">0 AND \"StagedCount\">=0 AND \"PreparationState\" IN (0,1,2)\nAND \"ContextHash\" ~ '^[A-F0-9]{64}$' AND \"SnapshotHash\" ~ '^[A-F0-9]{64}$'\nAND octet_length(\"ProtectedContext\") BETWEEN 1 AND 16384 AND \"ProtectedContext\" ~ '^[A-Za-z0-9+/=]+$'\nAND isfinite(\"CreatedUtc\") AND isfinite(\"UpdatedUtc\") AND \"UpdatedUtc\">=\"CreatedUtc\"\nAND \"ExpiresUtc\"=\"CreatedUtc\"+interval '1 day' AND isfinite(\"ExpiresUtc\")\nAND ((\"StagedCount\"=0 AND \"LastSubscriberId\" IS NULL) OR (\"StagedCount\">0 AND \"LastSubscriberId\" IS NOT NULL AND \"LastSubscriberId\">'00000000-0000-0000-0000-000000000000'::uuid))");
                         });
                 });
 
@@ -917,6 +1157,39 @@ namespace DevCoreBlog.Migrations
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Post");
+                });
+
+            modelBuilder.Entity("DevCoreBlog.Core.Newsletters.CampaignDeliveryAttempt", b =>
+                {
+                    b.HasOne("DevCoreBlog.Core.Newsletters.CampaignDeliveryJob", null)
+                        .WithMany()
+                        .HasForeignKey("JobId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("DevCoreBlog.Core.Newsletters.CampaignDeliveryJob", b =>
+                {
+                    b.HasOne("DevCoreBlog.Core.Newsletters.CampaignDispatch", null)
+                        .WithMany()
+                        .HasForeignKey("CampaignId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("DevCoreBlog.Core.Newsletters.NewsletterRecipient", null)
+                        .WithMany()
+                        .HasForeignKey("CampaignId", "SubscriberId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("DevCoreBlog.Core.Newsletters.CampaignDispatch", b =>
+                {
+                    b.HasOne("DevCoreBlog.Core.Newsletters.NewsletterCampaign", null)
+                        .WithMany()
+                        .HasForeignKey("CampaignId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("DevCoreBlog.Core.Newsletters.NewsletterCampaign", b =>

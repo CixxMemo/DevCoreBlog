@@ -25,7 +25,7 @@ jobs:
       - name: PostgreSQL fixture tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y postgresql-16 rsync ripgrep
+          sudo apt-get install -y postgresql-16 rsync ripgrep nginx
           echo /usr/lib/postgresql/16/bin >> "$GITHUB_PATH"
       - name: Clean build, audit and isolated PostgreSQL acceptance
         run: python3 scripts/verification/run_quality_gate.py --final-acceptance --report-dir "$RUNNER_TEMP/devcore-quality"

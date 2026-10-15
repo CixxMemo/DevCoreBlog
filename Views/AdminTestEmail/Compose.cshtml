@@ -1,0 +1,31 @@
+@model DevCoreBlog.Models.Admin.TestEmailComposeModel
+@{
+    ViewData["Title"] = "Test e-postası hazırla";
+}
+<section lang="tr" aria-labelledby="test-email-title" class="max-w-2xl min-w-0">
+    <h1 id="test-email-title" class="text-2xl font-bold mb-4">Test e-postası hazırla</h1>
+    <p class="mb-4">Bu işlem yalnız önizlemedeki içeriğin bir denemesini gönderir. Yazıyı kaydetmez, yayımlamaz ve abonelere göndermez.</p>
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div asp-validation-summary="All" role="alert" class="text-red-700 mb-4"></div>
+    }
+    @if (Model.Ready)
+    {
+        <p class="mb-4 break-all">İzinli test alıcısı: <strong>@Model.Recipient</strong></p>
+        <form asp-controller="AdminTestEmail" asp-action="Send" method="post">
+            <input asp-for="Input.RequestId" type="hidden" />
+            <input asp-for="Input.DocumentJson" type="hidden" />
+            <label asp-for="Input.Subject" class="block font-bold mb-2">E-posta konusu</label>
+            <input asp-for="Input.Subject" maxlength="200" required aria-describedby="subject-help subject-error" class="border-2 border-black w-full p-3" />
+            <span asp-validation-for="Input.Subject" id="subject-error" class="block text-red-700"></span>
+            <p id="subject-help" class="text-sm mt-2 mb-4">Konuya otomatik olarak [TEST] eklenir. Alıcı bu formdan değiştirilemez.</p>
+            <p class="text-sm mb-4">Testler arasında en az bir dakika olmalıdır. Son 24 saatte en fazla üç yeni test başlatabilirsiniz.</p>
+            <button type="submit" class="border-2 border-black bg-black text-white font-bold px-4 py-3">Test e-postası gönder</button>
+        </form>
+    }
+    else
+    {
+        <p role="status">Test gönderimi henüz etkin değil. Gönderen ve izinli test adresi tanımlandığında açılır.</p>
+    }
+    <p class="mt-4 text-sm">Bu sayfa, önizlemeyi açtığınız andaki içeriği kullanır. Değişiklikler için yazım sekmesine dönüp yeniden önizleme açın.</p>
+</section>

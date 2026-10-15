@@ -24,6 +24,10 @@
             <pre class="email-preview-text text-sm mt-4">@rendered.PlainText</pre>
         </details>
         <p class="text-sm mt-4">Görünüm e-posta uygulamasına göre değişebilir.</p>
+        <form asp-controller="AdminTestEmail" asp-action="Prepare" method="post" class="mt-6">
+            <input type="hidden" name="Input.DocumentJson" value="@Model.Input.DocumentJson" />
+            <button type="submit" class="border-2 border-black font-bold px-4 py-3">Test e-postası hazırla</button>
+        </form>
     }
     else if (ViewData.ModelState.IsValid)
     {

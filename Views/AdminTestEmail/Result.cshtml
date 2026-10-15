@@ -1,0 +1,28 @@
+@using DevCoreBlog.Services.Email
+@model DevCoreBlog.Models.Admin.TestEmailResultModel
+@{
+    ViewData["Title"] = "Test e-postası sonucu";
+    var message = Model.Result.Status switch
+    {
+        TestEmailResultStatus.Accepted => "Sağlayıcı test e-postasını kabul etti. Bu, gelen kutusuna teslim edildiği veya okunduğu anlamına gelmez.",
+        TestEmailResultStatus.InProgress => "Bu test isteği için henüz kesin bir sonuç kaydı yok. Aynı istek yeniden gönderilmedi.",
+        TestEmailResultStatus.Uncertain => "Testin sonucu kesinleşmedi. Tekrar e-posta oluşturma riskine karşı bu istek otomatik olarak yeniden gönderilmeyecek.",
+        TestEmailResultStatus.Limited => "Test gönderim sınırına ulaşıldı. Daha sonra yeniden deneyin.",
+        TestEmailResultStatus.Suppressed => "İzinli test adresine gönderim kapalı. Adresin çıkış veya gönderim engeli durumunu kontrol edin.",
+        TestEmailResultStatus.Conflict => "Bu test isteğinin içeriği veya ayarları değişmiş. Yazım sekmesinden yeni bir önizleme açın.",
+        TestEmailResultStatus.Invalid => "Test içeriği, konusu veya istek bilgisi geçersiz. Yazım sekmesinden yeniden önizleme açın.",
+        TestEmailResultStatus.TooLarge => "Test içeriği gönderim sınırlarını aşıyor. İçeriği kısaltıp yeniden önizleme açın.",
+        TestEmailResultStatus.Disabled => "Test gönderimi henüz etkin değil. Gönderen ve izinli test adresi tanımlandığında açılır.",
+        TestEmailResultStatus.Rejected => "Test gönderim isteği kabul edilmedi. Otomatik yeniden deneme yapılmadı.",
+        _ => "Test gönderimi şu anda başlatılamadı. Daha sonra yeniden deneyin."
+    };
+}
+<section lang="tr" aria-labelledby="test-email-title" class="max-w-2xl min-w-0">
+    <h1 id="test-email-title" class="text-2xl font-bold mb-4">Test e-postası sonucu</h1>
+    <p role="status">@message</p>
+    @if (Model.Result.Replayed)
+    {
+        <p class="mt-4">Önceki test isteğinin sonucu gösteriliyor; yeni bir e-posta gönderilmedi.</p>
+    }
+    <p class="mt-4">Yazmaya devam etmek için yazım sekmesine dönebilirsiniz. Abonelere gönderim başlatılmadı.</p>
+</section>

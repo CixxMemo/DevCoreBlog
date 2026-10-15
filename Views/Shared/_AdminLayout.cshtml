@@ -23,7 +23,9 @@
         { "AdminPost", "Posts" },
         { "AdminDocument", "Belgeler" },
         { "AdminWriting", "Yazılar" },
-        { "AdminNewsletter", "Bültenler" }
+        { "AdminNewsletter", "Bültenler" },
+        { "AdminEmail", "E-posta önizlemesi" },
+        { "AdminTestEmail", "Test e-postası" }
     };
 
     // Map action names to human-readable breadcrumb segments
@@ -49,6 +51,8 @@
 
     if (currentController == "AdminNewsletter")
         currentActionLabel = currentAction == "Index" ? "Liste" : currentActionLabel;
+    if (currentController == "AdminTestEmail")
+        currentActionLabel = currentAction == "Prepare" ? "Hazırla" : currentAction == "Send" ? "Sonuç" : "Bilgi";
 
     // Get the authenticated admin username (defaults to "Admin" if null)
     var userName = User.Identity?.Name ?? "Admin";
@@ -60,7 +64,7 @@
 }
 
 <!DOCTYPE html>
-<html lang="@(currentController == "AdminNewsletter" ? "tr" : "en")">
+<html lang="@(currentController is "AdminNewsletter" or "AdminTestEmail" or "AdminEmail" ? "tr" : "en")">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
