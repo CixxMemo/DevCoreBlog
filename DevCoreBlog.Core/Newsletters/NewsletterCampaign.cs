@@ -90,15 +90,22 @@ public sealed class NewsletterCampaign
     /// <summary>Only the mutable intent state changes; cancellation never rewrites the frozen payload.</summary>
     public CampaignCancelStatus Cancel(long expectedVersion, DateTime utcNow)
     {
-        RequireUtc(utcNow);
-        if (expectedVersion is <= 0 or long.MaxValue) return CampaignCancelStatus.Conflict;
-        if (State == NewsletterCampaignState.Cancelled) return CampaignCancelStatus.Unchanged;
-        if (Version != expectedVersion) return CampaignCancelStatus.Conflict;
-        if (utcNow < UpdatedUtc) return CampaignCancelStatus.InvalidTime;
+        var result = CancellationStatus(State, Version, UpdatedUtc, expectedVersion, utcNow);
+        if (result != CampaignCancelStatus.Cancelled) return result;
         State = NewsletterCampaignState.Cancelled;
         UpdatedUtc = utcNow.AddTicks(-(utcNow.Ticks % 10));
         Version++;
-        return CampaignCancelStatus.Cancelled;
+        return result;
+    }
+    /// <summary>Evaluates cancellation from metadata so persistence need not load an immutable private body.</summary>
+    public static CampaignCancelStatus CancellationStatus(NewsletterCampaignState state, long version, DateTime updatedUtc,
+        long expectedVersion, DateTime utcNow)
+    {
+        RequireUtc(utcNow);
+        if (expectedVersion is <= 0 or long.MaxValue) return CampaignCancelStatus.Conflict;
+        if (state == NewsletterCampaignState.Cancelled) return CampaignCancelStatus.Unchanged;
+        if (state != NewsletterCampaignState.Prepared || version != expectedVersion) return CampaignCancelStatus.Conflict;
+        return utcNow < updatedUtc ? CampaignCancelStatus.InvalidTime : CampaignCancelStatus.Cancelled;
     }
     public override string ToString() => nameof(NewsletterCampaign);
     public static void RequireUtc(DateTime value)

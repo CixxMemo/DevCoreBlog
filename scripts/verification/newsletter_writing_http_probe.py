@@ -25,7 +25,7 @@ def post(path,data):return request_with_headers(admin,base+path,data=data)
 def check(name,value):checks[name]=bool(value)
 other_before=other();before=snapshot();creation=get('/AdminNewsletter/Create');listing=get('/AdminNewsletter');token=extract_antiforgery_token(creation[2])
 check('private_dedicated_routes_and_navigation',creation[0]==listing[0]==200 and private(creation) and private(listing) and 'href="/AdminNewsletter"' in creation[2] and 'data-recovery-scope="newsletter"' in creation[2] and 'action="/AdminNewsletter/Create"' in creation[2])
-check('get_is_readonly_and_no_send_button',snapshot()==before and 'Abonelere gönder' not in creation[2] and 'E-posta gönderimi: Başlatılmadı' in listing[2])
+check('get_is_readonly_and_no_send_button',snapshot()==before and 'Abonelere gönder' not in creation[2] and '/AdminCampaign/Compose?postId=' in listing[2] and bool(re.search(r'href="/AdminCampaign(?:/Index)?\?postId=[1-9]\d*"', listing[2])) and 'E-posta gönderimi: Başlatılmadı' not in listing[2])
 check('anonymous_reads_are_denied',all(is_private_admin_challenge(get(path,anon)) for path in ['/AdminNewsletter','/AdminNewsletter/Create','/AdminNewsletter/Edit/2001']))
 body=json.dumps({'version':1,'document':{'type':'doc','content':[{'type':'paragraph','content':[{'type':'text','text':'F33_PRIVATE_BODY Türkçe 👋 <script> düz metin'}]}]}},ensure_ascii=False)
 common={'Title':'F33 bülten konu başlığı','DocumentJson':body,'CategoryId':'1001','Summary':'F33_PRIVATE_SUMMARY','Excerpt':'','ThumbnailAlt':'','IsActive':'true','PublishDate':field(creation[2],'PublishDate'),'__RequestVerificationToken':token}

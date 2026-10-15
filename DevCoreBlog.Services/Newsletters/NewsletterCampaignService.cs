@@ -16,10 +16,10 @@ public sealed class NewsletterCampaignOrigin
     }
     public string? Origin { get; }
     public string WebVersion(string slug) => Origin is { } origin
-        ? origin + "/post/" + Uri.EscapeDataString(slug) : throw new InvalidOperationException("Campaign origin unavailable.");
+        ? origin + "/bulten/" + Uri.EscapeDataString(slug) : throw new InvalidOperationException("Campaign origin unavailable.");
 }
 
-/// <summary>Trusted internal preparation; the future authorized start UI is separate. No sender/queue/recipient dependency exists.</summary>
+/// <summary>Immutable snapshot preparation; the authorized start command is separate. No sender/queue/recipient dependency exists.</summary>
 public sealed class NewsletterCampaignService(INewsletterCampaignStore store, IEmailSenderProfile sender,
     NewsletterCampaignOrigin origin, ContentDocumentValidator validator, DocumentTextProducer text,
     DocumentEmailRenderer renderer, TimeProvider clock)

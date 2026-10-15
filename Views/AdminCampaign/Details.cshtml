@@ -1,0 +1,63 @@
+@using DevCoreBlog.Core.Newsletters
+@model DevCoreBlog.Models.Admin.CampaignDetailModel
+@{
+    ViewData["Title"] = "Gönderim durumu";
+    var d = Model.Detail;
+    var cancelled = d.Summary.State == NewsletterCampaignState.Cancelled;
+    var selecting = d.Selection is not null && d.Dispatch is null;
+    var expired = d.Dispatch is { } work && work.ExpiresUtc <= Model.UtcNow;
+    var pending = d.Count(CampaignDeliveryState.Pending) + d.Count(CampaignDeliveryState.Claimed);
+    var status = cancelled ? "İptal edildi" : d.Dispatch is null ? (selecting ? "Alıcı hazırlığı sürüyor" : "Başlatılmadı") :
+        expired && (pending > 0 || d.Dispatch.State == CampaignPreparationState.Building) ? "Gönderim süresi sona erdi" : d.Dispatch.State == CampaignPreparationState.Stopped ? "Hazırlık durduruldu" :
+        d.Dispatch.State == CampaignPreparationState.Building ? "E-postalar hazırlanıyor" :
+        pending > 0 || d.Count(CampaignDeliveryState.Sending) > 0 ? "Gönderim sürüyor" : d.Count(CampaignDeliveryState.Held) > 0 ? "Bekletilen gönderimler için inceleme gerekiyor" : "Gönderim işlemleri sonuçlandı";
+}
+<section class="campaign-page" lang="tr" aria-labelledby="campaign-title">
+    <h1 id="campaign-title">Gönderim durumu</h1>
+    <h2>@d.Summary.Subject</h2>
+    <p role="status"><strong>@status</strong></p>
+    <p>Hazırlanma: @SiteDates.DateAndTime(d.Summary.CreatedUtc) · Kaynak sürümü: @d.Summary.SourceRevision</p>
+    <p>Gönderen: @d.SenderName &lt;@d.SenderEmail&gt;</p>
+    @if (d.ReplyTo is not null) { <p>Yanıt adresi: @d.ReplyTo</p> }
+    <p>Web sürümü: <span class="campaign-url">@d.WebVersionUrl</span>. Tam içerik için abone girişi gerekir; bu işlem site yayın durumunu değiştirmez.</p>
+    <details class="campaign-panel"><summary>Gönderilecek sabit metni incele</summary><pre class="campaign-text">@d.Text</pre></details>
+    <dl class="campaign-panel campaign-counts">
+        <dt>Seçilen alıcı</dt><dd>@(d.Selection is null ? "Henüz seçilmedi" : d.Selection.SelectedCount.ToString(System.Globalization.CultureInfo.GetCultureInfo("tr-TR")))</dd>
+        <dt>Hazırlanan e-posta</dt><dd>@(d.Dispatch?.StagedCount ?? 0)</dd>
+        <dt>@(cancelled ? "İptal nedeniyle başlamayacak" : expired ? "Süresi dolmuş bekleyen" : "Sırada / ayrılmış")</dt><dd>@pending</dd>
+        <dt>Başlamış çağrı</dt><dd>@d.Count(CampaignDeliveryState.Sending)</dd>
+        <dt>Sağlayıcı kabulü</dt><dd>@d.Count(CampaignDeliveryState.Accepted)</dd>
+        <dt>Reddedilen</dt><dd>@d.Count(CampaignDeliveryState.Rejected)</dd>
+        <dt>İnceleme için bekletilen</dt><dd>@d.Count(CampaignDeliveryState.Held)</dd>
+        <dt>Süresi dolan</dt><dd>@d.Count(CampaignDeliveryState.Expired)</dd>
+        <dt>İptal kaydı</dt><dd>@d.Count(CampaignDeliveryState.Cancelled)</dd>
+        <dt>Toplam çağrı denemesi</dt><dd>@d.Attempts</dd>
+        <dt>Güvenli yeniden denemeyi bekleyen</dt><dd>@d.Retrying</dd>
+    </dl>
+    <p>Sağlayıcı kabulü, teslim veya okunma kanıtı değildir. Teslim ve okunma bu ekranda ölçülmüyor.</p>
+    <p>Geçici hata nedeniyle izin verilen tekrarlar aynı e-postayla sınırlı sayıda yürütülür. Sonucu belirsiz, bekletilmiş veya süresi dolmuş e-postalar buradan yeniden gönderilemez.</p>
+    @if (!Model.Ready) { <p class="campaign-panel">Toplu gönderim henüz etkin değil. Gönderen ve canlı gönderim kontrolleri tamamlandığında açılır.</p> }
+    @if (!Model.CurrentLink) { <p role="alert">Bu eski kopyanın web bağlantısı güncel arşive ait değil. Gönderim başlatılamaz; bülten listesinden yeni bir kopya hazırlayın.</p> }
+    @if (!cancelled && Model.Ready && Model.CurrentLink && d.Dispatch is null)
+    {
+        <form asp-action="@(selecting ? "Retry" : "Start")" method="post" class="campaign-panel">
+            <input type="hidden" name="Id" value="@d.Summary.Id" />
+            <input type="hidden" name="Version" value="@d.Summary.Version" />
+            <p>Bu eylem doğrulanmış, aktif ve gönderim engeli bulunmayan aboneler için bu kopyanın gönderimini başlatır. Önceki kopyalar ayrıca gönderilmiş olabilir; önce geçmişi kontrol edin.</p>
+            @if (selecting) { <p>Alıcı hazırlığı bir seferde en fazla 250 kayıt ilerler. Aynı gönderimden devam edilir; yeni kampanya veya yeni e-posta denemesi oluşturulmaz.</p> }
+            <label><input type="checkbox" name="Confirm" value="true" required /> Bu kopyanın abonelere gönderilmesini onaylıyorum.</label>
+            <button name="Decision" value="@(selecting ? "retry" : "start")" type="submit">@(selecting ? "Yarım kalan başlatmayı yeniden dene" : "Abonelere gönderimi başlat")</button>
+        </form>
+    }
+    @if (!cancelled)
+    {
+        <form asp-action="Cancel" method="post" class="campaign-panel">
+            <input type="hidden" name="Id" value="@d.Summary.Id" />
+            <input type="hidden" name="Version" value="@d.Summary.Version" />
+            <p>İptal, henüz başlamamış gönderimleri durdurur. Başlamış çağrılar ve gönderilmiş e-postalar geri alınamaz.</p>
+            <label><input type="checkbox" name="Confirm" value="true" required /> Kalan gönderimleri iptal etmeyi onaylıyorum.</label>
+            <button name="Decision" value="cancel" type="submit">Kalan gönderimleri iptal et</button>
+        </form>
+    }
+    <p><a asp-action="Details" asp-route-id="@d.Summary.Id">Durumu yenile</a> · <a asp-action="Index" asp-route-postId="@d.Summary.PostId">Bu bültenin gönderimleri</a> · <a asp-controller="AdminNewsletter" asp-action="Index">Bültenlere dön</a></p>
+</section>

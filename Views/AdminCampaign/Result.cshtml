@@ -1,0 +1,8 @@
+@model DevCoreBlog.Models.Admin.CampaignResultModel
+@{ ViewData["Title"] = "Gönderim işlemi"; }
+<section class="campaign-page" lang="tr" aria-labelledby="campaign-title">
+    <h1 id="campaign-title">Gönderim işlemi</h1>
+    <p role="alert">@Model.Message</p>
+    @if (Model.Id is { } id) { <p><a asp-action="Details" asp-route-id="@id">Bu gönderimin güncel durumunu aç</a></p> }
+    <p><a asp-action="Index">Gönderimlere dön</a></p>
+</section>

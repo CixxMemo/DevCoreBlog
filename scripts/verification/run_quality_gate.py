@@ -218,6 +218,12 @@ try:
             stages['test-email']['passed']=code==0 and test_email['passed'] and test_email['count']==len(test_email['checks']) and all(test_email['checks'].values())
         except (OSError,ValueError,KeyError,TypeError):
             stages['test-email']['passed']=False
+        code,output=run('campaign-admin',['python3','scripts/verification/campaign_admin_probe.py','--port','55534','--report',str(report/'campaign-admin'/'report.json')],source,timeout=480,export=False)
+        try:
+            campaign_admin=json.loads((report/'campaign-admin'/'report.json').read_text())
+            stages['campaign-admin']['passed']=code==0 and campaign_admin['passed'] and campaign_admin['count']==len(campaign_admin['checks']) and all(campaign_admin['checks'].values())
+        except (OSError,ValueError,KeyError,TypeError):
+            stages['campaign-admin']['passed']=False
         code,output=run('reader-identity',['python3','scripts/verification/reader_identity_probe.py','--port','55526','--report',str(report/'reader-migration.json')],source,timeout=300,export=False)
         try:
             reader=json.loads((report/'reader-migration.json').read_text())

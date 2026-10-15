@@ -2,7 +2,7 @@
 import json,os,shutil,subprocess
 from pathlib import Path
 
-def build_fixture_host(root,fixture,env):
+def build_fixture_host(root,fixture,env,patch=None):
  source=fixture/'source';source.mkdir()
  # A normal quality source has already been sanitized. A checkout uses only Git's source inventory.
  probe=subprocess.run(['git','rev-parse','--show-toplevel'],cwd=root,capture_output=True,text=True)
@@ -49,6 +49,7 @@ internal sealed class TestSender : IEmailSender
 '''
  for key,path in [('CLOCK',clock),('PACKET',packet),('CONTROL',control),('GATE',gate)]:code=code.replace(key,json.dumps(str(path)))
  (source/'F38Fixture.cs').write_text(code)
+ if patch is not None:patch(source)
  built=subprocess.run(['dotnet','build','DevCoreBlog.csproj','--disable-build-servers'],cwd=source,env=env,capture_output=True,text=True,timeout=150)
  if built.returncode:
   errors=[line.strip().replace(str(fixture),'owned').replace(str(root),'source') for line in built.stdout.splitlines() if 'error ' in line.lower()]

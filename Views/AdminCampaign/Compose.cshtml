@@ -1,0 +1,15 @@
+@model DevCoreBlog.Models.Admin.CampaignComposeModel
+@{ ViewData["Title"] = "Gönderim hazırla"; }
+<section class="campaign-page" lang="tr" aria-labelledby="campaign-title">
+    <h1 id="campaign-title">Gönderim hazırla</h1>
+    <h2>@Model.Source.Subject</h2>
+    <p>Kaydedilmiş bültenin ayrı bir gönderim kopyası hazırlanır. Sonraki ekranda içeriği kontrol edip abonelere gönderimi ayrıca başlatabilirsiniz.</p>
+    <p>Bu adım e-posta göndermez. Bülten daha sonra düzenlense de bu kopya değişmez.</p>
+    <form asp-action="Prepare" method="post" class="campaign-panel">
+        <input name="PostId" value="@Model.Source.PostId" type="hidden" />
+        <input name="Revision" value="@Model.Source.Revision" type="hidden" />
+        <input name="StartKey" value="@Model.StartKey" type="hidden" />
+        <button name="Decision" value="prepare" type="submit">Gönderim kopyasını hazırla</button>
+    </form>
+    <p><a asp-action="Index" asp-route-postId="@Model.Source.PostId">Bu bültenin önceki gönderimleri</a></p>
+</section>

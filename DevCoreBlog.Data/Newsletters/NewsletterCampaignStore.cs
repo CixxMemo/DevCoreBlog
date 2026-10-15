@@ -24,6 +24,7 @@ public sealed class NewsletterCampaignStore(ApplicationDbContext context) : INew
     public async Task<CampaignStartResult> TryCreateAsync(NewsletterCampaign campaign, CancellationToken cancellationToken)
     {
         await using var transaction = await context.Database.BeginTransactionAsync(cancellationToken);
+        await context.Database.ExecuteSqlRawAsync("SET LOCAL lock_timeout='3s'; SET LOCAL statement_timeout='5s'", cancellationToken);
         var prior = await FindIntentAsync(campaign.StartKey, cancellationToken);
         if (prior is not null) return Match(prior, campaign);
         // Shared locks allow concurrent preparation but prevent source/category edits through commit.
@@ -64,14 +65,15 @@ public sealed class NewsletterCampaignStore(ApplicationDbContext context) : INew
         NewsletterCampaign.RequireUtc(utcNow);
         if (id == Guid.Empty || expectedVersion is <= 0 or long.MaxValue) return CampaignCancelStatus.Conflict;
         await using var transaction = await context.Database.BeginTransactionAsync(cancellationToken);
+        await context.Database.ExecuteSqlRawAsync("SET LOCAL lock_timeout='3s'; SET LOCAL statement_timeout='5s'", cancellationToken);
         var item = (await context.NewsletterCampaigns.FromSqlInterpolated($"SELECT * FROM \"NewsletterCampaigns\" WHERE \"Id\"={id} FOR UPDATE")
-            .AsNoTracking().ToListAsync(cancellationToken)).SingleOrDefault();
+            .AsNoTracking().Select(x => new { x.State, x.Version, x.UpdatedUtc }).ToListAsync(cancellationToken)).SingleOrDefault();
         if (item is null) return CampaignCancelStatus.NotFound;
-        var transition = item.Cancel(expectedVersion, utcNow);
+        var transition = NewsletterCampaign.CancellationStatus(item.State, item.Version, item.UpdatedUtc, expectedVersion, utcNow);
         if (transition != CampaignCancelStatus.Cancelled) return transition;
         var count = await context.NewsletterCampaigns.Where(x => x.Id == id && x.Version == expectedVersion && x.State == NewsletterCampaignState.Prepared)
-            .ExecuteUpdateAsync(s => s.SetProperty(x => x.State, item.State)
-                .SetProperty(x => x.UpdatedUtc, item.UpdatedUtc).SetProperty(x => x.Version, item.Version), cancellationToken);
+            .ExecuteUpdateAsync(s => s.SetProperty(x => x.State, NewsletterCampaignState.Cancelled)
+                .SetProperty(x => x.UpdatedUtc, utcNow.AddTicks(-(utcNow.Ticks % 10))).SetProperty(x => x.Version, expectedVersion + 1), cancellationToken);
         if (count != 1) return CampaignCancelStatus.Conflict;
         await transaction.CommitAsync(cancellationToken);
         return CampaignCancelStatus.Cancelled;

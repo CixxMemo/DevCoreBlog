@@ -60,7 +60,7 @@ internal static class NewsletterCampaignProbe
             && original.Text.Contains("Sentetik bülten", StringComparison.Ordinal) && original.RenderVersion == 1 && original.DocumentVersion == 1;
         checks["sender_and_origin_are_frozen_without_credentials"] = original.SenderEmail == "sender@example.test" && original.SenderName == "Sentetik Aether"
             && original.ReplyTo == "reply@example.test" && original.ProviderContract == "resend/v1"
-            && original.WebVersionUrl == "https://aether.example.test/post/" + source.Slug
+            && original.WebVersionUrl == "https://aether.example.test/bulten/" + source.Slug
             && !JsonSerializer.Serialize(original).Contains("re_synthetic_campaign", StringComparison.Ordinal)
             && !JsonSerializer.Serialize(original).Contains(profile.Binding ?? "missing", StringComparison.Ordinal);
         if (seed)

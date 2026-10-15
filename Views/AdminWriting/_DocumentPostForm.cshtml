@@ -99,8 +99,8 @@
             </section>
             <aside aria-label="Yazı bilgileri">
                 @if (Model.IsNewsletter) {
-                    <p class="writing-notice">Erişim: Abonelere özel. Okuyucu arşivi henüz kullanıma açık değil.</p>
-                    <p>E-posta gönderimi: Başlatılmadı. Kaydetmek veya sitede yayımlamak e-posta göndermez.</p>
+                    <p class="writing-notice">Erişim: Abonelere özel. Tam arşiv doğrulanmış aktif abonelere açıktır.</p>
+                    <p>Kaydetmek veya sitede yayımlamak e-posta göndermez. Gönderimi ayrı Gönderimler ekranından yönetin.</p>
                 }
                 @if (Model.RecordedState is { } state) {
                     <p data-site-publication-state>Site yayını: <partial name="~/Views/AdminWriting/_PublicationState.cshtml" model="state" /></p>

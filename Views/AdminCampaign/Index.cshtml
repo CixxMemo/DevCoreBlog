@@ -1,0 +1,21 @@
+@model DevCoreBlog.Models.Admin.CampaignListModel
+@{ ViewData["Title"] = "Gönderimler"; }
+<section class="campaign-page" lang="tr" aria-labelledby="campaign-title">
+    <h1 id="campaign-title">Gönderimler</h1>
+    <p>Site yayını ve e-posta gönderimi ayrı işlemlerdir. Burada önceden hazırlanmış gönderimleri yönetebilirsiniz.</p>
+    <p><a asp-controller="AdminNewsletter" asp-action="Index">Bültenlerden gönderim hazırla</a></p>
+    @if (Model.Page.Items.Count == 0) { <p>Henüz hazırlanmış gönderim yok.</p> }
+    @foreach (var item in Model.Page.Items)
+    {
+        <article class="campaign-panel">
+            <h2><a asp-action="Details" asp-route-id="@item.Id">@item.Subject</a></h2>
+            <p>@(item.State == DevCoreBlog.Core.Newsletters.NewsletterCampaignState.Cancelled ? "İptal edildi" : "Gönderim durumunu aç") · @SiteDates.DateAndTime(item.CreatedUtc)</p>
+        </article>
+    }
+    <nav aria-label="Gönderim sayfaları">
+        @if (Model.Page.Page > 1) { <a asp-action="Index" asp-route-page="@(Model.Page.Page - 1)" asp-route-postId="@Model.PostId">Önceki sayfa</a> }
+        <span>Sayfa @Model.Page.Page · Toplam @Model.Page.TotalCount gönderim</span>
+        @if (Model.Page.Page < DevCoreBlog.Core.Newsletters.CampaignListPage.MaximumPage && (long)Model.Page.Page * DevCoreBlog.Core.Newsletters.CampaignListPage.PageSize < Model.Page.TotalCount)
+        { <a asp-action="Index" asp-route-page="@(Model.Page.Page + 1)" asp-route-postId="@Model.PostId">Sonraki sayfa</a> }
+    </nav>
+</section>

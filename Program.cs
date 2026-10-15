@@ -224,6 +224,8 @@ builder.Services.AddSingleton(new DevCoreBlog.Services.Subscriptions.SubscriberV
 builder.Services.AddScoped<DevCoreBlog.Core.Newsletters.INewsletterCampaignStore, DevCoreBlog.Data.Newsletters.NewsletterCampaignStore>();
 builder.Services.AddSingleton(new DevCoreBlog.Services.Newsletters.NewsletterCampaignOrigin(siteUrl.Origin));
 builder.Services.AddScoped<DevCoreBlog.Services.Newsletters.NewsletterCampaignService>();
+builder.Services.AddScoped<DevCoreBlog.Core.Newsletters.ICampaignAdministrationStore, DevCoreBlog.Data.Newsletters.CampaignAdministrationStore>();
+builder.Services.AddScoped<DevCoreBlog.Services.Newsletters.CampaignAdministrationService>();
 builder.Services.AddScoped<DevCoreBlog.Core.Newsletters.ICampaignRecipientStore, DevCoreBlog.Data.Newsletters.CampaignRecipientStore>();
 builder.Services.AddScoped<DevCoreBlog.Services.Newsletters.CampaignRecipientService>();
 builder.Services.AddSingleton<DevCoreBlog.Services.Subscriptions.OneClickUnsubscriptionLinks>();
@@ -248,7 +250,9 @@ if(!string.IsNullOrEmpty(deliveryReadySetting) && !bool.TryParse(deliveryReadySe
 builder.Services.AddSingleton(services=>new DevCoreBlog.Services.Newsletters.CampaignDeliveryReadiness(
     bool.TryParse(deliveryReadySetting,out var deliveryReady) && deliveryReady,
     services.GetRequiredService<DevCoreBlog.Core.Email.IEmailSubmissionContext>(),services.GetRequiredService<DevCoreBlog.Services.Subscriptions.OneClickUnsubscriptionLinks>()));
-if(bool.TryParse(campaignWorkerSetting,out var campaignWorkerEnabled) && campaignWorkerEnabled)builder.Services.AddHostedService<DevCoreBlog.Infrastructure.CampaignDeliveryWorker>();
+var campaignWorkerEnabled = bool.TryParse(campaignWorkerSetting, out var workerEnabled) && workerEnabled;
+builder.Services.AddSingleton(new DevCoreBlog.Services.Newsletters.CampaignAdministrationOptions(campaignWorkerEnabled));
+if(campaignWorkerEnabled)builder.Services.AddHostedService<DevCoreBlog.Infrastructure.CampaignDeliveryWorker>();
 builder.Services.AddSingleton(new DevCoreBlog.Services.Email.ResendWebhookOptions(
     bool.TryParse(Environment.GetEnvironmentVariable("RESEND_WEBHOOK_ENABLED"), out var webhookEnabled) && webhookEnabled,
     Environment.GetEnvironmentVariable("RESEND_WEBHOOK_SECRET"),
@@ -462,6 +466,8 @@ if (webhookRateLimitPermitLimit is < 1 or > 20)
 builder.Services.AddRateLimiter(options =>
 {
     DevCoreBlog.Infrastructure.SubscriptionRegistrationRateLimits.Configure(options);
+    options.AddPolicy("CampaignAdminLimiter", _ => RateLimitPartition.GetFixedWindowLimiter("campaign-admin-global", _ => new FixedWindowRateLimiterOptions
+    { PermitLimit = 30, Window = TimeSpan.FromMinutes(1), QueueLimit = 0, AutoReplenishment = true }));
     options.AddPolicy("TestEmailLimiter", _ => RateLimitPartition.GetFixedWindowLimiter("test-email-global", _ => new FixedWindowRateLimiterOptions
     { PermitLimit = 10, Window = TimeSpan.FromMinutes(1), QueueLimit = 0, AutoReplenishment = true }));
     options.AddPolicy("OneClickLimiter",_=>RateLimitPartition.GetFixedWindowLimiter("one-click-global",_=>new FixedWindowRateLimiterOptions
