@@ -1,0 +1,47 @@
+@model string
+<section class="newsletter-demo" data-newsletter-demo aria-labelledby="newsletter-demo-heading">
+    <div class="newsletter-demo-intro">
+        <p class="newsletter-demo-eyebrow">Gelen kutundan bir deneye</p>
+        <h2 id="newsletter-demo-heading">Bir bülten, birlikte denenecek bir fikir.</h2>
+        <p id="newsletter-demo-description">Aşağıdaki temsilî akış, bir sayının gelen kutusuna düşmesini ve açılmasını anlatır. Gerçek bir e-posta veya yayımlanmış sayı değildir.</p>
+    </div>
+    <figure class="newsletter-demo-figure" aria-describedby="newsletter-demo-description">
+        <div id="newsletter-demo-visual" class="newsletter-demo-window" aria-hidden="true">
+            <div class="newsletter-demo-chrome">
+                <span class="newsletter-demo-window-mark">AN / POSTA</span>
+                <span class="newsletter-demo-example">Temsilî görünüm</span>
+            </div>
+            <div class="newsletter-demo-workspace">
+                <div class="newsletter-demo-mailbox">
+                    <p class="newsletter-demo-folder">Gelen kutusu</p>
+                    <div class="newsletter-demo-row">
+                        <span class="newsletter-demo-envelope">↳</span>
+                        <div class="newsletter-demo-preview">
+                            <p class="newsletter-demo-sender">@Model</p>
+                            <p class="newsletter-demo-subject">Bir fikri küçük bir deneye dönüştürmek</p>
+                            <span class="newsletter-demo-sample-label">Örnek sayı</span>
+                        </div>
+                    </div>
+                    <p class="newsletter-demo-mailbox-note">Bir yöntem.<br />Bir deneme.<br />Birlikte düşünmek.</p>
+                </div>
+                <div class="newsletter-demo-reading-pane">
+                    <div class="newsletter-demo-message">
+                        <p class="newsletter-demo-letterhead">@Model <span>/ Örnek sayı</span></p>
+                        <h3>Bir fikri küçük bir deneye dönüştürmek</h3>
+                        <dl>
+                            <div><dt>Amaç</dt><dd>Bir AI yöntemini küçük bir görevde denemek.</dd></div>
+                            <div><dt>Yöntem</dt><dd>Aynı görevi iki yaklaşımla karşılaştırmak.</dd></div>
+                            <div><dt>Sonuç</dt><dd>İşe yarayanları ve sınırlamaları not etmek.</dd></div>
+                        </dl>
+                        <p class="newsletter-demo-takeaway">Sen de dene <span>→ Tek bir görev seç, sonucu kaydet.</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <figcaption>Örnek akış: sayı gelen kutusuna gelir, açılır; deneyin amacı, yöntemi, sonucu ve senin deneyebileceğin adım görünür.</figcaption>
+    </figure>
+    <div class="newsletter-demo-controls" data-demo-controls hidden>
+        <button type="button" data-demo-toggle aria-controls="newsletter-demo-visual" aria-describedby="newsletter-demo-state">Animasyonu oynat</button>
+        <p id="newsletter-demo-state" data-demo-state>Örnek sabit gösteriliyor.</p>
+    </div>
+</section>

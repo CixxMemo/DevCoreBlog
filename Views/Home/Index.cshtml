@@ -30,6 +30,7 @@
             <a href="/bulten" class="underline font-bold">Bülten sayılarını keşfet</a>
         </div>
     </section>
+    <partial name="_NewsletterInboxDemo" model="Model.Introduction.Name" />
     <nav aria-labelledby="discovery-heading" class="mb-10">
         <h2 id="discovery-heading" class="font-mono font-bold text-2xl mb-4">Merak ettiğiniz yerden başlayın</h2>
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -103,3 +104,10 @@
         <a href="@(Model.ReaderEligible ? "/bultenler" : "#newsletter-introduction")" class="font-bold underline">@(Model.ReaderEligible ? "Tam bülten arşivini aç" : "Bülten aboneliğine geç")</a>
     </section>
 </div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/newsletter-demo.css" asp-append-version="true" />
+}
+@section Scripts {
+    <script src="~/js/newsletter-demo.js" asp-append-version="true" defer></script>
+}

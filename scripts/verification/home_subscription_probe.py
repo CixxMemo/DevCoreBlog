@@ -39,6 +39,7 @@ p = argparse.ArgumentParser()
 p.add_argument('--report', type=Path, required=True)
 p.add_argument('--browser-module', type=Path)
 p.add_argument('--browser-executable', type=Path)
+p.add_argument('--browser-script', type=Path, help='Optional trusted local Chrome acceptance script; the default keeps F46 coverage.')
 a = p.parse_args()
 root = Path(__file__).resolve().parents[2]
 env = {k: v for k, v in os.environ.items() if k in ('PATH', 'HOME', 'TMPDIR', 'DOTNET_ROOT', 'NUGET_PACKAGES', 'LANG', 'LC_ALL')}
@@ -197,7 +198,7 @@ internal sealed class HomeProjectionInterceptor:DbCommandInterceptor{
             check('forged_cookie_cannot_get_archive_cta', forged[0] == 200 and 'reader-archive-cta' not in forged[2])
             if a.browser_module and a.browser_executable:
                 start()  # Reset HTTP attempt budgets before the independent browser journey.
-                result = run(['node', str(root / 'scripts/verification/home_subscription_browser_probe.cjs')], {'DEVCORE_PLAYWRIGHT_MODULE': str(a.browser_module), 'DEVCORE_BROWSER_EXECUTABLE': str(a.browser_executable), 'F46_REPORT_DIR': str(a.report.parent)}, required=False, timeout=150)
+                result = run(['node', str(a.browser_script or root / 'scripts/verification/home_subscription_browser_probe.cjs')], {'DEVCORE_PLAYWRIGHT_MODULE': str(a.browser_module), 'DEVCORE_BROWSER_EXECUTABLE': str(a.browser_executable), 'F46_REPORT_DIR': str(a.report.parent)}, required=False, timeout=150)
                 if result.returncode:
                     print(result.stdout[-1400:], flush=True)
                 browser_report = json.loads((a.report.parent / 'home-browser.json').read_text())

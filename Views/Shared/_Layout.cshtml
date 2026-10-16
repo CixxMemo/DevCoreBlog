@@ -32,6 +32,7 @@
     <link href="~/generated/prism/themes/prism-tomorrow.css" rel="stylesheet" asp-append-version="true" />
     <link href="~/generated/prism/plugins/toolbar/prism-toolbar.css" rel="stylesheet" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
 </head>
 <body class="public-site bg-[#f9fafb] dark:bg-[#09090b] min-h-screen text-gray-900 dark:text-zinc-100 font-sans transition-colors duration-150 flex flex-col md:flex-row">
 
