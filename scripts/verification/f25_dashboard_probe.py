@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Check F25 navigation, admin aggregates, and dashboard SQL command count."""
 
+import html
+
 import argparse
 import os
 import re
@@ -78,11 +80,11 @@ def main() -> int:
         "admin_pages_respond": token is not None and login_status == 200 and
             dashboard_status == 200 and automation_status == 200,
         "dashboard_metrics": all([
-            metric(dashboard, "Total Posts", total_posts),
-            metric(dashboard, "Publication enabled", published_posts),
-            metric(dashboard, "Drafts", draft_posts),
-            metric(dashboard, "Total Views", total_views),
-            metric(dashboard, "Categories", category_count),
+            metric(html.unescape(dashboard), "Toplam yazı", total_posts),
+            metric(html.unescape(dashboard), "Yayın izni açık", published_posts),
+            metric(html.unescape(dashboard), "Taslaklar", draft_posts),
+            metric(html.unescape(dashboard), "Toplam görüntülenme", total_views),
+            metric(html.unescape(dashboard), "Kategoriler", category_count),
         ]),
         "top_post_bounded_and_ranked": (
             "F03 &lt;img" in dashboard and

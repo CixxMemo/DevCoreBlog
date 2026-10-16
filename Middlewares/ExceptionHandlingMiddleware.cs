@@ -50,7 +50,7 @@ public sealed class ExceptionHandlingMiddleware
             {
                 context.Response.StatusCode = StatusCodes.Status500InternalServerError;
                 await context.Response.WriteAsJsonAsync(
-                    new { success = false, message = "An unexpected error occurred.", traceId = context.TraceIdentifier });
+                    new { success = false, message = "Beklenmeyen bir hata oluştu.", traceId = context.TraceIdentifier });
                 return;
             }
 

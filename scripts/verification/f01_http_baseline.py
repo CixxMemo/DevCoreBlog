@@ -3,6 +3,8 @@
 
 from __future__ import annotations
 
+import html
+
 import argparse
 import json
 import os
@@ -54,7 +56,7 @@ def probe_rejected_password(
         and token is not None
         and status == 200
         and final_url == admin_login_url(base_url)
-        and "Invalid username or password." in body
+        and "Kullanıcı adı veya parola hatalı." in html.unescape(body)
         and not has_authentication_cookie(cookies)
     )
     authenticated = (

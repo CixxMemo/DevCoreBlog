@@ -65,7 +65,7 @@ def main() -> int:
         category_conflict[0] == 409 and
         "changed since" in category_conflict[2].lower() and
         'value="F22 second category"' in category_conflict[2] and
-        "Reload current category" in category_conflict[2] and
+        "Güncel kategoriyi yeniden aç" in category_conflict[2] and
         sql('SELECT "Name" FROM "Categories" WHERE "Id"=1001') == "F22 first category")
 
     post_url = base + "/AdminPost/Edit/2001"
@@ -84,7 +84,7 @@ def main() -> int:
         post_conflict[0] == 409 and
         "changed since" in post_conflict[2].lower() and
         'value="F22 second post"' in post_conflict[2] and
-        "Reload current post" in post_conflict[2] and
+        "Güncel yazıyı yeniden aç" in post_conflict[2] and
         sql('SELECT "Title" FROM "Posts" WHERE "Id"=2001') == "F22 first post")
 
     # A visitor counter increment must not invalidate an otherwise fresh edit.

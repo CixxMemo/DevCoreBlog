@@ -10,9 +10,9 @@
 @model DevCoreBlog.Models.Admin.AutomationsViewModel
 
 @{
-    ViewData["Title"] = "Automations & API Hub";
+    ViewData["Title"] = "Otomasyonlar ve API";
     var categories = Model.Categories;
-    var corsOrigins = Model.CorsOrigins.Count == 0 ? "None configured" : string.Join(",", Model.CorsOrigins);
+    var corsOrigins = Model.CorsOrigins.Count == 0 ? "Yapılandırılmadı" : string.Join(",", Model.CorsOrigins);
     var defaultCategoryId = categories.FirstOrDefault()?.Id ?? 1;
 }
 
@@ -24,20 +24,20 @@
     <div class="border-2 border-black bg-white p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
             <div class="font-mono text-xs font-bold text-neutral-500 uppercase tracking-widest leading-tight">
-                // EXTERNAL INTEGRATION & AUTOMATION HUB
+                // DIŞ BAĞLANTILAR VE OTOMASYONLAR
             </div>
             <h1 class="text-2xl md:text-3xl font-black uppercase tracking-tight text-black mt-1">
-                Automations & API
+                Otomasyonlar ve API
             </h1>
         </div>
 
         <div class="flex flex-wrap items-center gap-2">
             <span class="border-2 border-black bg-emerald-100 text-emerald-900 font-mono text-xs font-bold px-3 py-1 uppercase flex items-center gap-1.5">
                 <span class="w-2 h-2 bg-emerald-600 inline-block"></span>
-                <span>WEBHOOK ROUTE</span>
+                <span>WEBHOOK ADRESİ</span>
             </span>
             <span class="border-2 border-black bg-neutral-100 font-mono text-xs font-bold px-3 py-1 uppercase text-neutral-700">
-                RATE LIMITED
+                İSTEK SINIRI VAR
             </span>
         </div>
     </div>
@@ -54,11 +54,11 @@
                     POST
                 </span>
                 <h2 class="text-lg font-black uppercase tracking-tight text-black">
-                    Inbound Post Webhook Receiver
+                    Dışarıdan yazı kabul eden webhook
                 </h2>
             </div>
             <span class="font-mono text-xs text-neutral-600">
-                Default 5 requests/min • 2 MiB JSON limit
+                Varsayılan: 5 istek/dakika • JSON sınırı 2 MiB
             </span>
         </div>
 
@@ -68,38 +68,38 @@
             @* Endpoint Details Grid *@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 font-mono text-xs">
                 <div class="border border-black p-3 bg-neutral-50 space-y-1">
-                    <span class="text-neutral-500 uppercase text-[10px] font-bold block">ENDPOINT ROUTE:</span>
+                    <span class="text-neutral-500 uppercase text-[10px] font-bold block">İSTEK ADRESİ:</span>
                     <strong class="text-black text-sm block">/api/webhooks/posts</strong>
                 </div>
 
                 <div class="border border-black p-3 bg-neutral-50 space-y-1">
-                    <span class="text-neutral-500 uppercase text-[10px] font-bold block">REQUIRED AUTH HEADER:</span>
+                    <span class="text-neutral-500 uppercase text-[10px] font-bold block">ZORUNLU YETKİ BAŞLIĞI:</span>
                     <strong class="text-black text-sm block">X-DevCore-Secret</strong>
                 </div>
 
                 <div class="border border-black p-3 bg-neutral-50 space-y-1">
-                    <span class="text-neutral-500 uppercase text-[10px] font-bold block">SECURITY COMPARISON:</span>
-                    <strong class="text-emerald-700 text-sm block">Fixed-time byte comparison</strong>
+                    <span class="text-neutral-500 uppercase text-[10px] font-bold block">GÜVENLİK KARŞILAŞTIRMASI:</span>
+                    <strong class="text-emerald-700 text-sm block">Sabit sürede bayt karşılaştırması</strong>
                 </div>
             </div>
 
             @* Security & Behavior Bullet Points *@
             <div class="border-l-4 border-black bg-neutral-50 p-4 font-mono text-xs text-neutral-700 space-y-1">
-                <p><strong>• Draft by Default:</strong> <code>"isPublished": true</code> publishes only when the server sets <code>ALLOW_WEBHOOK_PUBLISH=true</code>. Otherwise the post remains a draft.</p>
-                <p><strong>• Automatic Generation:</strong> The backend generates the slug and creation date. Markdown renders safely on the public post page.</p>
-                <p><strong>• Safe Retries:</strong> Generate one <code>Idempotency-Key</code> for each new post and reuse it with the same payload on every retry. Use 1–128 ASCII letters, digits, dots, underscores or hyphens. Reusing a key with different fields returns <code>409 Conflict</code>.</p>
-                <p><strong>• Client Migration:</strong> Existing requests without this header still work, but have no duplicate protection. Successful keys are retained indefinitely, including after a post is deleted. Failed requests do not consume a key; retry <code>429</code> or <code>5xx</code> with backoff and the same key.</p>
-                <p><strong>• Secret Authentication:</strong> Send <code>X-DevCore-Secret</code> from your private configuration. The server compares secret bytes in fixed time and rejects unauthenticated requests before reading JSON.</p>
+                <p><strong>• Varsayılan taslak:</strong> <code>"isPublished": true</code> yalnız sunucuda şu ayar açıksa yayımlar: <code>ALLOW_WEBHOOK_PUBLISH=true</code>. Aksi durumda yazı taslak kalır.</p>
+                <p><strong>• Otomatik oluşturma:</strong> Adres ve oluşturulma tarihi sunucuda üretilir. Markdown, yazı sayfasında güvenli gösterilir.</p>
+                <p><strong>• Güvenli tekrarlar:</strong> Her yeni yazı için bir <code>Idempotency-Key</code> üretin ve aynı içerikle yapılan her tekrarda yeniden kullanın. 1–128 ASCII harfi, rakam, nokta, alt çizgi veya kısa çizgi kullanın. Aynı anahtar farklı alanlarla kullanılırsa dönen yanıt: <code>409 Conflict</code>.</p>
+                <p><strong>• İstemci geçişi:</strong> Bu başlığı içermeyen mevcut istekler çalışır; yinelenen kayıt koruması sağlamaz. Başarılı anahtarlar yazı silinse de süresiz korunur. Başarısız istek anahtarı tüketmez; <code>429</code> veya <code>5xx</code> yanıtında aynı anahtarla, bekleme süresini artırarak tekrar deneyin.</p>
+                <p><strong>• Gizli anahtarla yetkilendirme:</strong> <code>X-DevCore-Secret</code> değerini özel yapılandırmanızdan gönderin. Sunucu anahtarı sabit sürede karşılaştırır; yetkisiz isteği JSON okumadan reddeder.</p>
             </div>
 
             @* JSON Payload Template Box *@
             <div class="space-y-2">
                 <div class="flex items-center justify-between font-mono text-xs">
-                    <span class="font-bold uppercase text-neutral-600">// n8n / Make.com JSON Payload Template:</span>
+                    <span class="font-bold uppercase text-neutral-600">// n8n / Make.com JSON istek şablonu:</span>
                     <button type="button" 
                             data-copy-snippet="webhook-payload-snippet"
                             class="border border-black bg-white hover:bg-black hover:text-white px-2.5 py-1 font-mono text-xs font-bold uppercase transition-none">
-                        Copy JSON
+                        JSON kopyala
                     </button>
                 </div>
                 
@@ -117,11 +117,11 @@
             @* cURL Terminal Test Snippet *@
             <div class="space-y-2">
                 <div class="flex items-center justify-between font-mono text-xs">
-                    <span class="font-bold uppercase text-neutral-600">// cURL Terminal Test Command:</span>
+                    <span class="font-bold uppercase text-neutral-600">// cURL test komutu:</span>
                     <button type="button" 
                             data-copy-snippet="curl-snippet"
                             class="border border-black bg-white hover:bg-black hover:text-white px-2.5 py-1 font-mono text-xs font-bold uppercase transition-none">
-                        Copy cURL
+                        cURL kopyala
                     </button>
                 </div>
 
@@ -135,7 +135,7 @@
             @* Category ID Reference Table *@
             <div class="space-y-2">
                 <div class="font-mono text-xs font-bold uppercase text-neutral-600">
-                    // Active Category IDs (for payload categoryId field):
+                    // Etkin kategori kimlikleri (categoryId alanı için):
                 </div>
 
                 @if (categories.Any())
@@ -145,8 +145,8 @@
                             <thead class="bg-neutral-100 border-b border-black text-[10px] uppercase">
                                 <tr>
                                     <th class="p-2.5">CategoryId</th>
-                                    <th class="p-2.5">Category Name</th>
-                                    <th class="p-2.5">Slug</th>
+                                    <th class="p-2.5">Kategori adı</th>
+                                    <th class="p-2.5">Adres</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-neutral-200">
@@ -165,7 +165,7 @@
                 else
                 {
                     <div class="p-4 border border-black font-mono text-xs text-neutral-500">
-                        No categories found. Create a category first before calling webhooks.
+                        Kategori bulunamadı. Webhook kullanmadan önce kategori oluşturun.
                     </div>
                 }
             </div>
@@ -184,11 +184,11 @@
                     GET
                 </span>
                 <h2 class="text-lg font-black uppercase tracking-tight text-black">
-                    Portfolio Showcase Feed (Latest 3 Articles)
+                    Portföy akışı (son 3 yazı)
                 </h2>
             </div>
             <span class="font-mono text-xs text-neutral-600">
-                Max 30 requests/min • Fresh data on every request
+                En fazla 30 istek/dakika • Her istekte güncel veri
             </span>
         </div>
 
@@ -198,31 +198,31 @@
             @* Endpoint Details Grid *@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 font-mono text-xs">
                 <div class="border border-black p-3 bg-neutral-50 space-y-1">
-                    <span class="text-neutral-500 uppercase text-[10px] font-bold block">ENDPOINT ROUTE:</span>
+                    <span class="text-neutral-500 uppercase text-[10px] font-bold block">İSTEK ADRESİ:</span>
                     <strong class="text-black text-sm block">/api/public/posts/latest</strong>
                 </div>
 
                 <div class="border border-black p-3 bg-neutral-50 space-y-1">
-                    <span class="text-neutral-500 uppercase text-[10px] font-bold block">CORS ALLOWED ORIGINS:</span>
+                    <span class="text-neutral-500 uppercase text-[10px] font-bold block">CORS İZİNLİ KAYNAKLAR:</span>
                     <strong class="text-black text-xs block truncate" title="@corsOrigins">@corsOrigins</strong>
                 </div>
 
                 <div class="border border-black p-3 bg-neutral-50 space-y-1">
-                    <span class="text-neutral-500 uppercase text-[10px] font-bold block">RETURN PAYLOAD:</span>
-                    <strong class="text-emerald-700 text-sm block">Array of up to 3 visible posts</strong>
+                    <span class="text-neutral-500 uppercase text-[10px] font-bold block">YANIT İÇERİĞİ:</span>
+                    <strong class="text-emerald-700 text-sm block">En fazla 3 görünür yazı dizisi</strong>
                 </div>
             </div>
 
-            <p class="font-mono text-xs text-neutral-700">This feed is public. CORS controls which browser origins may read the response; it does not authenticate callers. Links use the configured site URL. Draft, future and inactive content is excluded, and responses are not cached.</p>
+            <p class="font-mono text-xs text-neutral-700">Bu akış herkese açıktır. CORS, hangi tarayıcı kaynaklarının yanıtı okuyabildiğini belirler; kimlik doğrulamaz. Bağlantılar yapılandırılmış site adresini kullanır. Taslak, ileri tarihli ve etkin olmayan içerikler dışlanır; yanıtlar önbelleğe alınmaz.</p>
 
             @* React Code Snippet Box *@
             <div class="space-y-2">
                 <div class="flex items-center justify-between font-mono text-xs">
-                    <span class="font-bold uppercase text-neutral-600">// React / Next.js Fetch Integration Example:</span>
+                    <span class="font-bold uppercase text-neutral-600">// React / Next.js bağlantı örneği:</span>
                     <button type="button" 
                             data-copy-snippet="react-snippet"
                             class="border border-black bg-white hover:bg-black hover:text-white px-2.5 py-1 font-mono text-xs font-bold uppercase transition-none">
-                        Copy Code
+                        Kodu kopyala
                     </button>
                 </div>
 

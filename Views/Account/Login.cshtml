@@ -8,7 +8,7 @@
 
 @* Set the page title shown in the browser tab *@
 @{
-    ViewData["Title"] = "Sign In";
+    ViewData["Title"] = "Giriş yap";
 }
 
 @* Center the login card vertically and horizontally on the page *@
@@ -17,44 +17,44 @@
     <div class="w-full max-w-md bg-white dark:bg-[#121215] border-2 border-gray-900 dark:border-zinc-700 p-8 rounded-none shadow-none">
         @* Card header with title *@
         <div class="mb-8 border-b-2 border-gray-900 dark:border-zinc-700 pb-4">
-            <h4 class="text-xl font-bold font-mono text-gray-900 dark:text-zinc-100 tracking-wider uppercase m-0">Admin Sign In</h4>
+            <h4 class="text-xl font-bold font-mono text-gray-900 dark:text-zinc-100 tracking-wider uppercase m-0">Yönetici girişi</h4>
         </div>
 
         @* Show error message if ViewBag.Error is set (e.g. wrong credentials) *@
         @if (ViewBag.Error != null)
         {
             @* Danger alert for error feedback *@
-            <div class="bg-red-900/30 border-2 border-red-500 text-red-300 p-4 mb-6 text-xs font-mono font-bold" role="alert">
+            <div id="login-error" class="bg-red-900/30 border-2 border-red-500 text-red-300 p-4 mb-6 text-xs font-mono font-bold" role="alert">
                 @ViewBag.Error
             </div>
         }
 
-        <p class="mb-6 text-xs font-mono text-gray-600 dark:text-zinc-400" role="note">
-            Repeated sign-in attempts are temporarily limited. If blocked, wait for the time shown and try again.
+        <p id="login-help" class="mb-6 text-xs font-mono text-gray-600 dark:text-zinc-400" role="note">
+            Art arda giriş denemeleri geçici olarak sınırlanır. Engellenirseniz belirtilen süreyi bekleyip yeniden deneyin.
         </p>
 
         @* Login form — POSTs to Account/Login with username and password *@
         <form asp-controller="Account" asp-action="Login" method="post">
             @* Username field *@
             <div class="mb-6">
-                <label for="username" class="block text-xs font-mono font-bold text-gray-700 dark:text-zinc-300 uppercase tracking-wider mb-2">Username</label>
+                <label for="username" class="block text-xs font-mono font-bold text-gray-700 dark:text-zinc-300 uppercase tracking-wider mb-2">Kullanıcı adı</label>
                 @* Text input with name="username" for model binding *@
-                <input type="text" id="username" name="username" required autofocus 
+                <input type="text" id="username" name="username" required autofocus autocomplete="username" aria-describedby="login-help@(ViewBag.Error != null ? " login-error" : "")" aria-invalid="@(ViewBag.Error != null ? "true" : "false")"
                        class="w-full bg-white dark:bg-[#09090b] border-2 border-gray-900 dark:border-zinc-700 text-gray-900 dark:text-zinc-100 p-3 text-sm font-mono rounded-none focus:outline-none focus:border-primary transition-none" />
             </div>
 
             @* Password field *@
             <div class="mb-8">
-                <label for="password" class="block text-xs font-mono font-bold text-gray-700 dark:text-zinc-300 uppercase tracking-wider mb-2">Password</label>
+                <label for="password" class="block text-xs font-mono font-bold text-gray-700 dark:text-zinc-300 uppercase tracking-wider mb-2">Parola</label>
                 @* Password input with name="password" for model binding *@
-                <input type="password" id="password" name="password" required 
+                <input type="password" id="password" name="password" required autocomplete="current-password" aria-describedby="login-help@(ViewBag.Error != null ? " login-error" : "")" aria-invalid="@(ViewBag.Error != null ? "true" : "false")"
                        class="w-full bg-white dark:bg-[#09090b] border-2 border-gray-900 dark:border-zinc-700 text-gray-900 dark:text-zinc-100 p-3 text-sm font-mono rounded-none focus:outline-none focus:border-primary transition-none" />
             </div>
 
             @* Submit button — Tech Minimal style *@
-            <button type="submit" 
+            <button type="submit"
                     class="w-full bg-primary hover:bg-primary/90 text-white border-2 border-gray-900 dark:border-zinc-700 font-mono font-bold py-3 px-4 uppercase tracking-wider text-sm rounded-none transition-none cursor-pointer">
-                Sign In
+                Giriş yap
             </button>
         </form>
     </div>

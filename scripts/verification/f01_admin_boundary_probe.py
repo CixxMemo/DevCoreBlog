@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 """Verify configured admin routes and privacy only on the owned disposable MVC fixture."""
+
+import html
 import argparse
 import getpass
 import http.client
@@ -47,7 +49,7 @@ def main():
         for path in ('/Account/Login', '/Account/Login/', '/account/login'):
             result = request_with_headers(visitor, base + path)
             checks['legacy_' + path + '_does_not_expose_login'] = (result[0] == 404
-                and 'Admin Sign In' not in result[2] and 'Location' not in result[3])
+                and 'Yönetici girişi' not in result[2] and 'Location' not in result[3])
         for path in ('/Admin', '/Admin/Dashboard', '/AdminPost', '/AdminCategory'):
             checks[path + '_denial_is_private_404'] = is_private_admin_challenge(
                 request_with_headers(visitor, base + path))
@@ -64,7 +66,7 @@ def main():
         _, token, status, url, body = submit_login(admin, base, username, 'wrong-fixture-password')
         checks['wrong_password_has_generic_error_without_session'] = (token is not None
             and status == 200 and url == admin_login_url(base)
-            and 'Invalid username or password.' in body and not has_authentication_cookie(cookies))
+            and 'Kullanıcı adı veya parola hatalı.' in html.unescape(body) and not has_authentication_cookie(cookies))
         _, token, status, url, _ = submit_login(admin, base, username, password)
         checks['configured_post_creates_admin_session'] = (token is not None and status == 200
             and url == base + '/Admin/Dashboard' and has_authentication_cookie(cookies))

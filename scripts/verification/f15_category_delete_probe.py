@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import html
 import argparse
 import json
 import os
@@ -27,7 +28,7 @@ RACE_CATEGORY_ID = 9016
 RACE_POST_ID = 9916
 PROTECTED_CATEGORY_ID = 1001
 BLOCKED_MESSAGE = (
-    "This category contains posts. Move or delete them before deleting the category."
+    "Bu kategoriye bağlı yazılar var. Kategoriyi silmeden önce yazıları taşıyın veya silin."
 )
 
 
@@ -165,7 +166,7 @@ def main() -> int:
     wait_until_ready(
         opener,
         admin_login_url(base_url),
-        "Admin Sign In",
+        "Yönetici girişi",
         args.wait_seconds,
     )
     _, login_token, login_status, login_url, _ = submit_login(
@@ -252,13 +253,13 @@ def main() -> int:
         "empty_category_is_deleted": (
             empty_status == 200
             and empty_url.rstrip("/").endswith("/AdminCategory")
-            and BLOCKED_MESSAGE not in empty_body
+            and BLOCKED_MESSAGE not in html.unescape(empty_body)
             and empty_count == 0
         ),
         "linked_category_is_blocked_without_data_loss": (
             protected_status == 200
             and protected_url.rstrip("/").endswith("/AdminCategory")
-            and BLOCKED_MESSAGE in protected_body
+            and BLOCKED_MESSAGE in html.unescape(protected_body)
             and protected_state == f"1|{protected_posts_before}"
             and protected_posts_before > 0
         ),
@@ -268,7 +269,7 @@ def main() -> int:
         "concurrent_delete_is_blocked_without_data_loss": (
             race_status == 200
             and race_url.rstrip("/").endswith("/AdminCategory")
-            and BLOCKED_MESSAGE in race_body
+            and BLOCKED_MESSAGE in html.unescape(race_body)
             and race_state == "1|1"
         ),
     }

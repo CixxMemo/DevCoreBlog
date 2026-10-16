@@ -19,7 +19,7 @@ const editor=p=>p.getByRole('textbox',{name:'Yazı metni',exact:true});
  await context.route('https://example.test/**',r=>r.fulfill({contentType:'image/png',body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/lSUAAAAASUVORK5CYII=','base64')}));
  await context.route('https://i.ytimg.com/**',r=>r.fulfill({contentType:'image/png',body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/lSUAAAAASUVORK5CYII=','base64')}));
  await context.route('https://www.youtube-nocookie.com/**',r=>r.fulfill({contentType:'text/html',body:'<!doctype html><title>Reference only</title>'}));
- const p=await context.newPage();await p.goto(base+'/fixture-admin/login');await p.locator('#username').fill('f17-admin');await p.locator('#password').fill('f17-isolated-password');await p.getByRole('button',{name:'Sign In',exact:true}).click();await p.waitForURL('**/Admin/Dashboard');
+ const p=await context.newPage();await p.goto(base+'/fixture-admin/login');await p.locator('#username').fill('f17-admin');await p.locator('#password').fill('f17-isolated-password');await p.getByRole('button',{name:'Giriş yap',exact:true}).click();await p.waitForURL('**/Admin/Dashboard');
  await p.getByRole('link',{name:'Bültenler',exact:true}).click();await p.waitForURL('**/AdminNewsletter');
  check('dedicated_inventory_navigation',new URL(p.url()).pathname==='/AdminNewsletter' && await p.getByRole('heading',{name:'Bültenler',exact:true}).isVisible());
  await p.getByRole('link',{name:'Yeni bülten hazırla',exact:true}).click();await editor(p).waitFor();

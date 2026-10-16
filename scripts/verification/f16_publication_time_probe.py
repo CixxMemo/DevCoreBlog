@@ -103,7 +103,7 @@ def main() -> int:
 
     base_url = args.base_url.rstrip("/")
     opener, cookies = cookie_opener()
-    wait_until_ready(opener, admin_login_url(base_url), "Admin Sign In", 30)
+    wait_until_ready(opener, admin_login_url(base_url), "Yönetici girişi", 30)
     _, token, status, url, _ = submit_login(
         opener, base_url, os.environ.get("DEVCORE_TEST_ADMIN_USERNAME", ""), password,
     )

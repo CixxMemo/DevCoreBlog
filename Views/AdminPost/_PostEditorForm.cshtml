@@ -12,7 +12,7 @@
     <input type="hidden" name="returnUrl" value="@Model.ReturnUrl" />
     @if (isEdit && Model.ReturnUrl is not null)
     {
-        <a href="@Model.ReturnUrl" class="inline-block mb-4 underline font-mono text-sm">Back to filtered posts</a>
+        <a href="@Model.ReturnUrl" class="inline-block mb-4 underline font-mono text-sm">Filtreli yazı listesine dön</a>
     }
     <input type="hidden" name="recoveryRevision" value="" />
     @* Recovery metadata only; publication intent comes from the submit button. *@
@@ -24,10 +24,10 @@
     }
     @if (!ViewData.ModelState.IsValid)
     {
-        <div asp-validation-summary="All" class="border-2 border-rose-600 bg-rose-50 p-4 font-mono text-xs font-bold text-rose-700 mb-6"></div>
+        <div asp-validation-summary="All" role="alert" class="border-2 border-rose-600 bg-rose-50 p-4 font-mono text-xs font-bold text-rose-700 mb-6"></div>
         @if (isEdit && Context.Response.StatusCode == 409)
         {
-            <a asp-action="Edit" asp-route-id="@Model.Id" asp-route-returnUrl="@Model.ReturnUrl" class="inline-block max-w-full whitespace-normal break-words mb-6 border-2 border-black px-4 py-2 font-mono text-xs font-bold underline focus:outline-2 focus:outline-offset-2">Reload current post</a>
+            <a asp-action="Edit" asp-route-id="@Model.Id" asp-route-returnUrl="@Model.ReturnUrl" class="inline-block max-w-full whitespace-normal break-words mb-6 border-2 border-black px-4 py-2 font-mono text-xs font-bold underline focus:outline-2 focus:outline-offset-2">Güncel yazıyı yeniden aç</a>
         }
     }
 
@@ -45,37 +45,37 @@
                 </div>
                 <div class="flex items-center gap-2">
                     <button type="button" id="btn-restore-draft" class="border border-black bg-black text-white hover:bg-neutral-800 px-3 py-1 font-mono text-xs font-bold uppercase transition-none">
-                        Restore
+                        Geri yükle
                     </button>
                     <button type="button" id="btn-discard-draft" class="border border-black bg-white text-black hover:bg-neutral-100 px-3 py-1 font-mono text-xs font-bold uppercase transition-none">
-                        Discard
+                        Yerel kopyayı sil
                     </button>
                 </div>
             </div>
 
-            <p class="font-mono text-xs text-neutral-600">Recovery copies stay in this browser. Files are not saved locally.</p>
+            <p class="font-mono text-xs text-neutral-600">Kurtarma kopyaları bu tarayıcıda tutulur. Seçilen dosyalar yerel kopyaya kaydedilmez.</p>
 
             @* Title Input Box *@
             <div class="border-2 border-black bg-white p-4">
-                <label for="post-title-input" class="block font-mono text-[10px] font-bold text-neutral-500 uppercase tracking-widest mb-1">// ARTICLE TITLE</label>
+                <label for="post-title-input" class="block font-mono text-[10px] font-bold text-neutral-500 uppercase tracking-widest mb-1">// YAZI BAŞLIĞI</label>
                 <input asp-for="Title"
                        id="post-title-input"
                        class="w-full font-sans font-black text-xl md:text-2xl text-black placeholder-neutral-400 focus:outline-none bg-transparent"
-                       placeholder="Enter article title here..."
+                       placeholder="Yazı başlığını girin…"
                        autocomplete="off" />
                 <span asp-validation-for="Title" class="font-mono text-xs text-rose-600 block mt-1"></span>
             </div>
 
             @* Custom Brutalist Action Toolbar *@
             <div class="border-2 border-black bg-neutral-100 p-2 flex flex-wrap items-center gap-2">
-                <span class="font-mono text-[10px] font-bold text-neutral-500 uppercase px-2">// MEDIA & TOOLS:</span>
+                <span class="font-mono text-[10px] font-bold text-neutral-500 uppercase px-2">// MEDYA VE ARAÇLAR:</span>
 
                 @* Upload Image Button *@
                 <button type="button"
                         id="btn-toolbar-image"
                         class="border border-black bg-white hover:bg-black hover:text-white px-2.5 py-1 font-mono text-xs font-bold flex items-center gap-1.5 transition-none">
                     <span>🖼️</span>
-                    <span>Upload Image/GIF</span>
+                    <span>Görsel/GIF yükle</span>
                 </button>
                 <input type="file" id="editor-image-picker" accept=".jpg,.jpeg,.png,.gif,.webp" class="hidden" />
 
@@ -84,11 +84,11 @@
                         id="btn-toolbar-video"
                         class="border border-black bg-white hover:bg-black hover:text-white px-2.5 py-1 font-mono text-xs font-bold flex items-center gap-1.5 transition-none">
                     <span>🎥</span>
-                    <span>Embed Video</span>
+                    <span>Video ekle</span>
                 </button>
 
                 <div class="ml-auto font-mono text-[10px] text-neutral-500 hidden sm:block">
-                    TIP: Paste images directly (Ctrl+V) or Drag & Drop
+                    İPUCU: Görsel yapıştırın (Ctrl+V) veya sürükleyip bırakın
                 </div>
             </div>
 
@@ -97,14 +97,14 @@
                 @* Drag-over visual overlay *@
                 <div id="dropzone-overlay" class="hidden absolute inset-0 bg-black bg-opacity-75 z-20 flex flex-col items-center justify-center text-white font-mono text-sm font-bold pointer-events-none">
                     <span class="text-3xl mb-2">📥</span>
-                    <span>DROP IMAGE / GIF TO UPLOAD TO CLOUDINARY</span>
+                    <span>YÜKLEMEK İÇİN GÖRSELİ / GIF DOSYASINI BIRAKIN</span>
                 </div>
 
                 @* The textarea is the working baseline; Toast UI hides it only after a successful start. *@
                 <div id="editor" hidden></div>
                 <div id="content-fallback">
                     <label asp-for="Content" class="block font-mono text-xs font-bold uppercase text-black p-3 pb-0">
-                        Markdown Content
+                        Markdown içeriği
                     </label>
                     <textarea asp-for="Content"
                               id="Content"
@@ -118,17 +118,17 @@
             @* Live Metrics & Word Counter Bar *@
             <div class="border-2 border-black bg-white p-3 flex flex-wrap items-center justify-between gap-4 font-mono text-xs">
                 <div class="flex items-center gap-4 text-neutral-700">
-                    <span class="font-bold"><strong id="metric-word-count" class="text-black">0</strong> words</span>
+                    <span class="font-bold"><strong id="metric-word-count" class="text-black">0</strong> kelime</span>
                     <span>•</span>
-                    <span><strong id="metric-reading-time" class="text-black">~0 min</strong> read</span>
+                    <span><strong id="metric-reading-time" class="text-black">~0 dk</strong> okuma</span>
                     <span>•</span>
-                    <span><strong id="metric-char-count" class="text-black">0</strong> chars</span>
+                    <span><strong id="metric-char-count" class="text-black">0</strong> karakter</span>
                 </div>
                 <div class="flex items-center gap-2 text-[10px] text-neutral-500 uppercase">
-                    <span id="autosave-status" role="status" aria-live="polite" class="bg-neutral-100 border border-black px-2 py-0.5 font-bold text-neutral-700">LOCAL RECOVERY READY</span>
+                    <span id="autosave-status" role="status" aria-live="polite" class="bg-neutral-100 border border-black px-2 py-0.5 font-bold text-neutral-700">YEREL KURTARMA HAZIR</span>
                     @if (isEdit)
                     {
-                        <span class="bg-neutral-100 border border-black px-2 py-0.5 font-bold text-neutral-700">POST ID: #@Model.Id</span>
+                        <span class="bg-neutral-100 border border-black px-2 py-0.5 font-bold text-neutral-700">YAZI KİMLİĞİ: #@Model.Id</span>
                     }
                 </div>
             </div>
@@ -139,45 +139,45 @@
         <div class="space-y-6">
 
             @* Explicit native submit values also work without JavaScript. *@
-            <div class="border-2 border-black bg-white p-4 space-y-3">
-                <p class="font-mono text-xs font-bold">@(isEdit ? "Saved state" : "Current state"): @Model.PublicationState</p>
+            <div class="border-2 border-black bg-white p-4 space-y-3" role="group" aria-label="Yayın işlemleri" aria-describedby="SaveAction__error">
+                <p class="font-mono text-xs font-bold">@(isEdit ? "Kayıtlı durum" : "Güncel durum"): @AdminLabels.Publication(Model.PublicationState)</p>
                 @if (isEdit)
                 {
                     <button type="submit" name="SaveAction" value="Save"
                             class="w-full border-2 border-black bg-black text-white p-3 font-mono text-xs font-bold focus:outline-2 focus:outline-offset-2">
-                        Save changes (keep @(Model.IsPublished ? "publication" : "draft"))
+                        Değişiklikleri kaydet (@(Model.IsPublished ? "yayın izni" : "taslak durumu") korunur)
                     </button>
-                    <p class="font-mono text-xs text-neutral-600">Save changes keeps the saved publication flag and date.</p>
+                    <p class="font-mono text-xs text-neutral-600">Değişiklikleri kaydetmek mevcut yayın iznini ve tarihini korur.</p>
                 }
                 <button type="submit" name="SaveAction" value="SaveDraft"
-                        class="w-full border-2 border-black bg-white text-black p-3 font-mono text-xs font-bold focus:outline-2 focus:outline-offset-2">Save Draft</button>
+                        class="w-full border-2 border-black bg-white text-black p-3 font-mono text-xs font-bold focus:outline-2 focus:outline-offset-2">Taslağı kaydet</button>
                 <button type="submit" name="SaveAction" value="Schedule"
-                        class="w-full border-2 border-black bg-white text-black p-3 font-mono text-xs font-bold focus:outline-2 focus:outline-offset-2">Schedule</button>
+                        class="w-full border-2 border-black bg-white text-black p-3 font-mono text-xs font-bold focus:outline-2 focus:outline-offset-2">Planla</button>
                 <button type="submit" name="SaveAction" value="Publish"
-                        class="w-full border-2 border-black bg-black text-white p-3 font-mono text-xs font-bold focus:outline-2 focus:outline-offset-2">Publish now</button>
-                <p class="font-mono text-xs text-neutral-600">Schedule uses a future site time. Publish now uses the server clock. Public visibility also requires an active post and category.</p>
+                        class="w-full border-2 border-black bg-black text-white p-3 font-mono text-xs font-bold focus:outline-2 focus:outline-offset-2">Şimdi yayımla</button>
+                <p class="font-mono text-xs text-neutral-600">Planlama gelecekteki site zamanını kullanır. Şimdi yayımla sunucu saatini kullanır. Görünürlük için yazı ve kategori de etkin olmalıdır.</p>
                 <span asp-validation-for="SaveAction" class="font-mono text-xs text-rose-600 block"></span>
 
                 <button type="submit" formaction="@Url.Action("Preview", "AdminPost")" formtarget="_blank"
                         formenctype="application/x-www-form-urlencoded"
-                        class="w-full border-2 border-black bg-white text-black p-3 font-mono text-xs font-bold focus:outline-2 focus:outline-offset-2">Preview in new tab</button>
-                <p class="font-mono text-xs text-neutral-600">Private server preview. Your editor stays open; nothing is saved or published.</p>
+                        class="w-full border-2 border-black bg-white text-black p-3 font-mono text-xs font-bold focus:outline-2 focus:outline-offset-2">Yeni sekmede önizle</button>
+                <p class="font-mono text-xs text-neutral-600">Özel sunucu önizlemesi. Düzenleyici açık kalır; değişiklikler kaydedilmez veya yayımlanmaz.</p>
 
                 <a href="@(Model.ReturnUrl ?? Url.Action("Index", "AdminPost"))"
                    class="block w-full text-center border-2 border-black bg-neutral-100 hover:bg-black hover:text-white p-2 font-mono text-xs font-bold uppercase transition-none">
-                    Cancel & Return
+                    Vazgeç ve dön
                 </a>
             </div>
 
             @* Live Google SERP (Search Engine Result Page) Preview Card *@
             <div class="border-2 border-black bg-white p-4 space-y-2">
-                <div class="font-mono text-[10px] font-bold text-neutral-500 uppercase tracking-wider">// GOOGLE SERP PREVIEW</div>
+                <div class="font-mono text-[10px] font-bold text-neutral-500 uppercase tracking-wider">// ARAMA SONUCU ÖNİZLEMESİ</div>
 
                 <div class="border border-neutral-300 p-3 bg-neutral-50 space-y-1 font-sans">
                     @if (isEdit)
                     {
                     @* Breadcrumb / URL *@
-                    <div class="font-mono text-[10px] text-neutral-600">Permanent address</div>
+                    <div class="font-mono text-[10px] text-neutral-600">Kalıcı adres</div>
                     <div class="text-[11px] text-emerald-800 font-mono break-all">
                         <span>/post/</span>
                         <span id="serp-slug-preview">@Model.Slug</span>
@@ -188,22 +188,22 @@
                     {
                     @* Breadcrumb / URL *@
                     <div class="text-[11px] text-emerald-800 font-mono truncate flex items-center gap-1">
-                        <span>devcoreblog.com</span>
+                        <span>aethernotes.dev</span>
                         <span>›</span>
                         <span>post</span>
                         <span>›</span>
-                        <span id="serp-slug-preview">your-slug</span>
+                        <span id="serp-slug-preview">adres-onizlemesi</span>
                     </div>
 
                     }
                     @* Title *@
                     <div id="serp-title-preview" class="text-sm font-semibold text-blue-800 line-clamp-1 hover:underline cursor-pointer">
-                        @(string.IsNullOrEmpty(Model.Title) ? "Article Title Preview" : Model.Title)
+                        @(string.IsNullOrEmpty(Model.Title) ? "Yazı başlığı önizlemesi" : Model.Title)
                     </div>
 
                     @* Meta Description Snippet *@
                     <div id="serp-summary-preview" class="text-xs text-neutral-600 line-clamp-2 leading-relaxed">
-                        @(string.IsNullOrEmpty(Model.Summary) ? "Summary and meta description will appear here as the Google snippet..." : Model.Summary)
+                        @(string.IsNullOrEmpty(Model.Summary) ? "Arama sonuçlarında gösterilecek özet burada görünür…" : Model.Summary)
                     </div>
                 </div>
             </div>
@@ -211,14 +211,14 @@
             @* Metadata & Post Configuration Panel *@
             <div class="border-2 border-black bg-white p-4 space-y-4">
                 <div class="font-mono text-[10px] font-bold text-neutral-500 uppercase tracking-wider border-b-2 border-black pb-2">
-                    // POST METADATA & CONFIG
+                    // YAZI BİLGİLERİ VE AYARLARI
                 </div>
 
                 @* Category Selection *@
                 <div>
-                    <label asp-for="CategoryId" class="block font-mono text-xs font-bold uppercase text-black mb-1">Category</label>
+                    <label asp-for="CategoryId" class="block font-mono text-xs font-bold uppercase text-black mb-1">Kategori</label>
                     <select asp-for="CategoryId" asp-items="ViewBag.CategoryId" class="w-full border-2 border-black p-2 font-mono text-xs bg-white text-black focus:outline-none">
-                        <option value="">Select Category...</option>
+                        <option value="">Kategori seçin…</option>
                     </select>
                     <span asp-validation-for="CategoryId" class="font-mono text-xs text-rose-600 block mt-1"></span>
                 </div>
@@ -232,37 +232,37 @@
 
                 @* Summary (Meta Description for SEO) *@
                 <div>
-                    <label for="post-summary-input" class="block font-mono text-xs font-bold uppercase text-black mb-1">Summary (Meta Description)</label>
-                    <textarea asp-for="Summary" id="post-summary-input" rows="3" class="w-full border-2 border-black p-2 font-mono text-xs text-black focus:outline-none" placeholder="Brief summary for SERP cards..."></textarea>
+                    <label for="post-summary-input" class="block font-mono text-xs font-bold uppercase text-black mb-1">Özet (arama açıklaması)</label>
+                    <textarea asp-for="Summary" id="post-summary-input" rows="3" class="w-full border-2 border-black p-2 font-mono text-xs text-black focus:outline-none" placeholder="Arama sonuçları için kısa özet…"></textarea>
                     <span asp-validation-for="Summary" class="font-mono text-xs text-rose-600 block mt-1"></span>
                 </div>
 
                 @* Excerpt *@
                 <div>
-                    <label asp-for="Excerpt" class="block font-mono text-xs font-bold uppercase text-black mb-1">Short Excerpt</label>
-                    <textarea asp-for="Excerpt" rows="2" class="w-full border-2 border-black p-2 font-mono text-xs text-black focus:outline-none" placeholder="Short excerpt for feed cards..."></textarea>
+                    <label asp-for="Excerpt" class="block font-mono text-xs font-bold uppercase text-black mb-1">Kısa açıklama</label>
+                    <textarea asp-for="Excerpt" rows="2" class="w-full border-2 border-black p-2 font-mono text-xs text-black focus:outline-none" placeholder="Yazı kartları için kısa açıklama…"></textarea>
                     <span asp-validation-for="Excerpt" class="font-mono text-xs text-rose-600 block mt-1"></span>
                 </div>
 
                 @* Cover Image Upload *@
                 <div>
-                    <label for="thumbnailFile" class="block font-mono text-xs font-bold uppercase text-black mb-1">Cover Image</label>
+                    <label for="thumbnailFile" class="block font-mono text-xs font-bold uppercase text-black mb-1">Kapak görseli</label>
                     @if (!string.IsNullOrEmpty(Model.ThumbnailUrl))
                     {
                         <div class="mb-2 border border-black p-1 bg-neutral-100">
-                            <img src="@Model.ThumbnailUrl" alt="Cover preview" class="w-full h-32 object-cover border border-neutral-300" />
-                            <span class="font-mono text-[10px] text-neutral-500 block truncate mt-1">Current: @Model.ThumbnailUrl</span>
+                            <img src="@Model.ThumbnailUrl" alt="Kapak önizlemesi" class="w-full h-32 object-cover border border-neutral-300" />
+                            <span class="font-mono text-[10px] text-neutral-500 block truncate mt-1">Kayıtlı: @Model.ThumbnailUrl</span>
                         </div>
                     }
-                    <input type="file" id="thumbnailFile" name="thumbnailFile" class="w-full border-2 border-black p-1.5 font-mono text-xs bg-neutral-50 text-black focus:outline-none" accept=".jpg,.jpeg,.png,.gif,.webp" />
-                    @Html.ValidationMessage("thumbnailFile", null, new { @class = "font-mono text-xs text-rose-600 block mt-1" })
-                    <p class="font-mono text-[10px] text-neutral-500 mt-1">JPG, PNG, GIF or WEBP · max 8 MB · stored at up to 4096×4096.</p>
+                    <input type="file" id="thumbnailFile" name="thumbnailFile" aria-describedby="thumbnailFile__error" aria-invalid="@(ViewData.ModelState.TryGetValue("thumbnailFile", out var coverState) && coverState.Errors.Count > 0 ? "true" : "false")" class="w-full border-2 border-black p-1.5 font-mono text-xs bg-neutral-50 text-black focus:outline-none" accept=".jpg,.jpeg,.png,.gif,.webp" />
+                    @Html.ValidationMessage("thumbnailFile", null, new { id = "thumbnailFile__error", @class = "font-mono text-xs text-rose-600 block mt-1", aria_live = "polite" })
+                    <p class="font-mono text-[10px] text-neutral-500 mt-1">JPG, PNG, GIF veya WEBP · en fazla 8 MB · en fazla 4096×4096 piksel saklanır.</p>
                 </div>
 
                 <div>
-                    <label asp-for="ThumbnailAlt" class="block font-mono text-xs font-bold uppercase text-black mb-1">Cover description (optional)</label>
+                    <label asp-for="ThumbnailAlt" class="block font-mono text-xs font-bold uppercase text-black mb-1">Kapak açıklaması (isteğe bağlı)</label>
                     <input asp-for="ThumbnailAlt" maxlength="300" aria-describedby="cover-description-help" class="w-full border-2 border-black p-2 font-mono text-xs text-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2" />
-                    <p id="cover-description-help" class="font-mono text-xs text-neutral-600 mt-1">Describe what the cover conveys. Leave empty for a decorative image.</p>
+                    <p id="cover-description-help" class="font-mono text-xs text-neutral-600 mt-1">Kapağın ne anlattığını açıklayın. Dekoratif görsel için boş bırakın.</p>
                     <span asp-validation-for="ThumbnailAlt" class="font-mono text-xs text-rose-600 block mt-1"></span>
                 </div>
 
@@ -270,8 +270,9 @@
                 <div class="border-t border-black pt-3 space-y-2 font-mono text-xs">
                     <label class="flex items-center gap-2 cursor-pointer">
                         <input asp-for="IsActive" class="w-4 h-4 border-2 border-black accent-black rounded-none" />
-                        <span class="font-bold">Active in System (IsActive)</span>
+                        <span class="font-bold">Yazı etkin</span>
                     </label>
+                    <span asp-validation-for="IsActive"></span>
                 </div>
             </div>
         </div>

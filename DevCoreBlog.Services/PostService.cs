@@ -202,7 +202,7 @@ public class PostService : IPostService, IPublicationSchedule, IWebhookPostServi
         }
         else
         {
-            errors.Add(new(nameof(Post.PublishDate), dateError ?? "Publish date is invalid."));
+            errors.Add(new(nameof(Post.PublishDate), dateError ?? "Yayın zamanı geçersiz."));
         }
 
         if (post.CategoryId > 0 &&
@@ -212,7 +212,7 @@ public class PostService : IPostService, IPublicationSchedule, IWebhookPostServi
         {
             errors.Add(new(
                 nameof(Post.CategoryId),
-                "Select an active category."));
+                "Etkin bir kategori seçin."));
         }
 
         return ContentValidationResult.FromErrors(errors);
@@ -346,7 +346,7 @@ public class PostService : IPostService, IPublicationSchedule, IWebhookPostServi
         {
             return ContentValidationResult.FromErrors(
             [
-                new(nameof(Post.Id), "Post not found.")
+                new(nameof(Post.Id), "Yazı bulunamadı.")
             ]);
         }
 
@@ -357,7 +357,7 @@ public class PostService : IPostService, IPublicationSchedule, IWebhookPostServi
         if (loadedVersion != existingPost.EditVersion)
         {
             return ContentValidationResult.Conflict(
-                "This post changed since you opened it. Your edits are still here. Reload the current post before trying again.");
+                "Yazı siz açtıktan sonra değişmiş. Düzenlemeleriniz korunuyor. Yeniden denemeden önce güncel yazıyı açın.");
         }
 
         // Publication flags/dates and counters do not represent an editorial content revision.
@@ -391,7 +391,7 @@ public class PostService : IPostService, IPublicationSchedule, IWebhookPostServi
                 existingPost, loadedVersion, cancellationToken))
         {
             return ContentValidationResult.Conflict(
-                "This post changed since you opened it. Your edits are still here. Reload the current post before trying again.");
+                "Yazı siz açtıktan sonra değişmiş. Düzenlemeleriniz korunuyor. Yeniden denemeden önce güncel yazıyı açın.");
         }
         await _publicListCache.InvalidateAsync(cancellationToken);
 

@@ -125,7 +125,7 @@ public class CategoryService : ICategoryService, ISitemapCategoryReader
         if (expectedEditVersion != existingCategory.EditVersion)
         {
             return ContentValidationResult.Conflict(
-                "This category changed since you opened it. Your edits are still here. Reload the current category before trying again.");
+                "Kategori siz açtıktan sonra değişmiş. Düzenlemeleriniz korunuyor. Yeniden denemeden önce güncel kategoriyi açın.");
         }
 
         // Validate a detached candidate before changing the tracked entity. This
@@ -147,7 +147,7 @@ public class CategoryService : ICategoryService, ISitemapCategoryReader
                 existingCategory, expectedEditVersion, cancellationToken))
         {
             return ContentValidationResult.Conflict(
-                "This category changed since you opened it. Your edits are still here. Reload the current category before trying again.");
+                "Kategori siz açtıktan sonra değişmiş. Düzenlemeleriniz korunuyor. Yeniden denemeden önce güncel kategoriyi açın.");
         }
 
         await _publicListCache.InvalidateAsync(cancellationToken);

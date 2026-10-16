@@ -3,6 +3,8 @@
 
 from __future__ import annotations
 
+import html
+
 import argparse
 import json
 import os
@@ -160,7 +162,7 @@ def main() -> int:
             len(allowed_statuses) == args.permit_limit
             and all(status == 200 for status in allowed_statuses)
             and all(
-                "Invalid username or password." in body
+                "Kullanıcı adı veya parola hatalı." in html.unescape(body)
                 for body in allowed_bodies
             )
         ),
@@ -170,9 +172,9 @@ def main() -> int:
             and blocked_status == 429
             and not authenticated_while_blocked
         ),
-        "rejection_has_english_wait_message_and_retry_after": (
-            "Too many sign-in attempts." in blocked_body
-            and "Try again in" in blocked_body
+        "rejection_has_turkish_wait_message_and_retry_after": (
+            "Çok fazla giriş denemesi yapıldı." in blocked_body
+            and "saniye sonra yeniden deneyin." in blocked_body
             and retry_after_seconds >= 1
         ),
         "username_input_does_not_create_rate_limit_partitions": (
@@ -183,7 +185,7 @@ def main() -> int:
             public_status == 200
             and "F01_VISIBLE_MARKER" in public_body
             and login_get_status == 200
-            and "Admin Sign In" in login_get_body
+            and "Yönetici girişi" in html.unescape(login_get_body)
         ),
         "valid_login_recovers_after_window": (
             recovery_get_status == 200

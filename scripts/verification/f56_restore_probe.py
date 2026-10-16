@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 """Prove backup/restore and previous-code compatibility only in a disposable cluster."""
+
+import html
 import argparse,getpass,hashlib,json,os,shutil,subprocess,time,urllib.request
 from pathlib import Path
 from http_probe_support import admin_login_path,cookie_opener,submit_login,request_with_headers
@@ -86,7 +88,7 @@ try:
      if r.status==200:break
    except OSError:time.sleep(.1)
   admin,_=cookie_opener();submit_login(admin,baseurl,'f56-admin',password)
-  status,_,body,_=request_with_headers(admin,baseurl+'/Admin/Dashboard');checks[label+'_restored_db_dashboard_verified']=status==200 and 'Verified (PostgreSQL)' in body
+  status,_,body,_=request_with_headers(admin,baseurl+'/Admin/Dashboard');checks[label+'_restored_db_dashboard_verified']=status==200 and 'Doğrulandı (PostgreSQL)' in html.unescape(body)
   status,_,body,_=request_with_headers(admin,baseurl+'/AdminPost/Edit/2005');checks[label+'_media_and_dates_readable']=status==200 and 'Synthetic cover' in body and 'f56/cover.png' in body
   # HEAD avoids the eligible public detail GET counter write.
   for slug,expected in [('f01-markdown-xss',200),('f01-draft',404),('f01-future-visible-marker',404)]:

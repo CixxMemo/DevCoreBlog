@@ -18,32 +18,32 @@ public sealed class PostFormInput
 
     public long EditVersion { get; set; }
 
-    [Required(ErrorMessage = "Title is required.")]
+    [Required(ErrorMessage = "Başlık gereklidir.")]
     [StringLength(
         PostContentRules.MaximumTitleLength,
-        ErrorMessage = "Title cannot exceed {1} characters.")]
+        ErrorMessage = "Başlık en fazla {1} karakter olabilir.")]
     public string Title { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "Content is required.")]
+    [Required(ErrorMessage = "İçerik gereklidir.")]
     [StringLength(
         PostContentRules.MaximumContentLength,
-        ErrorMessage = "Content cannot exceed {1} characters.")]
+        ErrorMessage = "İçerik en fazla {1} karakter olabilir.")]
     public string Content { get; set; } = string.Empty;
 
-    [Range(1, int.MaxValue, ErrorMessage = "Select an active category.")]
+    [Range(1, int.MaxValue, ErrorMessage = "Etkin bir kategori seçin.")]
     public int CategoryId { get; set; }
 
     [StringLength(
         PostContentRules.MaximumSummaryLength,
-        ErrorMessage = "Summary cannot exceed {1} characters.")]
+        ErrorMessage = "Özet en fazla {1} karakter olabilir.")]
     public string? Summary { get; set; }
 
     [StringLength(
         PostContentRules.MaximumExcerptLength,
-        ErrorMessage = "Excerpt cannot exceed {1} characters.")]
+        ErrorMessage = "Kısa açıklama en fazla {1} karakter olabilir.")]
     public string? Excerpt { get; set; }
 
-    [EnumDataType(typeof(PostSaveAction), ErrorMessage = "Choose a valid save action.")]
+    [EnumDataType(typeof(PostSaveAction), ErrorMessage = "Geçerli bir kayıt eylemi seçin.")]
     public PostSaveAction SaveAction { get; set; } = PostSaveAction.SaveDraft;
 
     [BindNever]
@@ -63,7 +63,7 @@ public sealed class PostFormInput
     public string Slug { get; set; } = string.Empty;
 
     [StringLength(PostContentRules.MaximumThumbnailAltLength,
-        ErrorMessage = "Cover description cannot exceed {1} characters.")]
+        ErrorMessage = "Kapak açıklaması en fazla {1} karakter olabilir.")]
     public string? ThumbnailAlt { get; set; }
 
     [BindNever]

@@ -51,13 +51,13 @@ checks['missing_token_rejected'] = request(admin, base + '/AdminPost/Preview', d
 checks['invalid_token_rejected'] = request(admin, base + '/AdminPost/Preview', data={**fields, '__RequestVerificationToken':'invalid'})[0] == 400
 
 for name, override, message in [
-    ('blank_title', {'Title':'   '}, 'Title is required.'),
-    ('blank_content', {'Content':'   '}, 'Content is required.'),
-    ('long_content', {'Content':'x'*200001}, 'Content cannot exceed'),
-    ('long_title', {'Title':'x'*201}, 'Title cannot exceed'),
-    ('missing_category', {'CategoryId':''}, 'is invalid.'),
-    ('inactive_category', {'CategoryId':'1002'}, 'Select an active category.'),
-    ('unknown_category', {'CategoryId':'2147483647'}, 'Select an active category.'),
+    ('blank_title', {'Title':'   '}, 'Başlık gereklidir.'),
+    ('blank_content', {'Content':'   '}, 'İçerik gereklidir.'),
+    ('long_content', {'Content':'x'*200001}, 'İçerik en fazla'),
+    ('long_title', {'Title':'x'*201}, 'Başlık en fazla'),
+    ('missing_category', {'CategoryId':''}, 'Bu alan gereklidir.'),
+    ('inactive_category', {'CategoryId':'1002'}, 'Etkin bir kategori seçin.'),
+    ('unknown_category', {'CategoryId':'2147483647'}, 'Etkin bir kategori seçin.'),
     ('invalid_date', {'PublishDate':'not-a-date'}, 'PublishDate'),
 ]:
     s, _, page, h = request_with_headers(admin, base + '/AdminPost/Preview', data={**fields, **override})

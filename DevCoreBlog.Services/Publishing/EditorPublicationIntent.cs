@@ -13,13 +13,13 @@ public static class EditorPublicationIntent
             case PostSaveAction.SaveDraft: post.IsPublished = false; break;
             case PostSaveAction.Schedule:
                 if (post.PublishDate <= utcNow) return ContentValidationResult.FromErrors([
-                    new(nameof(Post.PublishDate), "Choose a future publish date to schedule this post.")]);
+                    new(nameof(Post.PublishDate), "Yazıyı planlamak için gelecekteki bir yayın zamanı seçin.")]);
                 post.IsPublished = true; break;
             case PostSaveAction.Publish: post.IsPublished = true; post.PublishDate = utcNow; break;
             case PostSaveAction.Save:
-                if (stored is null) return ContentValidationResult.FromErrors([new("SaveAction", "Save changes requires an existing post.")]);
+                if (stored is null) return ContentValidationResult.FromErrors([new("SaveAction", "Değişiklikleri kaydetmek için kayıtlı bir yazı gereklidir.")]);
                 post.IsPublished = stored.IsPublished; post.PublishDate = stored.PublishDate; break;
-            default: return ContentValidationResult.FromErrors([new("SaveAction", "Choose a valid save action.")]);
+            default: return ContentValidationResult.FromErrors([new("SaveAction", "Geçerli bir kayıt eylemi seçin.")]);
         }
         return ContentValidationResult.Success();
     }

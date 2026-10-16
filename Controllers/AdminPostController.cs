@@ -80,7 +80,7 @@ public class AdminPostController : Controller
     [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public async Task<IActionResult> Index([FromQuery] AdminPostListInput input, CancellationToken cancellationToken)
     {
-        if (!ModelState.IsValid) return BadRequest("Invalid inventory filters. Use page 1–1000 and size 10, 25, or 50.");
+        if (!ModelState.IsValid) return BadRequest("Filtreler geçersiz. Sayfa 1–1000; sayfa boyutu 10, 25 veya 50 olmalıdır.");
         var result = await _postService.GetAdminPostsPagedAsync(input.ToQuery(), cancellationToken);
         var categories = (await _categoryService.GetAllCategoriesAsync()).ToList();
         if (input.CategoryId is { } id && !categories.Any(category => category.Id == id)) return NotFound();
@@ -97,11 +97,11 @@ public class AdminPostController : Controller
     [HttpPost]
     public async Task<IActionResult> TogglePublish(int id, string? returnUrl = null)
     {
-        if (!IsSafeListReturnUrl(returnUrl)) return BadRequest("Invalid return URL.");
+        if (!IsSafeListReturnUrl(returnUrl)) return BadRequest("Dönüş adresi geçersiz.");
         var post = await _postService.GetPostByIdAsync(id);
         if (post == null)
         {
-            return NotFound(new { success = false, message = "Post not found." });
+            return NotFound(new { success = false, message = "Yazı bulunamadı." });
         }
 
         // Toggle publication state
@@ -114,7 +114,7 @@ public class AdminPostController : Controller
             return BadRequest(new
             {
                 success = false,
-                message = "The post no longer satisfies the content rules.",
+                message = "Yazı artık içerik kurallarını karşılamıyor.",
                 errors = updateResult.Errors
             });
         }
@@ -126,8 +126,8 @@ public class AdminPostController : Controller
             success = true,
             isPublished = post.IsPublished,
             message = post.IsPublished
-                ? "Publication enabled. The saved date and active category still control visibility."
-                : "Post moved to Drafts."
+                ? "Yayın izni açıldı. Görünürlük kayıtlı tarihe ve etkin kategoriye bağlıdır."
+                : "Yazı taslaklara taşındı."
         });
     }
 
@@ -163,8 +163,8 @@ public class AdminPostController : Controller
         Response.Headers["X-Robots-Tag"] = "noindex, nofollow, noarchive";
         // Failed body binding may provide no model; reject it before accessing fields.
         if (Request.ContentLength > MaximumPreviewRequestBytes)
-            return StatusCode(StatusCodes.Status413PayloadTooLarge, "Request too large.");
-        if (input is null) return BadRequest("Invalid preview input.");
+            return StatusCode(StatusCodes.Status413PayloadTooLarge, "İstek boyutu sınırı aşıldı.");
+        if (input is null) return BadRequest("Önizleme alanları geçersiz.");
         // Stored media is read only; selected files and client cover URLs are never uploaded or trusted.
         var storedPost = input.Id > 0 ? await _postService.GetPostByIdAsync(input.Id) : null;
         if (input.Id < 0 || (input.Id > 0 && storedPost is null)) return NotFound();
@@ -176,7 +176,7 @@ public class AdminPostController : Controller
         var category = ModelState.IsValid
             ? await _categoryService.GetCategoryByIdAsync(input.CategoryId) : null;
         if (ModelState.IsValid && (category is null || !category.IsActive))
-            ModelState.AddModelError(nameof(input.CategoryId), "Select an active category.");
+            ModelState.AddModelError(nameof(input.CategoryId), "Etkin bir kategori seçin.");
 
         if (!ModelState.IsValid) Response.StatusCode = StatusCodes.Status400BadRequest;
         return View(new PostPreviewModel(post.Title, post.Content, category?.Name ?? string.Empty,
@@ -231,6 +231,7 @@ public class AdminPostController : Controller
         var categoryIsActive = await PopulateCategorySelectAsync(input.CategoryId);
         input.PublicationState = PostPublication.StateAt(post, categoryIsActive,
             _timeProvider.GetUtcNow().UtcDateTime);
+        ModelState.PrepareBooleanRedisplay(nameof(input.IsActive), input.IsActive);
         return View(input);
     }
 
@@ -242,7 +243,7 @@ public class AdminPostController : Controller
     // current category pre-selected.
     public async Task<IActionResult> Edit(int id, string? returnUrl = null)
     {
-        if (!IsSafeListReturnUrl(returnUrl)) return BadRequest("Invalid return URL.");
+        if (!IsSafeListReturnUrl(returnUrl)) return BadRequest("Dönüş adresi geçersiz.");
         // Get post from service layer
         var post = await _postService.GetPostByIdAsync(id);
         if (post == null)
@@ -258,6 +259,7 @@ public class AdminPostController : Controller
         input.ReturnUrl = returnUrl;
         input.PublicationState = PostPublication.StateAt(post, categoryIsActive,
             _timeProvider.GetUtcNow().UtcDateTime);
+        ModelState.PrepareBooleanRedisplay(nameof(input.IsActive), input.IsActive);
         return View(input);
     }
 
@@ -278,7 +280,7 @@ public class AdminPostController : Controller
         CancellationToken cancellationToken,
         string? returnUrl = null)
     {
-        if (!IsSafeListReturnUrl(returnUrl)) return BadRequest("Invalid return URL.");
+        if (!IsSafeListReturnUrl(returnUrl)) return BadRequest("Dönüş adresi geçersiz.");
         input.ReturnUrl = returnUrl;
         // Safety check: URL Id must match the form's hidden Id field
         if (id != input.Id)
@@ -292,12 +294,12 @@ public class AdminPostController : Controller
 
         if (input.EditVersion <= 0)
         {
-            ModelState.AddModelError(string.Empty, "Reload this post before saving.");
+            ModelState.AddModelError(string.Empty, "Kaydetmeden önce güncel yazıyı yeniden açın.");
         }
         else if (input.EditVersion != existingPost.EditVersion)
         {
             ModelState.AddModelError(string.Empty,
-                "This post changed since you opened it. Your edits are still here. Reload the current post before trying again.");
+                "Yazı siz açtıktan sonra değişmiş. Düzenlemeleriniz korunuyor. Yeniden denemeden önce güncel yazıyı açın.");
             Response.StatusCode = StatusCodes.Status409Conflict;
         }
 
@@ -356,6 +358,7 @@ public class AdminPostController : Controller
         input.PublicationState = PostPublication.StateAt(existingPost, categoryIsActive,
             _timeProvider.GetUtcNow().UtcDateTime);
         input.IsPublished = existingPost.IsPublished;
+        ModelState.PrepareBooleanRedisplay(nameof(input.IsActive), input.IsActive);
         return View(input);
     }
 

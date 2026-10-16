@@ -29,7 +29,7 @@ async function submit(p,expected=302){const pending=p.waitForResponse(r=>r.url()
 async function clearCreate(p){await p.evaluate(k=>localStorage.removeItem(k),key);}
 (async()=>{
  let p=await launch();await attach(p);
- await p.goto(base+'/fixture-admin/login');await p.locator('#username').fill('f17-admin');await p.locator('#password').fill('f17-isolated-password');await p.getByRole('button',{name:'Sign In',exact:true}).click();await p.waitForURL('**/Admin/Dashboard');
+ await p.goto(base+'/fixture-admin/login');await p.locator('#username').fill('f17-admin');await p.locator('#password').fill('f17-isolated-password');await p.getByRole('button',{name:'Giriş yap',exact:true}).click();await p.waitForURL('**/Admin/Dashboard');
  await create(p);await p.evaluate(k=>localStorage.setItem(k,'F14 legacy sentinel'),legacy);
  await title(p).fill('Kurtarılan Türkçe 👋');await p.locator('[name=CategoryId]').selectOption('1001');await p.locator('[name=Summary]').fill('Korunan özet');await p.locator('[name=Excerpt]').fill('Korunan kısa açıklama');await p.locator('[name=ThumbnailAlt]').fill('Korunan kapak');
  await textbox(p).fill('Kaydedilmemiş Türkçe metin 👋');await waitSaved(p);const original=await raw(p),record=JSON.parse(original);
@@ -40,7 +40,7 @@ async function clearCreate(p){await p.evaluate(k=>localStorage.removeItem(k),key
  check('restore_returns_keyboard_focus_to_writing',await textbox(p).evaluate(el=>el===document.activeElement));
  // Real browser restart preserves origin storage while session cookie is reauthenticated if needed.
  await context.close();p=await launch();await attach(p);await p.goto(base+'/fixture-admin/login');
- await p.locator('#username').fill('f17-admin');await p.locator('#password').fill('f17-isolated-password');await p.getByRole('button',{name:'Sign In',exact:true}).click();await p.waitForURL('**/Admin/Dashboard');await create(p);
+ await p.locator('#username').fill('f17-admin');await p.locator('#password').fill('f17-isolated-password');await p.getByRole('button',{name:'Giriş yap',exact:true}).click();await p.waitForURL('**/Admin/Dashboard');await create(p);
  await textbox(p).waitFor();check('browser_restart_preserves_draft_offer',await raw(p)===original && await p.locator('[data-recovery-panel]').isVisible());
  for(const width of [1440,390]){
   await p.setViewportSize({width,height:1000});await p.locator('[data-recovery-restore]').focus();

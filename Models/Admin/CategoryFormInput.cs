@@ -13,10 +13,10 @@ public sealed class CategoryFormInput
 
     public long EditVersion { get; set; }
 
-    [Required(ErrorMessage = "Category name is required.")]
+    [Required(ErrorMessage = "Kategori adı gereklidir.")]
     [StringLength(
         CategoryContentRules.MaximumNameLength,
-        ErrorMessage = "Category name cannot exceed {1} characters.")]
+        ErrorMessage = "Kategori adı en fazla {1} karakter olabilir.")]
     public string Name { get; set; } = string.Empty;
 
     [BindNever]

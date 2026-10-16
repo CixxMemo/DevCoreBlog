@@ -46,12 +46,12 @@ let browser;
     check('keyboard_password_focus', await page.locator('#password').evaluate(e => e === document.activeElement));
     await page.keyboard.type('f17-isolated-password');
     await page.keyboard.press('Tab');
-    check('keyboard_submit_focus', await page.getByRole('button', { name: 'Sign In', exact: true }).evaluate(e => e === document.activeElement));
+    check('keyboard_submit_focus', await page.getByRole('button', { name: 'Giriş yap', exact: true }).evaluate(e => e === document.activeElement));
     await page.keyboard.press('Enter');
     await page.waitForURL('**/Admin/Dashboard');
     check('keyboard_login_reaches_dashboard', await page.locator('#dashboard-scratchpad').isVisible());
     await audit();
-    await page.getByRole('button', { name: 'Sign Out', exact: true }).click();
+    await page.getByRole('button', { name: 'Oturumu kapat', exact: true }).click();
     await page.waitForURL(base + '/');
     const denied = await page.goto(base + '/Admin/Dashboard');
     check('logout_denies_without_disclosing_login', denied.status() === 404

@@ -141,7 +141,7 @@ public class AdminCategoryController : Controller
 
         if (input.EditVersion <= 0)
         {
-            ModelState.AddModelError(string.Empty, "Reload this category before saving.");
+            ModelState.AddModelError(string.Empty, "Kaydetmeden önce güncel kategoriyi yeniden açın.");
         }
 
         if (ModelState.IsValid)
@@ -192,7 +192,7 @@ public class AdminCategoryController : Controller
         {
             // Store error message in TempData (survives one redirect)
             TempData["Error"] =
-                "This category contains posts. Move or delete them before deleting the category.";
+                "Bu kategoriye bağlı yazılar var. Kategoriyi silmeden önce yazıları taşıyın veya silin.";
         }
 
         return RedirectToAction(nameof(Index));

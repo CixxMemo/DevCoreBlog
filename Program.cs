@@ -424,6 +424,20 @@ else if (!builder.Environment.IsDevelopment())
 // secret-auth webhook declares its narrow exception on that action.
 builder.Services.AddControllersWithViews(options =>
 {
+    options.ModelMetadataDetailsProviders.Add(new DevCoreBlog.Models.Presentation.TurkishValidationMetadata());
+    // Binding errors must not echo submitted values or expose internal property names.
+    var messages = options.ModelBindingMessageProvider;
+    messages.SetAttemptedValueIsInvalidAccessor((_, _) => "Bu alanın değeri geçersiz.");
+    messages.SetNonPropertyAttemptedValueIsInvalidAccessor(_ => "Girilen değer geçersiz.");
+    messages.SetUnknownValueIsInvalidAccessor(_ => "Bu alanın değeri geçersiz.");
+    messages.SetNonPropertyUnknownValueIsInvalidAccessor(() => "Girilen değer geçersiz.");
+    messages.SetValueIsInvalidAccessor(_ => "Girilen değer geçersiz.");
+    messages.SetValueMustNotBeNullAccessor(_ => "Bu alan gereklidir.");
+    messages.SetValueMustBeANumberAccessor(_ => "Bu alana sayı girin.");
+    messages.SetNonPropertyValueMustBeANumberAccessor(() => "Geçerli bir sayı girin.");
+    messages.SetMissingBindRequiredValueAccessor(_ => "Bu alan gereklidir.");
+    messages.SetMissingKeyOrValueAccessor(() => "Zorunlu alan eksik.");
+    messages.SetMissingRequestBodyRequiredValueAccessor(() => "İstek içeriği gereklidir.");
     options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute());
     options.Conventions.Add(new DevCoreBlog.Routing.AdminLoginRouteConvention(adminLogin));
 });
@@ -574,7 +588,7 @@ builder.Services.AddRateLimiter(options =>
 
         context.HttpContext.Response.ContentType = "text/plain; charset=utf-8";
         await context.HttpContext.Response.WriteAsync(
-            $"Too many sign-in attempts. Try again in {retryAfterSeconds} seconds.",
+            $"Çok fazla giriş denemesi yapıldı. {retryAfterSeconds} saniye sonra yeniden deneyin.",
             cancellationToken);
     };
 });

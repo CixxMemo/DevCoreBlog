@@ -61,7 +61,7 @@ function canonical(node) {
     const makeTable = (rows,cols) => ({ type:'table', content:Array.from({length:rows},(_,r)=>({type:'tableRow',content:Array.from({length:cols},(_,c)=>({type:r===0?'tableHeader':'tableCell',attrs:{colspan:1,rowspan:1,colwidth:null,align:c%2?'center':null},content:[{type:'paragraph',content:[{type:'text',text:`Türkçe ${r}:${c} 👋`}]}]}))}))});
     await page.goto(base+'/fixture-admin/login');
     await page.locator('#username').fill('f17-admin'); await page.locator('#password').fill('f17-isolated-password');
-    await page.getByRole('button',{name:'Sign In',exact:true}).click(); await page.waitForURL('**/Admin/Dashboard');
+    await page.getByRole('button',{name:'Giriş yap',exact:true}).click(); await page.waitForURL('**/Admin/Dashboard');
     await page.goto(base+'/AdminWriting/Create'); await editor.waitFor();
     check('turkish_table_tools_initial_selection_state', await command('tableInsert').isEnabled() && await command('tableRowAfter').isDisabled() && await command('tableHeader').isDisabled());
     await page.locator('#post-title-input').fill('F10 gerçek tablo yazımı'); await page.locator('[name=CategoryId]').selectOption('1001');

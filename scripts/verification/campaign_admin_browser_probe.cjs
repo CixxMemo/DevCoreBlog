@@ -11,7 +11,7 @@ function check(name,ok){checks[name]=!!ok;assert.ok(ok,name);}
  context.on('page',p=>{p.on('pageerror',e=>errors.push(e.name));p.on('console',m=>{if(m.type()==='error'&&!m.text().startsWith('Failed to load resource:'))consoleErrors.push(m.text());});});
  await context.route('https://fonts.googleapis.com/**',r=>r.fulfill({contentType:'text/css',body:''}));
  const p=await context.newPage();await p.goto(base+'/fixture-admin/login');await p.locator('#username').fill('fixture-admin');await p.locator('#password').fill('f39-synthetic-password');
- await p.getByRole('button',{name:'Sign In',exact:true}).click();await p.waitForURL('**/Admin/Dashboard');await p.goto(base+'/AdminNewsletter/Edit/9001');await p.getByRole('textbox',{name:'Yazı metni',exact:true}).waitFor();
+ await p.getByRole('button',{name:'Giriş yap',exact:true}).click();await p.waitForURL('**/Admin/Dashboard');await p.goto(base+'/AdminNewsletter/Edit/9001');await p.getByRole('textbox',{name:'Yazı metni',exact:true}).waitFor();
  check('writing_explains_separate_sending_and_current_archive', (await p.locator('main.writing-page').innerText()).includes('Kaydetmek veya sitede yayımlamak e-posta göndermez.')&&(await p.locator('main.writing-page').innerText()).includes('Tam arşiv doğrulanmış aktif abonelere açıktır.')&&!(await p.locator('main.writing-page').innerText()).includes('E-posta gönderimi: Başlatılmadı'));
  await p.goto(base+'/AdminNewsletter');
  check('newsletter_has_distinct_preparation_and_history_links',await p.getByRole('link',{name:'Gönderim hazırla',exact:true}).count()===1&&await p.getByRole('link',{name:'Önceki gönderimler',exact:true}).count()===1);

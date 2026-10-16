@@ -35,7 +35,7 @@ filters={'query':'F41 needle','categoryId':1001,'status':'Published','pageSize':
 s,u,first=listing(**filters)
 second=listing(**filters,page=2)[2]
 checks['only_one_page']=s==200 and len(rows(first))==10
-checks['all_filters_and_total']=rows(first)==list(range(5004,5041,4)) and '16 matching posts' in first
+checks['all_filters_and_total']=rows(first)==list(range(5004,5041,4)) and '16 eşleşen yazı' in html.unescape(first)
 checks['no_overlap_and_stable_secondary_id']=rows(second)==list(range(5044,5065,4)) and not set(rows(first))&set(rows(second))
 checks['body_not_transferred']='F41_PRIVATE_BODY_NEVER_IN_LIST' not in first
 for key,value in [('query','x'*101),('page',0),('page',1001),('page','bad'),('pageSize',999),('categoryId',0),('status','Bogus'),('status',99)]:
@@ -54,13 +54,13 @@ checks['injection_is_literal']=not rows(listing(query="' OR 1=1--")[2])
 checks['default_25']=len(rows(request(admin,base+'/AdminPost')[2]))==25
 checks['size_50']=len(rows(listing(pageSize=50)[2]))==50
 checks['unknown_category_404']=listing(categoryId=999999)[0]==404
-checks['empty_first_page']=listing(query='F41 absent')[0]==200 and 'No posts match these filters' in listing(query='F41 absent')[2]
+checks['empty_first_page']=listing(query='F41 absent')[0]==200 and 'Bu filtrelerle eşleşen yazı yok' in listing(query='F41 absent')[2]
 checks['stale_page_clamps_with_context']=parse_qs(urlparse(listing(**filters,page=999)[1]).query)=={k:[str(v)] for k,v in dict(filters,page=2).items()}
-next_link=re.search(r'<a href="([^"]+)"[^>]*>Next',first)
+next_link=re.search(r'<a href="([^"]+)"[^>]*>Sonraki',first)
 checks['next_preserves_context']=next_link is not None and parse_qs(urlparse(unescape(next_link[1])).query)=={k:[str(v)] for k,v in dict(filters,page=2).items()}
 context='/AdminPost?'+urlencode(dict(filters,page=2))
 s,u,edit=request(admin,base+'/AdminPost/Edit/5044?'+urlencode({'returnUrl':context}))
-checks['edit_hidden_context']=s==200 and extract_hidden_value(edit,'returnUrl')==context and 'Back to filtered posts' in edit
+checks['edit_hidden_context']=s==200 and extract_hidden_value(edit,'returnUrl')==context and 'Filtreli yazı listesine dön' in html.unescape(edit)
 fields=post_fields('F41 needle 44 edited','F41 edited text',post_id=5044)
 fields.update(EditVersion=extract_hidden_value(edit,'EditVersion'),__RequestVerificationToken=extract_antiforgery_token(edit),SaveAction='Save',PublishDate=extract_hidden_value(edit,'PublishDate'),returnUrl=context,recoveryRevision='48134f5a-983a-46f6-9400-60c9d535aa00')
 s,u,saved=request(admin,base+'/AdminPost/Edit/5044',data=fields)
@@ -75,7 +75,7 @@ for target in ['https://example.test','//example.test','/Account/Logout','/Admin
     checks['reject_toggle_return_'+target]=request(admin,base+'/AdminPost/TogglePublish/5048',data={'__RequestVerificationToken':token,'returnUrl':target})[0]==400 and sql('SELECT "IsPublished" FROM "Posts" WHERE "Id"=5048;')==before
 checks['toggle_missing_csrf_400']=request(admin,base+'/AdminPost/TogglePublish/5048',data={'returnUrl':context})[0]==400
 s,u,body=request(admin,base+'/AdminPost/TogglePublish/5048',data={'__RequestVerificationToken':token,'returnUrl':context})
-checks['toggle_returns_context_and_recomputes_filter']=s==200 and parse_qs(urlparse(u).query)==parse_qs(urlparse(context).query) and 5048 not in rows(body) and '15 matching posts' in body
+checks['toggle_returns_context_and_recomputes_filter']=s==200 and parse_qs(urlparse(u).query)==parse_qs(urlparse(context).query) and 5048 not in rows(body) and '15 eşleşen yazı' in html.unescape(body)
 s,u,body=request(admin,base+'/AdminPost/TogglePublish/5048',data={'__RequestVerificationToken':token})
 checks['legacy_json_toggle_preserved']=s==200 and json.loads(body)['success'] and json.loads(body)['isPublished']
 anon,_=cookie_opener();checks['anonymous_has_no_inventory']=not rows(request(anon,base+'/AdminPost')[2])

@@ -3,6 +3,8 @@
 
 from __future__ import annotations
 
+import html
+
 import argparse
 import json
 import os
@@ -76,7 +78,7 @@ def main() -> int:
     wait_until_ready(
         opener,
         admin_login_url(base_url),
-        "Admin Sign In",
+        "Yönetici girişi",
         args.wait_seconds,
     )
     _, login_token, login_status, login_url, _ = submit_login(
@@ -190,7 +192,7 @@ def main() -> int:
         "form_rejects_oversized_summary_without_persisting": (
             form_status == 200
             and "/AdminPost/Create" in form_url
-            and "Summary cannot exceed 500 characters." in form_body
+            and "Özet en fazla 500 karakter olabilir." in html.unescape(form_body)
             and shared_marker in form_body
             and shared_marker not in overpost_body
         ),
@@ -218,7 +220,7 @@ def main() -> int:
             and category_token is not None
             and 'maxlength="100"' in category_body
             and invalid_category_status == 200
-            and "Category name cannot exceed 100 characters." in invalid_category_body
+            and "Kategori adı en fazla 100 karakter olabilir." in html.unescape(invalid_category_body)
         ),
     }
     statuses = {

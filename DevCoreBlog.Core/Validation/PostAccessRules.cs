@@ -10,11 +10,11 @@ public static class PostAccessRules
         ArgumentNullException.ThrowIfNull(post);
         var errors = new List<ContentValidationError>();
         if (!Enum.IsDefined(post.ContentKind))
-            errors.Add(new(nameof(Post.ContentKind), "Choose a valid content kind."));
+            errors.Add(new(nameof(Post.ContentKind), "Geçerli bir içerik türü seçin."));
         if (!Enum.IsDefined(post.AccessScope))
-            errors.Add(new(nameof(Post.AccessScope), "Choose a valid access scope."));
+            errors.Add(new(nameof(Post.AccessScope), "Geçerli bir erişim kapsamı seçin."));
         if (post.ContentKind == PostContentKind.Newsletter && post.AccessScope != PostAccessScope.Subscribers)
-            errors.Add(new(nameof(Post.AccessScope), "Newsletter bodies require subscriber access."));
+            errors.Add(new(nameof(Post.AccessScope), "Bültenin tam metni yalnız abonelere açılabilir."));
         return ContentValidationResult.FromErrors(errors);
     }
 }

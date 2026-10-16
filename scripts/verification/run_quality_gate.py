@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Run a clean, disposable quality gate; never copy local credentials or export fixture logs."""
-import argparse,json,os,signal,shutil,subprocess,tempfile,time
+import argparse,json,os,re,signal,shutil,subprocess,tempfile,time
 from pathlib import Path
 from npm_audit_policy import evaluate_npm_audit
 
@@ -34,6 +34,16 @@ def run(name,command,cwd,timeout=240,export=True,extra=None):
     if export: (report/(name+'.log')).write_text(output)
     print(name+': '+('PASS' if code==0 else 'FAIL'),flush=True)
     return code,output
+
+def fixture_boolean_checks(output):
+    checks={line.split('=')[0]:line.endswith('=true') for line in output.splitlines() if line.endswith(('=true','=false'))}
+    decoder=json.JSONDecoder()
+    for start in re.finditer(r'(?m)^\{',output):
+        try: data,_=decoder.raw_decode(output[start.start():])
+        except ValueError: continue
+        if isinstance(data,dict) and isinstance(data.get('checks'),dict):
+            checks.update({key:value for key,value in data['checks'].items() if isinstance(value,bool)})
+    return checks
 
 def json_audit(name,command,source,kind):
     code,output=run(name,command,source,export=False)
@@ -100,7 +110,7 @@ try:
                 if run('checks-'+tool,['dotnet',str(source/Path(project).parent/'bin/Debug/net10.0'/('DevCoreBlog.'+tool+'Tool.dll'))],source)[0]: raise RuntimeError('Tool checks failed')
         # Existing runner owns cluster, sockets, synthetic credentials and application cleanup.
         code,output=run('postgres-http',['sh','scripts/verification/run_f17_visibility.sh'],source,timeout=480,export=False,extra={'DEVCORE_F21_PROBE':'1','DEVCORE_F49_PROBE':'1','DEVCORE_F30_PROBE':'1','DEVCORE_F55_PROBE':'1','DEVCORE_F55_REPORT_DIR':str(report),'DEVCORE_VOL1_F01_REPORT_DIR':str(report),'DEVCORE_F17_PG_PORT':'55459','DEVCORE_F17_APP_PORT':'15196'})
-        checks={line.split('=')[0]:line.endswith('=true') for line in output.splitlines() if line.endswith(('=true','=false'))}
+        checks=fixture_boolean_checks(output)
         (report/'fixture-checks.json').write_text(json.dumps({'checks':checks,'exit_code':code},indent=2)+'\n')
         stages['postgres-http']['passed']=code==0 and bool(checks) and all(checks.values())
         if code: print('Fixture failed; private raw output withheld. See structured reports and rerun the isolated fixture for diagnosis.',flush=True)
@@ -242,6 +252,12 @@ try:
             stages['publication-settings']['passed']=code==0 and publication_settings['passed'] and publication_settings['count']==len(publication_settings['checks']) and all(publication_settings['checks'].values())
         except (OSError,ValueError,KeyError,TypeError):
             stages['publication-settings']['passed']=False
+        code,output=run('admin-language',['python3','scripts/verification/admin_language_probe.py','--report',str(report/'admin-language'/'report.json')],source,timeout=360,export=False)
+        try:
+            language=json.loads((report/'admin-language'/'report.json').read_text())
+            stages['admin-language']['passed']=code==0 and language['passed'] and language['count']==len(language['checks']) and all(language['checks'].values())
+        except (OSError,ValueError,KeyError,TypeError):
+            stages['admin-language']['passed']=False
         code,output=run('reader-identity',['python3','scripts/verification/reader_identity_probe.py','--port','55526','--report',str(report/'reader-migration.json')],source,timeout=300,export=False)
         try:
             reader=json.loads((report/'reader-migration.json').read_text())

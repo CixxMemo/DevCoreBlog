@@ -26,7 +26,7 @@ function check(name,value){checks[name]=!!value;assert.ok(value,name);}
   const screenshot=path.join(evidence,'browser-'+width+'.png');await page.screenshot({path:screenshot,fullPage:true});fs.chmodSync(screenshot,0o600);
  }
  const admin=await browser.newContext();const edit=await admin.newPage();edit.on('pageerror',e=>errors.push(e.name));
- await edit.goto(base+'/fixture-admin/login');await edit.locator('#username').fill('f18-admin');await edit.locator('#password').fill('f18-isolated-password');await edit.getByRole('button',{name:'Sign In',exact:true}).click();await edit.waitForURL('**/Admin/Dashboard');
+ await edit.goto(base+'/fixture-admin/login');await edit.locator('#username').fill('f18-admin');await edit.locator('#password').fill('f18-isolated-password');await edit.getByRole('button',{name:'Giriş yap',exact:true}).click();await edit.waitForURL('**/Admin/Dashboard');
  for(const post of posts){
   const response=await edit.goto(base+'/AdminWriting/Edit/'+post.Id,{waitUntil:'domcontentloaded'});
   await edit.locator('.tiptap').waitFor({state:'visible'});check('editor_migrated_'+post.Id,response.status()===200&&normal(await edit.locator('.tiptap').innerText())===normal(post.DocumentPlainText)&&await edit.locator('[name="DocumentJson"]').inputValue()===post.DocumentJson);

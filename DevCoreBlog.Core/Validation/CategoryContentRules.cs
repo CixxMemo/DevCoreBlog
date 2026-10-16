@@ -22,13 +22,13 @@ public static class CategoryContentRules
         var errors = new List<ContentValidationError>();
         if (string.IsNullOrWhiteSpace(category.Name))
         {
-            errors.Add(new(nameof(Category.Name), "Category name is required."));
+            errors.Add(new(nameof(Category.Name), "Kategori adı gereklidir."));
         }
         else if (category.Name.Length > MaximumNameLength)
         {
             errors.Add(new(
                 nameof(Category.Name),
-                $"Category name cannot exceed {MaximumNameLength} characters."));
+                $"Kategori adı en fazla {MaximumNameLength} karakter olabilir."));
         }
 
         return ContentValidationResult.FromErrors(errors);

@@ -31,7 +31,7 @@ public static class PostContentRules
     public static ContentValidationResult Validate(Post post)
     {
         var errors = ValidateMetadata(post).Errors.ToList();
-        ValidateRequiredText(errors, nameof(Post.Content), post.Content, MaximumContentLength, "Content");
+        ValidateRequiredText(errors, nameof(Post.Content), post.Content, MaximumContentLength, "İçerik");
         return ContentValidationResult.FromErrors(errors);
     }
 
@@ -46,27 +46,27 @@ public static class PostContentRules
             nameof(Post.Title),
             post.Title,
             MaximumTitleLength,
-            "Title");
+            "Başlık");
         ValidateOptionalText(
             errors,
             nameof(Post.Summary),
             post.Summary,
             MaximumSummaryLength,
-            "Summary");
+            "Özet");
         ValidateOptionalText(
             errors,
             nameof(Post.Excerpt),
             post.Excerpt,
             MaximumExcerptLength,
-            "Excerpt");
+            "Kısa açıklama");
 
         if (post.CategoryId <= 0)
         {
-            errors.Add(new(nameof(Post.CategoryId), "Select an active category."));
+            errors.Add(new(nameof(Post.CategoryId), "Etkin bir kategori seçin."));
         }
 
         ValidateOptionalText(errors, nameof(Post.ThumbnailAlt), post.ThumbnailAlt,
-            MaximumThumbnailAltLength, "Cover description");
+            MaximumThumbnailAltLength, "Kapak açıklaması");
         // An upload identity and its actual dimensions form one server-owned group.
         if (post.ThumbnailPublicId is not null || post.ThumbnailWidth is not null || post.ThumbnailHeight is not null)
         {
@@ -74,7 +74,7 @@ public static class PostContentRules
                 post.ThumbnailPublicId.Length > MaximumThumbnailPublicIdLength ||
                 post.ThumbnailPublicId.Any(char.IsControl) || string.IsNullOrEmpty(post.ThumbnailUrl) ||
                 post.ThumbnailWidth is not (> 0 and <= MaximumThumbnailDimension) || post.ThumbnailHeight is not (> 0 and <= MaximumThumbnailDimension))
-                errors.Add(new(nameof(Post.ThumbnailUrl), "Cover metadata is invalid."));
+                errors.Add(new(nameof(Post.ThumbnailUrl), "Kapak bilgileri geçersiz."));
         }
         ValidateThumbnailUrl(errors, post.ThumbnailUrl);
         return ContentValidationResult.FromErrors(errors);
@@ -89,7 +89,7 @@ public static class PostContentRules
     {
         if (string.IsNullOrWhiteSpace(value))
         {
-            errors.Add(new(field, $"{displayName} is required."));
+            errors.Add(new(field, $"{displayName} gereklidir."));
             return;
         }
 
@@ -107,7 +107,7 @@ public static class PostContentRules
         {
             errors.Add(new(
                 field,
-                $"{displayName} cannot exceed {maximumLength} characters."));
+                $"{displayName} en fazla {maximumLength} karakter olabilir."));
         }
     }
 
@@ -124,7 +124,7 @@ public static class PostContentRules
         {
             errors.Add(new(
                 nameof(Post.ThumbnailUrl),
-                $"Cover image URL cannot exceed {MaximumThumbnailUrlLength} characters."));
+                $"Kapak adresi en fazla {MaximumThumbnailUrlLength} karakter olabilir."));
             return;
         }
 
@@ -134,7 +134,7 @@ public static class PostContentRules
         {
             errors.Add(new(
                 nameof(Post.ThumbnailUrl),
-                "Cover image URL must be an absolute HTTPS URL."));
+                "Kapak adresi tam bir HTTPS adresi olmalıdır."));
         }
     }
 }

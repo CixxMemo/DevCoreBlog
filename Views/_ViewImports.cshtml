@@ -1,4 +1,4 @@
-﻿@* ============================================================================= *@
+@* ============================================================================= *@
 @* _ViewImports.cshtml — Global View Imports *@
 @* ============================================================================= *@
 @* This file is automatically included by the Razor engine for EVERY view in the *@
@@ -23,3 +23,6 @@
 @inject DevCoreBlog.Routing.PublicUrlBuilder PublicUrls
 
 @inject DevCoreBlog.Models.Seo.PageMetadataFactory PageMetadata
+
+@using DevCoreBlog.Models.Presentation
+@addTagHelper *, DevCoreBlog

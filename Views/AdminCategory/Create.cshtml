@@ -10,35 +10,35 @@
 @model DevCoreBlog.Models.Admin.CategoryFormInput
 
 @{
-    ViewData["Title"] = "New Category";
+    ViewData["Title"] = "Yeni kategori";
 }
 
 <div class="max-w-xl mx-auto space-y-6">
-    
+
     @* Card Wrapper *@
     <div class="border-2 border-black bg-white p-6 md:p-8 space-y-6">
-        
+
         @* Header *@
         <div class="border-b-2 border-black pb-4">
-            <span class="font-mono text-[10px] font-bold text-neutral-500 uppercase tracking-widest">// TAXONOMY CREATION</span>
+            <span class="font-mono text-[10px] font-bold text-neutral-500 uppercase tracking-widest">// YENİ KATEGORİ</span>
             <h1 class="text-2xl font-black uppercase tracking-tight text-black mt-1">
-                New Category
+                Yeni kategori
             </h1>
         </div>
 
         <form asp-action="Create" method="post" class="space-y-5">
             @* Validation Summary *@
-            <div asp-validation-summary="ModelOnly" class="border-2 border-rose-600 bg-rose-50 p-3 font-mono text-xs font-bold text-rose-700"></div>
+            <div asp-validation-summary="ModelOnly" role="alert" class="border-2 border-rose-600 bg-rose-50 p-3 font-mono text-xs font-bold text-rose-700"></div>
 
             @* Category Name Input *@
             <div>
-                <label asp-for="Name" class="block font-mono text-xs font-bold uppercase text-black mb-1.5">
-                    Category Name
+                <label for="category-name-input" class="block font-mono text-xs font-bold uppercase text-black mb-1.5">
+                    Kategori adı
                 </label>
-                <input asp-for="Name" 
+                <input asp-for="Name"
                        id="category-name-input"
-                       class="w-full border-2 border-black p-3 font-mono text-sm text-black placeholder-neutral-400 focus:outline-none focus:bg-neutral-50" 
-                       placeholder="e.g., Artificial Intelligence, Vibe Coding..." 
+                       class="w-full border-2 border-black p-3 font-mono text-sm text-black placeholder-neutral-400 focus:outline-none focus:bg-neutral-50"
+                       placeholder="Örn. Yapay zekâ, Felsefe…"
                        autocomplete="off" />
                 <span asp-validation-for="Name" class="font-mono text-xs text-rose-600 block mt-1"></span>
             </div>
@@ -46,26 +46,26 @@
             @* Real-Time Slug Preview Box *@
             <div class="border-2 border-black bg-neutral-50 p-3 space-y-1 font-mono text-xs">
                 <div class="text-[10px] font-bold text-neutral-500 uppercase flex items-center justify-between">
-                    <span>// LIVE SLUG PREVIEW:</span>
+                    <span>// ADRES ÖNİZLEMESİ:</span>
                     <span id="slug-clean-badge" class="bg-emerald-100 border border-emerald-600 text-emerald-900 px-1.5 py-0.2 font-bold text-[9px] uppercase">
-                        VALID
+                        GEÇERLİ
                     </span>
                 </div>
                 <div class="font-bold text-black flex items-center gap-1 truncate">
                     <span class="text-neutral-500">/category/</span>
-                    <span id="slug-preview" class="text-black bg-yellow-100 px-1">your-slug</span>
+                    <span id="slug-preview" class="text-black bg-yellow-100 px-1">adres-onizlemesi</span>
                 </div>
             </div>
 
             @* Action Buttons *@
             <div class="border-t-2 border-black pt-5 flex items-center gap-3">
-                <button type="submit" 
+                <button type="submit"
                         class="border-2 border-black bg-black text-white hover:bg-neutral-800 px-6 py-2.5 font-mono text-xs font-bold uppercase tracking-wider transition-none">
-                    Save Category
+                    Kategoriyi kaydet
                 </button>
-                <a asp-action="Index" 
+                <a asp-action="Index"
                    class="border-2 border-black bg-white hover:bg-neutral-100 text-black px-6 py-2.5 font-mono text-xs font-bold uppercase tracking-wider transition-none">
-                    Cancel
+                    Vazgeç
                 </a>
             </div>
         </form>
@@ -74,6 +74,6 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-    
+
     <script src="~/js/category-slug-preview.js" asp-append-version="true"></script>
 }

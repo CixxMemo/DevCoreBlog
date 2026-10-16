@@ -24,7 +24,7 @@ function check(name, value) { checks[name] = !!value; assert.ok(value, name); }
     await page.goto(base + '/fixture-admin/login');
     await page.locator('#username').fill('f17-admin');
     await page.locator('#password').fill('f17-isolated-password');
-    await page.getByRole('button', { name: 'Sign In', exact: true }).click();
+    await page.getByRole('button', { name: 'Giriş yap', exact: true }).click();
     await page.waitForURL('**/Admin/Dashboard');
     for (const width of [1440, 390]) {
         await page.setViewportSize({ width, height: 1000 });
@@ -44,7 +44,7 @@ function check(name, value) { checks[name] = !!value; assert.ok(value, name); }
         check('title_and_body_retained_' + width, await page.locator('#post-title-input').inputValue() === title && (await page.locator('#Content').inputValue()).includes(body));
         check('turkish_reason_visible_' + width, (await page.locator('[data-valmsg-summary]').innerText()).includes('JSON belge'));
         check('enforcing_csp_preserved_' + width, headers['content-security-policy'].includes("style-src-attr 'none'") && !headers['content-security-policy'].includes('unsafe-eval'));
-        const reload = page.getByRole('link', { name: 'Reload current post', exact: true });
+        const reload = page.getByRole('link', { name: 'Güncel yazıyı yeniden aç', exact: true });
         await reload.focus();
         await page.keyboard.press('Shift+Tab');
         await page.keyboard.press('Tab');

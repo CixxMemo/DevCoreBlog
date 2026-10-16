@@ -20,23 +20,23 @@ document.addEventListener('DOMContentLoaded', function () {
     // Save on keystroke with instant visual feedback
     textarea.addEventListener('input', function () {
         localStorage.setItem(STORAGE_KEY, textarea.value);
-        statusBadge.textContent = 'SAVED';
+        statusBadge.textContent = 'KAYDEDİLDİ';
         statusBadge.className = 'font-mono text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-300 px-1.5 py-0.5';
         updateMetrics();
     });
 
     function updateMetrics() {
         const len = textarea.value.length;
-        charCount.textContent = `${len} character${len !== 1 ? 's' : ''}`;
+        charCount.textContent = `${len} karakter`;
     }
 
     // Clear button handler
     clearBtn.addEventListener('click', function () {
-        if (textarea.value.trim() && confirm('Clear scratchpad note?')) {
+        if (textarea.value.trim() && confirm('Not defterindeki notu temizlemek istiyor musunuz?')) {
             textarea.value = '';
             localStorage.removeItem(STORAGE_KEY);
             updateMetrics();
-            if (window.showToast) window.showToast('Scratchpad cleared.', 'info');
+            if (window.showToast) window.showToast('Not defteri temizlendi.', 'info');
         }
     });
 
@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', function () {
     createDraftBtn.addEventListener('click', function () {
         const note = textarea.value.trim();
         if (!note) {
-            if (window.showToast) window.showToast('Please type a note in the scratchpad first.', 'error');
+            if (window.showToast) window.showToast('Önce not defterine bir not yazın.', 'error');
             return;
         }
 
@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', function () {
         localStorage.setItem('devcore_editor_scratch_transfer', note);
 
         if (window.showToast) {
-            window.showToast('Transferring note to post editor...', 'success');
+            window.showToast('Not yazı düzenleyicisine aktarılıyor…', 'success');
         }
 
         // Redirect to post create page

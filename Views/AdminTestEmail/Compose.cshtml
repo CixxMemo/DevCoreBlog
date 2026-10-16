@@ -16,8 +16,8 @@
             <input asp-for="Input.RequestId" type="hidden" />
             <input asp-for="Input.DocumentJson" type="hidden" />
             <label asp-for="Input.Subject" class="block font-bold mb-2">E-posta konusu</label>
-            <input asp-for="Input.Subject" maxlength="200" required aria-describedby="subject-help subject-error" class="border-2 border-black w-full p-3" />
-            <span asp-validation-for="Input.Subject" id="subject-error" class="block text-red-700"></span>
+            <input asp-for="Input.Subject" maxlength="200" required aria-describedby="subject-help Input_Subject__error" class="border-2 border-black w-full p-3" />
+            <span asp-validation-for="Input.Subject" id="Input_Subject__error" class="block text-red-700"></span>
             <p id="subject-help" class="text-sm mt-2 mb-4">Konuya otomatik olarak [TEST] eklenir. Alıcı bu formdan değiştirilemez.</p>
             <p class="text-sm mb-4">Testler arasında en az bir dakika olmalıdır. Son 24 saatte en fazla üç yeni test başlatabilirsiniz.</p>
             <button type="submit" class="border-2 border-black bg-black text-white font-bold px-4 py-3">Test e-postası gönder</button>

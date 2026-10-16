@@ -12,13 +12,13 @@ window.showToast = function (message, type = 'info') {
     toast.className = 'border-2 border-black bg-white p-3.5 font-mono text-xs font-bold text-black flex items-center justify-between gap-4 pointer-events-auto transition-none';
 
     // Determine border accent and type badge based on severity
-    let typeBadge = '[INFO]';
+    let typeBadge = '[BİLGİ]';
 
     if (type === 'success') {
-        typeBadge = '[SUCCESS]';
+        typeBadge = '[BAŞARILI]';
         toast.classList.add('border-l-[6px]', 'border-l-emerald-600');
     } else if (type === 'error') {
-        typeBadge = '[ERROR]';
+        typeBadge = '[HATA]';
         toast.classList.add('border-l-[6px]', 'border-l-rose-600');
     } else {
         toast.classList.add('border-l-[6px]', 'border-l-black');
@@ -39,7 +39,7 @@ window.showToast = function (message, type = 'info') {
     closeButton.type = 'button';
     closeButton.className = 'text-neutral-500 hover:text-black uppercase font-bold text-xs flex-shrink-0 ml-2';
     closeButton.textContent = '[X]';
-    closeButton.setAttribute('aria-label', 'Dismiss notification');
+    closeButton.setAttribute('aria-label', 'Bildirimi kapat');
     closeButton.addEventListener('click', () => toast.remove());
 
     content.append(badge, messageText);

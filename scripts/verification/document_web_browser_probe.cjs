@@ -53,7 +53,7 @@ function check(name, condition) { checks[name] = !!condition; assert.ok(conditio
     await page.goto(base + '/fixture-admin/login');
     await page.locator('#username').fill('f17-admin');
     await page.locator('#password').fill('f17-isolated-password');
-    await page.getByRole('button', { name: 'Sign In', exact: true }).click();
+    await page.getByRole('button', { name: 'Giriş yap', exact: true }).click();
     await page.waitForURL('**/Admin/Dashboard');
     await audit();
     for (const width of [1440, 390]) {

@@ -31,15 +31,15 @@ document.addEventListener('DOMContentLoaded', function () {
         const generated = slugify(rawName);
 
         if (slugPreview) {
-            slugPreview.textContent = generated || 'your-slug';
+            slugPreview.textContent = generated || 'adres-onizlemesi';
         }
 
         if (cleanBadge) {
             if (generated.length > 0) {
-                cleanBadge.textContent = 'CLEAN';
+                cleanBadge.textContent = 'GEÇERLİ';
                 cleanBadge.className = 'bg-emerald-100 border border-emerald-600 text-emerald-900 px-1.5 py-0.2 font-bold text-[9px] uppercase';
             } else {
-                cleanBadge.textContent = 'EMPTY';
+                cleanBadge.textContent = 'BOŞ';
                 cleanBadge.className = 'bg-neutral-200 border border-neutral-400 text-neutral-700 px-1.5 py-0.2 font-bold text-[9px] uppercase';
             }
         }

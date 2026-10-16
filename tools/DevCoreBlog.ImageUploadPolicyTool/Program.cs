@@ -162,7 +162,7 @@ var checks = new Dictionary<string, bool>
         failedStorage.CallCount == 1 &&
         !failedUpload.Succeeded &&
         failedUpload.FailureKind == ImageUploadFailureKind.StorageUnavailable &&
-        failedUpload.Message == "Image storage is temporarily unavailable. Try again.",
+        failedUpload.Message == "Görsel depolama geçici olarak kullanılamıyor. Yeniden deneyin.",
     ["unsafe_storage_metadata_is_rejected"] =
         oversizedStorageResult.CallCount == 1 &&
         !guardedUpload.Succeeded &&

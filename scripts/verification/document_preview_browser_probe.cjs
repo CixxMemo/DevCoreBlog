@@ -33,7 +33,7 @@ async function preview(p,expected=200){
  // Reference rendering only; no claim of provider upload or video playback.
  await context.route('https://example.test/**',r=>r.fulfill({contentType:'image/png',body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/lSUAAAAASUVORK5CYII=','base64')}));
  await context.route('https://www.youtube-nocookie.com/**',r=>r.fulfill({contentType:'text/html',body:'<!doctype html><title>Reference only</title>'}));
- const p=await context.newPage();await p.goto(base+'/fixture-admin/login');await p.locator('#username').fill('f17-admin');await p.locator('#password').fill('f17-isolated-password');await p.getByRole('button',{name:'Sign In',exact:true}).click();await p.waitForURL('**/Admin/Dashboard');
+ const p=await context.newPage();await p.goto(base+'/fixture-admin/login');await p.locator('#username').fill('f17-admin');await p.locator('#password').fill('f17-isolated-password');await p.getByRole('button',{name:'Giriş yap',exact:true}).click();await p.waitForURL('**/Admin/Dashboard');
  await p.goto(base+'/AdminWriting/Create');await editor(p).waitFor();await editor(p).fill('Kaydedilmemiş Türkçe 👋 <script> yalnız metin');await p.waitForFunction(()=>!!localStorage.getItem('devcore_document_draft_v1_create'));
  check('preview_works_before_title_or_category_is_entered',await p.locator('[name=Title]').inputValue()===''&&await p.locator('[name=CategoryId]').inputValue()===''&&await previewButton(p).isEnabled());
  let tab=await preview(p);check('unsaved_text_is_safe_renderer_output',(await tab.locator('.document-content').innerText()).includes('Kaydedilmemiş Türkçe')&&await tab.locator('.document-content script').count()===0);

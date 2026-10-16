@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import html
 import argparse
 import base64
 import json
@@ -50,7 +51,7 @@ def main() -> int:
     wait_until_ready(
         opener,
         admin_login_url(base_url),
-        "Admin Sign In",
+        "Yönetici girişi",
         args.wait_seconds,
     )
     _, token, login_status, login_url, _ = submit_login(
@@ -93,7 +94,7 @@ def main() -> int:
                 ("later_frame_corrupt", bytes(later_corrupt), "gif", "image/gif")):
             status, _, body = post_file(opener, f"{base_url}/AdminPost/{endpoint}", form_token,
                 file_field="file", file_name="fixture." + extension, content_type=mime, content=content)
-            decode_checks[endpoint + "_decode_" + label] = status == 400 and json_message(body) == "Invalid image. Upload a valid JPG, PNG, GIF, or WEBP file."
+            decode_checks[endpoint + "_decode_" + label] = status == 400 and json_message(body) == "Görsel geçersiz. Geçerli bir JPG, PNG, GIF veya WEBP dosyası yükleyin."
 
     editor_fake_status, _, editor_fake_body = post_file(
         opener,
@@ -199,8 +200,8 @@ def main() -> int:
         f"{base_url}/AdminPost/Edit/2001",
     )
 
-    expected_invalid_message = "Invalid image. Upload a valid JPG, PNG, GIF, or WEBP file."
-    expected_large_message = "The image exceeds the 8 MB upload limit."
+    expected_invalid_message = "Görsel geçersiz. Geçerli bir JPG, PNG, GIF veya WEBP dosyası yükleyin."
+    expected_large_message = "Görsel 8 MB yükleme sınırını aşıyor."
     checks = {
         "editor_rejects_fake_extension": (
             editor_fake_status == 400
@@ -225,14 +226,14 @@ def main() -> int:
         "create_cover_failure_is_visible_and_not_persisted": (
             create_post_status == 200
             and "/AdminPost/Create" in create_post_url
-            and expected_invalid_message in create_post_body
+            and expected_invalid_message in html.unescape(create_post_body)
             and index_status == 200
             and create_marker not in index_body
         ),
         "edit_cover_failure_is_visible_and_not_persisted": (
             edit_post_status == 200
             and "/AdminPost/Edit/2001" in edit_post_url
-            and expected_invalid_message in edit_post_body
+            and expected_invalid_message in html.unescape(edit_post_body)
             and edit_after_status == 200
             and edit_marker not in edit_after_body
         ),

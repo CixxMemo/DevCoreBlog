@@ -10,7 +10,7 @@
 @model List<DevCoreBlog.Core.Entities.Category>
 
 @{
-    ViewData["Title"] = "Categories";
+    ViewData["Title"] = "Kategoriler";
 }
 
 <div class="space-y-6">
@@ -21,17 +21,17 @@
     <div class="border-2 border-black bg-white p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
             <span class="font-mono text-xs font-bold text-neutral-500 uppercase tracking-widest leading-tight">
-                // TAXONOMY & TOPIC MANAGEMENT
+                // KATEGORİ VE KONU YÖNETİMİ
             </span>
             <h1 class="text-2xl md:text-3xl font-black uppercase tracking-tight text-black mt-1">
-                Categories
+                Kategoriler
             </h1>
         </div>
         
         <a asp-action="Create" 
            class="border-2 border-black bg-black text-white hover:bg-neutral-800 px-5 py-2.5 font-mono text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-none self-start md:self-auto">
             <span>+</span>
-            <span>New Category</span>
+            <span>Yeni kategori</span>
         </a>
     </div>
 
@@ -45,10 +45,10 @@
                 <table class="w-full text-left border-collapse font-sans text-xs">
                     <thead>
                         <tr class="border-b-2 border-black bg-neutral-100 font-mono uppercase text-[11px] text-black">
-                            <th class="p-3.5">Category Name</th>
-                            <th class="p-3.5">Slug</th>
-                            <th class="p-3.5 text-center">Linked Posts</th>
-                            <th class="p-3.5 text-right">Actions</th>
+                            <th class="p-3.5">Kategori adı</th>
+                            <th class="p-3.5">Adres</th>
+                            <th class="p-3.5 text-center">Bağlı yazılar</th>
+                            <th class="p-3.5 text-right">İşlemler</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-neutral-200 border-b border-black">
@@ -75,9 +75,9 @@
                                 <td class="p-3.5 text-center whitespace-nowrap">
                                     <a asp-controller="AdminPost" asp-action="Index" 
                                        class="border border-black bg-neutral-100 hover:bg-black hover:text-white px-2.5 py-1 font-mono text-xs font-bold inline-flex items-center gap-1.5 transition-none"
-                                       title="View posts in this category">
+                                       title="Bu kategorideki yazıları gör">
                                         <span>📁</span>
-                                        <span>@postCount @(postCount == 1 ? "post" : "posts")</span>
+                                        <span>@postCount yazı</span>
                                     </a>
                                 </td>
 
@@ -87,7 +87,7 @@
                                         @* Edit button *@
                                         <a asp-action="Edit" asp-route-id="@item.Id" 
                                            class="border border-black bg-white hover:bg-black hover:text-white px-2.5 py-1 font-bold inline-block transition-none">
-                                            EDIT
+                                            DÜZENLE
                                         </a>
 
                                         @* Delete button with relationship warning *@
@@ -95,7 +95,7 @@
                                               data-confirm-category="@item.Name">
                                             <button type="submit" 
                                                     class="border border-rose-700 text-rose-700 bg-white hover:bg-rose-700 hover:text-white px-2.5 py-1 font-bold inline-block transition-none">
-                                                DEL
+                                                SİL
                                             </button>
                                         </form>
                                     </div>
@@ -107,17 +107,17 @@
             </div>
             
             <div class="p-3 bg-neutral-50 border-t border-black font-mono text-[10px] text-neutral-500 flex items-center justify-between">
-                <span>TOTAL: @Model.Count CATEGORIES</span>
-                <span>DELETE PROTECTION ACTIVE</span>
+                <span>TOPLAM: @Model.Count KATEGORİ</span>
+                <span>BAĞLI YAZISI OLAN KATEGORİ SİLİNEMEZ</span>
             </div>
         }
         else
         {
             <div class="p-12 text-center space-y-4">
-                <p class="font-mono text-xs text-neutral-500">// NO CATEGORIES FOUND IN DATABASE.</p>
+                <p class="font-mono text-xs text-neutral-500">// HENÜZ KATEGORİ YOK.</p>
                 <a asp-action="Create" 
                    class="inline-block border-2 border-black bg-black text-white px-6 py-2.5 font-mono text-xs font-bold uppercase tracking-wider">
-                    Create Your First Category →
+                    İlk kategoriyi oluştur →
                 </a>
             </div>
         }

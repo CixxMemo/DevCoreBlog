@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 """Compose final security/data acceptance on an explicitly owned disposable cluster."""
+
+import html
 import argparse
 import getpass
 import json
@@ -82,7 +84,7 @@ def main():
             checks[label + '_startup_fails_closed'] = code != 0 and 'OptionsValidationException' in body and 'ADMIN_' in body
             assert checks[label + '_startup_fails_closed']
             return
-        wait_until_ready(cookie_opener()[0], admin_login_url(base), 'Admin Sign In', 30)
+        wait_until_ready(cookie_opener()[0], admin_login_url(base), 'Yönetici girişi', 30)
         assert process.poll() is None
 
     def probe(label, filename, arguments):
@@ -110,7 +112,7 @@ def main():
         for name, candidate in (('empty', ''), ('wrong', 'wrong')):
             admin, cookies = cookie_opener()
             _, token, status, url, body = submit_login(admin, base, 'f57-admin', candidate)
-            checks[name + '_password_rejected'] = bool(token) and status == 200 and url == admin_login_url(base) and 'Invalid username or password.' in body and not has_authentication_cookie(cookies)
+            checks[name + '_password_rejected'] = bool(token) and status == 200 and url == admin_login_url(base) and 'Kullanıcı adı veya parola hatalı.' in html.unescape(body) and not has_authentication_cookie(cookies)
         start('csrf')
         admin, cookies = cookie_opener()
         _, token, status, url, _ = submit_login(admin, base, 'f57-admin', password)

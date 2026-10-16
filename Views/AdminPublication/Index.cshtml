@@ -21,9 +21,11 @@
         <input type="hidden" name="Version" value="@Model.Input.Version" />
         <input type="hidden" name="SenderEmail" value="@Model.Page.ConfiguredSender?.Email" />
         <input type="hidden" name="SenderName" value="@Model.Page.ConfiguredSender?.Name" />
-        <label for="publication-name">Yayın adı</label><input id="publication-name" name="Name" value="@Model.Input.Name" required maxlength="80" aria-describedby="name-help" />
+        <label for="publication-name">Yayın adı</label><input id="publication-name" name="Name" value="@Model.Input.Name" required maxlength="80" aria-describedby="name-help Name__error" aria-invalid="@(ViewData.ModelState.TryGetValue("Name", out var nameState) && nameState.Errors.Count > 0 ? "true" : "false")" />
+        @Html.ValidationMessage("Name", null, new { id = "Name__error", aria_live = "polite" })
         <p id="name-help">En fazla 80 karakterlik düz metin.</p>
-        <label for="publication-cadence">Hedef ritim bilgisi</label><textarea id="publication-cadence" name="Cadence" required maxlength="200" aria-describedby="cadence-help">@Model.Input.Cadence</textarea>
+        <label for="publication-cadence">Hedef ritim bilgisi</label><textarea id="publication-cadence" name="Cadence" required maxlength="200" aria-describedby="cadence-help Cadence__error" aria-invalid="@(ViewData.ModelState.TryGetValue("Cadence", out var cadenceState) && cadenceState.Errors.Count > 0 ? "true" : "false")">@Model.Input.Cadence</textarea>
+        @Html.ValidationMessage("Cadence", null, new { id = "Cadence__error", aria_live = "polite" })
         <p id="cadence-help">En fazla 200 karakter. Bu bilgi bir yayın hedefidir; otomatik takvim veya gönderim oluşturmaz.</p>
         <label class="publication-confirm"><input type="checkbox" name="ApproveSender" value="true" checked="@Model.Input.ApproveSender" disabled="@(Model.Page.ConfiguredSender is null)" /> Yapılandırılmış göndereni yeni kampanya hazırlıkları için onayla</label>
         <p>Onayı kaldırmak yeni kampanya hazırlığını kapatır. Mevcut kampanyalar ve başlamış gönderimler için <a asp-controller="AdminCampaign" asp-action="Index">Gönderimler</a> ekranını kullanın.</p>

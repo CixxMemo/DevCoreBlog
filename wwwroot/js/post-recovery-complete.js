@@ -8,6 +8,6 @@ if (receipt) {
     };
     const cleared = await clearConfirmedRecovery({ key: receipt.dataset.recoveryKey,
         revision: receipt.dataset.recoveryRevision, storage, locks: navigator.locks });
-    receipt.textContent = cleared ? 'Post saved. Its local recovery copy was cleared.'
-        : 'Post saved. Any newer or unavailable local recovery copy was kept.';
+    receipt.textContent = cleared ? 'Yazı kaydedildi. Yerel kurtarma kopyası temizlendi.'
+        : 'Yazı kaydedildi. Daha yeni veya erişilemeyen yerel kurtarma kopyası korundu.';
 }

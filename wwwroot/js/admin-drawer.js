@@ -31,7 +31,7 @@
         backdrop.classList.toggle('is-visible', isOpen);
         backdrop.tabIndex = isOpen ? 0 : -1;
         toggle.setAttribute('aria-expanded', String(isOpen));
-        toggle.setAttribute('aria-label', isOpen ? 'Close admin navigation' : 'Open admin navigation');
+        toggle.setAttribute('aria-label', isOpen ? 'Yönetim menüsünü kapat' : 'Yönetim menüsünü aç');
         document.body.classList.toggle('admin-drawer-open', isOpen);
 
         if (isOpen) {

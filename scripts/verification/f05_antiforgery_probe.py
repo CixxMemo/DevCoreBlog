@@ -256,7 +256,7 @@ def probe_authenticated_flow(
             valid_toggle_succeeded and valid_logout
         ),
         "valid_token_reaches_upload_action": (
-            valid_upload == 400 and "No image file provided." in valid_upload_body
+            valid_upload == 400 and json.loads(valid_upload_body).get("message") == "Bir görsel dosyası seçin."
         ),
         "rejected_logout_preserves_authenticated_session": (
             protected_statuses.get("logout") == 400

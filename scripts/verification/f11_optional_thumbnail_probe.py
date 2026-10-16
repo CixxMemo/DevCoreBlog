@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import html
 import argparse
 import json
 import os
@@ -63,7 +64,7 @@ def main() -> int:
     wait_until_ready(
         opener,
         admin_login_url(base_url),
-        "Admin Sign In",
+        "Yönetici girişi",
         args.wait_seconds,
     )
     _, login_token, login_status, login_url, _ = submit_login(
@@ -166,7 +167,7 @@ def main() -> int:
         f"{base_url}/AdminPost/Edit/{EXISTING_POST_ID}",
     )
 
-    invalid_image_message = "Invalid image. Upload a valid JPG, PNG, GIF, or WEBP file."
+    invalid_image_message = "Görsel geçersiz. Geçerli bir JPG, PNG, GIF veya WEBP dosyası yükleyin."
     checks = {
         "create_form_has_optional_cover_and_hides_empty_summary": (
             'name="thumbnailFile"' in create_body
@@ -204,7 +205,7 @@ def main() -> int:
         "upload_failure_retains_inputs_cover_and_database_state": (
             failed_upload_status == 200
             and f"/AdminPost/Edit/{EXISTING_POST_ID}" in failed_upload_url
-            and invalid_image_message in failed_upload_body
+            and invalid_image_message in html.unescape(failed_upload_body)
             and failed_upload_marker in failed_upload_body
             and "F11 failed upload content retained" in failed_upload_body
             and EXISTING_COVER in failed_upload_body

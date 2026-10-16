@@ -9,7 +9,7 @@ function check(name,value){checks[name]=!!value;assert.ok(value,name);}
  await context.exposeBinding('__f42Csp',(_s,v)=>csp.push(v));await context.addInitScript(()=>document.addEventListener('securitypolicyviolation',e=>void window.__f42Csp(e.effectiveDirective)));
  context.on('page',p=>{p.on('pageerror',e=>errors.push(e.name));p.on('console',m=>{if(m.type()==='error'&&!m.text().startsWith('Failed to load resource:'))consoleErrors.push(m.text());});});
  await context.route('https://fonts.googleapis.com/**',r=>r.fulfill({contentType:'text/css',body:''}));
- const p=await context.newPage();await p.goto(base+'/fixture-admin/login');await p.locator('#username').fill('fixture-admin');await p.locator('#password').fill('f42-synthetic-password');await Promise.all([p.waitForURL('**/Admin/Dashboard'),p.getByRole('button',{name:'Sign In',exact:true}).click()]);
+ const p=await context.newPage();await p.goto(base+'/fixture-admin/login');await p.locator('#username').fill('fixture-admin');await p.locator('#password').fill('f42-synthetic-password');await Promise.all([p.waitForURL('**/Admin/Dashboard'),p.getByRole('button',{name:'Giriş yap',exact:true}).click()]);
  await p.getByRole('link',{name:'Yayın ayarları',exact:true}).click();
  check('turkish_settings_and_accessible_editorial_fields',await p.locator('html').getAttribute('lang')==='tr'&&await p.getByRole('heading',{name:'Yayın ayarları',exact:true}).count()===1&&await p.getByLabel('Yayın adı',{exact:true}).count()===1&&await p.getByLabel('Hedef ritim bilgisi',{exact:true}).count()===1);
  const section=p.locator('.publication-page'),text=await section.innerText();

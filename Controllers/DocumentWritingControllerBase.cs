@@ -1,4 +1,5 @@
 using DevCoreBlog.Core.Documents;
+using DevCoreBlog.Extensions;
 using DevCoreBlog.Models.Admin;
 using DevCoreBlog.Services.Documents;
 using DevCoreBlog.Services.Publishing;
@@ -109,6 +110,7 @@ public abstract class DocumentWritingControllerBase(IPostWritingUseCase writing,
                 TempData.Remove("DocumentRecoveryReceipt");
             }
         }
+        ModelState.PrepareBooleanRedisplay(nameof(input.IsActive), input.IsActive);
         input.IsNewsletter = IsNewsletter;
         input.SiteTimeZoneId = zone.Id;
         input.EditorEnabled = input.BlockingMessage is null && !string.IsNullOrWhiteSpace(input.DocumentJson) &&

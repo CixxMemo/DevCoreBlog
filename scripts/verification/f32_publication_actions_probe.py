@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 """Verify explicit MVC publication intent against disposable PostgreSQL and anonymous HTTP."""
+
+import html
 import argparse
 from datetime import datetime, timedelta, timezone
 import json
@@ -54,7 +56,7 @@ def row_state(record, expected, visible):
     row = re.search(r'<tr\b[^>]*id="post-row-' + str(record['id']) + r'"[^>]*>.*?</tr>', index, re.S)
     assert row, 'Saved row missing'
     _, _, form = request(opener, base + f"/AdminPost/Edit/{record['id']}")
-    return ('Saved state: ' + expected in form and 'data-status="' + expected.lower() + '"' in row.group()
+    return ('Kayıtlı durum: ' + {'Draft':'Taslak','Scheduled':'Planlandı','Published':'Yayımlandı','Inactive':'Etkin değil'}[expected] in html.unescape(form) and 'data-status="' + expected.lower() + '"' in row.group()
         and expected in row.group() and ('live-link-btn' in row.group()) == visible)
 
 def is_public(record):
@@ -84,18 +86,18 @@ checks['publish_uses_server_now_and_is_visible'] = published['published'] and st
 checks['published_state_and_live_link'] = row_state(published, 'Published', True)
 
 for label, action, overrides, message in [
-    ('PastSchedule', 'Schedule', {'PublishDate': past}, 'Choose a future publish date'),
-    ('InactiveCategory', 'Publish', {'CategoryId': '1002'}, 'Select an active category'),
-    ('MissingCategory', 'Publish', {'CategoryId': '999999'}, 'Select an active category'),
+    ('PastSchedule', 'Schedule', {'PublishDate': past}, 'Yazıyı planlamak için gelecekteki bir yayın zamanı seçin'),
+    ('InactiveCategory', 'Publish', {'CategoryId': '1002'}, 'Etkin bir kategori seçin'),
+    ('MissingCategory', 'Publish', {'CategoryId': '999999'}, 'Etkin bir kategori seçin'),
     ('BadDate', 'Publish', {'PublishDate': 'invalid'}, 'validation-summary-errors'),
     ('UnknownAction', 'Unknown', {}, 'validation-summary-errors'),
-    ('InvalidEnum', '99', {}, 'The value &#x27;99&#x27; is invalid.'),
-    ('SaveOnCreate', 'Save', {}, 'requires an existing post')
+    ('InvalidEnum', '99', {}, 'Girilen değer geçersiz.'),
+    ('SaveOnCreate', 'Save', {}, 'Değişiklikleri kaydetmek için kayıtlı bir yazı gereklidir.')
 ]:
     name = prefix + '_' + label
     s, u, body = submit(name, action, **overrides)
     checks[label + '_rejected_and_input_retained'] = (s == 200 and '/Create' in u and name in body
-        and name + ' content retained' in body and message in body and database(name) is None
+        and name + ' content retained' in body and message in html.unescape(body) and database(name) is None
         and 'id="post-recovery-receipt"' not in body)
 
 # Normal Edit Save keeps persisted publication settings, ignoring submitted flag/date.
@@ -132,6 +134,6 @@ checks['inactive_category_state_and_hidden_link'] = row_state({'id': 2008}, 'Ina
 _, _, form = request(opener, base + '/AdminPost/Create')
 checks['three_native_actions_and_no_publication_checkbox'] = all('value="' + a + '"' in form for a in ['SaveDraft','Schedule','Publish']) and not re.search(r'<input[^>]*type="checkbox"[^>]*name="IsPublished"', form)
 _, _, edit = request(opener, base + f"/AdminPost/Edit/{r['id']}")
-checks['edit_save_explains_keep_publication'] = 'Save changes (keep publication)' in edit and 'Save changes keeps the saved publication flag and date.' in edit
+checks['edit_save_explains_keep_publication'] = 'Değişiklikleri kaydet (yayın izni korunur)' in html.unescape(edit) and 'Değişiklikleri kaydetmek mevcut yayın iznini ve tarihini korur.' in html.unescape(edit)
 print(json.dumps({'checks': checks, 'count': len(checks)}, indent=2))
 assert all(checks.values()), 'F32 publication action verification failed'

@@ -20,7 +20,7 @@ def main():
     parser.add_argument('--application-log')
     args = parser.parse_args()
     opener, _ = cookie_opener()
-    wait_until_ready(opener, admin_login_url(args.base_url), 'Admin Sign In', 30)
+    wait_until_ready(opener, admin_login_url(args.base_url), 'Yönetici girişi', 30)
     checks = {}
     def sql(query):
         return subprocess.run(['psql','-X','-h','127.0.0.1','-p',args.pg_port,'-U',args.pg_user,

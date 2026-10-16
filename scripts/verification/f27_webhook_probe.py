@@ -59,7 +59,7 @@ def main():
     args = parser.parse_args()
     base_url = args.base_url.rstrip("/")
     opener, _ = cookie_opener()
-    wait_until_ready(opener, admin_login_url(base_url), "Admin Sign In", 30)
+    wait_until_ready(opener, admin_login_url(base_url), "Yönetici girişi", 30)
     secret = "f17-webhook"
     valid = {
         "title": "F27 Webhook Contract",

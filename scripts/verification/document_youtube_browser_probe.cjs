@@ -41,7 +41,7 @@ const sources = [`https://youtu.be/${id}`, `https://www.youtube.com/watch?v=${id
     const fixture = JSON.parse(fs.readFileSync(process.env.DEVCORE_YOUTUBE_HTTP_REPORT, 'utf8'));
     await page.goto(base + '/fixture-admin/login');
     await page.locator('#username').fill('f17-admin'); await page.locator('#password').fill('f17-isolated-password');
-    await page.getByRole('button', { name: 'Sign In', exact: true }).click(); await page.waitForURL('**/Admin/Dashboard');
+    await page.getByRole('button', { name: 'Giriş yap', exact: true }).click(); await page.waitForURL('**/Admin/Dashboard');
     const loaded = await page.goto(base + '/AdminWriting/Edit/' + fixture.fixturePostId); await editor.waitFor();
     check('stored_video_text_table_image_all_open', await count() === 1 && (await editor.innerText()).includes('Korunan Türkçe') &&
         await editor.locator('td').count() === 1 && await editor.locator('img').count() === 1);

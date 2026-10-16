@@ -10,8 +10,8 @@ a = p.parse_args()
 base = a.base_url.rstrip('/')
 assert urlparse(base).hostname == '127.0.0.1'
 visitor, _ = cookie_opener()
-def security_headers(headers):
-    return headers.get('X-Content-Type-Options') == 'nosniff' and headers.get('Referrer-Policy') == 'strict-origin-when-cross-origin' and headers.get('X-Frame-Options') == 'DENY'
+def security_headers(headers, private=False):
+    return headers.get('X-Content-Type-Options') == 'nosniff' and headers.get('Referrer-Policy') == ('no-referrer' if private else 'strict-origin-when-cross-origin') and headers.get('X-Frame-Options') == 'DENY'
 
 if a.expect_unavailable_database:
     status, _, body, headers = request_with_headers(visitor, base + '/post/f01-markdown-xss')
@@ -34,7 +34,7 @@ for route in ['/', '/category/f01-active', admin_login_path(), '/Admin/Dashboard
     opener = admin if route.startswith('/Admin') else visitor
     status, final_url, body, headers = request_with_headers(opener, base + route)
     policy = headers.get('Content-Security-Policy', '')
-    checks[route + '_security_headers'] = security_headers(headers)
+    checks[route + '_security_headers'] = security_headers(headers, private=route.startswith('/Admin'))
     checks[route + '_enforced_html'] = status in (200, 404) and bool(policy) and 'Content-Security-Policy-Report-Only' not in headers
     checks[route + '_local_scripts_no_eval'] = "script-src 'self'; script-src-attr 'none'" in policy and 'unsafe-eval' not in policy and '*' not in policy
     # Followed redirects may reach the JSON editor, whose policy needs no style exception.

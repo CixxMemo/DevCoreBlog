@@ -15,12 +15,12 @@
     var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
     var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
 
-    // Map controller names to clean English display labels
+    // Map controller names to Turkish display labels
     var controllerLabels = new Dictionary<string, string>
     {
-        { "Admin", "Admin" },
-        { "AdminCategory", "Categories" },
-        { "AdminPost", "Posts" },
+        { "Admin", "Yönetim" },
+        { "AdminCategory", "Kategoriler" },
+        { "AdminPost", "Yazılar" },
         { "AdminDocument", "Belgeler" },
         { "AdminWriting", "Yazılar" },
         { "AdminNewsletter", "Bültenler" },
@@ -35,12 +35,13 @@
     // Map action names to human-readable breadcrumb segments
     var actionLabels = new Dictionary<string, string>
     {
-        { "Index", "Overview" },
-        { "Create", "New" },
-        { "Edit", "Edit" },
-        { "Dashboard", "Dashboard" },
-        { "Automations", "Automations & API" },
-        { "Preview", "Önizleme" }
+        { "Index", "Genel bakış" },
+        { "Create", "Yeni" },
+        { "Edit", "Düzenle" },
+        { "Dashboard", "Genel bakış" },
+        { "Automations", "Otomasyonlar ve API" },
+        { "Preview", "Önizleme" },
+        { "EditorTrial", "Editör denemesi" }
     };
 
     var currentControllerLabel = controllerLabels.ContainsKey(currentController)
@@ -66,7 +67,7 @@
     if (currentController == "AdminPublication") currentActionLabel = "Ayarlar";
 
     // Get the authenticated admin username (defaults to "Admin" if null)
-    var userName = User.Identity?.Name ?? "Admin";
+    var userName = User.Identity?.Name ?? "Yönetim";
 
     // Server-side TempData flash messages to be consumed by the Toast system
     var tempSuccess = TempData["Success"]?.ToString();
@@ -75,11 +76,11 @@
 }
 
 <!DOCTYPE html>
-<html lang="@(currentController is "AdminNewsletter" or "AdminTestEmail" or "AdminEmail" or "AdminCampaign" or "AdminSubscriber" or "AdminCampaignMetrics" or "AdminPublication" ? "tr" : "en")">
+<html lang="tr">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <partial name="_SeoHead" model="@PageMetadata.Private(ViewData["Title"]?.ToString() ?? "Admin", Context.Request.Path.ToUriComponent())" />
+    <partial name="_SeoHead" model="@PageMetadata.Private(ViewData["Title"]?.ToString() ?? "Yönetim", Context.Request.Path.ToUriComponent())" />
 
     @* ========================================================================= *@
     @* Google Fonts — Inter (UI Sans) & JetBrains Mono (Technical Accents)       *@
@@ -119,7 +120,7 @@
         @* ===================================================================== *@
         @* FIXED LEFT SIDEBAR (w-64, border-r-2 border-black, bg-white)          *@
         @* ===================================================================== *@
-        <aside id="admin-sidebar" class="admin-sidebar flex-shrink-0 border-r-2 border-black bg-white flex flex-col justify-between" aria-label="Admin navigation" aria-hidden="false">
+        <aside id="admin-sidebar" class="admin-sidebar flex-shrink-0 border-r-2 border-black bg-white flex flex-col justify-between" aria-label="Yönetim menüsü" aria-hidden="false">
             
             @* Top Section: Brand & Primary Navigation *@
             <div class="flex flex-col">
@@ -128,10 +129,10 @@
                 <div class="p-4 border-b-2 border-black bg-white">
                     <a asp-controller="Admin" asp-action="Dashboard" class="block">
                         <div class="font-mono text-[10px] font-bold text-neutral-500 uppercase tracking-widest leading-tight">
-                            TERMINAL // ADMIN v8.0
+                            YÖNETİM PANELİ
                         </div>
                         <div class="text-lg font-black tracking-tight uppercase mt-0.5 text-black flex items-center gap-2">
-                            <span>DevCoreBlog</span>
+                            <span>Aether Notes</span>
                             <span class="inline-block w-2 h-2 bg-emerald-500"></span>
                         </div>
                     </a>
@@ -140,7 +141,7 @@
                 @* Primary Navigation Group *@
                 <nav class="flex flex-col">
                     <div class="px-4 py-2 bg-neutral-100 border-b border-black font-mono text-[10px] font-bold uppercase tracking-wider text-neutral-600">
-                        // CORE NAVIGATION
+                        // ANA MENÜ
                     </div>
 
                     @* 1. Dashboard *@
@@ -149,7 +150,7 @@
                         <svg class="w-4 h-4 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
                         </svg>
-                        Dashboard
+                        Genel bakış
                     </a>
 
                     @* 2. Posts *@
@@ -158,7 +159,7 @@
                         <svg class="w-4 h-4 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                         </svg>
-                        Posts
+                        Yazılar
                     </a>
 
                     <a asp-controller="AdminNewsletter" asp-action="Index" class="admin-nav-item @(currentController == "AdminNewsletter" ? "active" : "")">Bültenler</a>
@@ -174,7 +175,7 @@
                         <svg class="w-4 h-4 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
                         </svg>
-                        Categories
+                        Kategoriler
                     </a>
 
                     @* 4. Automations & API Hub *@
@@ -183,7 +184,7 @@
                         <svg class="w-4 h-4 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                         </svg>
-                        Automations & API
+                        Otomasyonlar ve API
                     </a>
                 </nav>
             </div>
@@ -191,7 +192,7 @@
             @* Bottom Section: System & Logout *@
             <div class="flex flex-col border-t-2 border-black bg-white">
                 <div class="px-4 py-2 bg-neutral-100 border-b border-black font-mono text-[10px] font-bold uppercase tracking-wider text-neutral-600">
-                    // SYSTEM & CONTROLS
+                    // SİSTEM VE OTURUM
                 </div>
 
                 @* 5. View Public Site (New Tab) *@
@@ -200,7 +201,7 @@
                     <svg class="w-4 h-4 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
                     </svg>
-                    View Public Site
+                    Siteyi aç
                 </a>
 
                 @* 6. Sign Out Form *@
@@ -210,7 +211,7 @@
                         <svg class="w-4 h-4 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
                         </svg>
-                        Sign Out
+                        Oturumu kapat
                     </button>
                 </form>
             </div>
@@ -224,14 +225,14 @@
             @* Top Navigation / Breadcrumb Header *@
             <header class="admin-header border-b-2 border-black bg-white px-6 py-3.5 flex items-center justify-between flex-shrink-0">
 
-                <button id="admin-menu-toggle" type="button" class="admin-menu-toggle" aria-controls="admin-sidebar" aria-expanded="false" aria-label="Open admin navigation">
+                <button id="admin-menu-toggle" type="button" class="admin-menu-toggle" aria-controls="admin-sidebar" aria-expanded="false" aria-label="Yönetim menüsünü aç">
                     <span aria-hidden="true">☰</span>
                 </button>
                 
                 @* Left: Brutalist Breadcrumb Trail *@
                 <div class="flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider text-black">
                     <a asp-controller="Admin" asp-action="Dashboard" class="text-neutral-500 hover:text-black transition-none">
-                        DEVCORE
+                        AETHER NOTES
                     </a>
                     <span class="text-neutral-400">//</span>
                     <span class="text-neutral-700">@currentControllerLabel</span>
@@ -246,7 +247,7 @@
                 <div class="flex items-center gap-3">
                     <div class="border-2 border-black bg-neutral-100 px-3 py-1 font-mono text-xs font-bold text-black flex items-center gap-2">
                         <span class="w-2 h-2 bg-emerald-500 inline-block"></span>
-                        <span>AUTH: @userName</span>
+                        <span>OTURUM: @userName</span>
                     </div>
                 </div>
             </header>
@@ -275,6 +276,7 @@
     @* Toast UI Editor core JS library for markdown editing *@
     <script src="~/generated/toastui/toastui-editor-all.min.js" asp-append-version="true"></script>
 
+    <script src="~/js/toastui-turkish.js" asp-append-version="true"></script>
     <script src="~/js/admin-toast.js" asp-append-version="true"></script>
 
     @* Render view-specific scripts section if declared *@

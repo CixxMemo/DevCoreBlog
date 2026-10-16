@@ -32,7 +32,7 @@ namespace DevCoreBlog.Controllers
     [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public class AccountController : Controller
     {
-        private const string InvalidCredentialsMessage = "Invalid username or password.";
+        private const string InvalidCredentialsMessage = "Kullanıcı adı veya parola hatalı.";
         private readonly AdminCredentialsOptions _adminCredentials;
         private readonly IAdminPasswordVerifier _passwordVerifier;
         private readonly AdminSessionPolicy _sessionPolicy;

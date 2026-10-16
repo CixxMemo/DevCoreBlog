@@ -15,7 +15,7 @@ function check(key,value){checks[key]=!!value;assert.ok(value,key);}
  const page=await context.newPage();page.on('dialog',d=>d.accept());page.on('pageerror',e=>errors.push(e.name));
  page.on('console',m=>{if(m.type()==='error'&&!m.text().startsWith('Failed to load resource:'))errors.push(m.text().slice(0,200));});
  await page.goto(base+'/fixture-admin/login');await page.locator('#username').fill('f17-admin');await page.locator('#password').fill('f17-isolated-password');
- await page.getByRole('button',{name:'Sign In',exact:true}).click();await page.waitForURL('**/Admin/Dashboard');
+ await page.getByRole('button',{name:'Giriş yap',exact:true}).click();await page.waitForURL('**/Admin/Dashboard');
  await page.goto(base+'/AdminWriting/Edit/'+id);
  const editor=page.getByRole('textbox',{name:'Yazı metni',exact:true});await editor.waitFor();
  const image=editor.locator('img');await image.first().evaluate(el=>el.decode());await image.last().evaluate(el=>el.decode());

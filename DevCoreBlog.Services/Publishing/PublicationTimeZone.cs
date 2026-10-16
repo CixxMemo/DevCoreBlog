@@ -24,7 +24,7 @@ public sealed class PublicationTimeZone
 
         if (value == default)
         {
-            error = "Publish date is required.";
+            error = "Yayın zamanı gereklidir.";
             return false;
         }
 
@@ -32,13 +32,13 @@ public sealed class PublicationTimeZone
         {
             if (_timeZone.IsInvalidTime(value))
             {
-                error = "Publish date does not exist in the site time zone.";
+                error = "Bu zaman site saat diliminde bulunmuyor.";
                 return false;
             }
 
             if (_timeZone.IsAmbiguousTime(value))
             {
-                error = "Publish date occurs twice in the site time zone. Choose another time.";
+                error = "Bu zaman site saat diliminde iki kez oluşuyor. Başka bir zaman seçin.";
                 return false;
             }
         }
@@ -55,7 +55,7 @@ public sealed class PublicationTimeZone
         }
         catch (ArgumentException)
         {
-            error = "Publish date is outside the supported range.";
+            error = "Yayın zamanı desteklenen aralığın dışında.";
             return false;
         }
     }

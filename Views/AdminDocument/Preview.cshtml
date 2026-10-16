@@ -17,9 +17,9 @@
     {
     <form asp-controller="AdminDocument" asp-action="Preview" method="post" class="mb-8">
         <label asp-for="Input.DocumentJson" class="block font-bold mb-2">İçerik belgesi (JSON v1)</label>
-        <textarea asp-for="Input.DocumentJson" rows="8" class="w-full min-w-0 border-2 border-black p-3 font-mono text-sm" aria-describedby="document-json-help document-json-error"></textarea>
+        <textarea asp-for="Input.DocumentJson" rows="8" class="w-full min-w-0 border-2 border-black p-3 font-mono text-sm" aria-describedby="document-json-help Input_DocumentJson__error"></textarea>
         <p id="document-json-help" class="text-sm">En çok 1 MiB. Kaydetme işlemi yapılmaz.</p>
-        <span asp-validation-for="Input.DocumentJson" id="document-json-error" class="block text-red-700" role="alert"></span>
+        <span asp-validation-for="Input.DocumentJson" id="Input_DocumentJson__error" class="block text-red-700" role="alert"></span>
         <button type="submit" class="border-2 border-black bg-black text-white px-4 py-2 mt-3 font-bold">Önizlemeyi göster</button>
     </form>
     }

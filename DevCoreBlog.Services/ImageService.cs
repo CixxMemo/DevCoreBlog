@@ -11,7 +11,7 @@ namespace DevCoreBlog.Services;
 public sealed class ImageService : IImageService
 {
     private const string StorageFailureMessage =
-        "Image storage is temporarily unavailable. Try again.";
+        "Görsel depolama geçici olarak kullanılamıyor. Yeniden deneyin.";
 
     private readonly MediaOperationStatus _status;
     private readonly ImageUploadPolicy _policy;

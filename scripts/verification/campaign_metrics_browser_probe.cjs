@@ -11,7 +11,7 @@ function check(name,ok){checks[name]=!!ok;assert.ok(ok,name);}
  context.on('page',p=>{p.on('pageerror',e=>errors.push(e.name));p.on('console',m=>{if(m.type()==='error'&&!m.text().startsWith('Failed to load resource:'))consoleErrors.push(m.text());});});
  await context.route('https://fonts.googleapis.com/**',r=>r.fulfill({contentType:'text/css',body:''}));
  const p=await context.newPage();await p.goto(base+'/fixture-admin/login');await p.locator('#username').fill('fixture-admin');await p.locator('#password').fill('f41-synthetic-password');
- await Promise.all([p.waitForURL('**/Admin/Dashboard'),p.getByRole('button',{name:'Sign In',exact:true}).click()]);
+ await Promise.all([p.waitForURL('**/Admin/Dashboard'),p.getByRole('button',{name:'Giriş yap',exact:true}).click()]);
  await p.goto(base+'/AdminCampaign/Details/'+id);await p.getByRole('link',{name:'Denemeleri ve teslim gözlemlerini incele',exact:true}).click();
  const section=p.locator('.campaign-page');const text=await section.innerText();
  check('separate_turkish_metrics_from_campaign_details',await p.locator('html').getAttribute('lang')==='tr'&&await p.getByRole('heading',{name:'Gönderim ölçümleri',exact:true}).count()===1);

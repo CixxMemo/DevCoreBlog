@@ -184,8 +184,8 @@ def main() -> int:
         ),
         "edit_forms_show_permanent_address": (
             post_edit_after_status == category_edit_after_status == 200
-            and "Permanent address" in post_edit_after_body
-            and "Permanent address" in category_edit_after_body
+            and "Kalıcı adres" in post_edit_after_body
+            and "Kalıcı adres" in category_edit_after_body
             and "f01-visible" in post_edit_after_body
             and "f01-active" in category_edit_after_body
         ),

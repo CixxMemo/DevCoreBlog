@@ -31,7 +31,7 @@ function check(name, value) { checks[name] = !!value; assert.ok(value, name); }
     await page.goto(base + '/fixture-admin/login');
     await page.locator('#username').fill('f17-admin');
     await page.locator('#password').fill('f17-isolated-password');
-    await page.getByRole('button', { name: 'Sign In', exact: true }).click();
+    await page.getByRole('button', { name: 'Giriş yap', exact: true }).click();
     await page.waitForURL('**/Admin/Dashboard');
     for (const width of [1440, 390]) {
         await page.setViewportSize({ width, height: width === 390 ? 844 : 1000 });

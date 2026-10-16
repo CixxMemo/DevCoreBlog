@@ -32,20 +32,20 @@ export function initializeRecoveryForm({ form, setMarkdown, updatePreview }) {
         if (kind === 'offer' || kind === 'conflict') {
             banner.classList.remove('hidden');
             message.textContent = kind === 'conflict'
-                ? 'Another tab changed the recovery copy. Your current text is unchanged. Choose Restore or Discard before local saving resumes.'
-                : 'A different recovery copy is available. Your current text is unchanged.';
+                ? 'Başka bir sekme kurtarma kopyasını değiştirdi. Mevcut metniniz korunuyor. Yerel kaydı sürdürmek için Geri yükle veya Yerel kopyayı sil seçin.'
+                : 'Farklı bir kurtarma kopyası var. Mevcut metniniz korunuyor.';
             timestamp.textContent = formatRecoveryDate(record?.savedAt, form.dataset.siteTimeZone);
             restore.disabled = !record;
-            status.textContent = 'LOCAL SAVE PAUSED';
+            status.textContent = 'YEREL KAYIT DURAKLATILDI';
             return;
         }
         if (kind === 'unavailable') {
-            status.textContent = 'LOCAL RECOVERY UNAVAILABLE — normal server saving still works.';
+            status.textContent = 'YEREL KURTARMA KULLANILAMIYOR — sunucuya normal kayıt çalışır.';
             return;
         }
         banner.classList.add('hidden');
-        status.textContent = kind === 'saved' ? 'LOCAL RECOVERY SAVED'
-            : kind === 'restored' ? 'RECOVERY RESTORED' : 'LOCAL RECOVERY READY';
+        status.textContent = kind === 'saved' ? 'YEREL KURTARMA KAYDEDİLDİ'
+            : kind === 'restored' ? 'KURTARMA KOPYASI GERİ YÜKLENDİ' : 'YEREL KURTARMA HAZIR';
     }
 
     const session = createRecoverySession({ key, storage, locks: navigator.locks,

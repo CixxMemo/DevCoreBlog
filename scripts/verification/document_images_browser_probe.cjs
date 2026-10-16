@@ -46,7 +46,7 @@ function write() { fs.writeFileSync(path.join(report, 'images-browser.json'), JS
     }
     await page.goto(base+'/fixture-admin/login');
     await page.locator('#username').fill('f17-admin'); await page.locator('#password').fill('f17-isolated-password');
-    await page.getByRole('button',{name:'Sign In',exact:true}).click(); await page.waitForURL('**/Admin/Dashboard');
+    await page.getByRole('button',{name:'Giriş yap',exact:true}).click(); await page.waitForURL('**/Admin/Dashboard');
     await page.goto(base+'/AdminWriting/Create'); await editor.waitFor();
     check('turkish_media_controls_start_fail_closed_without_file', await upload.isDisabled() &&
         await page.locator('[data-image-cancel]').isDisabled() && await page.locator('[data-image-update]').isDisabled());

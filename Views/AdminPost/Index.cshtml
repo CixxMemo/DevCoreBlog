@@ -2,7 +2,7 @@
 @using DevCoreBlog.Core.ReadModels
 @model DevCoreBlog.Models.Admin.AdminPostIndexModel
 @{
-    ViewData["Title"] = "Posts";
+    ViewData["Title"] = "Yazılar";
     var returnUrl = Url.Action("Index", "AdminPost", Model.Input.RouteValues());
     var recoveryKey = TempData["SavedPostRecoveryKey"] as string;
     var recoveryRevision = TempData["SavedPostRecoveryRevision"]?.ToString();
@@ -10,23 +10,23 @@
 @if (recoveryKey is not null && recoveryRevision is not null)
 {
     <p id="post-recovery-receipt" role="status" class="mb-4 border-2 border-black p-3 font-mono text-xs"
-       data-recovery-key="@recoveryKey" data-recovery-revision="@recoveryRevision">Post saved. Checking its local recovery copy…</p>
+       data-recovery-key="@recoveryKey" data-recovery-revision="@recoveryRevision">Yazı kaydedildi. Yerel kurtarma kopyası denetleniyor…</p>
 }
 <div class="space-y-6">
     <header class="border-2 border-black bg-white p-4 md:p-6">
         <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
-            <h1 class="text-2xl font-black text-black">Posts</h1>
+            <h1 class="text-2xl font-black text-black">Yazılar</h1>
             <a asp-controller="AdminWriting" asp-action="Create" class="border-2 border-black px-4 py-2 font-mono font-bold">+ Yeni yazı</a>
         </div>
-        <form method="get" asp-action="Index" aria-label="Post filters" class="flex flex-wrap items-end gap-3">
+        <form method="get" asp-action="Index" aria-label="Yazı filtreleri" class="flex flex-wrap items-end gap-3">
             <div class="min-w-0 w-full sm:w-64">
-                <label for="post-search" class="block text-xs font-mono mb-1">Search title or category</label>
+                <label for="post-search" class="block text-xs font-mono mb-1">Başlık veya kategori ara</label>
                 <input id="post-search" name="query" value="@Model.Input.Query" maxlength="100" type="search" class="w-full border-2 border-black px-3 py-2" />
             </div>
             <div class="min-w-0 max-w-full">
-                <label for="category-filter" class="block text-xs font-mono mb-1">Category</label>
+                <label for="category-filter" class="block text-xs font-mono mb-1">Kategori</label>
                 <select id="category-filter" name="categoryId" class="max-w-full border-2 border-black px-3 py-2">
-                    <option value="">All Categories</option>
+                    <option value="">Tüm kategoriler</option>
                     @foreach (var category in Model.Categories)
                     {
                         <option value="@category.Id" selected="@(Model.Input.CategoryId == category.Id)">@category.Name</option>
@@ -34,17 +34,17 @@
                 </select>
             </div>
             <div>
-                <label for="status-filter" class="block text-xs font-mono mb-1">Publication status</label>
+                <label for="status-filter" class="block text-xs font-mono mb-1">Yayın durumu</label>
                 <select id="status-filter" name="status" class="border-2 border-black px-3 py-2">
-                    <option value="">All Statuses</option>
+                    <option value="">Tüm durumlar</option>
                     @foreach (var state in Enum.GetValues<PostPublicationState>())
                     {
-                        <option value="@state" selected="@(Model.Input.Status == state)">@state</option>
+                        <option value="@state" selected="@(Model.Input.Status == state)">@AdminLabels.Publication(state)</option>
                     }
                 </select>
             </div>
             <div>
-                <label for="page-size" class="block text-xs font-mono mb-1">Posts per page</label>
+                <label for="page-size" class="block text-xs font-mono mb-1">Sayfadaki yazı sayısı</label>
                 <select id="page-size" name="pageSize" class="border-2 border-black px-3 py-2">
                     @foreach (var size in AdminPostQuery.PageSizes)
                     {
@@ -52,19 +52,19 @@
                     }
                 </select>
             </div>
-            <button type="submit" class="border-2 border-black bg-black text-white px-4 py-2">Apply filters</button>
-            <a asp-action="Index" class="underline px-2 py-2">Clear filters</a>
+            <button type="submit" class="border-2 border-black bg-black text-white px-4 py-2">Filtreleri uygula</button>
+            <a asp-action="Index" class="underline px-2 py-2">Filtreleri temizle</a>
         </form>
-        <p id="filtered-count-badge" class="font-mono text-sm mt-4">@Model.Result.TotalCount matching posts · @Model.Result.Posts.Count on this page · Page @Model.Input.Page of @Model.TotalPages</p>
+        <p id="filtered-count-badge" class="font-mono text-sm mt-4">@Model.Result.TotalCount eşleşen yazı · Bu sayfada @Model.Result.Posts.Count yazı · Sayfa @Model.Input.Page / @Model.TotalPages</p>
     </header>
     <div class="border-2 border-black bg-white min-w-0">
         @if (Model.Result.Posts.Count > 0)
         {
-            <div class="overflow-x-auto" tabindex="0" role="region" aria-label="Posts table, scroll horizontally for actions">
+            <div class="overflow-x-auto" tabindex="0" role="region" aria-label="Yazı tablosu; işlemler için yatay kaydırın">
                 <table class="w-full min-w-[48rem] text-left text-xs">
                     <thead><tr class="border-b-2 border-black bg-neutral-100 font-mono">
-                        <th class="p-3 whitespace-nowrap">Title &amp; Slug</th><th class="p-3 whitespace-nowrap">Category</th><th class="p-3 whitespace-nowrap">Status</th>
-                        <th class="p-3 whitespace-nowrap">Views</th><th class="p-3 whitespace-nowrap">Created Date</th><th class="p-3 whitespace-nowrap">Actions</th>
+                        <th class="p-3 whitespace-nowrap">Başlık ve adres</th><th class="p-3 whitespace-nowrap">Kategori</th><th class="p-3 whitespace-nowrap">Durum</th>
+                        <th class="p-3 whitespace-nowrap">Görüntülenme</th><th class="p-3 whitespace-nowrap">Oluşturulma tarihi</th><th class="p-3 whitespace-nowrap">İşlemler</th>
                     </tr></thead>
                     <tbody id="posts-table-body">
                     @foreach (var item in Model.Result.Posts)
@@ -76,22 +76,22 @@
                                 <span class="block font-mono text-neutral-600 break-all">/@post.Slug</span>
                             </td>
                             <td class="p-3 whitespace-nowrap">@post.CategoryName</td>
-                            <td class="p-3 font-mono whitespace-nowrap">@item.State</td>
+                            <td class="p-3 font-mono whitespace-nowrap">@AdminLabels.Publication(item.State)</td>
                             <td class="p-3 font-mono whitespace-nowrap">@post.ViewCount.ToString("N0")</td>
                             <td class="p-3 whitespace-nowrap">@SiteDates.Date(post.CreatedDate)</td>
                             <td class="p-3">
                                 <div class="flex flex-wrap gap-2 min-w-48">
-                                    <a asp-action="Edit" asp-route-id="@post.Id" asp-route-returnUrl="@returnUrl" class="border border-black px-2 py-1 font-bold">EDIT</a>
+                                    <a asp-action="Edit" asp-route-id="@post.Id" asp-route-returnUrl="@returnUrl" class="border border-black px-2 py-1 font-bold">DÜZENLE</a>
                                     @if (item.State == PostPublicationState.Published)
                                     {
-                                        <a href="@PublicUrls.PostPath(post.Slug)" target="_blank" rel="noopener" class="live-link-btn border border-black px-2 py-1">LIVE ↗</a>
+                                        <a href="@PublicUrls.PostPath(post.Slug)" target="_blank" rel="noopener" class="live-link-btn border border-black px-2 py-1">SİTEDE GÖR ↗</a>
                                     }
                                     <form asp-action="TogglePublish" asp-route-id="@post.Id" method="post">
                                         <input type="hidden" name="returnUrl" value="@returnUrl" />
-                                        <button type="submit" class="border border-black px-2 py-1">@(post.IsPublished ? "Save Draft" : "Enable publication")</button>
+                                        <button type="submit" class="border border-black px-2 py-1">@(post.IsPublished ? "Taslağı kaydet" : "Yayın iznini aç")</button>
                                     </form>
                                     <form asp-action="Delete" asp-route-id="@post.Id" method="post" data-confirm-delete>
-                                        <button type="submit" class="border border-rose-700 text-rose-700 px-2 py-1">DEL</button>
+                                        <button type="submit" class="border border-rose-700 text-rose-700 px-2 py-1">SİL</button>
                                     </form>
                                 </div>
                             </td>
@@ -103,18 +103,18 @@
         }
         else
         {
-            <p class="p-6 font-mono">No posts match these filters. Try another term, category, or status.</p>
+            <p class="p-6 font-mono">Bu filtrelerle eşleşen yazı yok. Başka bir ifade, kategori veya durum deneyin.</p>
         }
     </div>
-    <nav aria-label="Post pages" class="flex flex-wrap gap-4 items-center justify-between font-mono text-sm">
+    <nav aria-label="Yazı sayfaları" class="flex flex-wrap gap-4 items-center justify-between font-mono text-sm">
         @if (Model.Input.Page > 1)
-        { <a href="@Url.Action("Index", Model.Input.RouteValues(Model.Input.Page - 1))" class="underline">&lt; Previous</a> }
-        <span>Page @Model.Input.Page of @Model.TotalPages</span>
+        { <a href="@Url.Action("Index", Model.Input.RouteValues(Model.Input.Page - 1))" class="underline">&lt; Önceki</a> }
+        <span>Sayfa @Model.Input.Page / @Model.TotalPages</span>
         @if (Model.Input.Page < Model.TotalPages)
-        { <a href="@Url.Action("Index", Model.Input.RouteValues(Model.Input.Page + 1))" class="underline">Next &gt;</a> }
+        { <a href="@Url.Action("Index", Model.Input.RouteValues(Model.Input.Page + 1))" class="underline">Sonraki &gt;</a> }
     </nav>
     @if (Model.Result.TotalCount > AdminPostQuery.MaximumPage * Model.Input.PageSize)
-    { <p>Only the first @AdminPostQuery.MaximumPage pages are available. Refine your filters.</p> }
+    { <p>İlk @AdminPostQuery.MaximumPage sayfaya erişilebilir. Filtreleri daraltın.</p> }
 </div>
 @section Scripts {
     @if (recoveryKey is not null && recoveryRevision is not null)

@@ -20,6 +20,11 @@ function create(options) {
             initialValue: contentField.value || ''
         });
 
+        for (const surface of editorElement.querySelectorAll('[contenteditable=true]')) {
+            surface.setAttribute('aria-label', 'Yazı metni');
+            surface.setAttribute('aria-describedby', 'Content__error');
+            surface.setAttribute('aria-invalid', contentField.getAttribute('aria-invalid') || 'false');
+        }
         fallbackElement.hidden = true;
         editor.on('change', function () {
             contentField.value = editor.getMarkdown();
@@ -69,6 +74,7 @@ function initializePostEditor() {
         fallbackElement: contentFallback,
         editorOptions: {
             height: '600px',
+            language: 'tr-TR',
             initialEditType: 'markdown',
             previewStyle: 'vertical',
             hooks: {
@@ -93,16 +99,17 @@ function initializePostEditor() {
 
         if (!antiforgeryToken) {
             if (window.showToast) {
-                window.showToast('Security token unavailable. Refresh the page and try again.', 'error');
+                window.showToast('Güvenlik doğrulaması alınamadı. Sayfayı yenileyip yeniden deneyin.', 'error');
             }
             return;
         }
 
-        if (window.showToast) window.showToast('Uploading image...', 'info');
+        if (window.showToast) window.showToast('Görsel yükleniyor…', 'info');
 
         const formData = new FormData();
         formData.append('file', file);
 
+        let safeFailure = 'Görsel sunucuya yüklenemedi. Yeniden deneyin.';
         try {
             const response = await fetch(postForm.dataset.uploadUrl, {
                 method: 'POST',
@@ -119,31 +126,29 @@ function initializePostEditor() {
                 const message = typeof data?.message === 'string'
                     ? data.message
                     : response.status === 400
-                        ? 'Your security token is invalid or expired. Refresh the page and try again.'
-                        : 'Image upload failed.';
-                throw new Error(message);
+                        ? 'Güvenlik doğrulaması geçersiz veya süresi dolmuş. Sayfayı yenileyip yeniden deneyin.'
+                        : 'Görsel yüklenemedi.';
+                safeFailure = message;
+                throw new Error();
             }
 
             if (data?.success && typeof data.url === 'string') {
                 if (callback) {
-                    callback(data.url, file.name || 'Image');
+                    callback(data.url, file.name || 'Görsel');
                 } else {
-                    insertText(`\n![Image](${data.url})\n`);
+                    insertText(`\n![Görsel](${data.url})\n`);
                 }
-                if (window.showToast) window.showToast('Image uploaded and inserted.', 'success');
+                if (window.showToast) window.showToast('Görsel yüklendi ve eklendi.', 'success');
             } else {
                 const uploadError = typeof data?.message === 'string'
                     ? data.message
-                    : 'Image upload failed.';
+                    : 'Görsel yüklenemedi.';
                 if (window.showToast) window.showToast(uploadError, 'error');
             }
         } catch (err) {
             console.error('Upload error:', err);
             if (window.showToast) {
-                const message = err instanceof Error && err.message
-                    ? err.message
-                    : 'Error uploading image to server.';
-                window.showToast(message, 'error');
+                window.showToast(safeFailure, 'error');
             }
         }
     }
@@ -165,11 +170,11 @@ function initializePostEditor() {
 
     if (btnToolbarVideo) {
         btnToolbarVideo.addEventListener('click', function () {
-            const videoUrl = prompt('Enter YouTube Video URL (e.g., https://www.youtube.com/watch?v=...):');
+            const videoUrl = prompt('YouTube video adresini girin (örn. https://www.youtube.com/watch?v=...):');
             if (videoUrl && videoUrl.trim()) {
                 const tag = `\n[video](${videoUrl.trim()})\n`;
                 insertText(tag);
-                if (window.showToast) window.showToast('Video embed tag inserted.', 'success');
+                if (window.showToast) window.showToast('Video bağlantısı eklendi.', 'success');
             }
         });
     }
@@ -237,18 +242,18 @@ function initializePostEditor() {
         const content = editor ? editor.getMarkdown() : contentHidden.value;
 
         // SERP preview update
-        if (serpTitle) serpTitle.textContent = title || 'Article Title Preview';
-        if (isCreate && serpSlug) serpSlug.textContent = generateSlug(title) || 'your-slug';
-        if (serpSummary) serpSummary.textContent = summary || 'Summary and meta description will appear here as the Google snippet...';
+        if (serpTitle) serpTitle.textContent = title || 'Yazı başlığı önizlemesi';
+        if (isCreate && serpSlug) serpSlug.textContent = generateSlug(title) || 'adres-onizlemesi';
+        if (serpSummary) serpSummary.textContent = summary || 'Arama sonuçlarında gösterilecek özet burada görünür…';
 
         // Metrics update
         const words = content.trim() ? content.trim().split(/\s+/).length : 0;
         const readingMins = Math.ceil(words / 200);
         const chars = content.length;
 
-        if (wordCountEl) wordCountEl.textContent = words.toLocaleString();
-        if (readingTimeEl) readingTimeEl.textContent = `~${readingMins} min`;
-        if (charCountEl) charCountEl.textContent = chars.toLocaleString();
+        if (wordCountEl) wordCountEl.textContent = words.toLocaleString('tr-TR');
+        if (readingTimeEl) readingTimeEl.textContent = `~${readingMins} dk`;
+        if (charCountEl) charCountEl.textContent = chars.toLocaleString('tr-TR');
     }
 
     if (titleInput) titleInput.addEventListener('input', updatePreviewsAndMetrics);

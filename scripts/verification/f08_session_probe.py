@@ -95,7 +95,7 @@ def main() -> int:
     wait_until_ready(
         ready_opener,
         admin_login_url(base_url),
-        "Admin Sign In",
+        "Yönetici girişi",
         args.wait_seconds,
     )
 

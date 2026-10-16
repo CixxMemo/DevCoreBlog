@@ -68,9 +68,9 @@ try:
                     instant=snapshot[name];assert instant
                     script="import {readFileSync} from 'node:fs'; const s=readFileSync(process.argv[1],'utf8');const m=await import('data:text/javascript;base64,'+Buffer.from(s).toString('base64'));console.log(m.formatRecoveryDate(process.argv[2],'Europe/Istanbul'));"
                     expected=subprocess.check_output(['node','--input-type=module','-e',script,str(source/'wwwroot/js/site-date.js'),instant],text=True).strip()
-                    label=('Last upload: '+('Succeeded' if succeeded else 'Failed')+' — ') if name=='lastCompleted' else 'Last successful upload: '
+                    label=('Son yükleme: '+('Başarılı' if succeeded else 'Başarısız')+' — ') if name=='lastCompleted' else 'Son başarılı yükleme: '
                     checks[f'{succeeded}_{name}_same_site_time']=status==200 and label+expected in decoded and expected.endswith('(Europe/Istanbul)')
-                checks[f'{succeeded}_observation_not_provider_health']='does not prove current provider availability' in decoded and 'Not configured' in decoded
+                checks[f'{succeeded}_observation_not_provider_health']='sağlayıcının şu an erişilebilir olduğunu kanıtlamaz' in decoded and 'Yapılandırılmadı' in decoded
             proc.terminate();proc.wait(timeout=10);proc=None
     fixture.unlink();program.write_text(original_program)
     checks['fixture_controller_removed']=not fixture.exists()

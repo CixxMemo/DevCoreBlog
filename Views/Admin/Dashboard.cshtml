@@ -12,7 +12,7 @@
 @model DevCoreBlog.Models.Admin.AdminDashboardViewModel
 
 @{
-    ViewData["Title"] = "Command Dashboard";
+    ViewData["Title"] = "Yönetim özeti";
 
     var snapshot = Model.Overview.Dashboard;
     var topPosts = snapshot?.TopPosts ?? Array.Empty<DevCoreBlog.Core.ReadModels.TopReadPost>();
@@ -26,10 +26,10 @@
     <div class="border-2 border-black bg-white p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
             <div class="font-mono text-xs font-bold text-neutral-500 uppercase tracking-widest leading-tight">
-                // SYSTEM OVERVIEW & METRICS
+                // GENEL DURUM VE ÖLÇÜMLER
             </div>
             <h1 class="text-2xl md:text-3xl font-black uppercase tracking-tight text-black mt-1">
-                Command Dashboard
+                Yönetim özeti
             </h1>
         </div>
         
@@ -43,7 +43,7 @@
             <a asp-controller="AdminCategory" asp-action="Create" 
                class="border-2 border-black bg-white text-black hover:bg-black hover:text-white px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-none">
                 <span>+</span>
-                <span>New Category</span>
+                <span>Yeni kategori</span>
             </a>
         </div>
     </div>
@@ -58,14 +58,14 @@
         @* Card 1: Total Posts *@
         <div class="border-2 border-black bg-white p-5 flex flex-col justify-between">
             <div class="font-mono text-[11px] font-bold text-neutral-500 uppercase tracking-wider">
-                Total Posts
+                Toplam yazı
             </div>
             <div class="text-3xl md:text-4xl font-black text-black my-2">
                 @snapshot.TotalPosts
             </div>
             <div class="font-mono text-[10px] text-neutral-600 border-t border-neutral-200 pt-2 flex items-center justify-between">
-                <span>ALL TIME</span>
-                <a asp-controller="AdminPost" asp-action="Index" class="underline hover:text-black font-bold">VIEW →</a>
+                <span>TÜM ZAMANLAR</span>
+                <a asp-controller="AdminPost" asp-action="Index" class="underline hover:text-black font-bold">GÖR →</a>
             </div>
         </div>
 
@@ -73,13 +73,13 @@
         <div class="border-2 border-black bg-white p-5 flex flex-col justify-between">
             <div class="font-mono text-[11px] font-bold text-neutral-500 uppercase tracking-wider flex items-center gap-1.5">
                 <span class="w-2 h-2 bg-emerald-500 inline-block"></span>
-                <span>Publication enabled</span>
+                <span>Yayın izni açık</span>
             </div>
             <div class="text-3xl md:text-4xl font-black text-black my-2">
                 @snapshot.PublishedPosts
             </div>
             <div class="font-mono text-[10px] text-neutral-600 border-t border-neutral-200 pt-2">
-                INCLUDES SCHEDULED
+                PLANLANMIŞ YAZILAR DAHİL
             </div>
         </div>
 
@@ -87,40 +87,40 @@
         <div class="border-2 border-black bg-white p-5 flex flex-col justify-between">
             <div class="font-mono text-[11px] font-bold text-neutral-500 uppercase tracking-wider flex items-center gap-1.5">
                 <span class="w-2 h-2 bg-amber-500 inline-block"></span>
-                <span>Drafts</span>
+                <span>Taslaklar</span>
             </div>
             <div class="text-3xl md:text-4xl font-black text-black my-2">
                 @snapshot.DraftPosts
             </div>
             <div class="font-mono text-[10px] text-neutral-600 border-t border-neutral-200 pt-2">
-                UNPUBLISHED
+                YAYIMLANMAMIŞ
             </div>
         </div>
 
         @* Card 4: Total Cumulative Views *@
         <div class="border-2 border-black bg-white p-5 flex flex-col justify-between">
             <div class="font-mono text-[11px] font-bold text-neutral-500 uppercase tracking-wider">
-                Total Views
+                Toplam görüntülenme
             </div>
             <div class="text-3xl md:text-4xl font-black text-black my-2">
                 @snapshot.TotalViews.ToString("N0")
             </div>
             <div class="font-mono text-[10px] text-neutral-600 border-t border-neutral-200 pt-2">
-                ARTICLE READS
+                YAZI GÖRÜNTÜLENMESİ
             </div>
         </div>
 
         @* Card 5: Active Categories *@
         <div class="border-2 border-black bg-white p-5 flex flex-col justify-between col-span-2 md:col-span-1">
             <div class="font-mono text-[11px] font-bold text-neutral-500 uppercase tracking-wider">
-                Categories
+                Kategoriler
             </div>
             <div class="text-3xl md:text-4xl font-black text-black my-2">
                 @snapshot.CategoryCount
             </div>
             <div class="font-mono text-[10px] text-neutral-600 border-t border-neutral-200 pt-2 flex items-center justify-between">
-                <span>ACTIVE TOPICS</span>
-                <a asp-controller="AdminCategory" asp-action="Index" class="underline hover:text-black font-bold">VIEW →</a>
+                <span>ETKİN KONULAR</span>
+                <a asp-controller="AdminCategory" asp-action="Index" class="underline hover:text-black font-bold">GÖR →</a>
             </div>
         </div>
     </div>
@@ -136,14 +136,14 @@
                 @* Card Header *@
                 <div class="border-b-2 border-black p-4 bg-neutral-50 flex items-center justify-between">
                     <div>
-                        <span class="font-mono text-[10px] font-bold text-neutral-500 uppercase tracking-wider">// ANALYTICS RANKING</span>
+                        <span class="font-mono text-[10px] font-bold text-neutral-500 uppercase tracking-wider">// GÖRÜNTÜLENME SIRALAMASI</span>
                         <h2 class="text-base font-black uppercase tracking-tight text-black">
-                            Top 5 Most Read Articles
+                            En çok görüntülenen 5 yazı
                         </h2>
                     </div>
                     <a asp-controller="AdminPost" asp-action="Index" 
                        class="font-mono text-xs font-bold text-neutral-700 hover:text-black uppercase underline">
-                        All Posts →
+                        Tüm yazılar →
                     </a>
                 </div>
 
@@ -155,10 +155,10 @@
                             <thead>
                                 <tr class="border-b-2 border-black bg-white font-mono uppercase text-[11px] text-neutral-600">
                                     <th class="p-3 w-12 text-center">#</th>
-                                    <th class="p-3">Title</th>
-                                    <th class="p-3">Category</th>
-                                    <th class="p-3 text-right">Views</th>
-                                    <th class="p-3 text-right">Actions</th>
+                                    <th class="p-3">Başlık</th>
+                                    <th class="p-3">Kategori</th>
+                                    <th class="p-3 text-right">Görüntülenme</th>
+                                    <th class="p-3 text-right">İşlemler</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y border-b border-black">
@@ -201,7 +201,7 @@
                                         <td class="p-3 text-right whitespace-nowrap space-x-2 font-mono text-xs">
                                             <a asp-controller="AdminPost" asp-action="Edit" asp-route-id="@post.Id"
                                                class="border border-black bg-white hover:bg-black hover:text-white px-2 py-1 font-bold inline-block">
-                                                EDIT
+                                                DÜZENLE
                                             </a>
                                         </td>
                                     </tr>
@@ -213,14 +213,14 @@
                 else
                 {
                     <div class="p-8 text-center font-mono text-xs text-neutral-500">
-                        // NO POST DATA AVAILABLE YET.
+                        // HENÜZ YAZI VERİSİ YOK.
                     </div>
                 }
             </div>
             
             <div class="p-3 bg-neutral-50 border-t border-black font-mono text-[10px] text-neutral-500 flex items-center justify-between">
-                <span>SORTED BY: VIEWCOUNT DESC</span>
-                <span>REAL-TIME DATABASE METRIC</span>
+                <span>SIRALAMA: GÖRÜNTÜLENME AZALAN</span>
+                <span>GÜNCEL VERİTABANI ÖLÇÜMÜ</span>
             </div>
         </div>
 
@@ -230,31 +230,31 @@
                 @* Scratchpad Header *@
                 <div class="border-b-2 border-black p-4 bg-neutral-50 flex items-center justify-between">
                     <div>
-                        <span class="font-mono text-[10px] font-bold text-neutral-500 uppercase tracking-wider">// FAST IDEA CAPTURE</span>
+                        <span class="font-mono text-[10px] font-bold text-neutral-500 uppercase tracking-wider">// HIZLI FİKİR NOTLARI</span>
                         <h2 class="text-base font-black uppercase tracking-tight text-black">
-                            Scratchpad
+                            Not defteri
                         </h2>
                     </div>
                     <span id="scratchpad-status" class="font-mono text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-300 px-1.5 py-0.5">
-                        SAVED
+                        KAYDEDİLDİ
                     </span>
                 </div>
 
                 @* Scratchpad Textarea Body *@
                 <div class="p-4 space-y-3">
                     <p class="font-mono text-[11px] text-neutral-600">
-                        Type thoughts or outline articles. Automatically persists to browser storage.
+                        Fikirlerinizi veya yazı taslaklarınızı not edin. Bu tarayıcıya otomatik kaydedilir.
                     </p>
 
                     <textarea id="dashboard-scratchpad" 
                               rows="7"
-                              placeholder="Write notes, article outlines, or snippets here..."
+                              placeholder="Notlarınızı ve yazı fikirlerinizi buraya yazın…"
                               class="w-full border-2 border-black p-3 font-mono text-xs focus:outline-none focus:bg-neutral-50 resize-y"></textarea>
 
                     <div class="flex items-center justify-between font-mono text-[10px] text-neutral-500">
-                        <span id="scratchpad-char-count">0 characters</span>
+                        <span id="scratchpad-char-count">0 karakter</span>
                         <button type="button" id="scratchpad-clear-btn" class="hover:text-rose-700 underline font-bold uppercase">
-                            Clear Note
+                            Notu temizle
                         </button>
                     </div>
                 </div>
@@ -266,7 +266,7 @@
                         id="scratchpad-create-draft-btn"
                         class="w-full border-2 border-black bg-black text-white hover:bg-neutral-800 p-2.5 font-mono text-xs font-bold uppercase tracking-wider transition-none flex items-center justify-center gap-2">
                     <span>⚡</span>
-                    <span>Create Draft from Note</span>
+                    <span>Nottan taslak oluştur</span>
                 </button>
             </div>
         </div>
@@ -275,27 +275,27 @@
     }
     else
     {
-        <p role="status" class="border-2 border-black bg-white p-5">Statistics unavailable. Please retry later; no values have been estimated.</p>
+        <p role="status" class="border-2 border-black bg-white p-5">İstatistikler okunamadı. Daha sonra yeniden deneyin; tahmini değer gösterilmiyor.</p>
     }
     @* ========================================================================= *@
     @* SECTION 3: SYSTEM & INTEGRATION HEALTH STATUS                             *@
     @* ========================================================================= *@
     <section aria-labelledby="service-status-title" class="border-2 border-black bg-white p-5 space-y-3">
-        <h2 id="service-status-title" class="font-mono text-sm font-bold">System &amp; integration status</h2>
+        <h2 id="service-status-title" class="font-mono text-sm font-bold">Sistem ve bağlantı durumu</h2>
         <dl class="grid grid-cols-1 sm:grid-cols-2 gap-4 font-mono text-xs">
-            <div class="border border-black p-3"><dt class="font-bold">Database</dt><dd id="database-status">@Model.Overview.DatabaseState (PostgreSQL)</dd></div>
-            <div class="border border-black p-3"><dt class="font-bold">Media storage</dt><dd id="media-status">@(Model.Overview.Media.Configured ? "Configured — access not checked" : "Not configured — uploads unavailable")</dd>
+            <div class="border border-black p-3"><dt class="font-bold">Veritabanı</dt><dd id="database-status">@AdminLabels.Database(Model.Overview.DatabaseState) (PostgreSQL)</dd></div>
+            <div class="border border-black p-3"><dt class="font-bold">Medya depolama</dt><dd id="media-status">@(Model.Overview.Media.Configured ? "Yapılandırıldı — erişim denetlenmedi" : "Yapılandırılmadı — yükleme kapalı")</dd>
             @if (Model.Overview.Media.LastCompleted is { } completed)
             {
-                <dd>Last upload: @(Model.Overview.Media.LastSucceeded == true ? "Succeeded" : "Failed") — @SiteDates.DateAndTime(completed)</dd>
+                <dd>Son yükleme: @(Model.Overview.Media.LastSucceeded == true ? "Başarılı" : "Başarısız") — @SiteDates.DateAndTime(completed)</dd>
             }
             @if (Model.Overview.Media.LastSuccess is { } success)
             {
-                <dd>Last successful upload: @SiteDates.DateAndTime(success)</dd>
+                <dd>Son başarılı yükleme: @SiteDates.DateAndTime(success)</dd>
             }
-            <dd>Upload history covers this process only; it does not prove current provider availability.</dd></div>
-            <div class="border border-black p-3"><dt class="font-bold">Environment</dt><dd>@Model.EnvironmentName</dd></div>
-            <div class="border border-black p-3"><dt class="font-bold">Webhook</dt><dd>@(Model.WebhookConfigured ? "Configured — rate limited" : "Not configured — requests denied")</dd><dd><a asp-action="Automations" class="underline">Automation settings →</a></dd></div>
+            <dd>Yükleme geçmişi yalnız bu çalışma sürecini kapsar; sağlayıcının şu an erişilebilir olduğunu kanıtlamaz.</dd></div>
+            <div class="border border-black p-3"><dt class="font-bold">Ortam</dt><dd>@AdminLabels.Environment(Model.EnvironmentName)</dd></div>
+            <div class="border border-black p-3"><dt class="font-bold">Webhook</dt><dd>@(Model.WebhookConfigured ? "Yapılandırıldı — istek sınırı var" : "Yapılandırılmadı — istekler reddedilir")</dd><dd><a asp-action="Automations" class="underline">Otomasyon ayarları →</a></dd></div>
         </dl>
     </section>
 </div>

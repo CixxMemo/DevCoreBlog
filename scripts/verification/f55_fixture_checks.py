@@ -13,9 +13,10 @@ a.report_dir.mkdir(parents=True,exist_ok=True)
 scripts=source/'scripts/verification'
 subprocess.run(['python3',str(scripts/'document_web_preview_probe.py'),'--base-url',a.base_url,
     '--database-port',str(a.database_port),'--report',str(a.report_dir/'document-web.json')],check=True)
-header=subprocess.run(['python3',str(scripts/'f52_header_probe.py'),'--base-url',a.base_url],check=True,capture_output=True,text=True)
-data=json.loads(header.stdout); assert all(data['checks'].values())
+header=subprocess.run(['python3',str(scripts/'f52_header_probe.py'),'--base-url',a.base_url],check=False,capture_output=True,text=True)
+data=json.loads(header.stdout)
 (a.report_dir/'headers.json').write_text(json.dumps(data,indent=2)+'\n')
+assert header.returncode==0 and all(data['checks'].values())
 # Proxy checks keep PostgreSQL alive; diagnostics deliberately stop it last.
 subprocess.run(['python3',str(scripts/'f50_proxy_probe.py'),'--source',str(source),'--database-port',str(a.database_port),'--report',str(a.report_dir/'proxy.json')],check=True)
 # Remove only the deliberately poisoned F50 dotenv inside this owned fixture.

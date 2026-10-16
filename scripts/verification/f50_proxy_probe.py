@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 """Real Production HTTP/TLS fixture, emulating the approved single-hop Nginx overwrite boundary."""
+
+import html
 import argparse, getpass, http.client, json, os, ssl, subprocess, threading, time, urllib.parse
 from http.cookies import SimpleCookie
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -98,7 +100,7 @@ try:
         threading.Thread(target=server.serve_forever,daemon=True).start()
     admin=Client()
     status,headers,body,cookies=admin.call(headers={'X-Forwarded-For':'203.0.113.99','X-Forwarded-Proto':'http','X-Forwarded-Host':'evil.example'})
-    checks['trusted_https_proxy_has_no_redirect_loop']=status==200 and 'Admin Sign In' in body
+    checks['trusted_https_proxy_has_no_redirect_loop']=status==200 and 'Yönetici girişi' in html.unescape(body)
     checks['production_hsts_on_forwarded_https']='max-age=2592000' in headers.get('strict-transport-security','')
     if a.security_headers:
         for route in [admin_login_path(), '/does-not-exist-f52', '/js/public-theme.js', '/rss.xml']:

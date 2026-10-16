@@ -36,7 +36,7 @@ function canonical(node) {
     await page.goto(base + '/fixture-admin/login');
     await page.locator('#username').fill('f17-admin');
     await page.locator('#password').fill('f17-isolated-password');
-    await page.getByRole('button', { name: 'Sign In', exact: true }).click();
+    await page.getByRole('button', { name: 'Giriş yap', exact: true }).click();
     await page.waitForURL('**/Admin/Dashboard');
     const recoveryKey = 'devcore_editor_draft_create';
     const recoveryValue = 'F09 synthetic legacy recovery remains untouched';
@@ -171,7 +171,7 @@ function canonical(node) {
     await page.locator('#post-title-input').fill('F09 korunan legacy form');
     await page.locator('[name=CategoryId]').selectOption('1001');
     await legacyEditor.fill('F09 legacy Markdown hâlâ korunur.');
-    await page.getByRole('button', { name: 'Save Draft', exact: true }).click();
+    await page.getByRole('button', { name: 'Taslağı kaydet', exact: true }).click();
     await page.waitForURL('**/AdminPost');
     check('legacy_native_save_keeps_its_existing_endpoint', await page.getByRole('link', { name: 'F09 korunan legacy form', exact: true }).count() === 1);
     check('no_runtime_or_console_errors', errors.length === 0);

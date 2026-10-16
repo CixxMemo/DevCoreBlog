@@ -72,7 +72,9 @@ export async function mountWritingEditor(form) {
         content: original.document,
         onContentError: () => { contentError = true; },
         editorProps: { attributes: { class: 'writing-document', role: 'textbox',
-            'aria-label': 'Yazı metni', 'aria-multiline': 'true', lang: 'tr', spellcheck: 'true' } },
+            'aria-label': 'Yazı metni', 'aria-multiline': 'true',
+            'aria-describedby': 'writing-status DocumentJson__error',
+            'aria-invalid': input.getAttribute('aria-invalid') || 'false', lang: 'tr', spellcheck: 'true' } },
     });
     if (contentError) { editor.destroy(); throw new Error('Invalid content'); }
     const saves = [...form.querySelectorAll('[data-writing-save]')];

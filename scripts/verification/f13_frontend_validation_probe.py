@@ -3,6 +3,8 @@
 
 from __future__ import annotations
 
+import html
+
 import argparse
 import json
 import os
@@ -81,7 +83,7 @@ def main() -> int:
     wait_until_ready(
         opener,
         admin_login_url(base_url),
-        "Admin Sign In",
+        "Yönetici girişi",
         args.wait_seconds,
     )
     _, login_token, login_status, login_url, login_body = submit_login(
@@ -177,11 +179,11 @@ def main() -> int:
             and not re.search(r'class="[^"]*\bhidden\b', textarea_tag, re.IGNORECASE)
         ),
         "client_and_server_required_messages_match": (
-            'data-val-required="Title is required."' in create_body
-            and 'data-val-required="Content is required."' in create_body
+            'data-val-required="Başlık gereklidir."' in html.unescape(create_body)
+            and 'data-val-required="İçerik gereklidir."' in html.unescape(create_body)
             and invalid_status == 200
-            and "Title is required." in invalid_body
-            and "Content is required." in invalid_body
+            and "Başlık gereklidir." in html.unescape(invalid_body)
+            and "İçerik gereklidir." in html.unescape(invalid_body)
         ),
         "post_can_be_saved_without_javascript": (
             fresh_status == 200

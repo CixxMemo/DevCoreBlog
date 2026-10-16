@@ -41,14 +41,14 @@ public sealed class ImageUploadPolicy
         {
             return ImageValidationOutcome.Failure(
                 ImageUploadFailureKind.MissingFile,
-                "No image file provided.");
+                "Bir görsel dosyası seçin.");
         }
 
         if (file.Length > MaximumFileBytes)
         {
             return ImageValidationOutcome.Failure(
                 ImageUploadFailureKind.FileTooLarge,
-                "The image exceeds the 8 MB upload limit.");
+                "Görsel 8 MB yükleme sınırını aşıyor.");
         }
 
         var extension = Path.GetExtension(file.FileName);
@@ -70,7 +70,7 @@ public sealed class ImageUploadPolicy
             {
                 if (buffer.Length + count > MaximumFileBytes)
                     return ImageValidationOutcome.Failure(ImageUploadFailureKind.FileTooLarge,
-                        "The image exceeds the 8 MB upload limit.");
+                        "Görsel 8 MB yükleme sınırını aşıyor.");
                 buffer.Write(chunk, 0, count);
             }
             content = buffer.ToArray();
@@ -98,7 +98,7 @@ public sealed class ImageUploadPolicy
         {
             ImageDecodeResult.Valid => ImageValidationOutcome.Success(format.ProviderFormat, content),
             ImageDecodeResult.Unavailable => ImageValidationOutcome.Failure(ImageUploadFailureKind.StorageUnavailable,
-                "Image validation is temporarily unavailable. Try again."),
+                "Görsel doğrulaması geçici olarak kullanılamıyor. Yeniden deneyin."),
             _ => InvalidFormat()
         };
     }
@@ -109,7 +109,7 @@ public sealed class ImageUploadPolicy
     private static ImageValidationOutcome InvalidFormat() =>
         ImageValidationOutcome.Failure(
             ImageUploadFailureKind.InvalidFormat,
-            "Invalid image. Upload a valid JPG, PNG, GIF, or WEBP file.");
+            "Görsel geçersiz. Geçerli bir JPG, PNG, GIF veya WEBP dosyası yükleyin.");
 
     private sealed record ImageFormatDefinition(
         ImageFormatKind Kind,

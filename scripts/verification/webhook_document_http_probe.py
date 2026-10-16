@@ -34,7 +34,7 @@ def send(key='f17-key',data=None,raw=None,secret='f17-webhook',path='/api/webhoo
  return res[0],decoded,res[3]
 def get(path):client,_=cookie_opener();return request_with_headers(client,base+path)
 def receipt_count(key):return sql('SELECT count(*) FROM "WebhookReceipts" WHERE "ContractVersion"=2 AND "Key"='+quote(key))
-client,_=cookie_opener();wait_until_ready(client,admin_login_url(base),'Admin Sign In',30)
+client,_=cookie_opener();wait_until_ready(client,admin_login_url(base),'Yönetici girişi',30)
 original=payload(isPublished=True,publishDate='2020-01-02T06:04:05.1234567+03:00')
 report=Path(a.report)
 if a.mode=='baseline':

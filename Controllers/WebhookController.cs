@@ -45,24 +45,24 @@ public sealed class WebhookController : ControllerBase
     {
         if (!WebhookRequestAuthentication.HasValidSecret(Request, _options))
         {
-            return Unauthorized(new { success = false, message = "Unauthorized." });
+            return Unauthorized(new { success = false, message = "Bu işlem için yetki doğrulanamadı." });
         }
 
         if (!WebhookRequestAuthentication.TryReadKey(Request, out var key))
         {
-            return BadRequest(new { success = false, message = "Idempotency-Key must contain 1 to 128 ASCII letters, digits, dots, underscores or hyphens." });
+            return BadRequest(new { success = false, message = "Idempotency-Key 1–128 ASCII harfi, rakam, nokta, alt çizgi veya kısa çizgi içermelidir." });
         }
 
         if (Request.ContentLength > WebhookIngressOptions.MaximumRequestBodyBytes)
         {
             return StatusCode(StatusCodes.Status413PayloadTooLarge,
-                new { success = false, message = "Payload is too large." });
+                new { success = false, message = "İstek içeriği boyut sınırını aşıyor." });
         }
 
         if (!Request.HasJsonContentType())
         {
             return StatusCode(StatusCodes.Status415UnsupportedMediaType,
-                new { success = false, message = "JSON content is required." });
+                new { success = false, message = "JSON biçiminde içerik gereklidir." });
         }
 
         WebhookPostPayload? payload;
@@ -75,16 +75,16 @@ public sealed class WebhookController : ControllerBase
             when (exception.StatusCode == StatusCodes.Status413PayloadTooLarge)
         {
             return StatusCode(StatusCodes.Status413PayloadTooLarge,
-                new { success = false, message = "Payload is too large." });
+                new { success = false, message = "İstek içeriği boyut sınırını aşıyor." });
         }
         catch (JsonException)
         {
-            return BadRequest(new { success = false, message = "Invalid JSON payload." });
+            return BadRequest(new { success = false, message = "JSON içeriği geçersiz." });
         }
 
         if (payload is null)
         {
-            return BadRequest(new { success = false, message = "Empty JSON payload." });
+            return BadRequest(new { success = false, message = "JSON içeriği boş." });
         }
 
         var post = new Post
@@ -117,7 +117,7 @@ public sealed class WebhookController : ControllerBase
 
         if (result.KeyConflict)
         {
-            return Conflict(new { success = false, message = "Idempotency-Key was already used with a different payload." });
+            return Conflict(new { success = false, message = "Idempotency-Key daha önce farklı bir içerikle kullanılmış." });
         }
 
         var validationResult = result.Validation;
@@ -133,7 +133,7 @@ public sealed class WebhookController : ControllerBase
             return BadRequest(new
             {
                 success = false,
-                message = "Payload validation failed.",
+                message = "İstek içeriği doğrulanamadı.",
                 errors
             });
         }
@@ -148,7 +148,7 @@ public sealed class WebhookController : ControllerBase
             slug = saved.Slug,
             isPublished = saved.IsPublished,
             publishDate = saved.PublishDate,
-            message = saved.IsPublished ? "Post created and published." : "Post saved as draft."
+            message = saved.IsPublished ? "Yazı oluşturuldu ve yayımlandı." : "Yazı taslak olarak kaydedildi."
         });
     }
 

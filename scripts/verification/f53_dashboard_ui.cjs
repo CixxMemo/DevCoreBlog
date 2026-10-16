@@ -20,13 +20,13 @@ fs.mkdirSync(output, { recursive: true });
         await page.goto(base + (process.env.DEVCORE_TEST_ADMIN_LOGIN_PATH || '/fixture-admin/login'));
         await page.locator('#username').fill(process.env.DEVCORE_TEST_ADMIN_USERNAME || 'f53-admin');
         await page.locator('#password').fill(process.env.DEVCORE_TEST_ADMIN_PASSWORD || 'f53-isolated-password');
-        await page.getByRole('button', { name: 'Sign In', exact: true }).click();
+        await page.getByRole('button', { name: 'Giriş yap', exact: true }).click();
         await page.waitForURL('**/Admin/Dashboard');
         const status = page.locator('section[aria-labelledby="service-status-title"]');
         const checks = {
-            database_verified: (await page.locator('#database-status').innerText()) === 'Verified (PostgreSQL)',
-            credentials_are_not_availability: (await page.locator('#media-status').innerText()).includes('access not checked'),
-            completed_upload_is_historical: (await status.innerText()).includes('this process only'),
+            database_verified: (await page.locator('#database-status').innerText()) === 'Doğrulandı (PostgreSQL)',
+            credentials_are_not_availability: (await page.locator('#media-status').innerText()).includes('erişim denetlenmedi'),
+            completed_upload_is_historical: (await status.innerText()).includes('yalnız bu çalışma sürecini'),
             no_hardcoded_active_badge: !(await status.innerText()).includes('(Active)'),
         };
         await status.screenshot({ path: path.join(output, 'status-desktop.png') });
@@ -46,8 +46,8 @@ fs.mkdirSync(output, { recursive: true });
             assert.ok(fs.existsSync(process.env.DEVCORE_F53_OUTAGE_MARKER), 'Owned outage marker not received');
             const response = await page.goto(base + '/Admin/Dashboard');
             checks.actual_outage_page_keeps_503 = response.status() === 503;
-            checks.outage_has_no_fabricated_statistics = (await page.locator('main').innerText()).includes('Statistics unavailable') && await page.getByText('Total Posts', { exact: true }).count() === 0;
-            checks.outage_shows_unavailable_database = (await page.locator('#database-status').innerText()).includes('Unavailable');
+            checks.outage_has_no_fabricated_statistics = (await page.locator('main').innerText()).includes('İstatistikler okunamadı') && await page.getByText('Toplam yazı', { exact: true }).count() === 0;
+            checks.outage_shows_unavailable_database = (await page.locator('#database-status').innerText()).includes('Kullanılamıyor');
             checks.outage_csp_and_runtime_remain_valid = (await page.evaluate(() => window.f53Violations)).length === 0 && errors.length === 0;
             await page.screenshot({ path: path.join(output, 'dashboard-outage.png'), fullPage: true });
         }

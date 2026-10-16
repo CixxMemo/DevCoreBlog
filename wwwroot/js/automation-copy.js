@@ -7,11 +7,11 @@ function copySnippet(elementId, buttonElement) {
     const text = pre.innerText || pre.textContent;
     navigator.clipboard.writeText(text).then(() => {
         const originalText = buttonElement.textContent;
-        buttonElement.textContent = 'COPIED!';
+        buttonElement.textContent = 'KOPYALANDI!';
         buttonElement.classList.add('bg-black', 'text-white');
 
         if (window.showToast) {
-            window.showToast('Snippet copied to clipboard.', 'success');
+            window.showToast('Kod panoya kopyalandı.', 'success');
         }
 
         setTimeout(() => {
@@ -21,7 +21,7 @@ function copySnippet(elementId, buttonElement) {
     }).catch(err => {
         console.error('Copy error:', err);
         if (window.showToast) {
-            window.showToast('Failed to copy snippet.', 'error');
+            window.showToast('Kod kopyalanamadı.', 'error');
         }
     });
 }
