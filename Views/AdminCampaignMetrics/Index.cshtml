@@ -1,0 +1,57 @@
+@using DevCoreBlog.Core.Newsletters
+@using DevCoreBlog.Core.Email
+@model DevCoreBlog.Models.Admin.CampaignMetricsModel
+@{
+    ViewData["Title"] = "Gönderim ölçümleri";
+    var m = Model.Metrics;
+}
+<section class="campaign-page" lang="tr" aria-labelledby="metrics-title">
+    <h1 id="metrics-title">Gönderim ölçümleri</h1>
+    <h2>@m.Campaign.Subject</h2>
+    <p>Gözlem zamanı: @SiteDates.DateAndTime(Model.ObservedUtc). Sayfa kendiliğinden yenilenmez.</p>
+    <p>Bu ekran kayıtları okur. Gönderim başlatmaz, yeniden deneme veya durum düzeltmesi yapmaz.</p>
+    <p>Kampanya: @(m.Campaign.State == NewsletterCampaignState.Cancelled ? "İptal edildi" : "Hazırlanmış kopya").
+        Alıcı seçimi: @(m.Selection switch { null => "Başlamadı", RecipientSelectionState.Building => "Sürüyor", _ => "Tamamlandı" }).
+        E-posta hazırlığı: @(m.Dispatch?.State switch { null => "Başlamadı", CampaignPreparationState.Building => "Sürüyor", CampaignPreparationState.Stopped => "Durduruldu", _ => "Tamamlandı" }).</p>
+    @if (m.Dispatch is { } dispatch) { <p>Gönderim süresi sınırı: @SiteDates.DateAndTime(dispatch.ExpiresUtc). Bu tarih çalışan süreç veya teslim kanıtı değildir.</p> }
+    <h2>Alıcılar ve yerel gönderim kayıtları</h2>
+    <dl class="campaign-panel campaign-counts">
+        <dt>Seçilen farklı alıcı</dt><dd data-metric="selected">@m.Selected</dd>
+        <dt>Hazırlanan alıcı e-postası</dt><dd data-metric="jobs">@m.TotalJobs</dd>
+        <dt>Sırada</dt><dd data-metric="pending">@m.JobCount(CampaignDeliveryState.Pending)</dd>
+        <dt>Ayrılmış, çağrı başlamamış</dt><dd data-metric="claimed">@m.JobCount(CampaignDeliveryState.Claimed)</dd>
+        <dt>Başlatılmış, henüz kesinleşmemiş</dt><dd data-metric="sending">@m.JobCount(CampaignDeliveryState.Sending)</dd>
+        <dt>Sağlayıcı kabulü</dt><dd data-metric="accepted">@m.JobCount(CampaignDeliveryState.Accepted)</dd>
+        <dt>Kesin reddedilen</dt><dd data-metric="rejected">@m.JobCount(CampaignDeliveryState.Rejected)</dd>
+        <dt>İnceleme için bekletilen</dt><dd data-metric="held">@m.JobCount(CampaignDeliveryState.Held)</dd>
+        <dt>Bekletilenlerden sonucu belirsiz olan</dt><dd data-metric="uncertain-held">@m.Jobs.Sum(x => x.UncertainHeld)</dd>
+        <dt>Süresi dolan</dt><dd data-metric="expired">@m.JobCount(CampaignDeliveryState.Expired)</dd>
+        <dt>İptal kaydı</dt><dd data-metric="cancelled">@m.JobCount(CampaignDeliveryState.Cancelled)</dd>
+        <dt>Güvenli tekrar takvimini bekleyen</dt><dd data-metric="retrying">@m.Jobs.Sum(x => x.Retrying)</dd>
+    </dl>
+    <p>Bir alıcı için bir e-posta işi vardır; birden fazla deneme aynı alıcıyı çoğaltmaz. Sıradaki kayıtlar süresi dolmuş veya iptal nedeniyle durdurulmuş olabilir; bu ekran arka plan sürecinin çalıştığını doğrulamaz.</p>
+    <h2>Çağrı denemeleri</h2>
+    <dl class="campaign-panel campaign-counts">
+        <dt>Toplam kalıcı çağrı başlangıcı</dt><dd data-metric="attempts">@m.TotalAttempts</dd>
+        <dt>Sonucu henüz kaydedilmemiş</dt><dd data-metric="unfinished">@m.AttemptCount(null)</dd>
+        <dt>Kabul sonucu</dt><dd data-metric="attempt-accepted">@m.AttemptCount(EmailSendOutcome.Accepted)</dd>
+        <dt>Ret sonucu</dt><dd data-metric="attempt-rejected">@m.AttemptCount(EmailSendOutcome.Rejected)</dd>
+        <dt>Kesin geçici hata sonucu</dt><dd data-metric="attempt-retryable">@m.AttemptCount(EmailSendOutcome.Retryable)</dd>
+        <dt>Belirsiz sonuç</dt><dd data-metric="attempt-uncertain">@m.AttemptCount(EmailSendOutcome.Uncertain)</dd>
+        <dt>Yapılandırma nedeniyle sonuçlanamayan</dt><dd data-metric="attempt-unconfigured">@m.AttemptCount(EmailSendOutcome.NotConfigured)</dd>
+    </dl>
+    <p>Kalıcı başlangıç, dış çağrının gerçekten tamamlandığını kanıtlamaz. Kabul sonucu teslim veya okunma değildir. Bekletme nedenlerinin tümü sağlayıcı belirsizliği sayılmaz.</p>
+    <h2>Eşleşen sağlayıcı gözlemleri</h2>
+    <dl class="campaign-panel campaign-counts">
+        <dt>Alıcı posta sunucusu teslim kabulü</dt><dd data-metric="delivered">@m.Provider.Delivered</dd>
+        <dt>Kalıcı geri dönme</dt><dd data-metric="bounced">@m.Provider.Bounced</dd>
+        <dt>Şikâyet</dt><dd data-metric="complained">@m.Provider.Complained</dd>
+        <dt>Geçici geri dönme</dt><dd data-metric="temporary">@m.Provider.TemporaryBounce</dd>
+        <dt>Kabul edilmiş, teslim gözlemi olmayan</dt><dd data-metric="delivery-unknown">@m.DeliveryUnknown</dd>
+    </dl>
+    @if (m.JobCount(CampaignDeliveryState.Accepted) == 0) { <p>Henüz sağlayıcı kabulü yok.</p> }
+    else if (m.DeliveryUnknown > 0) { <p role="status">Teslim bilgisi eksik: teslim gözlemi olmayan e-postaların teslim durumu bilinmiyor.</p> }
+    <p>Yalnız bu kampanyanın kabul kaydındaki mesaj kimliği ve sabit alıcı adresi birlikte eşleşirse sayılır. Tekrarlanan olaylar sayıyı artırmaz. Gözlemler bağımsızdır; aynı e-postada teslim, geri dönme ve şikâyet birlikte bulunabilir, bu sayılar toplanmaz. Olay gelmemesi teslim edilmediğini kanıtlamaz.</p>
+    <p>Posta sunucusunun kabulü kişisel gelen kutusu veya okunma kanıtı değildir. Açılma ve okunma ölçülmüyor.</p>
+    <p><a asp-action="Index" asp-route-id="@m.Campaign.Id">Ölçümleri yenile</a> · <a asp-controller="AdminCampaign" asp-action="Details" asp-route-id="@m.Campaign.Id">Gönderim durumuna dön</a> · <a asp-controller="Admin" asp-action="Dashboard">Veritabanı ve medya durumunu aç</a></p>
+</section>

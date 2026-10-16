@@ -35,6 +35,7 @@
         <dt>Güvenli yeniden denemeyi bekleyen</dt><dd>@d.Retrying</dd>
     </dl>
     <p>Sağlayıcı kabulü, teslim veya okunma kanıtı değildir. Teslim ve okunma bu ekranda ölçülmüyor.</p>
+    <p><a asp-controller="AdminCampaignMetrics" asp-action="Index" asp-route-id="@d.Summary.Id">Denemeleri ve teslim gözlemlerini incele</a></p>
     <p>Geçici hata nedeniyle izin verilen tekrarlar aynı e-postayla sınırlı sayıda yürütülür. Sonucu belirsiz, bekletilmiş veya süresi dolmuş e-postalar buradan yeniden gönderilemez.</p>
     @if (!Model.Ready) { <p class="campaign-panel">Toplu gönderim henüz etkin değil. Gönderen ve canlı gönderim kontrolleri tamamlandığında açılır.</p> }
     @if (!Model.CurrentLink) { <p role="alert">Bu eski kopyanın web bağlantısı güncel arşive ait değil. Gönderim başlatılamaz; bülten listesinden yeni bir kopya hazırlayın.</p> }
