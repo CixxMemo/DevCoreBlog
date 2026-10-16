@@ -26,6 +26,10 @@ using DevCoreBlog.Services.Interfaces;
 // Import the Post entity (used in Search action return type)
 using DevCoreBlog.Core.Entities;
 using Microsoft.AspNetCore.OutputCaching;
+using Microsoft.AspNetCore.Authentication;
+using DevCoreBlog.Security;
+using DevCoreBlog.Services.Publishing;
+using DevCoreBlog.Services.Subscriptions;
 
 namespace DevCoreBlog.Controllers;
 
@@ -61,11 +65,24 @@ public class HomeController : Controller
     // Displays the public home page with a list of published blog posts.
     // Only published posts are shown, ordered by creation date (newest first).
     // Each post includes its related Category for display in the view.
-    [OutputCache(PolicyName = "PublicLists")]
-    public async Task<IActionResult> Index([FromQuery] PublicListInput input, CancellationToken cancellationToken = default)
+    [OutputCache(NoStore = true)]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
+    [AcceptVerbs("GET", "HEAD")]
+    public async Task<IActionResult> Index([FromQuery] PublicListInput input,
+        [FromServices] PublicationIntroductionService introduction,
+        [FromServices] SubscriptionRegistrationAvailability registration,
+        CancellationToken cancellationToken = default)
     {
         Response.Headers.CacheControl = "no-store";
         if (!ModelState.IsValid) return InvalidListRequest();
+        // Explicit authentication reuses current lifecycle/session validation without changing the admin identity.
+        var reader = await HttpContext.AuthenticateAsync(ReaderCookieAuthenticationEvents.Scheme);
+        if (HttpContext.Items.ContainsKey(ReaderCookieAuthenticationEvents.Unavailable))
+            return StatusCode(StatusCodes.Status503ServiceUnavailable);
+        DevCoreBlog.Core.Publishing.PublicationIntroduction publicIntroduction;
+        try { publicIntroduction = await introduction.ReadAsync(cancellationToken); }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { throw; }
+        catch (Exception) { return StatusCode(StatusCodes.Status503ServiceUnavailable); }
         var result = await _postService.GetPublishedPostsPagedAsync(input.Page, input.PageSize, cancellationToken, input.ContentKind);
         if (input.Page > 1 && result.Posts.Count == 0) return NotFound();
         ViewData["SearchKind"] = input.Kind;
@@ -74,7 +91,8 @@ public class HomeController : Controller
         ViewData["Metadata"] = _metadata.Home(input.Page, input.PageSize, input.ContentKind);
 
         // Pass the list of posts to the view
-        return View(new HomePageModel(result.Posts, mostRead, input.Page, input.PageSize, result.TotalCount, input.Kind));
+        return View(new HomePageModel(result.Posts, mostRead, input.Page, input.PageSize, result.TotalCount,
+            publicIntroduction, reader.Succeeded, registration.CanRegister, input.Kind));
     }
 
     // GET: /post/{slug}; visible aliases redirect without incrementing the counter.

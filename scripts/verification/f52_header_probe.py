@@ -44,8 +44,10 @@ for route in ['/js/public-theme.js', '/css/admin-shell.css', '/api/categories', 
     status, _, body, headers = request_with_headers(visitor, base + route)
     checks[route + '_security_headers'] = security_headers(headers)
     checks[route + '_no_html_policy_on_non_html'] = status == 200 and 'Content-Security-Policy' not in headers
-first = request_with_headers(visitor, base + '/')
-second = request_with_headers(visitor, base + '/')
+home = request_with_headers(visitor, base + '/')
+checks['personalized_home_and_form_are_not_shared_cached'] = 'Age' not in home[3] and 'no-store' in home[3].get('Cache-Control', '') and 'registration-form' in home[2]
+first = request_with_headers(visitor, base + '/category/f01-active')
+second = request_with_headers(visitor, base + '/category/f01-active')
 checks['cached_html_has_stable_policy_and_body_without_nonce'] = first[2] == second[2] and first[3].get('Content-Security-Policy') == second[3].get('Content-Security-Policy') and 'nonce-' not in second[3].get('Content-Security-Policy', '')
 checks['output_cache_was_observed'] = 'Age' in second[3]
 status, _, body, headers = request_with_headers(visitor, admin_login_url(base), headers={'Host': 'evil.example'})

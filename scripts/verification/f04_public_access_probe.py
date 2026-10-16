@@ -87,10 +87,12 @@ def main():
 
         warm = [request(visitor, base + path) for path in ('/', '/kategori/f01-active')]
         sql('UPDATE "Posts" SET "Title"=\'F04_CACHE_DB_ONLY_CANARY\' WHERE "Id"=4010')
-        checks['cache_was_warmed_and_reused_before_access_change'] = all(
-            'F04_PUBLIC_CONTROL' in body and 'F04_CACHE_DB_ONLY_CANARY' not in body
-            for _, _, body in [request(visitor, base + path) for path in ('/', '/kategori/f01-active')]) and all(
-                'F04_PUBLIC_CONTROL' in result[2] for result in warm)
+        fresh_home = request_with_headers(visitor, base + '/')
+        cached_category = request_with_headers(visitor, base + '/kategori/f01-active')
+        checks['home_is_fresh_and_category_cache_reused_before_access_change'] = (
+            'F04_CACHE_DB_ONLY_CANARY' in fresh_home[2] and 'Age' not in fresh_home[3]
+            and 'F04_PUBLIC_CONTROL' in cached_category[2] and 'F04_CACHE_DB_ONLY_CANARY' not in cached_category[2]
+            and all('F04_PUBLIC_CONTROL' in result[2] for result in warm))
         denied = request(visitor, base + '/fixture-access/hide-control', data={})
         no_csrf = request(admin, base + '/fixture-access/hide-control', data={})
         checks['fixture_mutation_retains_auth_and_antiforgery'] = denied[0] in (400, 404) and no_csrf[0] == 400

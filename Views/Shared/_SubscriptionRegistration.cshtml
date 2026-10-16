@@ -1,0 +1,39 @@
+@model DevCoreBlog.Models.Subscriptions.SubscriptionRegistrationPage
+@if (Model.Accepted)
+{
+    <p role="status">Adresiniz başvuruya uygunsa doğrulama bağlantısı e-postanıza iletilecektir. Gelen kutunuzu ve spam klasörünü kontrol edin. Mesaj ulaşmazsa daha sonra yeniden deneyin.</p>
+    <p>Abonelik, e-postadaki bağlantı üzerinden adresinizi doğruladıktan sonra etkinleşir.</p>
+}
+else
+{
+    @if (!Model.Available)
+    {
+        <p role="status">Abonelik başvuruları şu anda kapalı. Daha sonra yeniden deneyebilirsiniz.</p>
+    }
+    else if (Model.Failed)
+    {
+        <p role="alert">Başvurunuz şu anda tamamlanamıyor. Daha sonra yeniden deneyin.</p>
+    }
+    <form action="/abone-ol" method="post" class="space-y-4" id="registration-form">
+        @Html.AntiForgeryToken()
+        <div id="registration-errors" class="text-red-700 dark:text-red-300" role="alert" hidden="@ViewData.ModelState.IsValid">
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <ul>
+                    @foreach (var error in ViewData.ModelState.Values.SelectMany(value => value.Errors))
+                    {
+                        <li>@(string.IsNullOrWhiteSpace(error.ErrorMessage) ? "E-posta adresinizi kontrol edin." : error.ErrorMessage)</li>
+                    }
+                </ul>
+            }
+        </div>
+        <div class="space-y-2">
+            <label asp-for="Input.Email" class="block font-bold">E-posta adresiniz</label>
+            <input asp-for="Input.Email" name="Email" type="email" autocomplete="email" inputmode="email" maxlength="254" required disabled="@(!Model.Available)"
+                   aria-describedby="registration-help registration-errors" aria-invalid="@(!ViewData.ModelState.IsValid ? "true" : null)"
+                   class="block w-full min-w-0 border-2 border-gray-900 dark:border-zinc-400 bg-white dark:bg-zinc-900 px-3 py-3 focus-visible:outline-2 focus-visible:outline-offset-4" />
+            <p id="registration-help" class="text-sm">Bu adrese bir doğrulama bağlantısı göndereceğiz. Bağlantı 24 saat geçerlidir.</p>
+        </div>
+        <button type="submit" disabled="@(!Model.Available)" class="border-2 border-gray-900 px-4 py-3 font-bold bg-gray-900 text-white disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-4">Abone ol</button>
+    </form>
+}

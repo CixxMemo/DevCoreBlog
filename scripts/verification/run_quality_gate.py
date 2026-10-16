@@ -258,6 +258,12 @@ try:
             stages['admin-language']['passed']=code==0 and language['passed'] and language['count']==len(language['checks']) and all(language['checks'].values())
         except (OSError,ValueError,KeyError,TypeError):
             stages['admin-language']['passed']=False
+        code,output=run('home-subscription',['python3','scripts/verification/home_subscription_probe.py','--report',str(report/'home-subscription'/'report.json')],source,timeout=360,export=False)
+        try:
+            home=json.loads((report/'home-subscription'/'report.json').read_text())
+            stages['home-subscription']['passed']=code==0 and home['passed'] and home['count']==len(home['checks']) and all(home['checks'].values())
+        except (OSError,ValueError,KeyError,TypeError):
+            stages['home-subscription']['passed']=False
         code,output=run('reader-identity',['python3','scripts/verification/reader_identity_probe.py','--port','55526','--report',str(report/'reader-migration.json')],source,timeout=300,export=False)
         try:
             reader=json.loads((report/'reader-migration.json').read_text())

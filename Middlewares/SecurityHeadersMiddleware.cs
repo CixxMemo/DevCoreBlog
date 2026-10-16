@@ -23,6 +23,9 @@ public sealed class SecurityHeadersMiddleware(RequestDelegate next)
 
     public async Task InvokeAsync(HttpContext context)
     {
+        var homePath = (context.Request.Path.Value ?? "").TrimEnd('/');
+        var homeResponse = homePath.Length == 0 || homePath.Equals("/Home", StringComparison.OrdinalIgnoreCase)
+            || homePath.Equals("/Home/Index", StringComparison.OrdinalIgnoreCase);
         // Error-page re-execution changes endpoint metadata before OnStarting; retain archive privacy for that response.
         var privateArchivePath = context.Request.Path.Equals("/bultenler", StringComparison.OrdinalIgnoreCase)
             || (context.Request.Path.StartsWithSegments("/bulten", StringComparison.OrdinalIgnoreCase, out var remainder) && remainder.HasValue)
@@ -46,6 +49,9 @@ public sealed class SecurityHeadersMiddleware(RequestDelegate next)
             context.Response.Headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
             context.Response.Headers["X-Frame-Options"] = "DENY";
             var action = context.GetEndpoint()?.Metadata.GetMetadata<ControllerActionDescriptor>();
+            // Retain no-store even when an error response re-executes another endpoint.
+            if (homeResponse || action is { ControllerName: "Home", ActionName: "Index" })
+                context.Response.Headers.CacheControl = "no-store";
             if (privateArchivePath || action?.ControllerName is "SubscriberVerification" or "SubscriptionRegistration" or "SubscriberUnsubscription" or "OneClickUnsubscription" or "ReaderAccount" or "NewsletterArchive")
             {
                 context.Response.Headers["Referrer-Policy"] = "no-referrer";

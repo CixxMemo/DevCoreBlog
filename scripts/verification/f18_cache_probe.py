@@ -97,10 +97,11 @@ def main() -> int:
     feed_headers = request_with_headers(visitor, base + "/api/public/posts/latest")[3]
 
     checks = {
-        "cached_home_and_category_reused": (
+        "personalized_home_fresh_and_public_category_cache_reused": (
             warm_home[0] == cached_home[0] == 200
             and warm_category[0] == cached_category[0] == 200
-            and "F18_DB_ONLY_CHANGED" not in cached_home[2]
+            and "F18_DB_ONLY_CHANGED" in cached_home[2]
+            and "Age" not in cached_home[3]
             and "F18_DB_ONLY_CHANGED" not in cached_category[2]
             and "F18_DB_ONLY_CHANGED" in uncached_variant[2]
         ),

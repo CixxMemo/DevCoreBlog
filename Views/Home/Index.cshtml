@@ -7,8 +7,48 @@
     var feed = Model.Posts.Skip(features.Count).ToList();
 }
 <div class="w-full min-w-0">
+    <section id="newsletter-introduction" aria-labelledby="newsletter-heading" class="border-2 border-gray-900 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-5 sm:p-8 mb-10 space-y-6">
+        <div class="max-w-3xl space-y-4">
+            <p class="font-mono font-bold" id="publication-name">@Model.Introduction.Name</p>
+            <h1 id="newsletter-heading" class="font-mono font-bold text-3xl sm:text-4xl">Yapay zekâyı deneyerek öğren</h1>
+            <p class="text-lg">Kendi AI deneylerimi, işe yarayan yöntemleri ve öğrendiklerimi paylaşıyorum. Birlikte yöntemlere, sonuçlara ve sınırlarına bakalım.</p>
+            <p id="publication-cadence" class="font-mono text-sm">@Model.Introduction.Cadence</p>
+        </div>
+        <div class="max-w-xl space-y-4">
+            @if (Model.ReaderEligible)
+            {
+                <p>Okuyucu oturumunuz açık. Tam bülten arşivini okuyabilirsiniz.</p>
+                <a href="/bultenler" id="reader-archive-cta" class="inline-block border-2 border-gray-900 dark:border-zinc-400 px-4 py-3 font-bold underline">Bülten arşivine git</a>
+            }
+            else
+            {
+                <h2 class="font-mono font-bold text-xl">Deneyler e-posta kutunuza gelsin</h2>
+                <p>Bültene ücretsiz abone olun. Adresinizi doğruladıktan sonra bültenleri e-postayla alabilir, tam web arşivini okuyabilirsiniz.</p>
+                <partial name="_SubscriptionRegistration" model="new DevCoreBlog.Models.Subscriptions.SubscriptionRegistrationPage { Available = Model.RegistrationAvailable }" />
+                <p>Zaten abone misiniz? <a href="/sign-in" class="underline font-bold">Okuyucu girişi yapın</a>.</p>
+            }
+            <a href="/bulten" class="underline font-bold">Bülten sayılarını keşfet</a>
+        </div>
+    </section>
+    <nav aria-labelledby="discovery-heading" class="mb-10">
+        <h2 id="discovery-heading" class="font-mono font-bold text-2xl mb-4">Merak ettiğiniz yerden başlayın</h2>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <a asp-action="Index" asp-route-kind="experience" class="block border-2 border-gray-900 dark:border-zinc-700 p-5 space-y-2">
+                <h3 class="font-mono font-bold text-lg underline">Deney ve deneyim</h3>
+                <p>Denediğim yöntemler, sonuçlar ve öğrendiklerim.</p>
+            </a>
+            <a asp-action="Index" asp-route-kind="news" class="block border-2 border-gray-900 dark:border-zinc-700 p-5 space-y-2">
+                <h3 class="font-mono font-bold text-lg underline">AI haberleri</h3>
+                <p>Yapay zekâ dünyasındaki gelişmeler.</p>
+            </a>
+            <a asp-action="Index" asp-route-kind="philosophy" class="block border-2 border-gray-900 dark:border-zinc-700 p-5 space-y-2">
+                <h3 class="font-mono font-bold text-lg underline">Felsefe</h3>
+                <p>Teknoloji, insan ve düşünce üzerine yazılar.</p>
+            </a>
+        </div>
+    </nav>
     <header class="mb-6 border-b-2 border-gray-900 dark:border-zinc-700 pb-4">
-        <h1 class="font-mono font-bold text-2xl mb-2">@DevCoreBlog.Models.Public.SiteIdentity.SiteName</h1>
+        <h2 class="font-mono font-bold text-2xl mb-2">Yazıları keşfet</h2>
         <p class="font-mono text-sm">@Model.TotalCount yazı · Bu sayfada @Model.Posts.Count yazı · Sayfa @Model.CurrentPage / @Model.TotalPages</p>
     </header>
     <form method="get" class="public-list-filters" aria-label="Yazı türü filtresi">
@@ -58,4 +98,8 @@
             @await Component.InvokeAsync("PublicCategoryNavigation", new { featured = true })
         </aside>
     </div>
+    <section aria-label="Bültene devam edin" class="mt-10 border-t-2 border-gray-900 dark:border-zinc-700 pt-6 space-y-3">
+        <h2 class="font-mono font-bold text-xl">Bir sonraki deneye birlikte bakalım</h2>
+        <a href="@(Model.ReaderEligible ? "/bultenler" : "#newsletter-introduction")" class="font-bold underline">@(Model.ReaderEligible ? "Tam bülten arşivini aç" : "Bülten aboneliğine geç")</a>
+    </section>
 </div>

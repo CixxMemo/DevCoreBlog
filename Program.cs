@@ -230,6 +230,8 @@ builder.Services.AddScoped<DevCoreBlog.Core.Newsletters.ICampaignMetricsStore, D
 builder.Services.AddScoped<DevCoreBlog.Services.Newsletters.CampaignMetricsService>();
 builder.Services.AddScoped<DevCoreBlog.Core.Publishing.IPublicationSettingsStore, DevCoreBlog.Data.Publishing.PublicationSettingsStore>();
 builder.Services.AddScoped<DevCoreBlog.Services.Publishing.PublicationSettingsService>();
+builder.Services.AddScoped<DevCoreBlog.Core.Publishing.IPublicationIntroductionStore, DevCoreBlog.Data.Publishing.PublicationIntroductionStore>();
+builder.Services.AddScoped<DevCoreBlog.Services.Publishing.PublicationIntroductionService>();
 builder.Services.AddScoped<DevCoreBlog.Core.Subscriptions.ISubscriberAdministrationStore, DevCoreBlog.Data.Subscriptions.SubscriberAdministrationStore>();
 builder.Services.AddScoped<DevCoreBlog.Services.Subscriptions.SubscriberAdministrationService>();
 builder.Services.AddScoped<DevCoreBlog.Core.Newsletters.ICampaignRecipientStore, DevCoreBlog.Data.Newsletters.CampaignRecipientStore>();
