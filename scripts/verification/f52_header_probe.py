@@ -40,10 +40,12 @@ for route in ['/', '/category/f01-active', admin_login_path(), '/Admin/Dashboard
     # Followed redirects may reach the JSON editor, whose policy needs no style exception.
     editor = status == 200 and urlparse(final_url).path.startswith(('/AdminPost/Create', '/AdminPost/Edit'))
     checks[route + '_style_scope'] = ("style-src-attr 'unsafe-inline'" if editor else "style-src-attr 'none'") in policy
-for route in ['/js/public-theme.js', '/css/admin-shell.css', '/api/categories', '/rss.xml', '/sitemap.xml', '/robots.txt']:
+for route in ['/js/public-theme.js', '/css/admin-shell.css', '/api/categories', '/sitemap.xml', '/robots.txt']:
     status, _, body, headers = request_with_headers(visitor, base + route)
     checks[route + '_security_headers'] = security_headers(headers)
     checks[route + '_no_html_policy_on_non_html'] = status == 200 and 'Content-Security-Policy' not in headers
+status, _, body, headers = request_with_headers(visitor, base + '/rss.xml')
+checks['retired_rss_is_protected_html_404'] = status == 404 and '<rss' not in body and security_headers(headers) and bool(headers.get('Content-Security-Policy'))
 home = request_with_headers(visitor, base + '/')
 checks['personalized_home_and_form_are_not_shared_cached'] = 'Age' not in home[3] and 'no-store' in home[3].get('Cache-Control', '') and 'registration-form' in home[2]
 first = request_with_headers(visitor, base + '/category/f01-active')

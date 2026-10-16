@@ -34,7 +34,7 @@ for route in ['/', '/category/f01-active', '/Account/Login', '/Admin/Dashboard',
     checks[route + '_local_scripts_no_eval'] = "script-src 'self'; script-src-attr 'none'" in policy and 'unsafe-eval' not in policy and '*' not in policy
     editor = route.startswith('/AdminPost/Create') or route.startswith('/AdminPost/Edit')
     checks[route + '_style_scope'] = ("style-src-attr 'unsafe-inline'" if editor else "style-src-attr 'none'") in policy
-for route in ['/js/public-theme.js', '/css/admin-shell.css', '/api/categories', '/rss.xml', '/sitemap.xml', '/robots.txt']:
+for route in ['/js/public-theme.js', '/css/admin-shell.css', '/api/categories', '/sitemap.xml', '/robots.txt']:
     status, _, body, headers = request_with_headers(visitor, base + route)
     checks[route + '_no_html_policy_on_non_html'] = status == 200 and 'Content-Security-Policy-Report-Only' not in headers
 first = request_with_headers(visitor, base + '/')

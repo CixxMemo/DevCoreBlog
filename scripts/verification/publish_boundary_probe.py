@@ -51,6 +51,15 @@ def main():
             'wwwroot/generated/tailwind-public.css', 'wwwroot/generated/tailwind-admin.css',
             'wwwroot/generated/toastui/toastui-editor-all.min.js',
             'wwwroot/generated/toastui/DOMPURIFY-LICENSE'))
+        retired = ('RssDocumentWriter', 'IRssPostReader', 'RssPost', 'GetRssPostsAsync', 'application/rss+xml', '/rss.xml')
+        runtime_roots = ('Controllers', 'Models', 'Routing', 'Views', 'DevCoreBlog.Core', 'DevCoreBlog.Data', 'DevCoreBlog.Services')
+        runtime_sources = [source / 'Program.cs'] + [p for directory in runtime_roots for p in (source / directory).rglob('*')
+            if p.suffix in ('.cs', '.cshtml') and not set(p.relative_to(source).parts).intersection(('bin', 'obj'))]
+        checks['retired_rss_code_absent_from_runtime_sources'] = all(
+            not any(marker in p.read_text(encoding='utf-8-sig') for marker in retired) for p in runtime_sources)
+        checks['retired_rss_code_absent_from_published_assemblies'] = all(
+            not any(marker.encode(encoding) in (output / name).read_bytes() for marker in retired for encoding in ('utf-8', 'utf-16-le'))
+            for name in ('DevCoreBlog.dll', 'DevCoreBlog.Core.dll', 'DevCoreBlog.Data.dll', 'DevCoreBlog.Services.dll'))
     finally:
         for path in written:
             path.unlink()

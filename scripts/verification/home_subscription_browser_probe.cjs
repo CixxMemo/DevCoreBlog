@@ -13,12 +13,17 @@ function check(name,value){checks[name]=!!value;assert.ok(value,name);}
  const page=await context.newPage();await page.goto(base+'/',{waitUntil:'domcontentloaded'});
  check('headline_central_preferences_and_primary_action',await page.getByRole('heading',{name:'Yapay zekâyı deneyerek öğren',exact:true}).count()===1&&(await page.locator('#publication-name').textContent())==='Aether & Yeni'&&await page.getByRole('button',{name:'Abone ol',exact:true}).count()===1);
  check('single_semantic_form_no_duplicate_ids',await page.locator('#registration-form').count()===1&&await page.evaluate(()=>{const ids=[...document.querySelectorAll('[id]')].map(e=>e.id);return new Set(ids).size===ids.length;})&&await page.getByLabel('E-posta adresiniz',{exact:true}).count()===1);
+ check('desktop_no_feed_discovery_or_rss_navigation',await page.locator('link[type="application/rss+xml"],link[type="application/atom+xml"],a[href="/rss.xml"],#rss-follow-link').count()===0);
  await page.getByLabel('E-posta adresiniz',{exact:true}).focus();await page.keyboard.press('Tab');
  check('keyboard_email_to_submit_visible_focus',await page.getByRole('button',{name:'Abone ol',exact:true}).evaluate(e=>e===document.activeElement&&getComputedStyle(e).outlineStyle!=='none'));
  await page.keyboard.press('Enter');check('native_required_prevents_empty_submission',new URL(page.url()).pathname==='/'&&await page.getByLabel('E-posta adresiniz',{exact:true}).evaluate(e=>e.validity.valueMissing));
  await page.screenshot({path:path.join(out,'home-desktop.png'),fullPage:true});
  await page.setViewportSize({width:390,height:844});await page.reload({waitUntil:'domcontentloaded'});
  check('mobile_no_horizontal_overflow',await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+ await page.locator('#mobile-menu-btn').click();
+ check('mobile_drawer_keeps_email_subscription_without_rss',await page.getByRole('link',{name:'Bültene abone ol',exact:true}).isVisible()&&await page.locator('a[href="/rss.xml"],#rss-follow-link').count()===0);
+ await page.keyboard.press('Escape');
+ check('mobile_drawer_escape_restores_focus',await page.locator('#mobile-menu-btn').evaluate(e=>e===document.activeElement&&e.getAttribute('aria-expanded')==='false'));
  check('mobile_form_fits_viewport',await page.getByLabel('E-posta adresiniz',{exact:true}).evaluate(e=>{const r=e.getBoundingClientRect();return r.left>=0&&r.right<=innerWidth;}));
  await page.screenshot({path:path.join(out,'home-mobile.png'),fullPage:true});
  // Disable only native validation to exercise the real server response.

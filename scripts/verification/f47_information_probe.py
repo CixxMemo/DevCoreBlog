@@ -32,7 +32,7 @@ for path in ['/about','/contact']:
     check(path+'_no_store','no-store' in headers.get('Cache-Control',''))
     check(path+'_identity','Mehmet Can' in body)
     check(path+'_canonical',any(m.get('rel')=='canonical' and m.get('href')=='https://blog.example.test'+path for m in page.metas))
-    check(path+'_footer',all(any(a.get('href')==target for a in page.links) for target in ['/about','/contact','/rss.xml']))
+    check(path+'_footer',all(any(a.get('href')==target for a in page.links) for target in ['/about','/contact']) and not any(a.get('href')=='/rss.xml' for a in page.links))
     check(path+'_reader_sign_in',any(a.get('href')=='/sign-in' for a in page.links))
     check(path+'_no_admin_link',all(a.get('href') not in (admin_login_path(), '/Account/Login') for a in page.links))
     check(path+'_github',any(a.get('href')=='https://github.com/CixxMemo' for a in page.links))

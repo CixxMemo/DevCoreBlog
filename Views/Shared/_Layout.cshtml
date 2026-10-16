@@ -16,8 +16,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <partial name="_SeoHead" model='@(ViewData["Metadata"] as DevCoreBlog.Models.Seo.PageMetadata ?? PageMetadata.Private(ViewData["Title"]?.ToString() ?? "Sayfa", Context.Request.Path.ToUriComponent()))' />
 
-    <link rel="alternate" type="application/rss+xml" title="@DevCoreBlog.Models.Public.SiteIdentity.SiteName RSS" href="@PublicUrls.RssUrl()" />
-
     @* Google Fonts — JetBrains Mono for tech headings/UI, Inter for body text *@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -99,20 +97,15 @@
             </nav>
         </div>
 
-        @* Site bilgileri and RSS stay together in the sidebar footer. *@
+        @* Site information and theme controls share the sidebar footer. *@
         <div class="p-4 border-t-2 border-gray-900 dark:border-zinc-800 bg-gray-50 dark:bg-[#121215] flex flex-col gap-3 transition-colors duration-150">
             <nav aria-label="Site bilgileri" class="flex flex-wrap gap-4 text-sm font-bold">
                 <a href="/about" aria-current="@(Context.Request.Path == "/about" ? "page" : null)" class="text-primary underline">Hakkında</a>
                 <a href="/contact" aria-current="@(Context.Request.Path == "/contact" ? "page" : null)" class="text-primary underline">İletişim</a>
             </nav>
-            <div class="flex items-center justify-between">
-                <a id="rss-follow-link" href="@DevCoreBlog.Routing.PublicUrlBuilder.RssPath" class="text-xs font-mono font-bold text-primary hover:underline no-underline">
-                    RSS ile takip et
-                </a>
-                <span class="text-xs font-mono text-gray-500 dark:text-zinc-500">
-                    &copy; @SiteDates.Year(SiteClock.GetUtcNow().UtcDateTime)
-                </span>
-            </div>
+            <span class="text-xs font-mono text-gray-500 dark:text-zinc-500">
+                &copy; @SiteDates.Year(SiteClock.GetUtcNow().UtcDateTime)
+            </span>
 
             @* Theme Toggle Action Button *@
             <button type="button"

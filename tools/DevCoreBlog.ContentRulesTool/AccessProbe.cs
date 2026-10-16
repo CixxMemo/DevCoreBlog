@@ -64,12 +64,11 @@ internal static class AccessProbe
             var top = await service.GetMostReadPublicPostsAsync();
             var feed = await service.GetLatestPublicPostsAsync();
             var sitemap = await service.GetSitemapPostsAsync();
-            var rss = await service.GetRssPostsAsync();
             IEnumerable<int>[] lists = [legacyList.Select(p => p.Id), legacyCategory.Select(p => p.Id),
                 list.Posts.Select(p => p.Id), category.Posts.Select(p => p.Id), search.Posts.Select(p => p.Id),
                 related.Select(p => p.Id), top.Select(p => p.Id), feed.Select(p => p.Id)];
             return lists.All(rows => rows.All(id => !privateIds.Contains(id))) && search.TotalCount == 0 &&
-                sitemap.All(p => !privateSlugs.Contains(p.Slug)) && rss.All(p => !privateSlugs.Contains(p.Slug)) &&
+                sitemap.All(p => !privateSlugs.Contains(p.Slug)) &&
                 list.Posts.Any(p => p.Id == control.Id) && feed.Any(p => p.Id == control.Id);
         }
         checks["all_public_repository_surfaces_exclude_private_with_positive_control"] = await PublicMatrix();

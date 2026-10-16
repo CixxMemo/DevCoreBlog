@@ -13,8 +13,6 @@ public interface IPostRepository
         DateTime utcNow, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<SitemapPost>> GetSitemapPostsAsync(
         DateTime utcNow, CancellationToken cancellationToken = default);
-    Task<IReadOnlyList<RssPost>> GetRssPostsAsync(
-        DateTime utcNow, CancellationToken cancellationToken = default);
     Task<IEnumerable<Post>> GetPublishedPostsAsync(DateTime utcNow);
     // Fixed five-row public ranking; full content is never projected.
     Task<IReadOnlyList<TopReadPost>> GetMostReadPublicPostsAsync(

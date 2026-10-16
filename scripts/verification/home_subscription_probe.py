@@ -20,6 +20,7 @@ import uuid
 from test_email_fixture_host import build_fixture_host
 from test_email_http_fixture import Fields
 from html.parser import HTMLParser
+from rss_removal_http_probe import verify as verify_rss_removal
 
 class SettingsForm(HTMLParser):
  def __init__(self,body):super().__init__();self.values={};self.active=False;self.textarea=None;self.feed(body)
@@ -196,6 +197,10 @@ internal sealed class HomeProjectionInterceptor:DbCommandInterceptor{
             check('alternating_cookies_never_share_personalization', all('reader-archive-cta' in request(opener=reader)[2] and 'registration-form' in request()[2] for _ in range(3)))
             forged = request(headers={'Cookie': 'AetherNotes.Reader=forged'})
             check('forged_cookie_cannot_get_archive_cta', forged[0] == 200 and 'reader-archive-cta' not in forged[2])
+            before_rss = snapshot()
+            for name, passed in verify_rss_removal(request).items():
+                check(name, passed)
+            check('retired_rss_and_navigation_reads_preserve_data_and_do_not_send', snapshot() == before_rss and not packet.exists())
             if a.browser_module and a.browser_executable:
                 start()  # Reset HTTP attempt budgets before the independent browser journey.
                 result = run(['node', str(a.browser_script or root / 'scripts/verification/home_subscription_browser_probe.cjs')], {'DEVCORE_PLAYWRIGHT_MODULE': str(a.browser_module), 'DEVCORE_BROWSER_EXECUTABLE': str(a.browser_executable), 'F46_REPORT_DIR': str(a.report.parent)}, required=False, timeout=150)

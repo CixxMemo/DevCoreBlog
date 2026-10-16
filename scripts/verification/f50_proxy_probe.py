@@ -106,7 +106,7 @@ try:
         for route in [admin_login_path(), '/does-not-exist-f52', '/js/public-theme.js', '/rss.xml']:
             s,h,b,c=Client().call(route)
             checks[route + '_production_security_headers'] = h.get('x-content-type-options') == 'nosniff' and h.get('referrer-policy') == 'strict-origin-when-cross-origin' and h.get('x-frame-options') == 'DENY'
-            html = route in (admin_login_path(), '/does-not-exist-f52')
+            html = route in (admin_login_path(), '/does-not-exist-f52', '/rss.xml')
             checks[route + '_production_csp_scope'] = bool(h.get('content-security-policy')) == html and 'content-security-policy-report-only' not in h
     checks['antiforgery_cookie_is_secure_httponly']=any('Antiforgery' in c and '; secure' in c.lower() and '; httponly' in c.lower() for c in cookies)
     token=extract_antiforgery_token(body);assert token
@@ -119,7 +119,8 @@ try:
     checks['protected_admin_loads_through_tls_proxy']=admin.call('/AdminPost')[0]==200
     checks['logout_without_csrf_stays_400']=admin.call('/Account/Logout',fields={})[0]==400
     anon=Client();s,h,b,c=anon.call('/AdminPost');checks['authorization_denial_is_private_404']=s==404 and 'no-store' in h.get('cache-control','') and 'location' not in h and admin_login_path() not in b
-    s,h,b,c=anon.call('/rss.xml',headers={'X-Forwarded-Host':'evil.example'});checks['public_document_keeps_trusted_site_origin']=s==200 and 'https://blog.example.test/' in b and 'evil.example' not in b
+    s,h,b,c=anon.call('/sitemap.xml',headers={'X-Forwarded-Host':'evil.example'});checks['public_document_keeps_trusted_site_origin']=s==200 and 'https://blog.example.test/' in b and 'evil.example' not in b
+    s,h,b,c=anon.call('/rss.xml');checks['retired_rss_404_behind_proxy']=s==404 and '<rss' not in b and 'no-store' in h.get('cache-control','')
     checks['unknown_host_rejected_even_with_wildcard_config']=Client().call(headers={'Host':'evil.example'})[0]==400
     c=http.client.HTTPConnection('127.0.0.1',a.backend_port,timeout=5);c.request('GET',admin_login_path() + '?returnUrl=%2FAdminPost',headers={'Host':'blog.example.test'});r=c.getresponse();location=r.getheader('Location','');r.read();c.close()
     checks['backend_http_redirect_is_single_public_https_308']=r.status==308 and location=='https://blog.example.test' + admin_login_path() + '?returnUrl=%2FAdminPost'

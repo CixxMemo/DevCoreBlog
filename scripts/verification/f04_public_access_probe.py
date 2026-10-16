@@ -50,7 +50,7 @@ def main():
         for index, path in enumerate(surfaces):
             response = request_with_headers(visitor, base + path)
             checks[f'public_surface_{index}_no_private_title_summary_body_url_or_meta'] = (
-                response[0] == 200 and all(marker not in response[2] for marker in forbidden))
+                response[0] == (404 if path == '/rss.xml' else 200) and all(marker not in response[2] for marker in forbidden))
         checks['positive_public_control_in_home_search_portfolio_and_sitemap'] = all(
             'F04_PUBLIC_CONTROL' in request(visitor, base + path)[2]
             for path in ('/', '/ara?query=F04', '/api/public/posts/latest')) and (

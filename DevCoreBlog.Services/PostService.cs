@@ -10,7 +10,7 @@ using DevCoreBlog.Services.Publishing;
 namespace DevCoreBlog.Services;
 
 /// <summary>Coordinates post validation, publication rules and persistence contracts.</summary>
-public class PostService : IPostService, IPublicationSchedule, IWebhookPostService, IPublicFeedService, ISitemapPostReader, IRssPostReader
+public class PostService : IPostService, IPublicationSchedule, IWebhookPostService, IPublicFeedService, ISitemapPostReader
 {
     private const int MaximumSlugAttempts = 100;
     // Post use cases depend on the domain persistence contract.
@@ -118,10 +118,6 @@ public class PostService : IPostService, IPublicationSchedule, IWebhookPostServi
         return _postRepository.GetRelatedPostsAsync(
             currentPostId, categoryId, _timeProvider.GetUtcNow().UtcDateTime, cancellationToken);
     }
-
-    public Task<IReadOnlyList<RssPost>> GetRssPostsAsync(
-        CancellationToken cancellationToken = default) =>
-        _postRepository.GetRssPostsAsync(_timeProvider.GetUtcNow().UtcDateTime, cancellationToken);
 
     public Task<IReadOnlyList<PublicFeedPost>> GetLatestPublicPostsAsync(
         CancellationToken cancellationToken = default) =>
