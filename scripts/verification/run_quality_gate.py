@@ -236,6 +236,12 @@ try:
             stages['campaign-metrics']['passed']=code==0 and campaign_metrics['passed'] and campaign_metrics['count']==len(campaign_metrics['checks']) and all(campaign_metrics['checks'].values())
         except (OSError,ValueError,KeyError,TypeError):
             stages['campaign-metrics']['passed']=False
+        code,output=run('publication-settings',['python3','scripts/verification/publication_settings_probe.py','--port','55537','--report',str(report/'publication-settings'/'report.json')],source,timeout=480,export=False)
+        try:
+            publication_settings=json.loads((report/'publication-settings'/'report.json').read_text())
+            stages['publication-settings']['passed']=code==0 and publication_settings['passed'] and publication_settings['count']==len(publication_settings['checks']) and all(publication_settings['checks'].values())
+        except (OSError,ValueError,KeyError,TypeError):
+            stages['publication-settings']['passed']=False
         code,output=run('reader-identity',['python3','scripts/verification/reader_identity_probe.py','--port','55526','--report',str(report/'reader-migration.json')],source,timeout=300,export=False)
         try:
             reader=json.loads((report/'reader-migration.json').read_text())

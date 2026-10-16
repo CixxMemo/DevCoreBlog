@@ -1,0 +1,34 @@
+@model DevCoreBlog.Models.Admin.PublicationSettingsModel
+@{ ViewData["Title"] = "Yayın ayarları"; }
+<section class="publication-page" lang="tr" aria-labelledby="publication-title">
+    <h1 id="publication-title">Yayın ayarları</h1>
+    <p>Yayın adı ve ritim bilgisi burada saklanır. Genel site metinlerinin bu tercihlere bağlanması marka geçişinde tamamlanacak.</p>
+    @if (Model.Error is not null) { <p role="alert" class="publication-panel">@Model.Error</p> }
+    <h2>Kayıtlı yayın tercihleri</h2>
+    @if (Model.Page.Settings is { } saved) {
+        <dl class="publication-panel"><dt>Yayın adı</dt><dd data-setting="name">@saved.Name</dd><dt>Hedef ritim</dt><dd data-setting="cadence">@saved.Cadence</dd></dl>
+        <p>Son kayıt: @SiteDates.DateAndTime(saved.UpdatedUtc)</p>
+    } else { <p role="status">Henüz özel ayar kaydedilmedi; formdaki başlangıç değerleri onaylı yayın planından gelir.</p><p>İlk kayıt öncesinde mevcut gönderen yapılandırması kullanılır. Kaydettikten sonra bu ekrandaki gönderen onayı yeni kampanya hazırlıklarını yönetir.</p> }
+    <h2>Gönderen durumu</h2>
+    @if (Model.Page.ConfiguredSender is { } sender) {
+        <p data-sender-state="configured">Yapılandırılmış gönderen: @sender.Name &lt;@sender.Email&gt;</p>
+        <p>Bu bilgi sağlayıcıda domain doğrulaması veya gerçek teslim kanıtı değildir. Canlı gönderim ayrıca açılır.</p>
+    } else { <p role="status" data-sender-state="missing">Gönderen yapılandırması eksik veya geçersiz. Yayın adı ve ritim bilgisini kaydedebilirsiniz; gönderen onaylanamaz.</p> }
+    @if (Model.Page.Settings is not null) {
+        <p data-approval="@(Model.Page.SenderApproved ? "approved" : "pending")">@(Model.Page.SenderApproved ? "Yapılandırılmış gönderen yeni kampanya hazırlıkları için onaylı." : "Yeni kampanya hazırlamak için güncel yapılandırılmış göndereni onaylayın.")</p>
+    }
+    <form asp-action="Save" method="post">
+        <input type="hidden" name="Version" value="@Model.Input.Version" />
+        <input type="hidden" name="SenderEmail" value="@Model.Page.ConfiguredSender?.Email" />
+        <input type="hidden" name="SenderName" value="@Model.Page.ConfiguredSender?.Name" />
+        <label for="publication-name">Yayın adı</label><input id="publication-name" name="Name" value="@Model.Input.Name" required maxlength="80" aria-describedby="name-help" />
+        <p id="name-help">En fazla 80 karakterlik düz metin.</p>
+        <label for="publication-cadence">Hedef ritim bilgisi</label><textarea id="publication-cadence" name="Cadence" required maxlength="200" aria-describedby="cadence-help">@Model.Input.Cadence</textarea>
+        <p id="cadence-help">En fazla 200 karakter. Bu bilgi bir yayın hedefidir; otomatik takvim veya gönderim oluşturmaz.</p>
+        <label class="publication-confirm"><input type="checkbox" name="ApproveSender" value="true" checked="@Model.Input.ApproveSender" disabled="@(Model.Page.ConfiguredSender is null)" /> Yapılandırılmış göndereni yeni kampanya hazırlıkları için onayla</label>
+        <p>Onayı kaldırmak yeni kampanya hazırlığını kapatır. Mevcut kampanyalar ve başlamış gönderimler için <a asp-controller="AdminCampaign" asp-action="Index">Gönderimler</a> ekranını kullanın.</p>
+        <button type="submit">Yayın ayarlarını kaydet</button>
+    </form>
+    <p>Bu işlem e-posta göndermez. Kayıtlı kampanya kopyaları değişmez. Gönderen adresi ve görünen e-posta adı, anahtar ve güvenilir site adresi bu formdan değiştirilemez.</p>
+    <p><a asp-action="Index">Güncel ayarları yeniden aç</a></p>
+</section>

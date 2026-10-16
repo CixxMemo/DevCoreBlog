@@ -40,7 +40,8 @@ public sealed class NewsletterCampaignStore(ApplicationDbContext context) : INew
             || source.DocumentPlainText != campaign.DocumentPlainText || source.DocumentWordCount != campaign.DocumentWordCount
             || source.DocumentReadingMinutes != campaign.DocumentReadingMinutes)
             return new(CampaignStartStatus.SourceChanged);
-        var added = await context.Database.ExecuteSqlInterpolatedAsync($"""
+        int added;
+        try { added = await context.Database.ExecuteSqlInterpolatedAsync($"""
             INSERT INTO "NewsletterCampaigns" ("Id","StartKey","PostId","SourceRevision","Subject","SourceSlug",
                 "DocumentVersion","DocumentJson","DocumentPlainText","DocumentWordCount","DocumentReadingMinutes",
                 "RenderVersion","Html","Text","WebVersionUrl","SenderEmail","SenderName","ReplyTo","ProviderContract",
@@ -50,7 +51,9 @@ public sealed class NewsletterCampaignStore(ApplicationDbContext context) : INew
                 {campaign.RenderVersion},{campaign.Html},{campaign.Text},{campaign.WebVersionUrl},{campaign.SenderEmail},{campaign.SenderName},{campaign.ReplyTo},{campaign.ProviderContract},
                 {campaign.SnapshotHash},0,{campaign.CreatedUtc},{campaign.UpdatedUtc},1)
             ON CONFLICT ("StartKey") DO NOTHING
-            """, cancellationToken);
+            """, cancellationToken); }
+        catch (Npgsql.PostgresException error) when (error.SqlState == "23514" && error.ConstraintName == "CK_PublicationSenderApproval")
+        { return new(CampaignStartStatus.NotConfigured); }
         if (added == 0)
         {
             var winner = await FindIntentAsync(campaign.StartKey, cancellationToken) ?? throw new InvalidOperationException("Campaign winner unavailable.");

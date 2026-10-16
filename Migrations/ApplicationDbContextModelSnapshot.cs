@@ -883,6 +883,45 @@ namespace DevCoreBlog.Migrations
                         });
                 });
 
+            modelBuilder.Entity("DevCoreBlog.Core.Publishing.PublicationSettings", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Cadence")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)");
+
+                    b.Property<string>("SenderEmail")
+                        .HasMaxLength(254)
+                        .HasColumnType("character varying(254)")
+                        .UseCollation("C");
+
+                    b.Property<string>("SenderName")
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)");
+
+                    b.Property<DateTime>("UpdatedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("PublicationSettings", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_PublicationSettings_Valid", "\"Id\"=1 AND \"Version\">0 AND isfinite(\"UpdatedUtc\")\nAND length(btrim(\"Name\")) BETWEEN 1 AND 80 AND \"Name\"=btrim(\"Name\") AND octet_length(\"Name\")<=320 AND \"Name\" !~ '[[:cntrl:]<>]'\nAND length(btrim(\"Cadence\")) BETWEEN 1 AND 200 AND \"Cadence\"=btrim(\"Cadence\") AND octet_length(\"Cadence\")<=800 AND \"Cadence\" !~ '[[:cntrl:]<>]'\nAND ((\"SenderEmail\" IS NULL AND \"SenderName\" IS NULL) OR (\"SenderEmail\" IS NOT NULL AND \"SenderName\" IS NOT NULL\n    AND length(\"SenderEmail\") BETWEEN 3 AND 254 AND \"SenderEmail\" ~ '^[!-~]+@[A-Za-z0-9.-]+$'\n    AND length(btrim(\"SenderName\")) BETWEEN 1 AND 80 AND octet_length(\"SenderName\")<=320 AND \"SenderName\" !~ '[[:cntrl:]<>\"\\\\]'))");
+                        });
+                });
+
             modelBuilder.Entity("DevCoreBlog.Core.Subscriptions.ReaderLoginBudget", b =>
                 {
                     b.Property<int>("Id")

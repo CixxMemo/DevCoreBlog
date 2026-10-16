@@ -228,6 +228,8 @@ builder.Services.AddScoped<DevCoreBlog.Core.Newsletters.ICampaignAdministrationS
 builder.Services.AddScoped<DevCoreBlog.Services.Newsletters.CampaignAdministrationService>();
 builder.Services.AddScoped<DevCoreBlog.Core.Newsletters.ICampaignMetricsStore, DevCoreBlog.Data.Newsletters.CampaignMetricsStore>();
 builder.Services.AddScoped<DevCoreBlog.Services.Newsletters.CampaignMetricsService>();
+builder.Services.AddScoped<DevCoreBlog.Core.Publishing.IPublicationSettingsStore, DevCoreBlog.Data.Publishing.PublicationSettingsStore>();
+builder.Services.AddScoped<DevCoreBlog.Services.Publishing.PublicationSettingsService>();
 builder.Services.AddScoped<DevCoreBlog.Core.Subscriptions.ISubscriberAdministrationStore, DevCoreBlog.Data.Subscriptions.SubscriberAdministrationStore>();
 builder.Services.AddScoped<DevCoreBlog.Services.Subscriptions.SubscriberAdministrationService>();
 builder.Services.AddScoped<DevCoreBlog.Core.Newsletters.ICampaignRecipientStore, DevCoreBlog.Data.Newsletters.CampaignRecipientStore>();
@@ -470,6 +472,8 @@ if (webhookRateLimitPermitLimit is < 1 or > 20)
 builder.Services.AddRateLimiter(options =>
 {
     DevCoreBlog.Infrastructure.SubscriptionRegistrationRateLimits.Configure(options);
+    options.AddPolicy("PublicationSettingsLimiter", _ => RateLimitPartition.GetFixedWindowLimiter("publication-settings-global", _ => new FixedWindowRateLimiterOptions
+    { PermitLimit = 30, Window = TimeSpan.FromMinutes(1), QueueLimit = 0, AutoReplenishment = true }));
     options.AddPolicy("CampaignAdminLimiter", _ => RateLimitPartition.GetFixedWindowLimiter("campaign-admin-global", _ => new FixedWindowRateLimiterOptions
     { PermitLimit = 30, Window = TimeSpan.FromMinutes(1), QueueLimit = 0, AutoReplenishment = true }));
     options.AddPolicy("TestEmailLimiter", _ => RateLimitPartition.GetFixedWindowLimiter("test-email-global", _ => new FixedWindowRateLimiterOptions

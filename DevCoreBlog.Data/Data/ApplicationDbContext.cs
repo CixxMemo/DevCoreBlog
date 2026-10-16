@@ -33,6 +33,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Category> Categories { get; set; }
 
     public DbSet<WebhookReceipt> WebhookReceipts { get; set; }
+    public DbSet<DevCoreBlog.Core.Publishing.PublicationSettings> PublicationSettings { get; set; }
 
     public DbSet<DevCoreBlog.Core.Subscriptions.Subscriber> Subscribers { get; set; }
 
@@ -60,6 +61,7 @@ public class ApplicationDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+        modelBuilder.ApplyConfiguration(new Publishing.PublicationSettingsConfiguration());
         modelBuilder.ApplyConfiguration(new Subscriptions.SubscriberConfiguration());
         modelBuilder.ApplyConfiguration(new Subscriptions.ReaderLoginTokenConfiguration());
         modelBuilder.ApplyConfiguration(new Subscriptions.ReaderSessionConfiguration());
