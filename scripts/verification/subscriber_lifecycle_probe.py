@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Owned PostgreSQL migration/race acceptance; never loads application dotenv or real subscriber data."""
+from runtime_schema import ensure_runtime_schema
 import argparse, getpass, json, os, subprocess, tempfile
 from pathlib import Path
 
@@ -16,6 +17,8 @@ previous = '20261012095050_ScopedWebhookReceipts'
 current = '20261012170132_SubscriberLifecycle'
 
 def run(command, extra=None, required=True, timeout=60):
+    if extra and "DB_CONNECTION_STRING" in extra and any(str(x).endswith("ContentRulesTool.dll") for x in command) and not any("seed" in str(x) for x in command):
+        ensure_runtime_schema(root,env,extra["DB_CONNECTION_STRING"])
     result = subprocess.run(command, cwd=root, env={**env, **(extra or {})},
                             capture_output=True, text=True, timeout=timeout)
     if required and result.returncode:

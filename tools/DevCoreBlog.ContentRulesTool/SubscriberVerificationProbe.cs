@@ -82,10 +82,12 @@ internal static class SubscriberVerificationProbe
             && (await repo.FindAsync(expiredSub.Id,default))?.Status==SubscriptionStatus.PendingVerification;
         checks["before_creation_rejected"] = await new SubscriberVerificationConsumer(store,new Clock(now.AddSeconds(-1))).ConfirmAsync(expired,default)==VerificationConsumeOutcome.Invalid;
         var wrong=await Sub(); var wrongRaw=await Capture(wrong); var wrongProof=await Proof(wrong.Id);
-        checks["wrong_purpose_rejected"] = await store.ConsumeAsync(wrongProof.Digest,2,now,default)==VerificationConsumeOutcome.Invalid;
+        checks["wrong_purpose_rejected"] = await store.ConsumeAsync(wrongProof.Digest ?? throw new InvalidOperationException("Fixture proof missing."),2,now,default)==VerificationConsumeOutcome.Invalid;
         checks["wrong_token_rejected"] = await consumer.ConfirmAsync(WebEncoders.Base64UrlEncode(RandomNumberGenerator.GetBytes(32)),default)==VerificationConsumeOutcome.Invalid;
-        await db.Database.ExecuteSqlInterpolatedAsync($"UPDATE \"SubscriberVerificationTokens\" SET \"AddressBinding\"={new string('A',64)} WHERE \"Id\"={wrongProof.Id}");
-        checks["address_binding_mismatch_rejected"] = await consumer.ConfirmAsync(wrongRaw,default)==VerificationConsumeOutcome.Invalid;
+        var bindingRejected = false;
+        try { await db.Database.ExecuteSqlInterpolatedAsync($"UPDATE \"SubscriberVerificationTokens\" SET \"AddressBinding\"={new string('A',64)} WHERE \"Id\"={wrongProof.Id}"); }
+        catch (PostgresException error) when (error.SqlState == "23514") { bindingRejected = true; }
+        checks["immutable_address_binding_cannot_be_corrupted"] = bindingRejected;
         var suppressedSub=await Sub(); var suppressed=await Capture(suppressedSub);
         await repo.TryApplyAsync(suppressedSub.Id,1,SubscriberChange.SuppressManual,now,default);
         checks["suppression_invalidates_proof"] = await consumer.ConfirmAsync(suppressed,default)==VerificationConsumeOutcome.Invalid;
@@ -120,7 +122,7 @@ internal static class SubscriberVerificationProbe
         checks["duplicates_do_not_replace_live_proof"] = issued.Count(x=>x==VerificationStageOutcome.AlreadyPending)==9;
         // Force token INSERT failure after outbox INSERT and prove both are rolled back.
         var rollbackSub=await Sub();var rollbackId=Guid.NewGuid();
-        var draft=new SubscriberVerificationDraft(rollbackId,rollbackSub.Id,1,proof.Digest,SubscriberVerificationRules.AddressBinding(rollbackSub.AddressKey),now);
+        var draft=new SubscriberVerificationDraft(rollbackId,rollbackSub.Id,1,proof.Digest ?? throw new InvalidOperationException("Fixture proof missing."),SubscriberVerificationRules.AddressBinding(rollbackSub.AddressKey),now);
         var mail=protector.Prepare(rollbackId,rollbackSub,"Synthetic","<p>rollback</p>","rollback",now,now.AddDays(1));
         var rejected=false;
         try { await store.StageAsync(draft,mail,default); }
@@ -131,7 +133,7 @@ internal static class SubscriberVerificationProbe
         checks["db_rejects_wrong_purpose"] = await Reject($"UPDATE \"SubscriberVerificationTokens\" SET \"Purpose\"=2 WHERE \"Id\"={proof.Id}");
         checks["db_rejects_extended_expiry"] = await Reject($"UPDATE \"SubscriberVerificationTokens\" SET \"ExpiresUtc\"=\"ExpiresUtc\"+interval '1 second' WHERE \"Id\"={proof.Id}");
         checks["db_rejects_consumption_at_expiry"] = await Reject($"UPDATE \"SubscriberVerificationTokens\" SET \"ConsumedUtc\"=\"ExpiresUtc\" WHERE \"Id\"={proof.Id}");
-        checks["no_plaintext_token_in_database_envelope"] = !(await db.TransactionalEmailJobs.AsNoTracking().SingleAsync(x=>x.Id==proof.Id)).ProtectedPayload.Contains(raw);
+        checks["no_plaintext_token_in_database_envelope"] = ((await db.TransactionalEmailJobs.AsNoTracking().SingleAsync(x=>x.Id==proof.Id)).ProtectedPayload ?? throw new InvalidOperationException("Fixture envelope missing.")).Contains(raw) == false;
         Console.WriteLine(JsonSerializer.Serialize(new {passed=checks.Values.All(x=>x),count=checks.Count,checks}));
         return checks.Values.All(x=>x)?0:1;
     }

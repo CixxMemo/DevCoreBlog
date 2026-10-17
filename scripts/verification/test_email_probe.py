@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Owned PostgreSQL test-email migration/admission/result acceptance; no app credentials in normal mode."""
+from runtime_schema import ensure_runtime_schema
 import argparse,getpass,json,os,subprocess,tempfile
 from pathlib import Path
 
@@ -8,6 +9,8 @@ p.add_argument('--database-only',action='store_true');p.add_argument('--env-file
 env={k:v for k,v in os.environ.items() if k in ('PATH','HOME','TMPDIR','DOTNET_ROOT','NUGET_PACKAGES','LANG','LC_ALL')}
 env.update(PGPASSFILE='/dev/null',PGCONNECT_TIMEOUT='5');checks={};version='unverified';previous='20261014185330_CampaignDeliveryWork';current='20261015065456_TestEmailSubmissions'
 def run(cmd,extra=None,required=True,timeout=150):
+ if extra and "DB_CONNECTION_STRING" in extra and any(str(x).endswith("ContentRulesTool.dll") for x in cmd) and not any("seed" in str(x) for x in cmd):
+     ensure_runtime_schema(root,env,extra["DB_CONNECTION_STRING"])
  r=subprocess.run(cmd,cwd=root,env={**env,**(extra or {})},capture_output=True,text=True,timeout=timeout)
  if required and r.returncode:raise RuntimeError('Owned test-email command failed: '+cmd[0]+' exit='+str(r.returncode))
  return r

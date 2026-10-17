@@ -262,6 +262,20 @@ builder.Services.AddSingleton(new DevCoreBlog.Services.Email.ResendWebhookOption
     bool.TryParse(Environment.GetEnvironmentVariable("RESEND_WEBHOOK_ENABLED"), out var webhookEnabled) && webhookEnabled,
     Environment.GetEnvironmentVariable("RESEND_WEBHOOK_SECRET"),
     Environment.GetEnvironmentVariable("RESEND_WEBHOOK_ALLOWED_SENDERS")));
+// Retention is independent of mail readiness and never enables a sender or modifies backups.
+var retentionSetting = Environment.GetEnvironmentVariable("RETENTION_ENABLED");
+var retentionApplySetting = Environment.GetEnvironmentVariable("RETENTION_APPLY_ENABLED");
+if (!string.IsNullOrEmpty(retentionSetting) && !bool.TryParse(retentionSetting, out _))
+    throw new InvalidOperationException("RETENTION_ENABLED must be true or false.");
+if (!string.IsNullOrEmpty(retentionApplySetting) && !bool.TryParse(retentionApplySetting, out _))
+    throw new InvalidOperationException("RETENTION_APPLY_ENABLED must be true or false.");
+var retentionEnabled = bool.TryParse(retentionSetting, out var retentionOn) && retentionOn;
+var retentionApply = bool.TryParse(retentionApplySetting, out var applyOn) && applyOn;
+if (retentionApply && !retentionEnabled) throw new InvalidOperationException("Retention apply requires the retention worker.");
+builder.Services.AddScoped<DevCoreBlog.Core.Retention.IRetentionStore, DevCoreBlog.Data.Retention.RetentionStore>();
+builder.Services.AddScoped<DevCoreBlog.Services.Retention.RetentionService>();
+builder.Services.AddSingleton(new DevCoreBlog.Infrastructure.RetentionWorkerOptions(retentionApply));
+if (retentionEnabled) builder.Services.AddHostedService<DevCoreBlog.Infrastructure.RetentionWorker>();
 builder.Services.AddScoped<DevCoreBlog.Core.Email.IProviderEmailEventStore, DevCoreBlog.Data.Email.ProviderEmailEventStore>();
 builder.Services.AddScoped<DevCoreBlog.Services.Email.ResendWebhookService>();
 builder.Services.AddScoped<DevCoreBlog.Services.Subscriptions.SubscriberVerificationIssuer>();

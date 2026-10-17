@@ -74,7 +74,8 @@ public sealed class TransactionalEmailStore(ApplicationDbContext context) : ITra
             .SetProperty(x => x.State, TransactionalEmailState.Claimed).SetProperty(x => x.LeaseId, leaseId)
             .SetProperty(x => x.LeaseUntilUtc, until).SetProperty(x => x.UpdatedUtc, utcNow), cancellationToken);
         await transaction.CommitAsync(cancellationToken);
-        return new(job.Id, job.SubscriberId, job.SubscriberVersion, job.ProtectedPayload, job.PayloadHash,
+        return new(job.Id, job.SubscriberId, job.SubscriberVersion,
+            job.ProtectedPayload ?? throw new InvalidOperationException("A pending envelope cannot be redacted."), job.PayloadHash,
             job.ExpiresUtc, job.FirstAttemptUtc, job.AttemptCount, leaseId, until) { Purpose = job.Purpose };
     }
 

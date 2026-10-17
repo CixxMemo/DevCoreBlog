@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Owned public subscription acceptance; live provider is opt-in and restricted to its fixed simulator."""
+from runtime_schema import ensure_runtime_schema
 import argparse, getpass, json, os, re, subprocess, tempfile
 from registration_http_fixture import run_registration_http_fixture
 from pathlib import Path
@@ -16,6 +17,8 @@ checks={}; version='unverified'
 previous='20261014114443_SubscriberVerificationTokens'
 current='20261014121355_SubscriptionRegistrationAdmission'
 def run(command,extra=None,required=True,timeout=90):
+    if extra and "DB_CONNECTION_STRING" in extra and any(str(x).endswith("ContentRulesTool.dll") for x in command) and not any("seed" in str(x) for x in command):
+        ensure_runtime_schema(root,env,extra["DB_CONNECTION_STRING"])
     result=subprocess.run(command,cwd=root,env={**env,**(extra or {})},capture_output=True,text=True,timeout=timeout)
     if required and result.returncode: raise RuntimeError('Fixture command failed: '+command[0]+' exit='+str(result.returncode))
     return result
@@ -37,7 +40,7 @@ try:
         def connection(database): return f'Host=127.0.0.1;Port={args.port};Database={database};Username={getpass.getuser()};Timeout=5;Command Timeout=10;Include Error Detail=false'
         def sql(database,query,required=True): return run(['psql','-X','-h','127.0.0.1','-p',args.port,'-d',database,'-At','-v','ON_ERROR_STOP=1','-c',query],required=required).stdout.strip()
         def migrate(database,target,required=True): return run(['dotnet','ef','database','update',target,'--no-build','--project','DevCoreBlog.csproj','--context','ApplicationDbContext'],{'DB_CONNECTION_STRING':connection(database)},required=required)
-        def snapshot(database): return '\n'.join(sql(database,f'SELECT (to_jsonb(t)-\'PeriodId\')::text FROM "{table}" t ORDER BY 1') for table in ('Posts','Categories','WebhookReceipts','Subscribers'))
+        def snapshot(database): return '\n'.join(sql(database,f'SELECT (to_jsonb(t)-\'PeriodId\'-\'RedactedUtc\')::text FROM "{table}" t ORDER BY 1') for table in ('Posts','Categories','WebhookReceipts','Subscribers'))
         try:
             run(['initdb','-D',str(fixture/'pg'),'--auth=trust','--encoding=UTF8','--locale=en_US.UTF-8'])
             run(['pg_ctl','-D',str(fixture/'pg'),'-l',str(fixture/'pg.log'),'-o',f'-h 127.0.0.1 -p {args.port} -k {fixture}/socket','-w','start']); started=True
@@ -54,12 +57,12 @@ try:
                 INSERT INTO "TransactionalEmailAttempts" ("JobId","Number","LeaseId","StartedUtc","CompletedUtc","Outcome","Reason")
                 VALUES ('00000000-0000-0000-0000-000000000002',1,'00000000-0000-0000-0000-000000000003','2026-01-01Z','2026-01-01Z',3,13)''')
             def preserved():
-                return sql('registration_prior', """SELECT (to_jsonb(t)-\'PeriodId\')::text FROM "Subscribers" t WHERE "Id"='00000000-0000-0000-0000-000000000001';
-                    SELECT (to_jsonb(t)-\'PeriodId\'-\'Purpose\')::text FROM "TransactionalEmailJobs" t WHERE "Id"='00000000-0000-0000-0000-000000000002';
-                    SELECT (to_jsonb(t)-\'PeriodId\')::text FROM "TransactionalEmailAttempts" t WHERE "JobId"='00000000-0000-0000-0000-000000000002'""")
+                return sql('registration_prior', """SELECT (to_jsonb(t)-\'PeriodId\'-\'RedactedUtc\')::text FROM "Subscribers" t WHERE "Id"='00000000-0000-0000-0000-000000000001';
+                    SELECT (to_jsonb(t)-\'PeriodId\'-\'Purpose\'-\'TerminalUtc\'-\'PayloadRedactedUtc\')::text FROM "TransactionalEmailJobs" t WHERE "Id"='00000000-0000-0000-0000-000000000002';
+                    SELECT (to_jsonb(t)-\'PeriodId\'-\'RedactedUtc\')::text FROM "TransactionalEmailAttempts" t WHERE "JobId"='00000000-0000-0000-0000-000000000002'""")
             sql('registration_prior', '''INSERT INTO "SubscriberVerificationTokens" ("Id","SubscriberId","SubscriberVersion","Purpose","Digest","AddressBinding","CreatedUtc","ExpiresUtc")
                 VALUES ('00000000-0000-0000-0000-000000000002','00000000-0000-0000-0000-000000000001',1,1,repeat('B',64),repeat('C',64),'2026-01-01Z','2026-01-02Z')''')
-            token_before=sql('registration_prior','SELECT (to_jsonb(t)-\'PeriodId\')::text FROM "SubscriberVerificationTokens" t')
+            token_before=sql('registration_prior','SELECT (to_jsonb(t)-\'PeriodId\'-\'RedactedUtc\')::text FROM "SubscriberVerificationTokens" t')
             check('prior_schema_has_no_registration_budget',sql('registration_prior',"SELECT to_regclass('\"SubscriptionRegistrationBudgets\"') IS NULL")=='t')
             prior_evidence=preserved()
             before=snapshot('registration_prior'); history=sql('registration_prior','SELECT "MigrationId" FROM "__EFMigrationsHistory" ORDER BY 1').splitlines()
@@ -73,8 +76,8 @@ try:
             # New synthetic test identities are expected; baseline rows remain byte-for-byte intact.
             check('prior_subscriber_preserved',sql('registration_prior', 'SELECT "EmailAddress" || \':\' || "Version" FROM "Subscribers" WHERE "Id"=\'00000000-0000-0000-0000-000000000001\'')=='preserved@example.test:1')
             check('prior_lifecycle_and_outbox_journal_preserved',prior_evidence==preserved())
-            check('prior_verification_token_preserved',token_before==sql('registration_prior',"SELECT (to_jsonb(t)-\'PeriodId\')::text FROM \"SubscriberVerificationTokens\" t WHERE \"Id\"='00000000-0000-0000-0000-000000000002'"))
-            check('history_additive',sql('registration_prior','SELECT "MigrationId" FROM "__EFMigrationsHistory" ORDER BY 1').splitlines()==history+[p.stem for p in sorted((root/'Migrations').glob('*.cs')) if not p.name.endswith('.Designer.cs') and current <= p.stem <= '20261014140624_ReaderIdentity'])
+            check('prior_verification_token_preserved',token_before==sql('registration_prior',"SELECT (to_jsonb(t)-\'PeriodId\'-\'RedactedUtc\')::text FROM \"SubscriberVerificationTokens\" t WHERE \"Id\"='00000000-0000-0000-0000-000000000002'"))
+            check('history_additive',sql('registration_prior','SELECT "MigrationId" FROM "__EFMigrationsHistory" ORDER BY 1').splitlines()==history+[p.stem for p in sorted((root/'Migrations').glob('*.cs')) if not p.name.endswith('.Designer.cs') and current <= p.stem <= '20261016185304_RetentionReduction'])
             count=sql('registration_prior','SELECT count(*) FROM "SubscriptionRegistrationBudgets"')
             rejected=migrate('registration_prior',previous,False)
             check('nonempty_down_refuses_data_loss',rejected.returncode!=0 and sql('registration_prior','SELECT count(*) FROM "SubscriptionRegistrationBudgets"')==count)

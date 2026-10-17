@@ -3,6 +3,8 @@ import http.cookiejar,json,os,re,shutil,signal,subprocess,time,urllib.error,urll
 from pathlib import Path
 
 def run_http_fixture(root,fixture,base_env,connection,pg_port,report_dir,checks,browser_module,browser_executable):
+    from runtime_schema import ensure_runtime_schema
+    ensure_runtime_schema(root,base_env,connection)
     base='http://127.0.0.1:15224';web=fixture/'web';web.mkdir();shutil.copytree(root/'wwwroot',web/'wwwroot')
     proof_file=fixture/'exit-proof.json';log_file=fixture/'web.log';raw_proofs=[]
     password=subprocess.run(['dotnet',str(root/'tools/DevCoreBlog.PasswordHashTool/bin/Debug/net10.0/DevCoreBlog.PasswordHashTool.dll'),'--stdin'],input='synthetic-exit-password\n',cwd=root,env=base_env,capture_output=True,text=True,timeout=20)

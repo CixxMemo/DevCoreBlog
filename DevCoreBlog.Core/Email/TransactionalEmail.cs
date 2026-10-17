@@ -38,7 +38,9 @@ public sealed class TransactionalEmailJob
     public TransactionalEmailPurpose Purpose { get; private set; }
     public Guid SubscriberId { get; private set; }
     public long SubscriberVersion { get; private set; }
-    public string ProtectedPayload { get; private set; } = string.Empty;
+    public string? ProtectedPayload { get; private set; }
+    public DateTime? PayloadRedactedUtc { get; private set; }
+    public DateTime? TerminalUtc { get; private set; }
     public string PayloadHash { get; private set; } = string.Empty;
     public DateTime CreatedUtc { get; private set; }
     public DateTime UpdatedUtc { get; private set; }

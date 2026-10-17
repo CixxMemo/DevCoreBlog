@@ -114,6 +114,30 @@ namespace DevCoreBlog.Migrations
                         });
                 });
 
+            modelBuilder.Entity("DevCoreBlog.Core.Email.ProviderEmailReceipt", b =>
+                {
+                    b.Property<string>("EventId")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .UseCollation("C");
+
+                    b.Property<string>("PayloadHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .UseCollation("C");
+
+                    b.Property<DateTime>("ReceivedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("EventId");
+
+                    b.ToTable("ProviderEmailReceipts", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_ProviderEmailReceipt", "\"EventId\" ~ '^[A-Za-z0-9_-]{1,128}$' AND \"PayloadHash\" ~ '^[A-Fa-f0-9]{64}$' AND isfinite(\"ReceivedUtc\")");
+                        });
+                });
+
             modelBuilder.Entity("DevCoreBlog.Core.Email.TestEmailSubmission", b =>
                 {
                     b.Property<Guid>("Id")
@@ -238,11 +262,13 @@ namespace DevCoreBlog.Migrations
                         .HasColumnType("character varying(64)")
                         .UseCollation("C");
 
+                    b.Property<DateTime?>("PayloadRedactedUtc")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<int>("Problem")
                         .HasColumnType("integer");
 
                     b.Property<string>("ProtectedPayload")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<Guid?>("ProviderMessageId")
@@ -262,6 +288,9 @@ namespace DevCoreBlog.Migrations
                     b.Property<long>("SubscriberVersion")
                         .HasColumnType("bigint");
 
+                    b.Property<DateTime?>("TerminalUtc")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<DateTime>("UpdatedUtc")
                         .HasColumnType("timestamp with time zone");
 
@@ -277,11 +306,13 @@ namespace DevCoreBlog.Migrations
 
                     b.ToTable("TransactionalEmailJobs", null, t =>
                         {
-                            t.HasCheckConstraint("CK_TransactionalEmailJobs_Payload", "octet_length(\"ProtectedPayload\") BETWEEN 1 AND 4194304\nAND \"ProtectedPayload\" ~ '^[A-Za-z0-9+/=]+$' AND \"PayloadHash\" ~ '^[A-F0-9]{64}$'");
+                            t.HasCheckConstraint("CK_TransactionalEmailJobs_Payload", "\"PayloadHash\" ~ '^[A-F0-9]{64}$' AND\n((\"PayloadRedactedUtc\" IS NULL AND \"ProtectedPayload\" IS NOT NULL\n    AND octet_length(\"ProtectedPayload\") BETWEEN 1 AND 4194304 AND \"ProtectedPayload\" ~ '^[A-Za-z0-9+/=]+$')\nOR (\"PayloadRedactedUtc\" IS NOT NULL AND isfinite(\"PayloadRedactedUtc\") AND \"ProtectedPayload\" IS NULL\n    AND \"State\" IN (3,4,6,7) AND \"TerminalUtc\" IS NOT NULL\n    AND \"PayloadRedactedUtc\" > greatest(\"ExpiresUtc\",\"TerminalUtc\") + interval '86400 seconds'))");
 
                             t.HasCheckConstraint("CK_TransactionalEmailJobs_Purpose", "\"Purpose\" IN (0,1)");
 
                             t.HasCheckConstraint("CK_TransactionalEmailJobs_State", "\"State\" BETWEEN 0 AND 7 AND \"Problem\" BETWEEN 0 AND 9 AND \"SubscriberVersion\" > 0\nAND \"AttemptCount\" BETWEEN 0 AND 5\nAND ((\"AttemptCount\" = 0) = (\"FirstAttemptUtc\" IS NULL))\nAND ((\"State\" IN (1,2)) = (\"LeaseId\" IS NOT NULL AND \"LeaseUntilUtc\" IS NOT NULL))\nAND ((\"LeaseId\" IS NULL) = (\"LeaseUntilUtc\" IS NULL))\nAND (\"State\" <> 2 OR \"AttemptCount\" > 0)\nAND ((\"State\" = 3) = (\"ProviderMessageId\" IS NOT NULL))\nAND (\"ProviderMessageId\" IS NULL OR \"ProviderMessageId\" <> '00000000-0000-0000-0000-000000000000'::uuid)");
+
+                            t.HasCheckConstraint("CK_TransactionalEmailJobs_Terminal", "\"TerminalUtc\" IS NULL OR (isfinite(\"TerminalUtc\") AND \"State\" IN (3,4,6,7) AND \"TerminalUtc\">=\"CreatedUtc\")");
 
                             t.HasCheckConstraint("CK_TransactionalEmailJobs_Time", "isfinite(\"CreatedUtc\") AND isfinite(\"UpdatedUtc\") AND isfinite(\"ExpiresUtc\") AND isfinite(\"DueUtc\")\nAND \"UpdatedUtc\" >= \"CreatedUtc\" AND \"ExpiresUtc\" >= \"CreatedUtc\" + interval '30 seconds'\nAND \"ExpiresUtc\" <= \"CreatedUtc\" + interval '1 day' AND \"DueUtc\" >= \"CreatedUtc\"\nAND (\"FirstAttemptUtc\" IS NULL OR (isfinite(\"FirstAttemptUtc\") AND \"FirstAttemptUtc\" BETWEEN \"CreatedUtc\" AND \"UpdatedUtc\"))\nAND (\"LeaseUntilUtc\" IS NULL OR isfinite(\"LeaseUntilUtc\"))");
                         });
@@ -922,6 +953,22 @@ namespace DevCoreBlog.Migrations
                         });
                 });
 
+            modelBuilder.Entity("DevCoreBlog.Core.Retention.RetentionCheckpoint", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("LastAppliedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("RetentionCheckpoints", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_RetentionCheckpoint", "\"Id\"=1 AND isfinite(\"LastAppliedUtc\")");
+                        });
+                });
+
             modelBuilder.Entity("DevCoreBlog.Core.Subscriptions.ReaderLoginBudget", b =>
                 {
                     b.Property<int>("Id")
@@ -961,7 +1008,6 @@ namespace DevCoreBlog.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Digest")
-                        .IsRequired()
                         .HasMaxLength(64)
                         .HasColumnType("character varying(64)");
 
@@ -970,6 +1016,9 @@ namespace DevCoreBlog.Migrations
 
                     b.Property<Guid>("PeriodId")
                         .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("RedactedUtc")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("SubscriberId")
                         .HasColumnType("uuid");
@@ -986,7 +1035,7 @@ namespace DevCoreBlog.Migrations
 
                     b.ToTable("ReaderLoginTokens", null, t =>
                         {
-                            t.HasCheckConstraint("CK_ReaderLoginTokens_Valid", "\"Id\" <> '00000000-0000-0000-0000-000000000000'::uuid AND \"SubscriberVersion\" > 0\nAND \"PeriodId\" <> '00000000-0000-0000-0000-000000000000'::uuid\nAND \"Digest\" ~ '^[A-F0-9]{64}$' AND \"AddressBinding\" ~ '^[A-F0-9]{64}$'\nAND isfinite(\"CreatedUtc\") AND isfinite(\"ExpiresUtc\") AND \"ExpiresUtc\" = \"CreatedUtc\" + interval '15 minutes'\nAND (\"ConsumedUtc\" IS NULL OR (isfinite(\"ConsumedUtc\") AND \"ConsumedUtc\" >= \"CreatedUtc\" AND \"ConsumedUtc\" < \"ExpiresUtc\"))");
+                            t.HasCheckConstraint("CK_ReaderLoginTokens_Valid", "\"Id\" <> '00000000-0000-0000-0000-000000000000'::uuid AND \"SubscriberVersion\" > 0\nAND \"PeriodId\" <> '00000000-0000-0000-0000-000000000000'::uuid\nAND ((\"RedactedUtc\" IS NULL AND \"Digest\" IS NOT NULL AND \"Digest\" ~ '^[A-F0-9]{64}$')\n    OR (\"RedactedUtc\" IS NOT NULL AND isfinite(\"RedactedUtc\") AND \"Digest\" IS NULL\n        AND \"RedactedUtc\">greatest(\"ExpiresUtc\",\"ConsumedUtc\") + interval '604800 seconds'))\nAND \"AddressBinding\" ~ '^[A-F0-9]{64}$'\nAND isfinite(\"CreatedUtc\") AND isfinite(\"ExpiresUtc\") AND \"ExpiresUtc\" = \"CreatedUtc\" + interval '15 minutes'\nAND (\"ConsumedUtc\" IS NULL OR (isfinite(\"ConsumedUtc\") AND \"ConsumedUtc\" >= \"CreatedUtc\" AND \"ConsumedUtc\" < \"ExpiresUtc\"))");
                         });
                 });
 
@@ -1104,7 +1153,6 @@ namespace DevCoreBlog.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Digest")
-                        .IsRequired()
                         .HasMaxLength(64)
                         .HasColumnType("character varying(64)")
                         .UseCollation("C");
@@ -1114,6 +1162,9 @@ namespace DevCoreBlog.Migrations
 
                     b.Property<int>("Purpose")
                         .HasColumnType("integer");
+
+                    b.Property<DateTime?>("RedactedUtc")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("SubscriberId")
                         .HasColumnType("uuid");
@@ -1133,7 +1184,7 @@ namespace DevCoreBlog.Migrations
 
                     b.ToTable("SubscriberVerificationTokens", null, t =>
                         {
-                            t.HasCheckConstraint("CK_SubscriberVerificationTokens_Valid", "\"Purpose\" = 1 AND \"SubscriberVersion\" > 0\nAND \"Digest\" ~ '^[A-F0-9]{64}$' AND \"AddressBinding\" ~ '^[A-F0-9]{64}$'\nAND isfinite(\"CreatedUtc\") AND isfinite(\"ExpiresUtc\") AND \"ExpiresUtc\" = \"CreatedUtc\" + interval '86400 seconds'\nAND (\"ConsumedUtc\" IS NULL OR (isfinite(\"ConsumedUtc\") AND \"ConsumedUtc\" >= \"CreatedUtc\" AND \"ConsumedUtc\" < \"ExpiresUtc\"))");
+                            t.HasCheckConstraint("CK_SubscriberVerificationTokens_Valid", "\"Purpose\" = 1 AND \"SubscriberVersion\" > 0\nAND ((\"RedactedUtc\" IS NULL AND \"Digest\" IS NOT NULL AND \"Digest\" ~ '^[A-F0-9]{64}$')\n    OR (\"RedactedUtc\" IS NOT NULL AND isfinite(\"RedactedUtc\") AND \"Digest\" IS NULL\n        AND \"RedactedUtc\">greatest(\"ExpiresUtc\",\"ConsumedUtc\") + interval '604800 seconds'))\nAND \"AddressBinding\" ~ '^[A-F0-9]{64}$'\nAND isfinite(\"CreatedUtc\") AND isfinite(\"ExpiresUtc\") AND \"ExpiresUtc\" = \"CreatedUtc\" + interval '86400 seconds'\nAND (\"ConsumedUtc\" IS NULL OR (isfinite(\"ConsumedUtc\") AND \"ConsumedUtc\" >= \"CreatedUtc\" AND \"ConsumedUtc\" < \"ExpiresUtc\"))");
                         });
                 });
 

@@ -61,6 +61,8 @@ public class ApplicationDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+        modelBuilder.ApplyConfiguration(new Retention.RetentionConfiguration());
+        modelBuilder.ApplyConfiguration(new Retention.ProviderEmailReceiptConfiguration());
         modelBuilder.ApplyConfiguration(new Publishing.PublicationSettingsConfiguration());
         modelBuilder.ApplyConfiguration(new Subscriptions.SubscriberConfiguration());
         modelBuilder.ApplyConfiguration(new Subscriptions.ReaderLoginTokenConfiguration());

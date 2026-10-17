@@ -27,7 +27,8 @@ public sealed class SubscriberVerificationToken
     public Guid SubscriberId { get; private set; }
     public long SubscriberVersion { get; private set; }
     public int Purpose { get; private set; }
-    public string Digest { get; private set; } = string.Empty;
+    public string? Digest { get; private set; }
+    public DateTime? RedactedUtc { get; private set; }
     public string AddressBinding { get; private set; } = string.Empty;
     public DateTime CreatedUtc { get; private set; }
     public DateTime ExpiresUtc { get; private set; }

@@ -1,0 +1,13 @@
+# Install only on the verified Linux host as /etc/systemd/journald@aethernotes.conf.d/retention.conf.
+# Pair with LogNamespace=aethernotes in the app service. This example installs nothing.
+[Journal]
+Storage=persistent
+Compress=yes
+SystemMaxUse=64M
+RuntimeMaxUse=16M
+MaxRetentionSec=29day
+MaxFileSec=1day
+ForwardToSyslog=no
+ForwardToKMsg=no
+ForwardToConsole=no
+ForwardToWall=no

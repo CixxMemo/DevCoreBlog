@@ -3,6 +3,8 @@ import http.cookiejar,json,os,re,shutil,subprocess,time,urllib.error,urllib.pars
 from pathlib import Path
 
 def run_http_fixture(root,fixture,base_env,connection,pg_port,report_dir,checks,browser_module,browser_executable):
+    from runtime_schema import ensure_runtime_schema
+    ensure_runtime_schema(root,base_env,connection)
     port=15222; base=f'http://127.0.0.1:{port}'; web=fixture/'web'; web.mkdir()
     shutil.copytree(root/'wwwroot',web/'wwwroot')
     proof_file=fixture/'synthetic-proof.json'; app_log=fixture/'app.log'

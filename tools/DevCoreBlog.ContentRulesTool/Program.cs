@@ -19,6 +19,7 @@ if (string.IsNullOrWhiteSpace(connectionString))
 var options = new DbContextOptionsBuilder<ApplicationDbContext>()
     .UseNpgsql(connectionString)
     .Options;
+if (args.Contains("--retention")) return await RetentionProbe.RunAsync(options);
 if (args.Any(x => x.StartsWith("--test-email", StringComparison.Ordinal)))
     return await TestEmailSubmissionProbe.RunAsync(options, args);
 if (args.Any(x => x.StartsWith("--campaign-delivery", StringComparison.Ordinal)))

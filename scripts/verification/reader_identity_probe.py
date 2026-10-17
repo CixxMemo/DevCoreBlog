@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Owned PostgreSQL upgrade, login concurrency and real MVC acceptance; optional fixed-simulator test is explicit."""
+from runtime_schema import ensure_runtime_schema
 import argparse,getpass,json,os,re,subprocess,tempfile
 from pathlib import Path
 from reader_identity_http_fixture import run_http_fixture
@@ -10,6 +11,8 @@ env={k:v for k,v in os.environ.items() if k in ('PATH','HOME','TMPDIR','DOTNET_R
 env.update(PGPASSFILE='/dev/null',PGCONNECT_TIMEOUT='5');checks={};version='unverified'
 previous='20261014131546_NewsletterCampaignSnapshots';current='20261014140624_ReaderIdentity'
 def run(cmd,extra=None,required=True,timeout=90):
+ if extra and "DB_CONNECTION_STRING" in extra and any(str(x).endswith("ContentRulesTool.dll") for x in cmd) and not any("seed" in str(x) for x in cmd):
+     ensure_runtime_schema(root,env,extra["DB_CONNECTION_STRING"])
  result=subprocess.run(cmd,cwd=root,env={**env,**(extra or {})},capture_output=True,text=True,timeout=timeout)
  if required and result.returncode:raise RuntimeError('Owned fixture command failed: '+cmd[0]+' exit='+str(result.returncode))
  return result

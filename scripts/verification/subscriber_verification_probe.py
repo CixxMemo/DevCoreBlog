@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Owned PostgreSQL proof/lifecycle/outbox and MVC acceptance; never loads real credentials."""
+from runtime_schema import ensure_runtime_schema
 import argparse, getpass, json, os, re, subprocess, tempfile
 from verification_http_fixture import run_http_fixture
 from pathlib import Path
@@ -16,6 +17,8 @@ checks={}; version='unverified'
 previous='20261014112734_TransactionalEmailOutbox'
 current='20261014114443_SubscriberVerificationTokens'
 def run(command,extra=None,required=True,timeout=90):
+    if extra and "DB_CONNECTION_STRING" in extra and any(str(x).endswith("ContentRulesTool.dll") for x in command) and not any("seed" in str(x) for x in command):
+        ensure_runtime_schema(root,env,extra["DB_CONNECTION_STRING"])
     result=subprocess.run(command,cwd=root,env={**env,**(extra or {})},capture_output=True,text=True,timeout=timeout)
     if required and result.returncode: raise RuntimeError('Fixture command failed: '+command[0]+' exit='+str(result.returncode))
     return result
@@ -55,7 +58,7 @@ try:
                 VALUES ('00000000-0000-0000-0000-000000000002',1,'00000000-0000-0000-0000-000000000003','2026-01-01Z','2026-01-01Z',3,13)''')
             def preserved():
                 return sql('verification_prior', """SELECT (to_jsonb(t)-\'PeriodId\')::text FROM "Subscribers" t WHERE "Id"='00000000-0000-0000-0000-000000000001';
-                    SELECT (to_jsonb(t)-\'PeriodId\'-\'Purpose\')::text FROM "TransactionalEmailJobs" t WHERE "Id"='00000000-0000-0000-0000-000000000002';
+                    SELECT (to_jsonb(t)-\'PeriodId\'-\'Purpose\'-\'TerminalUtc\'-\'PayloadRedactedUtc\')::text FROM "TransactionalEmailJobs" t WHERE "Id"='00000000-0000-0000-0000-000000000002';
                     SELECT (to_jsonb(t)-\'PeriodId\')::text FROM "TransactionalEmailAttempts" t WHERE "JobId"='00000000-0000-0000-0000-000000000002'""")
             prior_evidence=preserved()
             before=snapshot('verification_prior'); history=sql('verification_prior','SELECT "MigrationId" FROM "__EFMigrationsHistory" ORDER BY 1').splitlines()
@@ -69,7 +72,7 @@ try:
             # New synthetic test identities are expected; baseline rows remain byte-for-byte intact.
             check('prior_subscriber_preserved',sql('verification_prior', 'SELECT "EmailAddress" || \':\' || "Version" FROM "Subscribers" WHERE "Id"=\'00000000-0000-0000-0000-000000000001\'')=='preserved@example.test:1')
             check('prior_lifecycle_and_outbox_journal_preserved',prior_evidence==preserved())
-            check('history_additive',sql('verification_prior','SELECT "MigrationId" FROM "__EFMigrationsHistory" ORDER BY 1').splitlines()==history+[p.stem for p in sorted((root/'Migrations').glob('*.cs')) if not p.name.endswith('.Designer.cs') and current <= p.stem <= '20261014140624_ReaderIdentity'])
+            check('history_additive',sql('verification_prior','SELECT "MigrationId" FROM "__EFMigrationsHistory" ORDER BY 1').splitlines()==history+[p.stem for p in sorted((root/'Migrations').glob('*.cs')) if not p.name.endswith('.Designer.cs') and current <= p.stem <= '20261016185304_RetentionReduction'])
             count=sql('verification_prior','SELECT count(*) FROM "SubscriberVerificationTokens"')
             rejected=migrate('verification_prior',previous,False)
             check('nonempty_down_refuses_data_loss',rejected.returncode!=0 and sql('verification_prior','SELECT count(*) FROM "SubscriberVerificationTokens"')==count)

@@ -4,6 +4,8 @@ from pathlib import Path
 from newsletter_archive_http_fixture import run_archive_checks
 
 def run_http_fixture(root,fixture,base_env,connection,pg_port,report_dir,checks,browser_module,browser_executable):
+ from runtime_schema import ensure_runtime_schema
+ ensure_runtime_schema(root,base_env,connection)
  source=fixture/'source';source.mkdir();mailbox=fixture/'mailbox.jsonl';log_file=fixture/'web.log';proof_file=fixture/'proof.json'
  base='http://127.0.0.1:15226';proofs=[];addresses=[]
  excludes=['.local','.git','.codex','.agents','.auth','docs','AGENTS.md','.env*','node_modules','bin','obj','cookies*','__pycache__']

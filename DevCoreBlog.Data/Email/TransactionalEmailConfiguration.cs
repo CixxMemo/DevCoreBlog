@@ -23,6 +23,7 @@ public sealed class TransactionalEmailConfiguration : IEntityTypeConfiguration<T
                 AND (("State" = 3) = ("ProviderMessageId" IS NOT NULL))
                 AND ("ProviderMessageId" IS NULL OR "ProviderMessageId" <> '00000000-0000-0000-0000-000000000000'::uuid)
                 """);
+            table.HasCheckConstraint("CK_TransactionalEmailJobs_Terminal", "\"TerminalUtc\" IS NULL OR (isfinite(\"TerminalUtc\") AND \"State\" IN (3,4,6,7) AND \"TerminalUtc\">=\"CreatedUtc\")");
             table.HasCheckConstraint("CK_TransactionalEmailJobs_Time", """
                 isfinite("CreatedUtc") AND isfinite("UpdatedUtc") AND isfinite("ExpiresUtc") AND isfinite("DueUtc")
                 AND "UpdatedUtc" >= "CreatedUtc" AND "ExpiresUtc" >= "CreatedUtc" + interval '30 seconds'
@@ -31,8 +32,12 @@ public sealed class TransactionalEmailConfiguration : IEntityTypeConfiguration<T
                 AND ("LeaseUntilUtc" IS NULL OR isfinite("LeaseUntilUtc"))
                 """);
             table.HasCheckConstraint("CK_TransactionalEmailJobs_Payload", """
-                octet_length("ProtectedPayload") BETWEEN 1 AND 4194304
-                AND "ProtectedPayload" ~ '^[A-Za-z0-9+/=]+$' AND "PayloadHash" ~ '^[A-F0-9]{64}$'
+                "PayloadHash" ~ '^[A-F0-9]{64}$' AND
+                (("PayloadRedactedUtc" IS NULL AND "ProtectedPayload" IS NOT NULL
+                    AND octet_length("ProtectedPayload") BETWEEN 1 AND 4194304 AND "ProtectedPayload" ~ '^[A-Za-z0-9+/=]+$')
+                OR ("PayloadRedactedUtc" IS NOT NULL AND isfinite("PayloadRedactedUtc") AND "ProtectedPayload" IS NULL
+                    AND "State" IN (3,4,6,7) AND "TerminalUtc" IS NOT NULL
+                    AND "PayloadRedactedUtc" > greatest("ExpiresUtc","TerminalUtc") + interval '86400 seconds'))
                 """);
         });
         entity.Property(item => item.Purpose).HasDefaultValue(TransactionalEmailPurpose.Verification);

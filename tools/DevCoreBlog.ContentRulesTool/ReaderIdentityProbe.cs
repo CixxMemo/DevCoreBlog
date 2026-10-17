@@ -126,7 +126,7 @@ internal static class ReaderIdentityProbe
             var grants = await Task.WhenAll(Enumerable.Range(0,12).Select(async _ =>
             {
                 await using var own = new ApplicationDbContext(options);
-                return await new ReaderIdentityStore(own, new TransactionalEmailStore(own)).ConsumeAsync(parallelToken.Digest, now, default);
+                return await new ReaderIdentityStore(own, new TransactionalEmailStore(own)).ConsumeAsync(parallelToken.Digest ?? throw new InvalidOperationException("Fixture proof missing."), now, default);
             }));
             checks["twelve_parallel_consumptions_one_session"] = grants.Count(x => x is not null) == 1;
             var singleGrant = grants.Single(x => x is not null) ?? throw new InvalidOperationException();
@@ -162,6 +162,8 @@ internal static class ReaderIdentityProbe
             await using (var tx = await db.Database.BeginTransactionAsync())
             {
                 await db.Database.ExecuteSqlRawAsync("ALTER TABLE \"ReaderLoginTokens\" DROP CONSTRAINT \"CK_ReaderLoginTokens_Valid\"");
+                // Owned rollback-only negative control removes both independent lifetime guards.
+                await db.Database.ExecuteSqlRawAsync("DROP TRIGGER \"TR_LoginRetention\" ON \"ReaderLoginTokens\"");
                 checks["negative_control_detects_missing_lifetime_constraint"] = await db.Database.ExecuteSqlInterpolatedAsync($"UPDATE \"ReaderLoginTokens\" SET \"ExpiresUtc\"=\"ExpiresUtc\"+interval '1 minute' WHERE \"Id\"={outboundProof.Token.Id}") == 1;
                 await tx.RollbackAsync();
             }

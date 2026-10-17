@@ -3,6 +3,8 @@ import json,re,shutil,socket,ssl,subprocess,time,urllib.error,urllib.parse,urlli
 from pathlib import Path
 
 def run_http_fixture(root,fixture,base_env,connection,pg_port,nginx,checks):
+ from runtime_schema import ensure_runtime_schema
+ ensure_runtime_schema(root,base_env,connection)
  nginx=str(nginx or shutil.which('nginx') or '')
  if not nginx or not Path(nginx).is_file():raise RuntimeError('Nginx test prerequisite absent; pass --nginx or install the supported proxy test tool.')
  for port in (15230,15430,15530):

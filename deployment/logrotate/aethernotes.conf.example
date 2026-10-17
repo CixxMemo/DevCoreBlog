@@ -1,0 +1,18 @@
+# Verify nginx PID/account paths and the daily timer on the actual host before installing.
+# 29 archived daily files + current day; empty files also rotate so age checks still run.
+/var/log/nginx/aethernotes-access.log {
+    daily
+    rotate 29
+    maxage 29
+    missingok
+    ifempty
+    compress
+    delaycompress
+    create 0640 www-data adm
+    sharedscripts
+    postrotate
+        if [ -s /run/nginx.pid ]; then
+            kill -USR1 "$(cat /run/nginx.pid)"
+        fi
+    endscript
+}

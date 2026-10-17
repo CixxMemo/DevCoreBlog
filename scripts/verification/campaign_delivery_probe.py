@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Real owned PostgreSQL campaign work acceptance; no real recipients, DB or credentials in normal mode."""
+from runtime_schema import ensure_runtime_schema
 import argparse,getpass,json,os,stat,subprocess,tempfile
 from pathlib import Path
 
@@ -10,6 +11,8 @@ env={k:v for k,v in os.environ.items() if k in ('PATH','HOME','TMPDIR','DOTNET_R
 env.update(PGPASSFILE='/dev/null',PGCONNECT_TIMEOUT='5');checks={};version='unverified'
 previous='20261014175940_ProviderEmailEvents';current='20261014185330_CampaignDeliveryWork'
 def run(cmd,extra=None,required=True,timeout=150):
+ if extra and "DB_CONNECTION_STRING" in extra and any(str(x).endswith("ContentRulesTool.dll") for x in cmd) and not any("seed" in str(x) for x in cmd):
+     ensure_runtime_schema(root,env,extra["DB_CONNECTION_STRING"])
  r=subprocess.run(cmd,cwd=root,env={**env,**(extra or {})},capture_output=True,text=True,timeout=timeout)
  if required and r.returncode:raise RuntimeError('Owned delivery command failed: '+cmd[0]+' exit='+str(r.returncode))
  return r

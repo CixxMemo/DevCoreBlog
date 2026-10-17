@@ -12,7 +12,10 @@ public sealed class SubscriberVerificationConfiguration : IEntityTypeConfigurati
     {
         entity.ToTable("SubscriberVerificationTokens", table => table.HasCheckConstraint("CK_SubscriberVerificationTokens_Valid", """
             "Purpose" = 1 AND "SubscriberVersion" > 0
-            AND "Digest" ~ '^[A-F0-9]{64}$' AND "AddressBinding" ~ '^[A-F0-9]{64}$'
+            AND (("RedactedUtc" IS NULL AND "Digest" IS NOT NULL AND "Digest" ~ '^[A-F0-9]{64}$')
+                OR ("RedactedUtc" IS NOT NULL AND isfinite("RedactedUtc") AND "Digest" IS NULL
+                    AND "RedactedUtc">greatest("ExpiresUtc","ConsumedUtc") + interval '604800 seconds'))
+            AND "AddressBinding" ~ '^[A-F0-9]{64}$'
             AND isfinite("CreatedUtc") AND isfinite("ExpiresUtc") AND "ExpiresUtc" = "CreatedUtc" + interval '86400 seconds'
             AND ("ConsumedUtc" IS NULL OR (isfinite("ConsumedUtc") AND "ConsumedUtc" >= "CreatedUtc" AND "ConsumedUtc" < "ExpiresUtc"))
             """));

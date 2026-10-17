@@ -42,10 +42,11 @@ internal static class TransactionalEmailProbe
             if (!SubscriberAddress.TryCreate(Guid.NewGuid().ToString("N") + "@example.test", out var address) || address is null) throw new InvalidOperationException();
             return await new SubscriberRepository(db).GetOrCreatePendingAsync(address, Now, default);
         }
-        async Task<PreparedTransactionalEmail> Queue(SubscriberSnapshot? sub = null)
+        async Task<PreparedTransactionalEmail> Queue(SubscriberSnapshot? sub = null, bool invalidEnvelope = false)
         {
             sub ??= await Subscriber();
             var job = protector.Prepare(Guid.NewGuid(), sub, "Synthetic", "<p>private-token-fixture</p>", "private-token-fixture", Now.AddTicks(7), Now.AddDays(1).AddTicks(7));
+            if (invalidEnvelope) job = new(job.Id,job.SubscriberId,job.SubscriberVersion,"AAAA",job.PayloadHash,job.CreatedUtc,job.ExpiresUtc);
             if (await store.EnqueueAsync(job, default) != EmailQueueOutcome.Queued) throw new InvalidOperationException("Fixture enqueue failed.");
             return job;
         }
@@ -101,8 +102,7 @@ internal static class TransactionalEmailProbe
         await new SubscriberRepository(db).TryApplyAsync(changedSub.Id, 1, SubscriberChange.Unsubscribe, Now, default);
         await Dispatcher(store, sender, Now).RunOnceAsync(default);
         Check("unsubscribe_invalidates_queued_proof", (await Job(changed.Id)).State == TransactionalEmailState.Cancelled && sender.Calls == beforeCalls);
-        var bad = await Queue();
-        await db.Database.ExecuteSqlInterpolatedAsync($"UPDATE \"TransactionalEmailJobs\" SET \"ProtectedPayload\"='AAAA' WHERE \"Id\"={bad.Id}");
+        var bad = await Queue(invalidEnvelope: true);
         await Dispatcher(store, sender, Now).RunOnceAsync(default);
         Check("tampered_payload_held_no_send", (await Job(bad.Id)).Problem == TransactionalEmailProblem.InvalidPayload && sender.Calls == beforeCalls);
         var rotated = await Queue();

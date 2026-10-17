@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Owned real PostgreSQL and MVC provider ingress acceptance. Never loads real dotenv or makes email calls."""
+from runtime_schema import ensure_runtime_schema
 import argparse,base64,getpass,hashlib,hmac,http.client,json,os,shutil,socket,subprocess,tempfile,time,urllib.error,urllib.request,uuid
 from pathlib import Path
 
@@ -10,6 +11,8 @@ env.update(PGPASSFILE='/dev/null',PGCONNECT_TIMEOUT='5');checks={};version='unve
 previous='20261014171616_CampaignRecipientSelection';current='20261014175940_ProviderEmailEvents'
 key=bytes(range(1,33));secret='whsec_'+base64.b64encode(key).decode()
 def run(cmd,extra=None,required=True,timeout=150):
+ if extra and "DB_CONNECTION_STRING" in extra and any(str(x).endswith("ContentRulesTool.dll") for x in cmd) and not any("seed" in str(x) for x in cmd):
+     ensure_runtime_schema(root,env,extra["DB_CONNECTION_STRING"])
  r=subprocess.run(cmd,cwd=root,env={**env,**(extra or {})},capture_output=True,text=True,timeout=timeout)
  if required and r.returncode:raise RuntimeError('Provider fixture command failed: '+cmd[0]+' exit='+str(r.returncode))
  return r
@@ -23,6 +26,7 @@ def safe_report(r,name):
   data={'passed':False,'exit_code':r.returncode,**diagnostic};valid=False
  a.report.parent.mkdir(parents=True,exist_ok=True);(a.report.parent/(name+'.json')).write_text(json.dumps(data,indent=2)+'\n');check(name,valid)
 def http_fixture(f,connection,sql):
+ ensure_runtime_schema(root,env,connection)
  base='http://127.0.0.1:15228';web=f/'web';web.mkdir();shutil.copytree(root/'wwwroot',web/'wwwroot');(f/'keys').mkdir(mode=0o700)
  # A valid generated hash is required; stdin is handled explicitly and never a real credential.
  hashed=subprocess.run(['dotnet',str(root/'tools/DevCoreBlog.PasswordHashTool/bin/Debug/net10.0/DevCoreBlog.PasswordHashTool.dll'),'--stdin'],input='synthetic-provider-password\n',env=env,cwd=root,capture_output=True,text=True,timeout=20)

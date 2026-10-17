@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Owned PostgreSQL migration and real HTTP exit acceptance; real simulator use is explicit and bounded."""
+from runtime_schema import ensure_runtime_schema
 import argparse,getpass,json,os,re,subprocess,tempfile
 from pathlib import Path
 from unsubscription_http_fixture import run_http_fixture
@@ -15,6 +16,8 @@ env.update(PGPASSFILE='/dev/null',PGCONNECT_TIMEOUT='5')
 checks={};version='unverified'
 previous='20261014121355_SubscriptionRegistrationAdmission';current='20261014124542_SubscriberUnsubscriptionPeriod'
 def run(command,extra=None,required=True,timeout=90):
+    if extra and "DB_CONNECTION_STRING" in extra and any(str(x).endswith("ContentRulesTool.dll") for x in command) and not any("seed" in str(x) for x in command):
+        ensure_runtime_schema(root,env,extra["DB_CONNECTION_STRING"])
     result=subprocess.run(command,cwd=root,env={**env,**(extra or {})},capture_output=True,text=True,timeout=timeout)
     if required and result.returncode:raise RuntimeError('Fixture command failed: '+command[0]+' exit='+str(result.returncode))
     return result

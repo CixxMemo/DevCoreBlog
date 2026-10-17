@@ -11,16 +11,20 @@ public sealed class ProviderEmailEventStore(ApplicationDbContext db) : IProvider
         await using var tx = await db.Database.BeginTransactionAsync(cancellationToken);
         await db.Database.ExecuteSqlRawAsync("SET LOCAL lock_timeout='3s'; SET LOCAL statement_timeout='5s'", cancellationToken);
         var inserted = await db.Database.ExecuteSqlInterpolatedAsync($"""
-            INSERT INTO "ProviderEmailEvents" ("EventId","PayloadHash","MessageId","AddressKey","Kind","OccurredUtc","ReceivedUtc")
-            VALUES ({message.EventId},{message.PayloadHash},{message.MessageId},{message.AddressKey},{(int)message.Kind},{message.OccurredUtc},{message.ReceivedUtc})
+            INSERT INTO "ProviderEmailReceipts" ("EventId","PayloadHash","ReceivedUtc")
+            VALUES ({message.EventId},{message.PayloadHash},{message.ReceivedUtc})
             ON CONFLICT ("EventId") DO NOTHING
             """, cancellationToken);
         if (inserted == 0)
         {
-            var hash = await db.ProviderEmailEvents.AsNoTracking().Where(x => x.EventId == message.EventId)
+            var hash = await db.Set<ProviderEmailReceipt>().AsNoTracking().Where(x => x.EventId == message.EventId)
                 .Select(x => x.PayloadHash).SingleAsync(cancellationToken);
             return hash == message.PayloadHash ? ProviderEventOutcome.Duplicate : ProviderEventOutcome.Conflict;
         }
+        await db.Database.ExecuteSqlInterpolatedAsync($"""
+            INSERT INTO "ProviderEmailEvents" ("EventId","PayloadHash","MessageId","AddressKey","Kind","OccurredUtc","ReceivedUtc")
+            VALUES ({message.EventId},{message.PayloadHash},{message.MessageId},{message.AddressKey},{(int)message.Kind},{message.OccurredUtc},{message.ReceivedUtc})
+            """, cancellationToken);
         DateTime? delivered = message.Kind == ProviderEmailEventKind.Delivered ? message.OccurredUtc : null;
         DateTime? bounced = message.Kind == ProviderEmailEventKind.Bounced ? message.OccurredUtc : null;
         DateTime? complained = message.Kind == ProviderEmailEventKind.Complained ? message.OccurredUtc : null;

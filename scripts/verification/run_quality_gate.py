@@ -264,6 +264,12 @@ try:
             stages['home-subscription']['passed']=code==0 and home['passed'] and home['count']==len(home['checks']) and all(home['checks'].values())
         except (OSError,ValueError,KeyError,TypeError):
             stages['home-subscription']['passed']=False
+        code,output=run('retention',['python3','scripts/verification/retention_probe.py','--port','55540','--report',str(report/'retention'/'report.json')],source,timeout=300,export=False)
+        try:
+            retention=json.loads((report/'retention'/'report.json').read_text())
+            stages['retention']['passed']=code==0 and retention['passed'] and retention['count']==len(retention['checks']) and all(retention['checks'].values())
+        except (OSError,ValueError,KeyError,TypeError):
+            stages['retention']['passed']=False
         code,output=run('reader-identity',['python3','scripts/verification/reader_identity_probe.py','--port','55526','--report',str(report/'reader-migration.json')],source,timeout=300,export=False)
         try:
             reader=json.loads((report/'reader-migration.json').read_text())

@@ -11,6 +11,8 @@ class Fields(HTMLParser):
   if tag=='input' and 'name' in d:self.values[d['name']]=d.get('value','')
 
 def run_http_fixture(root,fixture,base_env,connection,pg_port,report_dir,browser_module,browser_executable,env_file,checks):
+ from runtime_schema import ensure_runtime_schema
+ ensure_runtime_schema(root,base_env,connection)
  source,packet,control,clock,gate=build_fixture_host(root,fixture,base_env);base='http://127.0.0.1:15233';log=fixture/'web.log';current=datetime.datetime.now(datetime.timezone.utc)
  for port in (15233,):
   with socket.socket() as s:

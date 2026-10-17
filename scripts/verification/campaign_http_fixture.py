@@ -2,6 +2,8 @@
 import http.cookiejar,json,re,shutil,subprocess,time,urllib.error,urllib.parse,urllib.request
 
 def run_http_fixture(root,fixture,base_env,connection,pg_port,checks):
+    from runtime_schema import ensure_runtime_schema
+    ensure_runtime_schema(root,base_env,connection)
     base='http://127.0.0.1:15225';web=fixture/'web';web.mkdir();shutil.copytree(root/'wwwroot',web/'wwwroot')
     seed_file=fixture/'seed.json'
     seeded=subprocess.run(['dotnet',str(root/'tools/DevCoreBlog.ContentRulesTool/bin/Debug/net10.0/DevCoreBlog.ContentRulesTool.dll'),'--campaign-seed'],cwd=root,env={**base_env,'DB_CONNECTION_STRING':connection,'CAMPAIGN_TEST_SEED_FILE':str(seed_file)},capture_output=True,text=True,timeout=30)

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Owned PostgreSQL outbox acceptance. Optional credential use is restricted to a fixed Resend simulator."""
+from runtime_schema import ensure_runtime_schema
 import argparse, getpass, json, os, re, subprocess, tempfile
 from pathlib import Path
 parser=argparse.ArgumentParser()
@@ -13,6 +14,8 @@ checks={}; version='unverified'
 previous='20261012170132_SubscriberLifecycle'
 current='20261014112734_TransactionalEmailOutbox'
 def run(command,extra=None,required=True,timeout=90):
+    if extra and "DB_CONNECTION_STRING" in extra and any(str(x).endswith("ContentRulesTool.dll") for x in command) and not any("seed" in str(x) for x in command):
+        ensure_runtime_schema(root,env,extra["DB_CONNECTION_STRING"])
     result=subprocess.run(command,cwd=root,env={**env,**(extra or {})},capture_output=True,text=True,timeout=timeout)
     if required and result.returncode: raise RuntimeError('Fixture command failed: '+command[0]+' exit='+str(result.returncode))
     return result
@@ -56,7 +59,7 @@ try:
                     {'DB_CONNECTION_STRING':connection(database),'OUTBOX_TEST_KEYS':str(fixture/'keys')},required=False),database)
             # New synthetic test identities are expected; baseline rows remain byte-for-byte intact.
             check('prior_subscriber_preserved',sql('outbox_prior', 'SELECT "EmailAddress" || \':\' || "Version" FROM "Subscribers" WHERE "Id"=\'00000000-0000-0000-0000-000000000001\'')=='preserved@example.test:1')
-            check('history_additive',sql('outbox_prior','SELECT "MigrationId" FROM "__EFMigrationsHistory" ORDER BY 1').splitlines()==history+[p.stem for p in sorted((root/'Migrations').glob('*.cs')) if not p.name.endswith('.Designer.cs') and current <= p.stem <= '20261014140624_ReaderIdentity'])
+            check('history_additive',sql('outbox_prior','SELECT "MigrationId" FROM "__EFMigrationsHistory" ORDER BY 1').splitlines()==history+[p.stem for p in sorted((root/'Migrations').glob('*.cs')) if not p.name.endswith('.Designer.cs') and current <= p.stem <= '20261016185304_RetentionReduction'])
             count=sql('outbox_prior','SELECT count(*) FROM "TransactionalEmailJobs"')
             rejected=migrate('outbox_prior',previous,False)
             check('nonempty_down_refuses_data_loss',rejected.returncode!=0 and sql('outbox_prior','SELECT count(*) FROM "TransactionalEmailJobs"')==count)
