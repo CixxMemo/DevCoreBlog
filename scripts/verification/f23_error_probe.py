@@ -54,7 +54,7 @@ def main():
         ),
     }
     if args.fallback:
-        checks["static_500_fallback_used"] = "<title>Sunucu hatası · Aether Notes</title>" in html_body
+        checks["static_500_fallback_used"] = "<title>Sunucu hatası · Aether Letter</title>" in html_body
     print(json.dumps({"statuses": [status_404, html_status, status_500, feed_status, invalid_status], "checks": checks}, sort_keys=True))
     return 0 if args.baseline or all(checks.values()) else 1
 

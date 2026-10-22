@@ -11,7 +11,7 @@ public sealed class InformationController(PageMetadataFactory metadata) : Contro
     [HttpHead("/about")]
     public IActionResult About()
     {
-        ViewData["Metadata"] = metadata.Information("Hakkında", "Aether Notes ve Mehmet Can hakkında.", "/about");
+        ViewData["Metadata"] = metadata.Information("Hakkında", "Aether Letter ve Mehmet Can hakkında.", "/about");
         return View();
     }
 

@@ -1,0 +1,45 @@
+# Single-server Docker layout for the app and its own PostgreSQL. Copy to the server, then adapt.
+# Nothing is published to the host: the app is reached only by the reverse-proxy container
+# (Nginx Proxy Manager) over the "aether_edge" network at a fixed address. n8n and other stacks are untouched.
+#
+# One-time, after `docker compose up -d`, attach the existing proxy with its fixed address:
+#   docker network connect --ip 172.30.0.10 aether_edge nginx-proxy-manager
+# (re-run this if the proxy container is ever recreated; DEPLOYMENT_PROXY_IP must match.)
+name: aetherletter
+services:
+  web:
+    image: aetherletter-web:${WEB_TAG:?set WEB_TAG}
+    restart: unless-stopped
+    env_file: ./web.env            # real values, owner-only file on the server (never in Git)
+    environment:
+      DEPLOYMENT_PROFILE: nginx-docker
+      ASPNETCORE_URLS: http://172.30.0.20:8080
+      DEPLOYMENT_PROXY_IP: 172.30.0.10
+    networks:
+      aether_edge: { ipv4_address: 172.30.0.20 }
+      aether_db: {}
+    volumes:
+      - aether_keys:/var/lib/devcoreblog/keys   # Data Protection key ring: never delete or reset
+    depends_on: [db]
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    logging: { driver: json-file, options: { max-size: "10m", max-file: "3" } }
+  db:
+    image: postgres:16-bookworm
+    restart: unless-stopped
+    env_file: ./db.env             # POSTGRES_USER / POSTGRES_PASSWORD / POSTGRES_DB
+    networks: [aether_db]
+    volumes:
+      - aether_pgdata:/var/lib/postgresql/data
+    shm_size: 128mb
+    logging: { driver: json-file, options: { max-size: "10m", max-file: "3" } }
+networks:
+  aether_edge:
+    ipam: { config: [{ subnet: 172.30.0.0/24 }] }
+  aether_db:
+    internal: true
+volumes:
+  aether_keys: {}
+  aether_pgdata: {}

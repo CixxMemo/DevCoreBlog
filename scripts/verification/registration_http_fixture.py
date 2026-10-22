@@ -158,7 +158,7 @@ internal sealed class RegistrationFixtureMailboxSender(ResendOptions options, Ti
                 if env_file.is_symlink() or env_file.stat().st_mode&0o077:raise RuntimeError('Private credential file required')
                 values=[line.split('=',1)[1].strip().strip('\"\'') for line in env_file.read_text().splitlines() if line.startswith('RESEND_API_KEY=')]
                 if len(values)!=1 or not re.fullmatch(r're_[A-Za-z0-9_-]+',values[0]):raise RuntimeError('Valid local credential required')
-                start({'RESEND_API_KEY':values[0],'RESEND_FROM_EMAIL':'onboarding@resend.dev','RESEND_FROM_NAME':'Aether Notes Test','REGISTRATION_TEST_LIVE':'true'})
+                start({'RESEND_API_KEY':values[0],'RESEND_FROM_EMAIL':'onboarding@resend.dev','RESEND_FROM_NAME':'Aether Letter Test','REGISTRATION_TEST_LIVE':'true'})
                 email='delivered@resend.dev';status,_,_=submit(email);row=mail(email)
                 checks['real_resend_http_worker_accepts_fixed_simulator']=status==200 and row['live'] is True and state(email)=='0:1'
                 checks['real_resend_submitted_proof_confirms_once']=confirm(email,row)

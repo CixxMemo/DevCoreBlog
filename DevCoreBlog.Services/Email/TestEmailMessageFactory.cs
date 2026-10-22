@@ -32,7 +32,7 @@ public sealed record TestEmailComposition(TestEmailCompositionStatus Status, Tes
 public sealed class TestEmailMessageFactory(ContentDocumentValidator validator, DocumentEmailRenderer renderer, TestEmailOptions options)
 {
     public const int MaximumSubjectLength = 200;
-    public const string DefaultSubject = "Aether Notes — deneme e-postası";
+    public const string DefaultSubject = "Aether Letter — deneme e-postası";
     public TestEmailComposition Compose(string? documentJson, string? subject)
     {
         if (string.IsNullOrWhiteSpace(documentJson) || string.IsNullOrWhiteSpace(subject) || subject.Length > MaximumSubjectLength || subject.Any(char.IsControl))

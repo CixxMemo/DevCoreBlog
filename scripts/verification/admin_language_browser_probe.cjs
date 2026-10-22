@@ -17,7 +17,7 @@ function check(name,value){checks[name]=!!value;assert.ok(value,name);}
  await p.locator('#password').fill('f44-synthetic-password');await p.keyboard.press('Tab');
  check('login_keyboard_reaches_submit',await p.getByRole('button',{name:'Giriş yap',exact:true}).evaluate(e=>e===document.activeElement));
  await Promise.all([p.waitForURL('**/Admin/Dashboard'),p.keyboard.press('Enter')]);
- check('shell_turkish_and_static_brand',await p.locator('html').getAttribute('lang')==='tr'&&(await p.locator('#admin-sidebar').textContent()).includes('Aether Notes')&&await p.getByRole('button',{name:'Oturumu kapat',exact:true}).count()===1);
+ check('shell_turkish_and_static_brand',await p.locator('html').getAttribute('lang')==='tr'&&(await p.locator('#admin-sidebar').textContent()).includes('Aether Letter')&&await p.getByRole('button',{name:'Oturumu kapat',exact:true}).count()===1);
  check('dashboard_operational_labels_turkish',(await p.locator('#database-status').innerText())==='Doğrulandı (PostgreSQL)'&&(await p.locator('#media-status').innerText()).includes('Yapılandırılmadı'));
  await p.goto(base+'/AdminCategory/Create');check('category_label_targets_custom_id',await p.getByLabel('Kategori adı',{exact:true}).getAttribute('id')==='category-name-input');
  await p.getByRole('button',{name:'Kategoriyi kaydet',exact:true}).click();

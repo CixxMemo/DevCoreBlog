@@ -64,7 +64,8 @@ var deploymentBoundary = new DeploymentBoundary(builder.Environment.IsDevelopmen
     Environment.GetEnvironmentVariable("DEPLOYMENT_PROFILE"),
     Environment.GetEnvironmentVariable("ASPNETCORE_URLS") ?? builder.Configuration["urls"],
     builder.Configuration.GetSection("Kestrel:Endpoints").GetChildren().Any(),
-    Environment.GetEnvironmentVariable("ASPNETCORE_FORWARDEDHEADERS_ENABLED"));
+    Environment.GetEnvironmentVariable("ASPNETCORE_FORWARDEDHEADERS_ENABLED"),
+    Environment.GetEnvironmentVariable("DEPLOYMENT_PROXY_IP"));
 builder.Services.AddSingleton(deploymentBoundary);
 if (deploymentBoundary.ListenUrl is not null) builder.WebHost.UseUrls(deploymentBoundary.ListenUrl);
 builder.Configuration["AllowedHosts"] = string.Join(';', deploymentBoundary.AllowedHosts);

@@ -7,7 +7,7 @@ namespace DevCoreBlog.Core.Publishing;
 /// <summary>One non-secret editorial preference record. Approved sender facts never override transport configuration.</summary>
 public sealed class PublicationSettings
 {
-    public const string DefaultName = "Aether Notes";
+    public const string DefaultName = "Aether Letter";
     public const string DefaultCadence = "Haftalık kişisel deney bülteni; içerik hazır olduğunda.";
     private PublicationSettings() { }
     public int Id { get; private set; } = 1;

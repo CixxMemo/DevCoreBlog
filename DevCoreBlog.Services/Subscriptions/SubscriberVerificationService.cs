@@ -37,12 +37,12 @@ public sealed class SubscriberVerificationMessageFactory(TransactionalEmailProte
             SubscriberVerificationRules.Digest(bytes), SubscriberVerificationRules.AddressBinding(subscriber.AddressKey), now);
         var url = links.Create(token);
         var exitUrl = exits.Create(subscriber);
-        var html = "<p>Aether Notes bülten aboneliği için e-posta adresinizi doğrulayın.</p><p><a href=\"" +
+        var html = "<p>Aether Letter bülten aboneliği için e-posta adresinizi doğrulayın.</p><p><a href=\"" +
             HtmlEncoder.Default.Encode(url) + "\">E-posta adresimi doğrula</a></p><p>Bu bağlantı 24 saat geçerlidir. Talep size ait değilse bu e-postayı yok sayabilirsiniz.</p>";
         html += "<p><a href=\"" + HtmlEncoder.Default.Encode(exitUrl) + "\">Abonelik talebini iptal et / bülten aboneliğinden çık</a></p>";
-        var text = "Aether Notes bülten aboneliği için e-posta adresinizi doğrulayın:\n" + url +
+        var text = "Aether Letter bülten aboneliği için e-posta adresinizi doğrulayın:\n" + url +
             "\nBu bağlantı 24 saat geçerlidir. Talep size ait değilse bu e-postayı yok sayabilirsiniz.\nAbonelik talebini iptal et / bülten aboneliğinden çık:\n" + exitUrl;
-        var email = protection.Prepare(id, subscriber, "Aether Notes — E-posta adresinizi doğrulayın", html, text, now, draft.ExpiresUtc);
+        var email = protection.Prepare(id, subscriber, "Aether Letter — E-posta adresinizi doğrulayın", html, text, now, draft.ExpiresUtc);
         return new(draft, email);
     }
 }

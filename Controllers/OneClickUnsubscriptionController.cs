@@ -29,6 +29,8 @@ public sealed class OneClickUnsubscriptionController(OneClickUnsubscriptionServi
         if (Request.QueryString.Value?.Length > 520 || Request.Query.Count != 1 || Request.Query.Keys.Single() != "t" || Request.Query["t"].Count != 1)
             return StatusCode(400);
         if (Request.ContentLength > 2048) return StatusCode(413);
+        // Without a form content type ReadFormAsync throws; that is a client error, not an outage.
+        if (!Request.HasFormContentType) return StatusCode(415);
         using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         deadline.CancelAfter(TimeSpan.FromSeconds(10));
         try

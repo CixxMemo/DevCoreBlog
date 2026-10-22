@@ -158,7 +158,7 @@ internal sealed class HomeProjectionInterceptor:DbCommandInterceptor{
             start()
             before = snapshot()
             home = request()
-            check('approved_hero_defaults_and_real_form_before_first_settings', home[0] == 200 and 'Yapay zekâyı deneyerek öğren' in html.unescape(home[2]) and 'id="publication-name">Aether Notes' in home[2] and 'id="registration-form"' in home[2] and sql('SELECT count(*) FROM "PublicationSettings"') == '0')
+            check('approved_hero_defaults_and_real_form_before_first_settings', home[0] == 200 and 'Yapay zekâyı deneyerek öğren' in html.unescape(home[2]) and 'id="publication-name">Aether Letter' in home[2] and 'id="registration-form"' in home[2] and sql('SELECT count(*) FROM "PublicationSettings"') == '0')
             check('real_public_cards_without_private_body_title_or_slug', all(title in html.unescape(home[2]) for title in ('AI gelişmesi', 'Bir deneyin sonucu', 'Teknoloji üzerine düşünceler')) and 'PRIVATE_HOME_TITLE' not in home[2] and 'home-4' not in home[2])
             check('actual_home_select_only_name_and_cadence', (f / 'projection.txt').read_text().splitlines() == ['narrow'])
             variants = [request(), request(method='HEAD'), request('/Home/Index'), request('/home/index/'), request('/?page=0'), request('/?page=2')]

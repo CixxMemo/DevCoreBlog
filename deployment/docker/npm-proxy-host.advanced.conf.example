@@ -1,0 +1,50 @@
+# Nginx Proxy Manager > Proxy Hosts > (blog domain) > Advanced > "Custom Nginx Configuration".
+# STATUS: drafted from the repository contract; NOT yet verified on the real proxy (F51 verifies it).
+# Proxy Host settings: Scheme http, Forward Hostname/IP 172.30.0.20, Port 8080 (the app container on aether_edge),
+#   SSL: request a Let's Encrypt certificate, but leave "Force SSL" OFF and HSTS OFF in NPM:
+#   the app redirects HTTP to HTTPS itself (308) and must answer plain-HTTP one-click URLs with 400 (no redirect),
+#   and it already sends the single HSTS header. Websockets/Cache Assets/Block Common Exploits: OFF.
+# One-click proofs are query values: never log $request, $request_uri, $args or the Referer.
+error_log /dev/null;
+client_max_body_size 10m;
+
+location ~* ^/abonelik/tek-tik/*$ {
+    if ($scheme = http) { return 400; }
+    access_log off;
+    add_header Cache-Control "no-store" always;
+    add_header Referrer-Policy "no-referrer" always;
+    add_header X-Robots-Tag "noindex, nofollow, noarchive" always;
+    proxy_pass http://172.30.0.20:8080;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    # Overwrite, never append: the app trusts exactly one hop (this proxy).
+    proxy_set_header X-Forwarded-For $remote_addr;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header X-Forwarded-Host "";
+    proxy_set_header X-Forwarded-Prefix "";
+    proxy_set_header Forwarded "";
+    proxy_set_header X-Real-IP "";
+    proxy_set_header Connection "";
+    proxy_cache off;
+    proxy_intercept_errors off;
+    proxy_connect_timeout 5s;
+    proxy_read_timeout 60s;
+}
+
+location / {
+    access_log off;   # raw access logs can contain query strings; safe per-request diagnostics come from the app's JSON logs
+    proxy_pass http://172.30.0.20:8080;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-For $remote_addr;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header X-Forwarded-Host "";
+    proxy_set_header X-Forwarded-Prefix "";
+    proxy_set_header Forwarded "";
+    proxy_set_header X-Real-IP "";
+    proxy_set_header Connection "";
+    proxy_cache off;
+    proxy_intercept_errors off;
+    proxy_connect_timeout 5s;
+    proxy_read_timeout 60s;
+}

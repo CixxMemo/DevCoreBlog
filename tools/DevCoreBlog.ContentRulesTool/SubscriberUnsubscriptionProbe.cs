@@ -50,7 +50,7 @@ internal static class SubscriberUnsubscriptionProbe
         }
         if (args.Contains("--unsubscription-live"))
         {
-            config = new(Environment.GetEnvironmentVariable("RESEND_API_KEY"), "onboarding@resend.dev", "Aether Notes Test");
+            config = new(Environment.GetEnvironmentVariable("RESEND_API_KEY"), "onboarding@resend.dev", "Aether Letter Test");
             using var services = new ServiceCollection().AddLogging().AddResendEmail(config).BuildServiceProvider();
             var sender = new Sender(services.GetRequiredService<IEmailSender>());
             protection = new(provider, config);

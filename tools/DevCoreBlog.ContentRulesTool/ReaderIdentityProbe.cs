@@ -33,7 +33,7 @@ internal static class ReaderIdentityProbe
             var now = ReaderIdentityRules.Utc(DateTime.UtcNow);
             var config = new ResendOptions("re_synthetic", "sender@example.test", "Synthetic");
             var live = args.Contains("--reader-live");
-            if (live) config = new ResendOptions(Environment.GetEnvironmentVariable("RESEND_API_KEY"), "onboarding@resend.dev", "Aether Notes Test");
+            if (live) config = new ResendOptions(Environment.GetEnvironmentVariable("RESEND_API_KEY"), "onboarding@resend.dev", "Aether Letter Test");
             var protector = new TransactionalEmailProtector(provider, config);
             var links = new SubscriberVerificationLinks("https://aether.example.test");
             var factory = new ReaderLoginMessageFactory(protector, links);

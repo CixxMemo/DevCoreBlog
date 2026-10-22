@@ -22,7 +22,7 @@ public sealed class NewsletterController(PublicNewsletterTeaserService teasers, 
             var result = await teasers.ReadPageAsync(page, cancellationToken);
             if (page > 1 && result.Items.Count == 0) return NotFound();
             var path = "/bulten" + (page > 1 ? "?page=" + page.ToString(CultureInfo.InvariantCulture) : "");
-            ViewData["Metadata"] = metadata.Information("Bülten", "Yayımlanmış Aether Notes sayılarının başlıkları ve kısa özetleri.", path);
+            ViewData["Metadata"] = metadata.Information("Bülten", "Yayımlanmış Aether Letter sayılarının başlıkları ve kısa özetleri.", path);
             return View(new NewsletterTeaserListModel(result, page));
         }
         catch (NewsletterTeaserStorageException)

@@ -17,7 +17,7 @@ const snapshot=()=>sql('SELECT to_jsonb(p)-\'ViewCount\' FROM "Posts" p ORDER BY
  const p=await context.newPage();p.on('pageerror',e=>errors.push(e.message));
  for(const route of ['/','/about','/contact','/sign-in','/ara?query=F43_NO_MATCH','/category/f01-active','/post/f01-visible']){
   const response=await p.goto(base+route);const body=await p.locator('body').innerText();
-  check('brand_language_'+route,response.status()===200&&await p.locator('html').getAttribute('lang')==='tr'&&(await p.title()).includes('Aether Notes')&&!body.toLowerCase().includes('devcore')&&await p.locator('meta[property="og:site_name"]').getAttribute('content')==='Aether Notes');
+  check('brand_language_'+route,response.status()===200&&await p.locator('html').getAttribute('lang')==='tr'&&(await p.title()).includes('Aether Letter')&&!body.toLowerCase().includes('devcore')&&await p.locator('meta[property="og:site_name"]').getAttribute('content')==='Aether Letter');
   check('no_admin_navigation_'+route,await p.locator('a[href*="Account/Login"],a[href*="fixture-admin"],a[href*="/Admin"]').count()===0);
   check('canonical_origin_'+route,(await p.locator('link[rel="canonical"]').getAttribute('href')).startsWith('https://blog.example.test/'));
  }
@@ -48,7 +48,7 @@ const snapshot=()=>sql('SELECT to_jsonb(p)-\'ViewCount\' FROM "Posts" p ORDER BY
  check('settled_theme_text_contrast',contrast>=7);
  await p.screenshot({path:path.join(report,'public-home-1440.png'),fullPage:true});
  await p.emulateMedia({reducedMotion:'reduce'});check('reduced_motion_respected',await p.locator('body').evaluate(el=>getComputedStyle(el).transitionDuration.split(',').every(v=>v.trim()==='0s')));
- for(const route of ['/F43-missing','/Home/Error']){const r=await p.goto(base+route);check('real_error_status_turkish_'+route,r.status()===(route==='/Home/Error'?500:404)&&await p.locator('html').getAttribute('lang')==='tr'&&(await p.title()).includes('Aether Notes')&&(await p.locator('body').innerText()).includes('İstek kimliği:'));
+ for(const route of ['/F43-missing','/Home/Error']){const r=await p.goto(base+route);check('real_error_status_turkish_'+route,r.status()===(route==='/Home/Error'?500:404)&&await p.locator('html').getAttribute('lang')==='tr'&&(await p.title()).includes('Aether Letter')&&(await p.locator('body').innerText()).includes('İstek kimliği:'));
  }
  const invalid=await context.request.get(base+'/ara?page=0');check('invalid_list_400_turkish',invalid.status()===400&&(await invalid.text()).includes('en çok 100 karakter'));
  const nojs=await browser.newContext({javaScriptEnabled:false,viewport:{width:390,height:1000}});const n=await nojs.newPage();await n.goto(base+'/');check('no_js_navigation_search_usable',await n.getByRole('link',{name:'Hakkında',exact:true}).isVisible()&&await n.getByRole('searchbox',{name:'Yazılarda ara',exact:true}).isVisible());await nojs.close();

@@ -126,7 +126,7 @@ try:
     and public_status(public+'/other',b'{}')==404 and public_status(endpoint,b'{}')==401)
    expected={}
    for address,kind in [('delivered@resend.dev',0),('bounced@resend.dev',1),('complained@resend.dev',2)]:
-    status,sent=api('POST','/emails',{'from':'Aether Notes Test <onboarding@resend.dev>','to':[address],'subject':'F36 synthetic callback acceptance','text':'Synthetic provider event test. No login link, personal data or campaign content.'})
+    status,sent=api('POST','/emails',{'from':'Aether Letter Test <onboarding@resend.dev>','to':[address],'subject':'F36 synthetic callback acceptance','text':'Synthetic provider event test. No login link, personal data or campaign content.'})
     expected[str(uuid.UUID(sent['id']))]=(address,kind);check('test_send_'+str(kind)+'_accepted',status in (200,201));time.sleep(.6)
    observed=False
    for i in range(120):

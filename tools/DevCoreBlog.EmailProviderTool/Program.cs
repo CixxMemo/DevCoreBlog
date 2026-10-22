@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 var checks = new SortedDictionary<string, bool>();
 var diagnostics = new Dictionary<string, string>();
 var clock = new FixedClock(new DateTimeOffset(2026, 10, 14, 12, 0, 0, TimeSpan.Zero));
-var config = new ResendOptions("re_synthetic_key", "sender@example.test", "Aether Notes", "reply@example.test");
+var config = new ResendOptions("re_synthetic_key", "sender@example.test", "Aether Letter", "reply@example.test");
 var messageId = Guid.NewGuid();
 var success = "{\"id\":\"" + messageId.ToString("D") + "\"}";
 void Check(string name, bool condition) => checks.Add(name, condition);
@@ -43,7 +43,7 @@ try
     {
         var key = Environment.GetEnvironmentVariable("RESEND_API_KEY");
         // This sender is permitted solely by the provider's simulator, never configured for the application.
-        var liveOptions = new ResendOptions(key, "onboarding@resend.dev", "Aether Notes Test");
+        var liveOptions = new ResendOptions(key, "onboarding@resend.dev", "Aether Letter Test");
         Check("credential-present", liveOptions.IsConfigured);
         if (liveOptions.IsConfigured)
         {
@@ -116,7 +116,7 @@ try
             Check("fixed-https-endpoint", request.Method == HttpMethod.Post && request.RequestUri?.AbsoluteUri == "https://api.resend.com/emails");
             Check("single-recipient-only", root.GetProperty("to").GetArrayLength() == 1 && !root.TryGetProperty("cc", out _) && !root.TryGetProperty("bcc", out _));
             Check("unicode-and-both-bodies", root.GetProperty("subject").GetString() == Mail().Subject && root.GetProperty("html").GetString() == Mail().Html && root.GetProperty("text").GetString() == Mail().Text);
-            Check("sender-and-reply-to", root.GetProperty("from").GetString() == "Aether Notes <sender@example.test>" && root.GetProperty("reply_to").GetString() == "reply@example.test");
+            Check("sender-and-reply-to", root.GetProperty("from").GetString() == "Aether Letter <sender@example.test>" && root.GetProperty("reply_to").GetString() == "reply@example.test");
             Check("key-and-authorization", request.Headers.GetValues("Idempotency-Key").Single() == "synthetic/recipient-1" && request.Headers.Authorization?.Parameter == "re_synthetic_key");
             Check("closed-payload", !root.TryGetProperty("attachments", out _) && !root.TryGetProperty("scheduled_at", out _) && !root.TryGetProperty("tags", out _) && !root.TryGetProperty("headers", out _));
             return Response(200, success);

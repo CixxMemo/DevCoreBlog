@@ -29,12 +29,12 @@ public sealed class ReaderLoginMessageFactory(TransactionalEmailProtector protec
             SubscriberVerificationRules.Digest(bytes, ReaderIdentityRules.TokenPurpose),
             SubscriberVerificationRules.AddressBinding(subscriber.AddressKey), now, expires);
         var url = links.Origin + Path + "#t=" + token;
-        var html = "<p>Aether Notes okuyucu girişi için bağlantıyı açıp girişinizi onaylayın.</p><p><a href=\"" +
+        var html = "<p>Aether Letter okuyucu girişi için bağlantıyı açıp girişinizi onaylayın.</p><p><a href=\"" +
             HtmlEncoder.Default.Encode(url) + "\">Okuyucu girişi</a></p><p>Bağlantı 15 dakika geçerlidir ve yalnız bir kez kullanılabilir. " +
             "Talep size ait değilse bu e-postayı yok sayın. Giriş bağlantısını kimseyle paylaşmayın.</p>";
-        var text = "Aether Notes okuyucu girişi:\n" + url + "\nBağlantı 15 dakika geçerlidir ve yalnız bir kez kullanılabilir. " +
+        var text = "Aether Letter okuyucu girişi:\n" + url + "\nBağlantı 15 dakika geçerlidir ve yalnız bir kez kullanılabilir. " +
             "Talep size ait değilse bu e-postayı yok sayın. Giriş bağlantısını kimseyle paylaşmayın.";
-        return new(draft, protection.Prepare(id, subscriber, "Aether Notes — Okuyucu girişi", html, text, now, expires,
+        return new(draft, protection.Prepare(id, subscriber, "Aether Letter — Okuyucu girişi", html, text, now, expires,
             TransactionalEmailPurpose.ReaderLogin));
     }
 }

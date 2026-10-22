@@ -168,7 +168,7 @@ internal static class TransactionalEmailProbe
 
     private static async Task<int> LiveAsync(DbContextOptions<ApplicationDbContext> options, IDataProtectionProvider provider)
     {
-        var config = new ResendOptions(Environment.GetEnvironmentVariable("RESEND_API_KEY"), "onboarding@resend.dev", "Aether Notes Test");
+        var config = new ResendOptions(Environment.GetEnvironmentVariable("RESEND_API_KEY"), "onboarding@resend.dev", "Aether Letter Test");
         using var services = new ServiceCollection().AddLogging().AddSingleton(TimeProvider.System).AddResendEmail(config).BuildServiceProvider();
         var transport = services.GetRequiredService<IEmailSender>();
         await using var db = new ApplicationDbContext(options);
@@ -177,7 +177,7 @@ internal static class TransactionalEmailProbe
         var subscriber = await new SubscriberRepository(db).GetOrCreatePendingAsync(address, now, default);
         var protection = new TransactionalEmailProtector(provider, config);
         var store = new TransactionalEmailStore(db);
-        var job = protection.Prepare(Guid.NewGuid(), subscriber, "Aether Notes outbox simulator", "<p>Synthetic outbox acceptance.</p>", "Synthetic outbox acceptance.", now, now.AddDays(1));
+        var job = protection.Prepare(Guid.NewGuid(), subscriber, "Aether Letter outbox simulator", "<p>Synthetic outbox acceptance.</p>", "Synthetic outbox acceptance.", now, now.AddDays(1));
         var checks = new Dictionary<string,bool>();
         checks["live_isolated_enqueue"] = await store.EnqueueAsync(job, default) == EmailQueueOutcome.Queued;
         await new TransactionalEmailDispatcher(store, protection, config, transport, TimeProvider.System).RunOnceAsync(default);

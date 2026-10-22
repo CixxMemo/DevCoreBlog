@@ -139,7 +139,7 @@ internal static class SubscriberVerificationProbe
     }
     private static async Task<int> LiveAsync(DbContextOptions<ApplicationDbContext> options, IDataProtectionProvider provider)
     {
-        var config=new ResendOptions(Environment.GetEnvironmentVariable("RESEND_API_KEY"),"onboarding@resend.dev","Aether Notes Test");
+        var config=new ResendOptions(Environment.GetEnvironmentVariable("RESEND_API_KEY"),"onboarding@resend.dev","Aether Letter Test");
         using var services=new ServiceCollection().AddLogging().AddResendEmail(config).BuildServiceProvider();
         var sender=new CaptureSender(services.GetRequiredService<IEmailSender>());
         await using var db=new ApplicationDbContext(options);

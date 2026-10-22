@@ -154,7 +154,7 @@ try:
     run(['dotnet','ef','database','update','--no-build','--project','DevCoreBlog.csproj','--context','ApplicationDbContext'],{'DB_CONNECTION_STRING':connection})
     for table,row in preserved.items():sql('INSERT INTO "'+table+'" SELECT * FROM json_populate_record(NULL::"'+table+'",'+"'"+row.replace("'","''")+"')")
     sql("INSERT INTO \"Subscribers\" (\"Id\",\"EmailAddress\",\"AddressKey\",\"Status\",\"Suppression\",\"CreatedUtc\",\"UpdatedUtc\",\"VerifiedUtc\",\"Version\",\"PeriodId\") VALUES (gen_random_uuid(),'delivered@resend.dev','delivered@resend.dev',1,0,'2026-01-01Z','2026-01-01Z','2026-01-01Z',2,gen_random_uuid())")
-    start({**values,'DB_CONNECTION_STRING':connection,'RESEND_FROM_EMAIL':'onboarding@resend.dev','RESEND_FROM_NAME':'Aether Notes Test'},real=True)
+    start({**values,'DB_CONNECTION_STRING':connection,'RESEND_FROM_EMAIL':'onboarding@resend.dev','RESEND_FROM_NAME':'Aether Letter Test'},real=True)
     live_id=prepare();live_form=action(live_id);response=request('/AdminCampaign/Start',live_form)
     check('real_resend_fixed_simulator_campaign_accepted',response[0]==302 and wait(lambda:sql('SELECT count(*) FROM "CampaignDeliveryJobs" WHERE "State"=3 AND "ProviderMessageId" IS NOT NULL')=='1') and sql('SELECT count(*) FROM "CampaignDeliveryAttempts"')=='1')
     check('real_resend_http_replay_reuses_one_dispatch_and_attempt',request('/AdminCampaign/Start',live_form)[0]==302 and sql('SELECT count(*) FROM "CampaignDispatches"')=='1' and sql('SELECT count(*) FROM "CampaignDeliveryAttempts"')=='1')
