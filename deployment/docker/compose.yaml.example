@@ -2,9 +2,11 @@
 # Nothing is published to the host: the app is reached only by the reverse-proxy container
 # (Nginx Proxy Manager) over the "aether_edge" network at a fixed address. n8n and other stacks are untouched.
 #
-# One-time, after `docker compose up -d`, attach the existing proxy with its fixed address:
-#   docker network connect --ip 172.30.0.10 aether_edge nginx-proxy-manager
-# (re-run this if the proxy container is ever recreated; DEPLOYMENT_PROXY_IP must match.)
+# The proxy joins this network from its own compose file, so recreating it keeps the address
+# (DEPLOYMENT_PROXY_IP must match). In the NPM compose service:
+#   ports: ['80:80', '127.0.0.1:81:81', '443:443']   # admin panel on loopback only, reached via an SSH tunnel
+#   networks: { web-network: {}, aether_edge: { ipv4_address: 172.30.0.10 } }
+# and at its top level: aether_edge: { external: true, name: aetherletter_aether_edge }
 name: aetherletter
 services:
   web:

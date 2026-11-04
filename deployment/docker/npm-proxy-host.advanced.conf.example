@@ -1,24 +1,37 @@
 # Nginx Proxy Manager > Proxy Hosts > (blog domain) > Advanced > "Custom Nginx Configuration".
-# STATUS: drafted from the repository contract; NOT yet verified on the real proxy (F51 verifies it).
+# STATUS: verified on the real proxy (NPM 2.15.1) on 3 Nov 2026 (E04): a spoofed X-Forwarded-For gets 200,
+#   the app logs no forwarded-header mismatch, plain-HTTP one-click is 400, and certificate renewal still works.
 # Proxy Host settings: Scheme http, Forward Hostname/IP 172.30.0.20, Port 8080 (the app container on aether_edge),
 #   SSL: request a Let's Encrypt certificate, but leave "Force SSL" OFF and HSTS OFF in NPM:
-#   the app redirects HTTP to HTTPS itself (308) and must answer plain-HTTP one-click URLs with 400 (no redirect),
-#   and it already sends the single HSTS header. Websockets/Cache Assets/Block Common Exploits: OFF.
+#   the app sends the single HSTS header, and plain-HTTP one-click URLs must get 400 (no redirect), so the
+#   HTTP to HTTPS redirect below is done here instead. Websockets/Cache Assets/Block Common Exploits: OFF.
 # One-click proofs are query values: never log $request, $request_uri, $args or the Referer.
+# NPM writes its own server-level access_log/error_log lines above this block. "access_log off" cancels the
+#   access logs on this level; error_log cannot be cancelled that way, so each location sends it to /dev/null.
+# Writing "location /" here makes NPM drop its default location, whose proxy.conf appends the client-sent
+#   X-Forwarded-For ($proxy_add_x_forwarded_for). The app trusts exactly one hop, so the address is overwritten.
+#   $realip_remote_addr is the TCP peer: NPM's real_ip rules trust X-Real-IP from private and CDN ranges,
+#   so $remote_addr could carry a client-chosen value.
+access_log off;
 error_log /dev/null;
 client_max_body_size 10m;
+set $aether_http_guard "";
+if ($scheme = http) { set $aether_http_guard "h"; }
+if ($uri ~* ^/abonelik/tek-tik/*$) { set $aether_http_guard "${aether_http_guard}t"; }
+if ($aether_http_guard = "ht") { return 400; }
+if ($aether_http_guard = "h") { return 308 https://$host$request_uri; }
 
 location ~* ^/abonelik/tek-tik/*$ {
     if ($scheme = http) { return 400; }
     access_log off;
+    error_log /dev/null;
     add_header Cache-Control "no-store" always;
     add_header Referrer-Policy "no-referrer" always;
     add_header X-Robots-Tag "noindex, nofollow, noarchive" always;
     proxy_pass http://172.30.0.20:8080;
     proxy_http_version 1.1;
     proxy_set_header Host $host;
-    # Overwrite, never append: the app trusts exactly one hop (this proxy).
-    proxy_set_header X-Forwarded-For $remote_addr;
+    proxy_set_header X-Forwarded-For $realip_remote_addr;
     proxy_set_header X-Forwarded-Proto $scheme;
     proxy_set_header X-Forwarded-Host "";
     proxy_set_header X-Forwarded-Prefix "";
@@ -32,11 +45,12 @@ location ~* ^/abonelik/tek-tik/*$ {
 }
 
 location / {
-    access_log off;   # raw access logs can contain query strings; safe per-request diagnostics come from the app's JSON logs
+    access_log off;
+    error_log /dev/null;
     proxy_pass http://172.30.0.20:8080;
     proxy_http_version 1.1;
     proxy_set_header Host $host;
-    proxy_set_header X-Forwarded-For $remote_addr;
+    proxy_set_header X-Forwarded-For $realip_remote_addr;
     proxy_set_header X-Forwarded-Proto $scheme;
     proxy_set_header X-Forwarded-Host "";
     proxy_set_header X-Forwarded-Prefix "";
