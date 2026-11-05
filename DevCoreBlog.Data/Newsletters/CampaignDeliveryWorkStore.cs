@@ -65,6 +65,8 @@ public sealed class CampaignDeliveryWorkStore(ApplicationDbContext db):ICampaign
     public async Task<CampaignDeliveryStart?> StartAsync(CampaignDeliveryLease lease,string addressKey,DateTime now,CancellationToken ct)
     {
         NewsletterCampaign.RequireUtc(now);
+        // PostgreSQL keeps microseconds; the first-attempt time returned here is compared with the stored value when the attempt finishes.
+        now=now.AddTicks(-(now.Ticks%10));
         await using var tx=await db.Database.BeginTransactionAsync(ct);await Limits(ct);
         await db.Database.ExecuteSqlInterpolatedAsync($"SELECT 1 FROM \"NewsletterCampaigns\" WHERE \"Id\"={lease.CampaignId} FOR UPDATE",ct);
         var subscriber=(await db.Subscribers.FromSqlInterpolated($"SELECT * FROM \"Subscribers\" WHERE \"Id\"={lease.SubscriberId} FOR UPDATE")

@@ -57,6 +57,11 @@ internal static partial class CampaignDeliveryProbe
             &&(await f.Job()).AttemptCount==2&&(await f.Job()).State==CampaignDeliveryState.Accepted);
         var token=first.Unsubscribe?.Query[3..];
         f.Check("oneclick_and_human_proofs_are_purpose_isolated",f.One.TryRead(token,out var proof)&&proof is not null&&!f.Human.TryRead(token,out _));
+        // Linux clocks tick at 100 ns while PostgreSQL stores microseconds; the finish fence must still match its own start.
+        await f.Single();sender=new Sender();var aligned=f.Time.Now;f.Time.Now=aligned.AddTicks(7);
+        await f.Dispatcher(f.Db,sender).RunOnceAsync(default);f.Time.Now=aligned;
+        f.Check("sub_microsecond_clock_still_records_accepted_attempt",sender.Requests.Count==1&&(await f.Job()).State==CampaignDeliveryState.Accepted
+            &&(await f.Job()).ProviderMessageId is not null&&await f.Db.CampaignDeliveryAttempts.AnyAsync(a=>a.Outcome==EmailSendOutcome.Accepted&&a.ProviderMessageId!=null));
         await f.Single();sender=new Sender();for(var i=0;i<5;i++)sender.Results.Enqueue(new(EmailSendOutcome.Retryable,EmailSendReason.RateLimit,null,429));
         for(var i=0;i<5;i++){await f.Dispatcher(f.Db,sender).RunOnceAsync(default);if((await f.Job()).State==CampaignDeliveryState.Pending)f.Time.Now=(await f.Job()).DueUtc;}
         f.Check("five_attempt_limit_never_generates_sixth_call",sender.Requests.Count==5&&(await f.Job()).State==CampaignDeliveryState.Held
