@@ -50,11 +50,14 @@ internal static class AccessProbe
         context.Posts.AddRange(newsletter, article, scheduled, draft, inactive, control);
         await context.SaveChangesAsync();
         context.ChangeTracker.Clear();
-        var privateIds = new HashSet<int> { 4001, 4002, 4003, 4004, 4005 };
-        var privateSlugs = new HashSet<string> { newsletter.Slug, article.Slug, scheduled.Slug, draft.Slug, inactive.Slug };
+        Post[] opened = [newsletter, article];
+        Post[] hidden = [scheduled, draft, inactive];
 
-        async Task<bool> PublicMatrix()
+        // Published posts of every kind are public; anything unpublished or unknown never reaches a public surface.
+        async Task<bool> PublicMatrix(IReadOnlyCollection<Post> mustHide, IReadOnlyCollection<Post> mustShow)
         {
+            var hiddenIds = mustHide.Select(p => p.Id).ToHashSet();
+            var hiddenSlugs = mustHide.Select(p => p.Slug).ToHashSet();
             var legacyList = await service.GetPublishedPostsAsync();
             var legacyCategory = await service.GetPostsByCategorySlugAsync("f01-active");
             var list = await service.GetPublishedPostsPagedAsync(1, 27);
@@ -67,21 +70,27 @@ internal static class AccessProbe
             IEnumerable<int>[] lists = [legacyList.Select(p => p.Id), legacyCategory.Select(p => p.Id),
                 list.Posts.Select(p => p.Id), category.Posts.Select(p => p.Id), search.Posts.Select(p => p.Id),
                 related.Select(p => p.Id), top.Select(p => p.Id), feed.Select(p => p.Id)];
-            return lists.All(rows => rows.All(id => !privateIds.Contains(id))) && search.TotalCount == 0 &&
-                sitemap.All(p => !privateSlugs.Contains(p.Slug)) &&
+            return lists.All(rows => rows.All(id => !hiddenIds.Contains(id))) && search.TotalCount == mustShow.Count &&
+                sitemap.All(p => !hiddenSlugs.Contains(p.Slug)) &&
+                mustShow.All(post => list.Posts.Any(p => p.Id == post.Id) && search.Posts.Any(p => p.Id == post.Id) && sitemap.Any(p => p.Slug == post.Slug)) &&
                 list.Posts.Any(p => p.Id == control.Id) && feed.Any(p => p.Id == control.Id);
         }
-        checks["all_public_repository_surfaces_exclude_private_with_positive_control"] = await PublicMatrix();
-        checks["private_details_and_counter_are_denied"] =
-            await service.GetPostBySlugAsync(newsletter.Slug) is null &&
-            await service.GetPostBySlugAsync(article.Slug) is null &&
-            await service.IncrementViewCountAsync(newsletter.Id) is null &&
-            await context.Posts.Where(p => p.Id == newsletter.Id).Select(p => p.ViewCount).SingleAsync() == 9000;
-        checks["private_schedule_does_not_bound_public_cache"] =
+        checks["public_surfaces_show_published_kinds_and_hide_unpublished_with_positive_control"] = await PublicMatrix(hidden, opened);
+        checks["opened_details_and_counter_work_and_hidden_stay_denied"] =
+            await service.GetPostBySlugAsync(newsletter.Slug) is not null &&
+            await service.GetPostBySlugAsync(article.Slug) is not null &&
+            await service.GetPostBySlugAsync(scheduled.Slug) is null &&
+            await service.GetPostBySlugAsync(draft.Slug) is null &&
+            await service.GetPostBySlugAsync(inactive.Slug) is null &&
+            await service.IncrementViewCountAsync(newsletter.Id) == 9001 &&
+            await service.IncrementViewCountAsync(draft.Id) is null &&
+            await context.Posts.Where(p => p.Id == draft.Id).Select(p => p.ViewCount).SingleAsync() == 9000;
+        checks["scheduled_newsletter_bounds_public_cache"] =
             await service.GetNextScheduledPublicationAsync(now) ==
-            await context.Posts.Where(p => p.Id == 2002).Select(p => (DateTime?)p.PublishDate).SingleAsync();
-        checks["admin_reads_private_and_publication_state_stays_independent"] =
-            (await service.GetAllPostsAsync()).Count(p => privateIds.Contains(p.Id)) == privateIds.Count &&
+            await context.Posts.Where(p => p.Id == 2002 || p.Id == scheduled.Id).MinAsync(p => (DateTime?)p.PublishDate);
+        var seededIds = opened.Concat(hidden).Select(p => p.Id).ToHashSet();
+        checks["admin_reads_every_post_and_publication_state_stays_independent"] =
+            (await service.GetAllPostsAsync()).Count(p => seededIds.Contains(p.Id)) == seededIds.Count &&
             PostPublication.StateAt(newsletter, true, now) == PostPublicationState.Published;
 
         var count = await context.Posts.CountAsync();
@@ -102,7 +111,7 @@ internal static class AccessProbe
                 (kind == PostContentKind.Newsletter || PostAccessRules.Validate(
                     Fixture(0, "", kind, PostAccessScope.Public)).IsValid));
         var visible = PostPublication.VisibleAt(now).Compile();
-        checks["domain_visibility_fails_closed_for_corrupt_values"] = invalidInputs.All(post =>
+        checks["domain_visibility_fails_closed_for_corrupt_values"] = invalidInputs.Where(post => post.ContentKind != PostContentKind.Newsletter).All(post =>
         {
             post.Category = new Category { IsActive = true };
             return !visible(post);
@@ -124,8 +133,8 @@ internal static class AccessProbe
         await using (var transaction = await context.Database.BeginTransactionAsync())
         {
             await context.Database.ExecuteSqlRawAsync("ALTER TABLE \"Posts\" DROP CONSTRAINT \"CK_Posts_NewsletterAccess\", DROP CONSTRAINT \"CK_Posts_ContentKind\", DROP CONSTRAINT \"CK_Posts_AccessScope\"");
-            await context.Database.ExecuteSqlRawAsync("UPDATE \"Posts\" SET \"AccessScope\"=0 WHERE \"Id\"=4001; UPDATE \"Posts\" SET \"ContentKind\"=99, \"AccessScope\"=0 WHERE \"Id\"=4002; UPDATE \"Posts\" SET \"AccessScope\"=99 WHERE \"Id\"=4003");
-            checks["sql_public_surfaces_fail_closed_when_constraints_are_bypassed"] = await PublicMatrix() &&
+            await context.Database.ExecuteSqlRawAsync("UPDATE \"Posts\" SET \"ContentKind\"=99 WHERE \"Id\"=4001; UPDATE \"Posts\" SET \"AccessScope\"=99 WHERE \"Id\"=4002");
+            checks["sql_public_surfaces_fail_closed_when_constraints_are_bypassed"] = await PublicMatrix(opened.Concat(hidden).ToArray(), []) &&
                 await service.IncrementViewCountAsync(newsletter.Id) is null;
             await transaction.RollbackAsync();
         }
@@ -136,9 +145,9 @@ internal static class AccessProbe
         edit.AccessScope = PostAccessScope.Subscribers;
         var saved = await service.UpdatePostAsync(edit, expectedEditVersion: version);
         var committed = await context.Posts.AsNoTracking().SingleAsync(p => p.Id == control.Id);
-        checks["access_edit_is_versioned_and_invalidates_public_cache"] = saved.IsValid &&
+        checks["access_edit_is_versioned_invalidates_cache_and_keeps_post_public"] = saved.IsValid &&
             cache.Generation == generation + 1 && committed.EditVersion == version + 1 && committed.UpdatedDate.HasValue &&
-            await service.GetPostBySlugAsync(control.Slug) is null;
+            await service.GetPostBySlugAsync(control.Slug) is not null;
         // Restore only this synthetic positive control for the subsequent HTTP cache test.
         context.ChangeTracker.Clear();
         edit = await context.Posts.AsNoTracking().SingleAsync(p => p.Id == control.Id);

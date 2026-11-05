@@ -38,7 +38,7 @@ def verify(request):
                 headers.get('x-content-type-options') == 'nosniff' and
                 (method != 'HEAD' or body == ''))
     for path in ('/', '/?kind=news', '/category/home-fixture', '/ara?query=F48',
-                 '/bulten', '/about', '/contact', '/sign-in', '/abone-ol'):
+                 '/about', '/contact', '/sign-in', '/abone-ol'):
         status, _, body = request(path)
         links = PublicLinks(body)
         checks['no_rss_discovery_or_navigation_' + path] = status == 200 and not links.feed_links

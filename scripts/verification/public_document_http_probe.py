@@ -75,14 +75,21 @@ for key,wanted,unwanted in [('news',slug,[exp_slug,phil_slug]),('experience',exp
 checks['kind_canonical_drops_tracking_keeps_filter']='kind=news' in get('/?kind=news&utm_campaign=ignore')[2] and 'utm_campaign' not in re.search(r'<link[^>]*rel="canonical"[^>]*>',get('/?kind=news&utm_campaign=ignore')[2])[0]
 for kind in ['newsletter','4','unknown','NEWS','x'*11]:checks['invalid_kind_'+kind]=all(get(path+'kind='+kind)[0]==400 for path in ['/?','/ara?query=x&','/category/f01-active?'])
 checks['bounded_paging_and_input']=get('/?kind=news&page=1001')[0]==400 and get('/?kind=news&pageSize=99')[0]==400 and search('x'*101,kind='news')[0]==400
-private=[]
+opened=[];private=[]
 for name,options in [('subscribers',{'scope':1}),('newsletter',{'kind':4,'scope':1}),('draft',{'published':False}),('inactive',{'active':False}),('inactive-category',{'category':1002})]:
- hidden,hidden_slug,_,_=create('F16_PRIVATE_'+name,'F16_PRIVATE_SENTINEL_'+name,**options);private.append((hidden,hidden_slug,'F16_PRIVATE_SENTINEL_'+name))
+ hidden,hidden_slug,_,_=create('F16_PRIVATE_'+name,'F16_PRIVATE_SENTINEL_'+name,**options)
+ (opened if name in ('subscribers','newsletter') else private).append((hidden,hidden_slug,'F16_PRIVATE_SENTINEL_'+name))
  if name=='subscribers':subscriber_id=hidden
+# Former subscriber posts are public once published; unpublished ones must leave no trace anywhere.
+for _,opened_slug,sentinel in opened:
+ page=get('/post/'+opened_slug);checks['former_subscriber_'+opened_slug+'_is_public']=page[0]==200 and sentinel in page[2]
+ checks['former_subscriber_'+opened_slug+'_is_listed']=opened_slug in get('/ara?query=F16_PRIVATE')[2] and opened_slug in get('/sitemap.xml')[2] and opened_slug in get('/category/f01-active')[2]
 for hidden,hidden_slug,sentinel in private:
  stable=snapshot();denied=get('/post/'+hidden_slug);checks['private_'+hidden_slug+'_404_without_body_or_counter']=denied[0]==404 and sentinel not in denied[2] and snapshot()==stable
 public_outputs=[get(p)[2] for p in ['/', '/category/f01-active','/ara?query=F16_PRIVATE','/sitemap.xml','/api/public/posts/latest','/rss.xml',path]]
 checks['private_absent_from_all_public_projections_metadata_cache']=all(hidden_slug not in body and sentinel not in body for _,hidden_slug,sentinel in private for body in public_outputs)
+# Later paging and cache checks count exact cards, so these two leave the public lists again.
+sql('UPDATE "Posts" SET "IsActive"=false WHERE "Id" IN ('+','.join(str(row[0]) for row in opened)+');')
 # Broken/unknown/tampered document facts must never fall back to legacy HTML or produce SEO/counter writes.
 original=sql(f'SELECT "DocumentJson" FROM "Posts" WHERE "Id"={id}');old_plain=sql(f'SELECT "DocumentPlainText" FROM "Posts" WHERE "Id"={id}')
 for name,statement in [('malformed',f'"DocumentJson"=\'{{\''),('unknown',f'"DocumentJson"={quoted(doc.replace(chr(34)+"version"+chr(34)+": 1",chr(34)+"version"+chr(34)+": 2"))}'),('tampered',f'"DocumentPlainText"=\'F16_TAMPERED\'')]:
@@ -106,10 +113,10 @@ warm=get('/');cache_id=fixtures['F16_PAGE_10']['id'];cache_form=get('/AdminWriti
 cache_doc=html.unescape(re.search(r'<textarea[^>]*name="DocumentJson"[^>]*>(.*?)</textarea>',cache_form[2],re.S)[1]).lstrip('\n')
 committed=request_with_headers(admin,base+'/AdminWriting/Edit/'+str(cache_id),data={'Id':str(cache_id),'EditVersion':field(cache_form[2],'EditVersion'),'Title':'F16_CACHE_COMMITTED','DocumentJson':cache_doc,'CategoryId':'1001','IsActive':'true','SaveAction':'Save','PublishDate':field(cache_form[2],'PublishDate'),'Summary':'','Excerpt':'','__RequestVerificationToken':extract_antiforgery_token(cache_form[2])})
 checks['real_json_commit_invalidates_unfiltered_home']=committed[0]==200 and 'F16_CACHE_COMMITTED' in get('/')[2]
-# Revocation retains the canonical JSON in storage but cannot survive a stale public cache.
-sql(f'UPDATE "Posts" SET "AccessScope"=1 WHERE "Id"={cache_id};');cache_form=get('/AdminWriting/Edit/'+str(cache_id),admin)
+# Unpublishing retains the canonical JSON in storage but cannot survive a stale public cache.
+sql(f'UPDATE "Posts" SET "IsPublished"=false WHERE "Id"={cache_id};');cache_form=get('/AdminWriting/Edit/'+str(cache_id),admin)
 request_with_headers(admin,base+'/AdminWriting/Edit/'+str(cache_id),data={'Id':str(cache_id),'EditVersion':field(cache_form[2],'EditVersion'),'Title':'F16_CACHE_REVOKED','DocumentJson':cache_doc,'CategoryId':'1001','IsActive':'true','SaveAction':'Save','PublishDate':field(cache_form[2],'PublishDate'),'Summary':'','Excerpt':'','__RequestVerificationToken':extract_antiforgery_token(cache_form[2])})
-checks['privacy_change_commit_evicts_public_card_and_body']=fixtures['F16_PAGE_10']['slug'] not in card_slugs(get('/')[2]) and get('/post/'+fixtures['F16_PAGE_10']['slug'])[0]==404
+checks['unpublish_commit_evicts_public_card_and_body']=fixtures['F16_PAGE_10']['slug'] not in card_slugs(get('/')[2]) and get('/post/'+fixtures['F16_PAGE_10']['slug'])[0]==404
 # Deadline and invalidation: schedule through real JSON editor, then make the same item private through owned SQL plus real save invalidation.
 scheduled,scheduled_slug,scheduled_doc,scheduled_form=create('F16_scheduled_document','F16_SCHEDULED_BODY')
 form=get('/AdminWriting/Edit/'+str(scheduled),admin)

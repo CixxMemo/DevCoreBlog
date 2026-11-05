@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Add a protected access-change adapter only to the owned disposable HTTP source copy."""
+"""Add a protected visibility-change adapter only to the owned disposable HTTP source copy."""
 import argparse
 from pathlib import Path
 
@@ -29,11 +29,11 @@ public sealed class F04FixtureAccessController(IPostService posts) : Controller
         {
             Id = stored.Id, Title = stored.Title, Content = stored.Content,
             Summary = stored.Summary, Excerpt = stored.Excerpt, CategoryId = stored.CategoryId,
-            IsActive = stored.IsActive, IsPublished = stored.IsPublished, PublishDate = stored.PublishDate,
+            IsActive = stored.IsActive, IsPublished = false, PublishDate = stored.PublishDate,
             ThumbnailUrl = stored.ThumbnailUrl, ThumbnailPublicId = stored.ThumbnailPublicId,
             ThumbnailWidth = stored.ThumbnailWidth, ThumbnailHeight = stored.ThumbnailHeight,
             ThumbnailAlt = stored.ThumbnailAlt, ContentKind = stored.ContentKind,
-            AccessScope = PostAccessScope.Subscribers
+            AccessScope = stored.AccessScope
         };
         var result = await posts.UpdatePostAsync(input, token, stored.EditVersion);
         return result.IsValid ? Ok() : StatusCode(result.IsConflict ? 409 : 400);

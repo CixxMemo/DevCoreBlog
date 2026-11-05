@@ -28,13 +28,20 @@ internal static class PublicContentChecks
             ("plainText", p=>p.DocumentPlainText="Tampered"), ("wordCount", p=>p.DocumentWordCount=999),
             ("readingMinutes", p=>p.DocumentReadingMinutes=999), ("unknownVersion", p=>p.DocumentVersion=2),
             ("invalidJson", p=>p.DocumentJson="{"), ("partialLegacy", p=>p.DocumentVersion=null),
-            ("private", p=>p.AccessScope=PostAccessScope.Subscribers), ("newsletter", p=>p.ContentKind=PostContentKind.Newsletter),
+            ("unknownAccess", p=>p.AccessScope=(PostAccessScope)99),
             ("unknownKind", p=>p.ContentKind=(PostContentKind)99), ("inactive", p=>p.IsActive=false),
             ("inactiveCategory", p=>p.Category.IsActive=false), ("draft", p=>p.IsPublished=false),
             ("future", p=>p.PublishDate=DateTime.MaxValue) };
         foreach(var mutation in mutations) check("public.reject."+mutation.Name, ()=>{
             var post=Post();mutation.Change(post);return service.Render(post) is null && post.EditVersion==7;
         });
+        // Since 23 October 2026 every published post is public, whatever its stored kind or access class.
+        foreach(var opened in new (string Name, Action<Post> Change)[] {
+            ("subscriberScope", p=>p.AccessScope=PostAccessScope.Subscribers),
+            ("newsletter", p=>{p.ContentKind=PostContentKind.Newsletter;p.AccessScope=PostAccessScope.Subscribers;}) })
+            check("public.accept."+opened.Name, ()=>{
+                var post=Post();opened.Change(post);return service.Render(post)?.Document is not null;
+            });
         check("public.legacyOnlyWithAllDocumentFactsAbsent", ()=>{
             var post=Post();post.DocumentVersion=null;post.DocumentJson=null;post.DocumentPlainText=null;
             post.DocumentWordCount=null;post.DocumentReadingMinutes=null;

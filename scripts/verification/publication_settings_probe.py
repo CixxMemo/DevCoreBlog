@@ -124,7 +124,7 @@ public sealed class F42ReaderController:Controller{[HttpGet("/fixture-publicatio
    # Reader identity is valid, but never grants administrative settings access.
    query('''INSERT INTO "Subscribers" ("Id","EmailAddress","AddressKey","Status","Suppression","CreatedUtc","UpdatedUtc","VerifiedUtc","Version","PeriodId") VALUES (gen_random_uuid(),'f42-reader@example.test','f42-reader@example.test',1,0,'2026-01-01Z','2026-01-01Z','2026-01-01Z',2,gen_random_uuid())''')
    query(f'''INSERT INTO "ReaderSessions" ("Id","SubscriberId","SubscriberVersion","PeriodId","CreatedUtc","ExpiresUtc") SELECT '{session}',"Id","Version","PeriodId",now(),now()+interval '7 days' FROM "Subscribers"''')
-   check('valid_reader_archive_200_but_settings_denied',request('/fixture-publication/reader',opener=reader)[0]==204 and request('/bultenler',opener=reader)[0]==200 and request('/AdminPublication',opener=reader)[0]==404)
+   check('valid_reader_archive_200_but_settings_denied',request('/fixture-publication/reader',opener=reader)[0]==204 and request('/abonelik/oturum',opener=reader)[0]==200 and request('/AdminPublication',opener=reader)[0]==404)
    before=snapshot();responses=[request('/AdminPublication'),request('/AdminPublication',method='HEAD'),request('/adminpublication/'),request('/AdminPublication/Absent'),save({**form(),'Name':'<b>'})]
    check('success_head_case_errors_and_post_errors_are_private',all('no-store' in r[1].get('cache-control','') and 'noindex' in r[1].get('x-robots-tag','') and r[1].get('referrer-policy')=='no-referrer' for r in responses))
    check('saves_and_reads_do_not_publish_or_create_send_work',snapshot()==before and not packet.exists())

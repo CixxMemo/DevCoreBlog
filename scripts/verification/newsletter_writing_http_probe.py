@@ -63,10 +63,10 @@ before=snapshot()
 for route in ['/AdminDocument/Preview','/AdminEmail/Preview']:
  response=post(route,{'Input.DocumentJson':body,'Input.FromEditor':'true','__RequestVerificationToken':token})
  check(route.split('/')[1]+'_snapshot_is_private_and_readonly',response[0]==200 and private(response) and snapshot()==before and 'F33_PRIVATE_BODY' in response[2])
-public_paths=['/post/'+slug,'/','/ara?query=F33_PRIVATE','/category/f01-active','/sitemap.xml','/rss.xml','/api/public/posts/latest']
+public_paths=['/post/'+slug,'/','/ara?query=F33_PRIVATE','/category/f01-active','/sitemap.xml','/api/public/posts/latest']
 public=[get(route,anon) for route in public_paths]
-check('published_newsletter_remains_absent_from_every_public_surface',public[0][0]==404 and all('F33_PRIVATE_BODY' not in response[2] and 'F33_PRIVATE_SUMMARY' not in response[2] and slug not in response[2] for response in public))
-check('public_reads_do_not_increment_newsletter_counter',sql(f'SELECT "ViewCount" FROM "Posts" WHERE "Id"={id}')=='7')
+check('published_newsletter_is_public_on_every_surface',public[0][0]==200 and 'F33_PRIVATE_BODY' in public[0][2] and '<script> düz metin' not in public[0][2] and all(response[0]==200 and slug in response[2] for response in public[1:]))
+check('public_read_counts_the_published_newsletter_once',sql(f'SELECT "ViewCount" FROM "Posts" WHERE "Id"={id}')=='8')
 before=snapshot();stale=post(path,{**form,'EditVersion':'3','Title':'Stale korunacak konu','DocumentJson':body.replace('Türkçe','Kaybolmayan')})
 check('stale_409_retains_submitted_json_metadata_revision',stale[0]==409 and private(stale) and field(stale[2],'Title')=='Stale korunacak konu' and field(stale[2],'EditVersion')=='3' and 'Kaybolmayan' in document(stale[2]) and snapshot()==before)
 current={**form,'EditVersion':'4','PublishDate':field(published[2],'PublishDate')}

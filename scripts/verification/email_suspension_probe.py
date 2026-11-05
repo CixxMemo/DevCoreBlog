@@ -314,14 +314,20 @@ try:
             check('no_provider_call_after_all_requests', listener.calls == 0)
 
             traces = ('href="/abone-ol"', 'href="/sign-in"', 'registration-form', 'newsletter-demo', 'reader-sign-in-link', 'Bültene abone')
-            for path in ('/', '/?kind=news', '/bulten', '/about', '/contact', '/post/suspension-post', '/category/suspension-fixture'):
+            for path in ('/', '/?kind=news', '/about', '/contact', '/post/suspension-post', '/post/suspension-newsletter', '/category/suspension-fixture'):
                 status, _, body = anonymous.request(path)
                 check('no_subscription_trace' + path, status == 200 and not any(trace in html.unescape(body) for trace in traces))
             home = html.unescape(anonymous.request('/')[2])
             check('home_has_no_newsletter_promise', 'href="/bulten"' not in home and 'Bülten' not in home and 'e-posta' not in home.lower() and 'abone' not in home.lower())
             dashboard = html.unescape(admin.request('/Admin/Dashboard')[2])
-            check('admin_menu_has_no_send_or_subscriber_entry', all(label not in dashboard for label in ('Gönderimler', 'Aboneler', 'Yayın ayarları')))
-            check('newsletter_list_offers_no_send', 'AdminCampaign' not in admin.request('/AdminNewsletter')[2])
+            check('admin_menu_has_no_send_or_subscriber_entry', all(label not in dashboard for label in ('Bültenler', 'Gönderimler', 'Aboneler', 'Yayın ayarları')))
+            newsletter_list = admin.request('/AdminNewsletter')[2]
+            check('newsletter_list_offers_no_send_or_new_issue', 'AdminCampaign' not in newsletter_list and 'Yeni bülten' not in html.unescape(newsletter_list))
+            new_issue = admin.request('/AdminNewsletter/Create')
+            check('new_newsletter_goes_to_ordinary_writing', new_issue[0] == 302 and 'AdminWriting/Create' in new_issue[1].get('location', ''))
+            stored_issue = admin.request(f'/AdminNewsletter/Edit/{NEWSLETTER_ID}')
+            check('stored_newsletter_stays_editable_without_subscriber_promise', stored_issue[0] == 200 and 'Abonelere özel' not in html.unescape(stored_issue[2]) and 'E-posta önizlemesi' not in html.unescape(stored_issue[2]))
+            check('old_newsletter_address_redirects', anonymous.request('/bulten/suspension-newsletter')[1].get('location') == '/post/suspension-newsletter')
 
             exit_page = anonymous.request('/abonelik/cik')
             exit_token = Fields(exit_page[2]).values.get('__RequestVerificationToken')

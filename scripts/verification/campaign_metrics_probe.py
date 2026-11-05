@@ -84,7 +84,7 @@ try:
    fixture('replay');check('duplicate_receipt_and_distinct_repeated_event_do_not_inflate',values(request(path)[2])==v and sql('SELECT count(*) FROM "ProviderEmailEvents"')=='8')
    # A valid reader remains distinct from administrator authorization.
    sql(f'''INSERT INTO "ReaderSessions" ("Id","SubscriberId","SubscriberVersion","PeriodId","CreatedUtc","ExpiresUtc") SELECT '{session}',"Id","Version","PeriodId",now(),now()+interval '7 days' FROM "Subscribers" WHERE "Suppression"=0 ORDER BY "Id" LIMIT 1''')
-   check('valid_reader_can_access_archive',request('/fixture-metrics/reader',opener=reader)[0]==204 and request('/bultenler',opener=reader)[0]==200)
+   check('valid_reader_can_access_archive',request('/fixture-metrics/reader',opener=reader)[0]==204 and request('/abonelik/oturum',opener=reader)[0]==200)
    check('anonymous_and_valid_reader_cannot_read_metrics',all(request(path,opener=o)[0]==404 and not values(request(path,opener=o)[2]) for o in (anon,reader)))
    before=snapshot();variants=[request(path),request(path,method='HEAD'),request('/admincampaignmetrics/?id='+main),request('/AdminCampaignMetrics?id=bad'),request('/AdminCampaignMetrics?id='+str(uuid.uuid4())),request('/AdminCampaignMetrics/Absent')]
    check('success_head_and_errors_keep_private_headers',all('no-store' in r[1].get('cache-control','') and 'noindex' in r[1].get('x-robots-tag','') and r[1].get('referrer-policy')=='no-referrer' for r in variants))

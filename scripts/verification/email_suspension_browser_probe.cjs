@@ -10,7 +10,7 @@ const output = process.env.DEVCORE_SUSPENSION_REPORT_DIR;
 assert.ok(output, 'An evidence directory is required');
 fs.mkdirSync(output, { recursive: true });
 
-const publicPages = ['/', '/?kind=news', '/bulten', '/about', '/contact', '/post/f01-visible'];
+const publicPages = ['/', '/?kind=news', '/about', '/contact', '/post/f01-visible'];
 const closedPages = ['/abone-ol', '/sign-in', '/abonelik/dogrula', '/abonelik/giris'];
 const traces = ['abone-ol', '/sign-in', 'registration-form', 'newsletter-demo', 'Bültene abone', 'Okuyucu girişi'];
 const viewports = { desktop: { width: 1440, height: 1000 }, mobile: { width: 390, height: 844 } };

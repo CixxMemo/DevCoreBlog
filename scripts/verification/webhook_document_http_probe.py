@@ -64,7 +64,8 @@ elif a.mode=='restart':
  for kind,scope in [('Newsletter','Subscribers'),('Philosophy','Subscribers')]:
   hidden=send('f17-private-'+kind,payload('F17 private '+kind,contentKind=kind,accessScope=scope,isPublished=True))
   assert hidden[0]==200,hidden[:2]
-  slug=hidden[1]['slug'];checks['private_'+kind+'_server_excluded']=get('/post/'+slug)[0]==404 and slug not in get('/ara?query=F17_BODY_NEEDLE')[2] and slug not in get('/sitemap.xml')[2] and slug not in get('/api/public/posts/latest')[2]
+  # Every published post is public, whatever kind or access class the webhook stored.
+  slug=hidden[1]['slug'];checks['published_'+kind+'_is_public']=get('/post/'+slug)[0]==200 and slug in get('/ara?query=F17_BODY_NEEDLE')[2] and slug in get('/sitemap.xml')[2]
   fixtures[kind]=hidden[1]
  future=send('f17-future',payload('F17 scheduled',isPublished=True,publishDate='2099-01-01T00:00:00Z'))
  checks['future_published_stays_hidden']=future[0]==200 and future[1]['isPublished'] and get('/post/'+future[1]['slug'])[0]==404

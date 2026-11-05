@@ -109,7 +109,7 @@ public sealed class FixtureReaderController : Controller {
    check('missing_page_404',request(path+'?page=3')[0]==404)
    anon=urllib.request.build_opener(NoRedirect(),urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
    check('anonymous_has_no_addresses_or_counts',request(path,opener=anon)[0]==404 and 'f40-' not in request(path,opener=anon)[2])
-   check('valid_reader_cookie_can_access_archive',request('/fixture-reader-cookie',opener=reader)[0]==204 and request('/bultenler',opener=reader)[0]==200)
+   check('valid_reader_cookie_can_access_archive',request('/fixture-reader-cookie',opener=reader)[0]==204 and request('/abonelik/oturum',opener=reader)[0]==200)
    check('valid_reader_cookie_cannot_access_subscriber_inventory',request(path,opener=reader)[0]==404 and 'f40-' not in request(path,opener=reader)[2])
    check('success_head_and_errors_are_private',all('no-store' in r[1].get('cache-control','') and 'noindex' in r[1].get('x-robots-tag','') and r[1].get('referrer-policy')=='no-referrer' for r in (page,request(path,method='HEAD'),request(path+'?page=0'),request(path+'/NoSuchAction'))))
    check('get_head_do_not_change_lifecycle_or_send_work',snapshot()==before and not packet.exists())

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify private bodies, metadata, counters and warmed HTTP caches on the owned fixture."""
+"""Verify the public access contract: former subscriber posts open, hidden posts stay hidden, caches follow visibility."""
 import argparse
 from concurrent.futures import ThreadPoolExecutor
 import getpass
@@ -38,28 +38,46 @@ def main():
     _, token, login_status, _, _ = submit_login(admin, base,
         os.environ['DEVCORE_TEST_ADMIN_USERNAME'], os.environ['DEVCORE_TEST_ADMIN_PASSWORD'])
     checks['authorized_fixture_login'] = login_status == 200 and token is not None
-    slugs = ['f04-private-newsletter', 'f04-private-article', 'f04-private-scheduled',
-        'f04-private-draft', 'f04-private-inactive']
-    forbidden = [f'F04_PRIVATE_{part}_{id}' for id in range(4001, 4006)
-        for part in ('TITLE', 'SUMMARY', 'BODY', 'EXCERPT')]
-    forbidden += slugs + [f'f04-private-cover-{id}' for id in range(4001, 4006)]
+    # Former subscriber posts are public once published; draft, future and inactive posts must stay hidden.
+    opened = {4001: 'f04-private-newsletter', 4002: 'f04-private-article'}
+    hidden = {4003: 'f04-private-scheduled', 4004: 'f04-private-draft', 4005: 'f04-private-inactive'}
+    forbidden = [f'F04_PRIVATE_{part}_{id}' for id in hidden for part in ('TITLE', 'SUMMARY', 'BODY', 'EXCERPT')]
+    forbidden += list(hidden.values()) + [f'f04-private-cover-{id}' for id in hidden]
     surfaces = ['/', '/?page=1&pageSize=27', '/kategori/f01-active', '/ara?query=F04',
         '/ara?query=F04_PRIVATE_BODY&category=f01-active', '/post/f01-visible',
         '/api/public/posts/latest', '/sitemap.xml', '/rss.xml']
     try:
         for index, path in enumerate(surfaces):
             response = request_with_headers(visitor, base + path)
-            checks[f'public_surface_{index}_no_private_title_summary_body_url_or_meta'] = (
+            checks[f'public_surface_{index}_no_hidden_title_summary_body_url_or_meta'] = (
                 response[0] == (404 if path == '/rss.xml' else 200) and all(marker not in response[2] for marker in forbidden))
         checks['positive_public_control_in_home_search_portfolio_and_sitemap'] = all(
             'F04_PUBLIC_CONTROL' in request(visitor, base + path)[2]
             for path in ('/', '/ara?query=F04', '/api/public/posts/latest')) and (
                 'f04-public-control' in request(visitor, base + '/sitemap.xml')[2])
-        before = sql('SELECT string_agg("ViewCount"::text,\',\' ORDER BY "Id") FROM "Posts" WHERE "Id" BETWEEN 4001 AND 4005')
-        for slug in slugs:
+        for id, slug in opened.items():
+            detail = request_with_headers(visitor, base + '/post/' + slug)
+            checks[f'anonymous_reads_former_subscriber_post_{id}'] = (
+                detail[0] == 200 and f'F04_PRIVATE_BODY_{id}' in detail[2] and 'BlogPosting' in detail[2])
+            checks[f'former_subscriber_post_{id}_in_home_search_and_sitemap'] = (
+                f'F04_PRIVATE_TITLE_{id}' in request(visitor, base + '/?page=1&pageSize=27')[2]
+                and f'F04_PRIVATE_TITLE_{id}' in request(visitor, base + '/ara?query=F04')[2]
+                and slug in request(visitor, base + '/sitemap.xml')[2])
+            old = urllib.request.Request(base + '/bulten/' + slug)
+            redirects = []
+            class Stop(urllib.request.HTTPRedirectHandler):
+                def redirect_request(self, *unused):
+                    return None
+            try:
+                urllib.request.build_opener(Stop()).open(old, timeout=5)
+            except urllib.error.HTTPError as error:
+                redirects = [error.code, error.headers.get('Location')]
+            checks[f'old_newsletter_address_{id}_redirects_to_single_public_address'] = redirects == [301, '/post/' + slug]
+        before = sql('SELECT string_agg("ViewCount"::text,\',\' ORDER BY "Id") FROM "Posts" WHERE "Id" BETWEEN 4003 AND 4005')
+        for slug in hidden.values():
             for label, opener in (('anonymous', visitor), ('admin', admin)):
                 response = request_with_headers(opener, base + '/post/' + slug)
-                checks[f'{label}_{slug}_get_private_404_no_store_no_metadata'] = (
+                checks[f'{label}_{slug}_get_hidden_404_no_store_no_metadata'] = (
                     response[0] == 404 and 'no-store' in response[3].get('Cache-Control', '')
                     and all(marker not in response[2] for marker in forbidden))
                 head = urllib.request.Request(base + '/post/' + slug, method='HEAD')
@@ -68,11 +86,12 @@ def main():
                         status, body = result.status, result.read()
                 except urllib.error.HTTPError as error:
                     status, body = error.code, error.read()
-                checks[f'{label}_{slug}_head_private_404_empty'] = status == 404 and body == b''
-        checks['private_get_head_admin_requests_do_not_increment_counter'] = before == sql(
-            'SELECT string_agg("ViewCount"::text,\',\' ORDER BY "Id") FROM "Posts" WHERE "Id" BETWEEN 4001 AND 4005')
+                checks[f'{label}_{slug}_head_hidden_404_empty'] = status == 404 and body == b''
+            checks[f'old_newsletter_address_of_{slug}_stays_404'] = request(visitor, base + '/bulten/' + slug)[0] == 404
+        checks['hidden_get_head_admin_requests_do_not_increment_counter'] = before == sql(
+            'SELECT string_agg("ViewCount"::text,\',\' ORDER BY "Id") FROM "Posts" WHERE "Id" BETWEEN 4003 AND 4005')
         edit = request(admin, base + '/AdminPost/Edit/4001')
-        checks['authorized_admin_editor_can_read_private_body'] = edit[0] == 200 and 'F04_PRIVATE_BODY_4001' in edit[2]
+        checks['authorized_admin_editor_can_read_stored_body'] = edit[0] == 200 and 'F04_PRIVATE_BODY_4001' in edit[2]
         form = {'Id': '4001', 'EditVersion': extract_hidden_value(edit[2], 'EditVersion') or '',
             'Title': 'F04_PRIVATE_TITLE_4001', 'Content': 'F04_PRIVATE_BODY_4001',
             'Summary': 'F04_PRIVATE_SUMMARY_4001', 'Excerpt': 'F04_PRIVATE_EXCERPT_4001',
@@ -80,10 +99,9 @@ def main():
             'PublishDate': '2026-10-01T12:00:00', 'AccessScope': '0', 'ContentKind': '1',
             '__RequestVerificationToken': extract_antiforgery_token(edit[2]) or ''}
         saved = request(admin, base + '/AdminPost/Edit/4001', data=form)
-        checks['legacy_admin_save_ignores_posted_classification_and_preserves_private_access'] = (
+        checks['legacy_admin_save_ignores_posted_classification'] = (
             saved[0] == 200 and '/AdminPost' in saved[1] and sql(
-                'SELECT "ContentKind"::text || \',\' || "AccessScope"::text FROM "Posts" WHERE "Id"=4001') == '4,1'
-            and request(visitor, base + '/post/f04-private-newsletter')[0] == 404)
+                'SELECT "ContentKind"::text || \',\' || "AccessScope"::text FROM "Posts" WHERE "Id"=4001') == '4,1')
 
         warm = [request(visitor, base + path) for path in ('/', '/kategori/f01-active')]
         sql('UPDATE "Posts" SET "Title"=\'F04_CACHE_DB_ONLY_CANARY\' WHERE "Id"=4010')
@@ -97,16 +115,16 @@ def main():
         no_csrf = request(admin, base + '/fixture-access/hide-control', data={})
         checks['fixture_mutation_retains_auth_and_antiforgery'] = denied[0] in (400, 404) and no_csrf[0] == 400
         control_form = request(admin, base + '/AdminPost/Edit/4010')
-        hidden = request(admin, base + '/fixture-access/hide-control', data={
+        unpublished = request(admin, base + '/fixture-access/hide-control', data={
             '__RequestVerificationToken': extract_antiforgery_token(control_form[2]) or ''})
-        checks['actual_service_access_change_committed'] = hidden[0] == 200 and sql(
-            'SELECT "AccessScope" FROM "Posts" WHERE "Id"=4010') == '1'
+        checks['actual_service_visibility_change_committed'] = unpublished[0] == 200 and sql(
+            'SELECT "IsPublished" FROM "Posts" WHERE "Id"=4010') == 'f'
         def fresh_read(path):
             opener, _ = cookie_opener()
             return request(opener, base + path)
         with ThreadPoolExecutor(max_workers=6) as pool:
             responses = list(pool.map(fresh_read, ['/', '/kategori/f01-active'] * 6))
-        checks['access_change_evicts_warmed_lists_and_parallel_reads'] = all(
+        checks['visibility_change_evicts_warmed_lists_and_parallel_reads'] = all(
             result[0] == 200 and 'F04_PUBLIC_CONTROL' not in result[2] and 'F04_CACHE_DB_ONLY_CANARY' not in result[2]
             for result in responses)
         checks['formerly_public_detail_and_crawler_documents_now_hide_body'] = (
@@ -133,7 +151,7 @@ def main():
         args.report.parent.mkdir(parents=True, exist_ok=True)
         args.report.write_text(json.dumps({'checks': checks, 'passed': bool(checks) and all(checks.values()),
             'scope': 'Owned synthetic PostgreSQL and disposable HTTP host only; no real dotenv/provider.'}, indent=2) + '\n')
-    print('f04_http_private_access_and_cache_matrix=true')
+    print('f04_http_public_access_and_cache_matrix=true')
     return 0
 
 

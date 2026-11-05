@@ -86,11 +86,6 @@ fi
 if [ -n "${DEVCORE_VOL1_F08_REPORT_DIR:-}" ]; then
     python3 "$task_source/scripts/verification/f08_prepare_fixture.py" --source "$task_source"
 fi
-if [ -n "${DEVCORE_VOL1_F32_REPORT_DIR:-}" ]; then
-    mkdir -p "$DEVCORE_VOL1_F32_REPORT_DIR"
-    export DEVCORE_F32_SQL_CAPTURE="$DEVCORE_VOL1_F32_REPORT_DIR/sql-projection.txt"
-    python3 "$task_source/scripts/verification/f32_prepare_fixture.py" --source "$task_source"
-fi
 if [ "${DEVCORE_F30_PROBE:-0}" = 1 ]; then
     python3 "$task_source/scripts/verification/f30_prepare_fixture.py" --source "$task_source"
 fi
@@ -611,7 +606,7 @@ if [ -n "${DEVCORE_VOL1_F08_REPORT_DIR:-}" ]; then
             --report "$DEVCORE_VOL1_F33_REPORT_DIR/newsletter-writing-http.json"
     fi
     if [ -n "${DEVCORE_VOL1_F32_REPORT_DIR:-}" ]; then
-        python3 "$task_source/scripts/verification/newsletter_teasers_http_probe.py" \
+        python3 "$task_source/scripts/verification/newsletter_public_http_probe.py" \
             --base-url "http://127.0.0.1:$task_app_port" --database-port "$task_pg_port" \
             --report-dir "$DEVCORE_VOL1_F32_REPORT_DIR"
     fi
