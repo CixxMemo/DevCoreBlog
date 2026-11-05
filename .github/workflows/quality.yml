@@ -23,6 +23,9 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22'
+      # Fixture PostgreSQL ports sit in Linux's ephemeral range, where a local client's TIME_WAIT socket can block their bind.
+      - name: Keep fixture ports out of the ephemeral range
+        run: sudo sysctl -w net.ipv4.ip_local_reserved_ports=55400-55600
       - name: PostgreSQL fixture tools
         run: |
           sudo apt-get update

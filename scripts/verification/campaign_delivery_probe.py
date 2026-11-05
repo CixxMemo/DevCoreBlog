@@ -8,7 +8,7 @@ p=argparse.ArgumentParser();p.add_argument('--report',type=Path,required=True);p
 p.add_argument('--live-only',action='store_true');p.add_argument('--env-file',type=Path);a=p.parse_args()
 root=Path(__file__).resolve().parents[2]
 env={k:v for k,v in os.environ.items() if k in ('PATH','HOME','TMPDIR','DOTNET_ROOT','NUGET_PACKAGES','LANG','LC_ALL')}
-env.update(PGPASSFILE='/dev/null',PGCONNECT_TIMEOUT='5');checks={};version='unverified'
+env.update(PGPASSFILE='/dev/null',PGCONNECT_TIMEOUT='5');checks={};version='unverified';start_failure=[]
 previous='20261014175940_ProviderEmailEvents';current='20261014185330_CampaignDeliveryWork'
 def run(cmd,extra=None,required=True,timeout=150):
  if extra and "DB_CONNECTION_STRING" in extra and any(str(x).endswith("ContentRulesTool.dll") for x in cmd) and not any("seed" in str(x) for x in cmd):
@@ -67,10 +67,12 @@ try:
    check('fixture_uses_actual_postgresql',version.startswith('16.'))
   finally:
    if started:run(['pg_ctl','-D',owned+'/pg','-m','fast','-w','stop'],required=False)
+   # The synthetic cluster log is deleted with its directory; keep why it could not start.
+   elif (f/'pg.log').exists():start_failure=[line for line in (f/'pg.log').read_text().splitlines() if 'FATAL' in line or 'could not' in line][-4:]
   check('owned_cluster_stopped',run(['pg_isready','-h','127.0.0.1','-p',a.port],required=False).returncode!=0)
  check('owned_data_removed',not f.exists())
 except Exception as e:checks['fixture_completed']=False;print(str(e) if isinstance(e,RuntimeError) else type(e).__name__,flush=True)
 finally:
- a.report.parent.mkdir(parents=True,exist_ok=True);report={'passed':bool(checks) and all(checks.values()),'count':len(checks),'checks':checks,'postgres_version':version,
+ a.report.parent.mkdir(parents=True,exist_ok=True);report={'passed':bool(checks) and all(checks.values()),'count':len(checks),'checks':checks,'postgres_version':version,'postgres_start_failure':start_failure,
   'scope':'Owned real PostgreSQL/HTTPS/Nginx restart, concurrency, lifecycle and fault acceptance; synthetic faults, no real email.' if not a.live_only else 'One Resend delivered@resend.dev simulator message through persistent campaign pipeline. API acceptance only; no personal recipient, DKIM/mailbox/production claim.'};a.report.write_text(json.dumps(report,indent=2)+'\n')
 raise SystemExit(0 if report['passed'] else 1)
