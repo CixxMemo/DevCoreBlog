@@ -9,6 +9,7 @@ namespace DevCoreBlog.Controllers;
 
 /// <summary>Public ownership request boundary; generic responses never identify existing subscriptions.</summary>
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
+[EmailPathClosed]
 public sealed class SubscriptionRegistrationController(SubscriptionRegistrationService registration,
     SubscriptionRegistrationAvailability availability) : Controller
 {

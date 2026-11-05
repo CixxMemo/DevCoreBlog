@@ -5,7 +5,7 @@
 <link rel="stylesheet" href="~/css/newsletter-inventory.css" asp-append-version="true" />
 <main class="writing-page newsletter-inventory" lang="tr">
     <h1>Bültenler</h1>
-    <p class="writing-notice">Site yayını ve e-posta gönderimi ayrı işlemlerdir. Bu ekranda hazırlama ve site yayınını yönetebilirsiniz. E-posta gönderimini ayrı Gönderimler ekranında yönetebilirsiniz.</p>
+    <p class="writing-notice">Bu ekranda hazırlama ve site yayınını yönetebilirsiniz.@if (!DevCoreBlog.Core.Email.EmailPaths.Suspended) { <text> Site yayını ve e-posta gönderimi ayrı işlemlerdir; e-posta gönderimini ayrı Gönderimler ekranında yönetebilirsiniz.</text> }</p>
     <p><a asp-action="Create" class="writing-list-link">Yeni bülten hazırla</a></p>
     @if (Model.Items.Count == 0) { <p>Bu sayfada bülten bulunmuyor.</p> }
     @foreach (var item in Model.Items) {
@@ -14,7 +14,10 @@
             <p>@item.Newsletter.Summary</p>
             <p>Site yayını: <partial name="~/Views/AdminWriting/_PublicationState.cshtml" model="item.State" /> — Abone erişimi</p>
             <p>Site yayın zamanı: @SiteDates.DateAndTime(item.Newsletter.PublishDate)</p>
-            <p><a asp-controller="AdminCampaign" asp-action="Compose" asp-route-postId="@item.Newsletter.Id">Gönderim hazırla</a> · <a asp-controller="AdminCampaign" asp-action="Index" asp-route-postId="@item.Newsletter.Id">Önceki gönderimler</a></p>
+            @if (!DevCoreBlog.Core.Email.EmailPaths.Suspended)
+            {
+                <p><a asp-controller="AdminCampaign" asp-action="Compose" asp-route-postId="@item.Newsletter.Id">Gönderim hazırla</a> · <a asp-controller="AdminCampaign" asp-action="Index" asp-route-postId="@item.Newsletter.Id">Önceki gönderimler</a></p>
+            }
         </article>
     }
     <nav aria-label="Bülten sayfaları">

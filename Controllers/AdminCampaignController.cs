@@ -22,6 +22,7 @@ public sealed class AdminCampaignController(CampaignAdministrationService servic
     }, cancellationToken);
 
     [HttpGet]
+    [DevCoreBlog.Infrastructure.EmailPathClosed("AdminEmailPathClosed")]
     public Task<IActionResult> Compose(int postId, CancellationToken cancellationToken) => Guard(async () =>
     {
         if (!ModelState.IsValid || postId <= 0) return BadRequest();
@@ -39,6 +40,7 @@ public sealed class AdminCampaignController(CampaignAdministrationService servic
 
     [HttpPost, ValidateAntiForgeryToken, EnableRateLimiting("CampaignAdminLimiter")]
     [RequestSizeLimit(4096), RequestFormLimits(ValueLengthLimit = 512, ValueCountLimit = 8, KeyLengthLimit = 64)]
+    [DevCoreBlog.Infrastructure.EmailPathClosed("AdminEmailPathClosed")]
     public Task<IActionResult> Prepare(CampaignPrepareInput input, CancellationToken cancellationToken) => Guard(async () =>
     {
         if (!ModelState.IsValid || input.StartKey == Guid.Empty || input.Decision != "prepare") return BadRequest();
@@ -56,10 +58,12 @@ public sealed class AdminCampaignController(CampaignAdministrationService servic
 
     [HttpPost, ValidateAntiForgeryToken, EnableRateLimiting("CampaignAdminLimiter")]
     [RequestSizeLimit(4096), RequestFormLimits(ValueLengthLimit = 512, ValueCountLimit = 8, KeyLengthLimit = 64)]
+    [DevCoreBlog.Infrastructure.EmailPathClosed("AdminEmailPathClosed")]
     public Task<IActionResult> Start(CampaignActionInput input, CancellationToken cancellationToken) => Act(input, "start", cancellationToken);
 
     [HttpPost, ValidateAntiForgeryToken, EnableRateLimiting("CampaignAdminLimiter")]
     [RequestSizeLimit(4096), RequestFormLimits(ValueLengthLimit = 512, ValueCountLimit = 8, KeyLengthLimit = 64)]
+    [DevCoreBlog.Infrastructure.EmailPathClosed("AdminEmailPathClosed")]
     public Task<IActionResult> Retry(CampaignActionInput input, CancellationToken cancellationToken) => Act(input, "retry", cancellationToken);
 
     [HttpPost, ValidateAntiForgeryToken, EnableRateLimiting("CampaignAdminLimiter")]

@@ -1,4 +1,5 @@
 using DevCoreBlog.Core.Subscriptions;
+using DevCoreBlog.Infrastructure;
 using DevCoreBlog.Models.Subscriptions;
 using DevCoreBlog.Services.Subscriptions;
 using Microsoft.AspNetCore.Mvc;
@@ -9,6 +10,7 @@ namespace DevCoreBlog.Controllers;
 /// <summary>Opening a link only renders confirmation; an antiforgery-protected POST consumes proof without signing in.</summary>
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
 [EnableRateLimiting("VerificationLimiter")]
+[EmailPathClosed]
 public sealed class SubscriberVerificationController(SubscriberVerificationConsumer verification) : Controller
 {
     [HttpGet(SubscriberVerificationLinks.Path)]

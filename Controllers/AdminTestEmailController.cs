@@ -10,6 +10,7 @@ namespace DevCoreBlog.Controllers;
 /// <summary>Preparing and sending tests are separate authenticated POST actions; HTTP never selects a recipient or starts a campaign.</summary>
 [Authorize]
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
+[DevCoreBlog.Infrastructure.EmailPathClosed("AdminEmailPathClosed")]
 public sealed class AdminTestEmailController(TestEmailMessageFactory factory, TestEmailSubmissionService service, TestEmailOptions options) : Controller
 {
     private const int FormRequestBytes = DocumentLimits.Utf8Bytes * 3 + 65_536;

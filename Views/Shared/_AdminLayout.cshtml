@@ -164,10 +164,12 @@
 
                     <a asp-controller="AdminNewsletter" asp-action="Index" class="admin-nav-item @(currentController == "AdminNewsletter" ? "active" : "")">Bültenler</a>
 
-                    <a asp-controller="AdminCampaign" asp-action="Index" class="admin-nav-item @(currentController == "AdminCampaign" ? "active" : "")">Gönderimler</a>
-
-                    <a asp-controller="AdminSubscriber" asp-action="Index" class="admin-nav-item @(currentController == "AdminSubscriber" ? "active" : "")">Aboneler</a>
-                    <a asp-controller="AdminPublication" asp-action="Index" class="admin-nav-item @(currentController == "AdminPublication" ? "active" : "")">Yayın ayarları</a>
+                    @if (!DevCoreBlog.Core.Email.EmailPaths.Suspended)
+                    {
+                        <a asp-controller="AdminCampaign" asp-action="Index" class="admin-nav-item @(currentController == "AdminCampaign" ? "active" : "")">Gönderimler</a>
+                        <a asp-controller="AdminSubscriber" asp-action="Index" class="admin-nav-item @(currentController == "AdminSubscriber" ? "active" : "")">Aboneler</a>
+                        <a asp-controller="AdminPublication" asp-action="Index" class="admin-nav-item @(currentController == "AdminPublication" ? "active" : "")">Yayın ayarları</a>
+                    }
 
                     @* 3. Categories *@
                     <a asp-controller="AdminCategory" asp-action="Index" 

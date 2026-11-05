@@ -204,9 +204,11 @@ builder.Services.AddSingleton<DevCoreBlog.Services.Documents.ContentDocumentVali
 builder.Services.AddSingleton<DevCoreBlog.Services.Documents.DocumentTextProducer>();
 builder.Services.AddSingleton<DevCoreBlog.Services.Documents.DocumentWebRenderer>();
 builder.Services.AddSingleton<DevCoreBlog.Services.Documents.DocumentEmailRenderer>();
+// Shelved email paths ignore every mail setting below; an unconfigured sender makes no provider call.
+var emailPathsOpen = !DevCoreBlog.Core.Email.EmailPaths.Suspended;
 DevCoreBlog.Services.Email.ResendServiceRegistration.AddResendEmail(builder.Services,
     new DevCoreBlog.Services.Email.ResendOptions(
-        Environment.GetEnvironmentVariable("RESEND_API_KEY"),
+        emailPathsOpen ? Environment.GetEnvironmentVariable("RESEND_API_KEY") : null,
         Environment.GetEnvironmentVariable("RESEND_FROM_EMAIL"),
         Environment.GetEnvironmentVariable("RESEND_FROM_NAME"),
         Environment.GetEnvironmentVariable("RESEND_REPLY_TO")));
@@ -244,7 +246,7 @@ builder.Services.AddScoped<DevCoreBlog.Services.Newsletters.CampaignDeliveryDisp
 var testEmailSetting = Environment.GetEnvironmentVariable("TEST_EMAIL_ENABLED");
 if (!string.IsNullOrEmpty(testEmailSetting) && !bool.TryParse(testEmailSetting, out _)) throw new InvalidOperationException("TEST_EMAIL_ENABLED must be true or false.");
 builder.Services.AddSingleton(new DevCoreBlog.Services.Email.TestEmailOptions(
-    bool.TryParse(testEmailSetting, out var testEmailEnabled) && testEmailEnabled,
+    emailPathsOpen && bool.TryParse(testEmailSetting, out var testEmailEnabled) && testEmailEnabled,
     Environment.GetEnvironmentVariable("TEST_EMAIL_RECIPIENT"), siteUrl.Origin));
 builder.Services.AddScoped<DevCoreBlog.Core.Email.ITestEmailSubmissionStore, DevCoreBlog.Data.Email.TestEmailSubmissionStore>();
 builder.Services.AddScoped<DevCoreBlog.Services.Email.TestEmailMessageFactory>();
@@ -254,13 +256,13 @@ var deliveryReadySetting=Environment.GetEnvironmentVariable("NEWSLETTER_DELIVERY
 if(!string.IsNullOrEmpty(campaignWorkerSetting) && !bool.TryParse(campaignWorkerSetting,out _))throw new InvalidOperationException("NEWSLETTER_WORKER_ENABLED must be true or false.");
 if(!string.IsNullOrEmpty(deliveryReadySetting) && !bool.TryParse(deliveryReadySetting,out _))throw new InvalidOperationException("NEWSLETTER_DELIVERY_READY must be true or false.");
 builder.Services.AddSingleton(services=>new DevCoreBlog.Services.Newsletters.CampaignDeliveryReadiness(
-    bool.TryParse(deliveryReadySetting,out var deliveryReady) && deliveryReady,
+    emailPathsOpen && bool.TryParse(deliveryReadySetting,out var deliveryReady) && deliveryReady,
     services.GetRequiredService<DevCoreBlog.Core.Email.IEmailSubmissionContext>(),services.GetRequiredService<DevCoreBlog.Services.Subscriptions.OneClickUnsubscriptionLinks>()));
-var campaignWorkerEnabled = bool.TryParse(campaignWorkerSetting, out var workerEnabled) && workerEnabled;
+var campaignWorkerEnabled = emailPathsOpen && bool.TryParse(campaignWorkerSetting, out var workerEnabled) && workerEnabled;
 builder.Services.AddSingleton(new DevCoreBlog.Services.Newsletters.CampaignAdministrationOptions(campaignWorkerEnabled));
 if(campaignWorkerEnabled)builder.Services.AddHostedService<DevCoreBlog.Infrastructure.CampaignDeliveryWorker>();
 builder.Services.AddSingleton(new DevCoreBlog.Services.Email.ResendWebhookOptions(
-    bool.TryParse(Environment.GetEnvironmentVariable("RESEND_WEBHOOK_ENABLED"), out var webhookEnabled) && webhookEnabled,
+    emailPathsOpen && bool.TryParse(Environment.GetEnvironmentVariable("RESEND_WEBHOOK_ENABLED"), out var webhookEnabled) && webhookEnabled,
     Environment.GetEnvironmentVariable("RESEND_WEBHOOK_SECRET"),
     Environment.GetEnvironmentVariable("RESEND_WEBHOOK_ALLOWED_SENDERS")));
 // Retention is independent of mail readiness and never enables a sender or modifies backups.
@@ -292,13 +294,14 @@ builder.Services.AddScoped<DevCoreBlog.Services.Email.TransactionalEmailDispatch
 var emailWorkerSetting = Environment.GetEnvironmentVariable("TRANSACTIONAL_EMAIL_WORKER_ENABLED");
 if (!string.IsNullOrEmpty(emailWorkerSetting) && !bool.TryParse(emailWorkerSetting, out _))
     throw new InvalidOperationException("TRANSACTIONAL_EMAIL_WORKER_ENABLED must be true or false.");
-if (bool.TryParse(emailWorkerSetting, out var emailWorkerEnabled) && emailWorkerEnabled)
+var emailWorkerEnabled = emailPathsOpen && bool.TryParse(emailWorkerSetting, out var emailWorkerValue) && emailWorkerValue;
+if (emailWorkerEnabled)
     builder.Services.AddHostedService<DevCoreBlog.Infrastructure.TransactionalEmailWorker>();
 var registrationSetting = Environment.GetEnvironmentVariable("SUBSCRIPTIONS_ENABLED");
 if (!string.IsNullOrEmpty(registrationSetting) && !bool.TryParse(registrationSetting, out _))
     throw new InvalidOperationException("SUBSCRIPTIONS_ENABLED must be true or false.");
 builder.Services.AddSingleton(services => new DevCoreBlog.Services.Subscriptions.SubscriptionRegistrationAvailability(
-    bool.TryParse(registrationSetting, out var registrationEnabled) && registrationEnabled, emailWorkerEnabled,
+    emailPathsOpen && bool.TryParse(registrationSetting, out var registrationEnabled) && registrationEnabled, emailWorkerEnabled,
     services.GetRequiredService<DevCoreBlog.Core.Email.IEmailSubmissionContext>()));
 
 
@@ -306,7 +309,7 @@ var readerLoginSetting = Environment.GetEnvironmentVariable("READER_LOGIN_ENABLE
 if (!string.IsNullOrEmpty(readerLoginSetting) && !bool.TryParse(readerLoginSetting, out _))
     throw new InvalidOperationException("READER_LOGIN_ENABLED must be true or false.");
 builder.Services.AddSingleton(services => new DevCoreBlog.Services.Subscriptions.ReaderLoginAvailability(
-    bool.TryParse(readerLoginSetting, out var readerEnabled) && readerEnabled, emailWorkerEnabled,
+    emailPathsOpen && bool.TryParse(readerLoginSetting, out var readerEnabled) && readerEnabled, emailWorkerEnabled,
     services.GetRequiredService<DevCoreBlog.Core.Email.IEmailSubmissionContext>()));
 builder.Services.AddScoped<DevCoreBlog.Core.Subscriptions.IReaderIdentityStore, DevCoreBlog.Data.Subscriptions.ReaderIdentityStore>();
 builder.Services.AddScoped<DevCoreBlog.Services.Subscriptions.ReaderLoginMessageFactory>();

@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using DevCoreBlog.Core.Subscriptions;
+using DevCoreBlog.Infrastructure;
 using DevCoreBlog.Models.Subscriptions;
 using DevCoreBlog.Security;
 using DevCoreBlog.Services.Subscriptions;
@@ -16,6 +17,7 @@ public sealed class ReaderAccountController(ReaderIdentityService identity, Read
 {
     [HttpGet("/sign-in")]
     [HttpHead("/sign-in")]
+    [EmailPathClosed]
     public IActionResult SignIn() => View(new ReaderLoginPage { Available = availability.CanRequest });
 
     [HttpPost("/sign-in")]
@@ -24,6 +26,7 @@ public sealed class ReaderAccountController(ReaderIdentityService identity, Read
     [Consumes("application/x-www-form-urlencoded")]
     [RequestSizeLimit(4096)]
     [RequestFormLimits(ValueCountLimit = 4, KeyLengthLimit = 64, ValueLengthLimit = 512)]
+    [EmailPathClosed]
     public async Task<IActionResult> SignIn([FromForm] ReaderLoginInput input, CancellationToken ct)
     {
         var valid = ModelState.IsValid;
@@ -46,6 +49,7 @@ public sealed class ReaderAccountController(ReaderIdentityService identity, Read
     [HttpGet(ReaderLoginMessageFactory.Path)]
     [HttpHead(ReaderLoginMessageFactory.Path)]
     [EnableRateLimiting("ReaderProofLimiter")]
+    [EmailPathClosed]
     public IActionResult Confirm(string? returnUrl)
     {
         if (!ValidReturn(returnUrl)) return Confirmation(ReaderLoginConfirmation.Invalid, 400);
@@ -59,6 +63,7 @@ public sealed class ReaderAccountController(ReaderIdentityService identity, Read
     [Consumes("application/x-www-form-urlencoded")]
     [RequestSizeLimit(4096)]
     [RequestFormLimits(ValueCountLimit = 4, KeyLengthLimit = 64, ValueLengthLimit = 512)]
+    [EmailPathClosed]
     public async Task<IActionResult> Confirm([FromForm] ReaderLoginProof input, CancellationToken ct)
     {
         var valid = ModelState.IsValid && ValidReturn(input.ReturnUrl);
