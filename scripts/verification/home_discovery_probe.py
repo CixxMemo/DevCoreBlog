@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""F46 real isolated PostgreSQL/MVC home, current reader identity and admission boundary.
+"""Real isolated PostgreSQL/MVC home page: content discovery with no subscription form, reader state or newsletter promise.
 Only the scheduler and transport are controlled in the owned source copy; no external email.
 """
 import argparse
@@ -38,9 +38,6 @@ class SettingsForm(HTMLParser):
 
 p = argparse.ArgumentParser()
 p.add_argument('--report', type=Path, required=True)
-p.add_argument('--browser-module', type=Path)
-p.add_argument('--browser-executable', type=Path)
-p.add_argument('--browser-script', type=Path, help='Optional trusted local Chrome acceptance script; the default keeps F46 coverage.')
 a = p.parse_args()
 root = Path(__file__).resolve().parents[2]
 env = {k: v for k, v in os.environ.items() if k in ('PATH', 'HOME', 'TMPDIR', 'DOTNET_ROOT', 'NUGET_PACKAGES', 'LANG', 'LC_ALL')}
@@ -152,68 +149,47 @@ internal sealed class HomeProjectionInterceptor:DbCommandInterceptor{
                         pass
                     time.sleep(.1)
                 raise RuntimeError('Owned home readiness failed')
-            def submit(address, token=None):
-                anti = token or Fields(request()[2]).values['__RequestVerificationToken']
-                return request('/abone-ol', {'Email': address, '__RequestVerificationToken': anti})
             start()
             before = snapshot()
             home = request()
-            check('approved_hero_defaults_and_real_form_before_first_settings', home[0] == 200 and 'Yapay zekâyı deneyerek öğren' in html.unescape(home[2]) and 'id="publication-name">Aether Letter' in home[2] and 'id="registration-form"' in home[2] and sql('SELECT count(*) FROM "PublicationSettings"') == '0')
+            check('approved_hero_defaults_without_subscription_form', home[0] == 200 and 'Yapay zekâyı deneyerek öğren' in html.unescape(home[2]) and 'id="publication-name">Aether Letter' in home[2] and 'registration-form' not in home[2] and 'Haftalık kişisel deney bülteni' not in html.unescape(home[2]) and sql('SELECT count(*) FROM "PublicationSettings"') == '0')
             check('real_public_cards_without_private_body_title_or_slug', all(title in html.unescape(home[2]) for title in ('AI gelişmesi', 'Bir deneyin sonucu', 'Teknoloji üzerine düşünceler')) and 'PRIVATE_HOME_TITLE' not in home[2] and 'home-4' not in home[2])
             check('actual_home_select_only_name_and_cadence', (f / 'projection.txt').read_text().splitlines() == ['narrow'])
             variants = [request(), request(method='HEAD'), request('/Home/Index'), request('/home/index/'), request('/?page=0'), request('/?page=2')]
             check('home_alias_head_invalid_missing_no_shared_cache', all('no-store' in r[1].get('cache-control', '') and 'age' not in r[1] for r in variants) and variants[1][2] == '' and variants[-2][0] == 400 and variants[-1][0] == 404)
             check('get_head_do_not_mutate_or_send', snapshot() == before and not packet.exists())
-            check('three_public_discovery_kinds_and_teaser_link', all('kind=' + k in home[2] for k in ('news', 'experience', 'philosophy')) and 'href="/bulten"' in home[2] and all(request('/?kind=' + k)[0] == 200 for k in ('news', 'experience', 'philosophy')))
+            check('three_public_discovery_kinds_without_newsletter_links', all('kind=' + k in home[2] for k in ('news', 'experience', 'philosophy')) and all(link not in home[2] for link in ('href="/bulten"', 'href="/abone-ol"', 'href="/sign-in"', 'newsletter-demo')) and all(request('/?kind=' + k)[0] == 200 for k in ('news', 'experience', 'philosophy')))
             check('home_post_does_not_bypass_registration_boundary', request('/', {'Email': 'ignored@example.test'})[0] in (400, 405) and snapshot() == before)
-            check('registration_requires_antiforgery', request('/abone-ol', {'Email': 'csrf@example.test'})[0] == 400 and snapshot() == before)
-            invalid = submit('bad address')
-            check('invalid_address_real_400_without_false_success', invalid[0] == 400 and 'aria-invalid="true"' in invalid[2] and 'role="status"' not in invalid[2] and snapshot() == before)
-            accepted = submit('home-new@example.test')
-            check('home_form_creates_pending_with_encrypted_verification_outbox', accepted[0] == 200 and 'Adresiniz başvuruya uygunsa' in html.unescape(accepted[2]) and sql('SELECT "Status" FROM "Subscribers" WHERE "AddressKey"=\'home-new@example.test\'') == '0' and sql('SELECT count(*) FROM "TransactionalEmailJobs"') == '1' and not packet.exists())
-            check('repeat_request_generic_and_idempotent', submit('home-new@example.test')[0] == 200 and sql('SELECT count(*) FROM "TransactionalEmailJobs"') == '1' and 'reader-archive-cta' not in request()[2])
             values = Fields(request('/fixture-admin/login', opener=admin)[2]).values
             check('real_admin_login', request('/fixture-admin/login', {**values, 'username': 'fixture-admin', 'password': 'f46-synthetic-password'}, opener=admin)[0] == 302)
-            check('admin_cookie_never_means_reader', 'registration-form' in request(opener=admin)[2] and 'reader-archive-cta' not in request(opener=admin)[2])
+            check('admin_cookie_changes_nothing_on_home', all(trace not in request(opener=admin)[2] for trace in ('registration-form', 'reader-archive-cta')))
             values = SettingsForm(request('/AdminPublication', opener=admin)[2]).values
             saved = request('/AdminPublication/Save', {**values, 'Name': 'Aether & Yeni', 'Cadence': 'Deney hazır olduğunda paylaşılır.'}, opener=admin)
             fresh = request()
-            check('admin_save_updates_public_copy_immediately_encoded_without_sender', saved[0] == 302 and 'Aether &amp; Yeni' in fresh[2] and 'Deney hazır olduğunda paylaşılır.' in html.unescape(fresh[2]) and all(s not in fresh[2] for s in ('sender@example.test', 're_synthetic', 'SenderEmail', 'SenderName', 'Version', 'ConfiguredSender')))
+            check('admin_save_updates_public_name_encoded_without_sender_or_cadence', saved[0] == 302 and 'Aether &amp; Yeni' in fresh[2] and 'Deney hazır olduğunda paylaşılır.' not in html.unescape(fresh[2]) and all(s not in fresh[2] for s in ('sender@example.test', 're_synthetic', 'SenderEmail', 'SenderName', 'Version', 'ConfiguredSender')))
             sql('''INSERT INTO "Subscribers" ("Id","EmailAddress","AddressKey","Status","Suppression","CreatedUtc","UpdatedUtc","VerifiedUtc","Version","PeriodId") VALUES (gen_random_uuid(),'home-reader@example.test','home-reader@example.test',1,0,'2026-01-01Z','2026-01-01Z','2026-01-01Z',2,gen_random_uuid())''')
             sql(f'''INSERT INTO "ReaderSessions" ("Id","SubscriberId","SubscriberVersion","PeriodId","CreatedUtc","ExpiresUtc") SELECT '{session}',"Id","Version","PeriodId",now(),now()+interval '7 days' FROM "Subscribers" WHERE "AddressKey"='home-reader@example.test' ''')
             request('/fixture-home/reader', opener=reader)
             before = snapshot()
             member = request(opener=reader)
-            check('current_reader_gets_archive_and_no_form_or_address', member[0] == 200 and 'reader-archive-cta' in member[2] and 'registration-form' not in member[2] and 'home-reader@example.test' not in member[2] and request('/bultenler', opener=reader)[0] == 200 and snapshot() == before)
+            check('reader_session_opens_archive_but_does_not_personalize_home', member[0] == 200 and all(trace not in member[2] for trace in ('reader-archive-cta', 'registration-form', 'home-reader@example.test')) and request('/bultenler', opener=reader)[0] == 200 and snapshot() == before)
             for label, created, revoked in (('expired', "now()-interval '8 days'", 'NULL'), ('revoked', 'now()', 'now()')):
                 invalid_id = str(uuid.uuid4())
                 sql(f'''INSERT INTO "ReaderSessions" ("Id","SubscriberId","SubscriberVersion","PeriodId","CreatedUtc","ExpiresUtc","RevokedUtc") SELECT '{invalid_id}',"Id","Version","PeriodId",{created},{created}+interval '7 days',{revoked} FROM "Subscribers" WHERE "AddressKey"='home-reader@example.test' ''')
                 invalid_reader = client()
                 request('/fixture-home/reader?session=' + invalid_id, opener=invalid_reader)
-                check(label + '_session_cannot_get_archive_cta', 'reader-archive-cta' not in request(opener=invalid_reader)[2] and request('/bultenler', opener=invalid_reader)[0] == 401)
+                check(label + '_session_cannot_open_archive', request('/bultenler', opener=invalid_reader)[0] == 401)
             unknown = client()
             request('/fixture-home/reader?session=' + str(uuid.uuid4()), opener=unknown)
-            check('signed_but_unknown_session_is_not_membership', 'reader-archive-cta' not in request(opener=unknown)[2])
-            check('alternating_cookies_never_share_personalization', all('reader-archive-cta' in request(opener=reader)[2] and 'registration-form' in request()[2] for _ in range(3)))
+            check('signed_but_unknown_session_is_not_membership', request('/bultenler', opener=unknown)[0] == 401)
             forged = request(headers={'Cookie': 'AetherNotes.Reader=forged'})
-            check('forged_cookie_cannot_get_archive_cta', forged[0] == 200 and 'reader-archive-cta' not in forged[2])
+            check('forged_cookie_does_not_affect_home', forged[0] == 200 and 'reader-archive-cta' not in forged[2])
             before_rss = snapshot()
             for name, passed in verify_rss_removal(request).items():
                 check(name, passed)
             check('retired_rss_and_navigation_reads_preserve_data_and_do_not_send', snapshot() == before_rss and not packet.exists())
-            if a.browser_module and a.browser_executable:
-                start()  # Reset HTTP attempt budgets before the independent browser journey.
-                result = run(['node', str(a.browser_script or root / 'scripts/verification/home_subscription_browser_probe.cjs')], {'DEVCORE_PLAYWRIGHT_MODULE': str(a.browser_module), 'DEVCORE_BROWSER_EXECUTABLE': str(a.browser_executable), 'F46_REPORT_DIR': str(a.report.parent)}, required=False, timeout=150)
-                if result.returncode:
-                    print(result.stdout[-1400:], flush=True)
-                browser_report = json.loads((a.report.parent / 'home-browser.json').read_text())
-                check('real_chrome_desktop_mobile_keyboard_javascript_free', result.returncode == 0 and browser_report['passed'])
             sql('UPDATE "Subscribers" SET "Suppression"=1,"Version"="Version"+1,"UpdatedUtc"=now() WHERE "AddressKey"=\'home-reader@example.test\'')
-            check('suppressed_stale_reader_loses_cta_on_next_get', 'reader-archive-cta' not in request(opener=reader)[2] and request('/bultenler', opener=reader)[0] == 401)
-            start({'SUBSCRIPTIONS_ENABLED': 'false'})
-            closed = request()
-            denied = submit('closed@example.test')
-            check('closed_registration_disabled_and_503_never_success', 'disabled="disabled"' in closed[2] and 'Abonelik başvuruları şu anda kapalı.' in html.unescape(closed[2]) and denied[0] == 503 and 'Adresiniz başvuruya uygunsa' not in html.unescape(denied[2]) and sql('SELECT count(*) FROM "Subscribers" WHERE "AddressKey"=\'closed@example.test\'') == '0')
+            check('suppressed_stale_reader_loses_archive_on_next_get', request('/bultenler', opener=reader)[0] == 401)
             start()
             # PostgreSQL must observe an actual table lock, rather than a mocked storage exception.
             locker = subprocess.Popen(['psql', '-X', '-h', '127.0.0.1', '-p', pg_port, '-d', 'home_test', '-c', 'BEGIN; LOCK TABLE "PublicationSettings" IN ACCESS EXCLUSIVE MODE; SELECT pg_sleep(8); ROLLBACK;'], env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -227,19 +203,15 @@ internal sealed class HomeProjectionInterceptor:DbCommandInterceptor{
                 check('real_lock_timeout_503_no_fake_default_or_form', blocked[0] == 503 and time.monotonic() - began < 8 and 'registration-form' not in blocked[2] and 'id="publication-name"' not in blocked[2] and 'no-store' in blocked[1].get('cache-control', ''))
             finally:
                 locker.wait(timeout=12)
+            # With the real DB stopped, home must preserve failure status.
             start()
-            rate = [submit('quota@example.test') for _ in range(7)]
-            check('existing_registration_rate_limit_still_429_without_false_success', any(r[0] == 429 and 'Adresiniz başvuruya uygunsa' not in html.unescape(r[2]) and 'no-store' in r[1].get('cache-control', '') for r in rate))
-            # With the real DB stopped, home and form post must preserve failure status.
-            start()
-            token = Fields(request()[2]).values['__RequestVerificationToken']
             run(['pg_ctl', '-D', owned + '/pg', '-m', 'fast', '-w', 'stop'])
             pg_started = False
-            outage, admission = request(), submit('outage@example.test', token)
-            check('real_database_outage_home_and_admission_503', outage[0] == admission[0] == 503 and 'registration-form' not in outage[2] and 'id="publication-name"' not in outage[2] and 'Adresiniz başvuruya uygunsa' not in html.unescape(admission[2]) and all('no-store' in r[1].get('cache-control', '') for r in (outage, admission)))
+            outage = request()
+            check('real_database_outage_home_503', outage[0] == 503 and 'id="publication-name"' not in outage[2] and 'no-store' in outage[1].get('cache-control', ''))
             stop()
             stream.flush()
-            check('logs_do_not_expose_addresses_settings_tokens_or_SQL', all(s not in (f / 'web.log').read_text() for s in ('home-reader@example.test', 'home-new@example.test', 'sender@example.test', 're_synthetic', 'SELECT ', 'Aether & Yeni', token)))
+            check('logs_do_not_expose_addresses_settings_or_SQL', all(s not in (f / 'web.log').read_text() for s in ('home-reader@example.test', 'sender@example.test', 're_synthetic', 'SELECT ', 'Aether & Yeni')))
         finally:
             stop()
             stream.close()

@@ -44,7 +44,7 @@ def verify(request):
         checks['no_rss_discovery_or_navigation_' + path] = status == 200 and not links.feed_links
     status, _, body = request('/')
     forms = PublicLinks(body).forms
-    checks['rss_replaced_by_existing_protected_email_form'] = (
-        status == 200 and any(form.get('action') == '/abone-ol' and form.get('method', '').lower() == 'post' for form in forms) and
-        '__RequestVerificationToken' in body and 'href="/sign-in"' in body)
+    checks['home_keeps_no_feed_or_subscription_form'] = (
+        status == 200 and not any(form.get('method', '').lower() == 'post' for form in forms) and
+        'href="/sign-in"' not in body)
     return checks

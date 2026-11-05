@@ -3,6 +3,7 @@
 import argparse,json,os,re,signal,shutil,subprocess,tempfile,time
 from pathlib import Path
 from npm_audit_policy import evaluate_npm_audit
+from dormant_email_paths import open_dormant_email_paths
 
 ROOT=Path(__file__).resolve().parents[2]
 parser=argparse.ArgumentParser()
@@ -80,6 +81,10 @@ try:
             if path.is_symlink(): raise RuntimeError('Source symlink not supported: '+name)
             if path.is_file():
                 dest=source/name;dest.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(path,dest)
+        # Production keeps the shelved email paths closed. Older stages keep testing that dormant code in this
+        # disposable copy only; the email-suspension stage builds the untouched source with every mail setting on.
+        pristine=Path(owned)/'pristine';shutil.copytree(source,pristine)
+        open_dormant_email_paths(source)
         # Use only the public registry; never read the host user's npm credentials.
         npm_global=Path(owned)/'npm-global.conf';npm_global.write_text('')
         env.update(NPM_CONFIG_USERCONFIG='/dev/null',NPM_CONFIG_GLOBALCONFIG=str(npm_global),NPM_CONFIG_REGISTRY='https://registry.npmjs.org/')
@@ -258,12 +263,18 @@ try:
             stages['admin-language']['passed']=code==0 and language['passed'] and language['count']==len(language['checks']) and all(language['checks'].values())
         except (OSError,ValueError,KeyError,TypeError):
             stages['admin-language']['passed']=False
-        code,output=run('home-subscription',['python3','scripts/verification/home_subscription_probe.py','--report',str(report/'home-subscription'/'report.json')],source,timeout=360,export=False)
+        code,output=run('home-discovery',['python3','scripts/verification/home_discovery_probe.py','--report',str(report/'home-discovery'/'report.json')],source,timeout=360,export=False)
         try:
-            home=json.loads((report/'home-subscription'/'report.json').read_text())
-            stages['home-subscription']['passed']=code==0 and home['passed'] and home['count']==len(home['checks']) and all(home['checks'].values())
+            home=json.loads((report/'home-discovery'/'report.json').read_text())
+            stages['home-discovery']['passed']=code==0 and home['passed'] and home['count']==len(home['checks']) and all(home['checks'].values())
         except (OSError,ValueError,KeyError,TypeError):
-            stages['home-subscription']['passed']=False
+            stages['home-discovery']['passed']=False
+        code,output=run('email-suspension',['python3','scripts/verification/email_suspension_probe.py','--closed',str(pristine),'--open',str(source),'--port','55541','--report',str(report/'email-suspension'/'report.json')],source,timeout=480,export=False)
+        try:
+            suspension=json.loads((report/'email-suspension'/'report.json').read_text())
+            stages['email-suspension']['passed']=code==0 and suspension['passed'] and suspension['count']==len(suspension['checks']) and all(suspension['checks'].values())
+        except (OSError,ValueError,KeyError,TypeError):
+            stages['email-suspension']['passed']=False
         code,output=run('retention',['python3','scripts/verification/retention_probe.py','--port','55540','--report',str(report/'retention'/'report.json')],source,timeout=300,export=False)
         try:
             retention=json.loads((report/'retention'/'report.json').read_text())

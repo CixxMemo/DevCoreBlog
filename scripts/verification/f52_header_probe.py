@@ -47,7 +47,7 @@ for route in ['/js/public-theme.js', '/css/admin-shell.css', '/api/categories', 
 status, _, body, headers = request_with_headers(visitor, base + '/rss.xml')
 checks['retired_rss_is_protected_html_404'] = status == 404 and '<rss' not in body and security_headers(headers) and bool(headers.get('Content-Security-Policy'))
 home = request_with_headers(visitor, base + '/')
-checks['personalized_home_and_form_are_not_shared_cached'] = 'Age' not in home[3] and 'no-store' in home[3].get('Cache-Control', '') and 'registration-form' in home[2]
+checks['home_is_not_shared_cached_and_has_no_subscription_form'] = 'Age' not in home[3] and 'no-store' in home[3].get('Cache-Control', '') and 'registration-form' not in home[2]
 first = request_with_headers(visitor, base + '/category/f01-active')
 second = request_with_headers(visitor, base + '/category/f01-active')
 checks['cached_html_has_stable_policy_and_body_without_nonce'] = first[2] == second[2] and first[3].get('Content-Security-Policy') == second[3].get('Content-Security-Policy') and 'nonce-' not in second[3].get('Content-Security-Policy', '')
