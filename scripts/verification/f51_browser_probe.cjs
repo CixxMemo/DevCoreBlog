@@ -47,7 +47,7 @@ let browser;
         });
     });
     const page = await context.newPage();
-    async function audit(target = page, label = new URL(target.url()).pathname) {
+    async function audit(target = page, label = new URL(target.url()).pathname, blockedDirective) {
         await target.waitForTimeout(250);
         const state = await target.evaluate(() => ({
             violations: window.f51Violations,
@@ -57,13 +57,14 @@ let browser;
             xssExecuted: !!(window.__f03ToastXss || window.__f04RawHtmlXss || window.__f04AttributeXss || window.__f51Xss),
         }));
         visits.push({ label, ...state });
-        assert.deepEqual(state.violations, [], `CSP violations on ${label}`);
+        const unexpected = state.violations.filter(v => !(v.directive === blockedDirective && v.blocked === 'inline' && v.disposition === 'enforce'));
+        assert.deepEqual(unexpected, [], `CSP violations on ${label}`);
         assert.equal(state.inlineExecutableScripts, 0, label);
         assert.equal(state.inlineHandlers, 0, label);
         assert.equal(state.inlineStyleElements, 0, label);
         assert.equal(state.xssExecuted, false, label);
     }
-    async function visit(route, status = 200) {
+    async function visit(route, status = 200, blockedDirective) {
         const response = await page.goto(base + route, { waitUntil: 'domcontentloaded' });
         assert.equal(response.status(), status, route);
         const policy = response.headers()[enforcing ? 'content-security-policy' : 'content-security-policy-report-only'];
@@ -73,7 +74,7 @@ let browser;
         assert.equal(policy.includes('*'), false);
         const editor = /^\/AdminPost\/(Create|Edit)/.test(route);
         assert.ok(policy.includes(editor ? "style-src-attr 'unsafe-inline'" : "style-src-attr 'none'"));
-        await audit(page, route);
+        await audit(page, route, blockedDirective);
         return response;
     }
     for (const route of ['/', '/category/f01-active', '/ara?query=F01', '/about', '/contact', (process.env.DEVCORE_TEST_ADMIN_LOGIN_PATH || '/fixture-admin/login')]) await visit(route);
@@ -95,9 +96,9 @@ let browser;
     await visit('/post/f01-markdown-xss');
     checks.json_ld_is_inert_and_valid = await page.locator('script[type="application/ld+json"]').evaluate(e => JSON.parse(e.textContent)['@type'] === 'BlogPosting');
     checks.prism_highlights_code = await page.locator('.markdown-content code .token').count() > 0;
-    await page.getByRole('button', { name: 'Copy code block 1', exact: true }).click();
-    await page.getByText('Copied.', { exact: true }).waitFor();
-    checks.code_copy = await page.getByText('Copied.', { exact: true }).count() === 1;
+    await page.getByRole('button', { name: 'Kod bloğunu kopyala 1', exact: true }).click();
+    await page.getByText('Kopyalandı.', { exact: true }).waitFor();
+    checks.code_copy = await page.getByText('Kopyalandı.', { exact: true }).count() === 1;
     const iframe = page.locator('iframe[src^="https://www.youtube-nocookie.com/embed/"]');
     checks.youtube_embed_origin = await iframe.count() === 1;
     await iframe.scrollIntoViewIfNeeded();
@@ -142,7 +143,7 @@ let browser;
     let dialogMessage;
     page.once('dialog', async dialog => { dialogMessage = dialog.message(); await dialog.dismiss(); });
     await ownDelete.click();
-    checks.category_cancel_keeps_encoded_name = dialogMessage === `Are you sure you want to delete category: '${categoryName}'?` && await ownDelete.count() === 1;
+    checks.category_cancel_keeps_encoded_name = dialogMessage === `'${categoryName}' kategorisini silmek istiyor musunuz?` && await ownDelete.count() === 1;
     page.once('dialog', dialog => dialog.accept());
     await ownDelete.click();
     await page.waitForLoadState('domcontentloaded');
@@ -185,10 +186,16 @@ let browser;
     await audit(page, 'mobile editor/drawer');
     await page.screenshot({ path: path.join(output, 'editor-mobile.png') });
     await page.setViewportSize({ width: 1440, height: 1000 });
-    await visit('/AdminPost/Edit/2005');
+    // The fixture post holds hostile Markdown. Chrome reports its inline handlers while parsing them; CSP blocks
+    // them, so only that exact block is accepted here and the markers prove that no handler ran.
+    deliberate = true;
+    await visit('/AdminPost/Edit/2005', 200, 'script-src-attr');
     await page.locator('#editor .ProseMirror[contenteditable=true]').first().waitFor({ state: 'visible' });
     checks.edit_rich_editor_works = await page.locator('#editor').isVisible() && await page.locator('#content-fallback').isHidden();
+    await page.waitForTimeout(500);
+    checks.hostile_post_handlers_never_run = !await page.evaluate(() => Object.keys(window).some(key => /^__f0[0-9].*Xss$/.test(key)));
     await page.screenshot({ path: path.join(output, 'editor-desktop.png') });
+    deliberate = false;
     await visit('/AdminPost');
     await page.getByRole('button', { name: 'Oturumu kapat', exact: true }).click();
     await page.waitForURL(base + '/', { waitUntil: 'domcontentloaded' });

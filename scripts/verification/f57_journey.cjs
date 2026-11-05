@@ -64,10 +64,10 @@ let browser;
     const failedResponse = page.waitForResponse(r => r.request().method() === 'POST' && new URL(r.url()).pathname === '/AdminPost/Create');
     await page.getByRole('button', { name: 'Taslağı kaydet', exact: true }).click();
     const failed = await failedResponse;
-    await page.waitForLoadState('domcontentloaded');
-    // Form failures render field errors with 200; the JSON upload endpoint uses 503.
-    const failureHtml = await failed.text();
-    await check('provider_failed_save_retains_recovery', failed.status() === 200 && new URL(page.url()).pathname === '/AdminPost/Create' && /Görsel depolama geçici olarak kullanılamıyor/.test(failureHtml) && await page.evaluate(() => !!localStorage.getItem('devcore_editor_draft_create')));
+    // Form failures render field errors with 200; the JSON upload endpoint uses 503. Razor encodes Turkish letters
+    // in the raw response, so wait for the rendered error the author actually sees; a missing error fails here.
+    await page.getByText('Görsel depolama geçici olarak kullanılamıyor. Yeniden deneyin.').locator('visible=true').first().waitFor();
+    await check('provider_failed_save_retains_recovery', failed.status() === 200 && new URL(page.url()).pathname === '/AdminPost/Create' && await page.evaluate(() => !!localStorage.getItem('devcore_editor_draft_create')));
     await page.goto(base + '/AdminPost?query=' + encodeURIComponent(marker));
     await check('failed_save_does_not_create_post', await page.getByRole('link', { name: marker, exact: true }).count() === 0);
     await edit('/AdminPost/Create');

@@ -37,7 +37,7 @@ def main() -> int:
 
     base = args.base_url.rstrip("/")
     admin, _ = cookie_opener()
-    wait_until_ready(admin, base + "/", "DEVCORE", 30)
+    wait_until_ready(admin, base + "/", "Aether Letter", 30)
     _, token, status, url, _ = submit_login(
         admin, base, os.environ["DEVCORE_TEST_ADMIN_USERNAME"],
         os.environ["DEVCORE_TEST_ADMIN_PASSWORD"])
@@ -60,12 +60,14 @@ def main() -> int:
                        "__RequestVerificationToken": category_token}
     category_save = request(admin, category_url, data={**common_category, "Name": "F22 first category"})
     category_conflict = request(admin, category_url, data={**common_category, "Name": "F22 second category"})
+    # Razor encodes Turkish letters in validation messages, so compare the decoded page text.
+    category_page = html.unescape(category_conflict[2])
     checks["category_conflict_preserves_first_and_input"] = (
         category_save[1].endswith("/AdminCategory") and
         category_conflict[0] == 409 and
-        "changed since" in category_conflict[2].lower() and
-        'value="F22 second category"' in category_conflict[2] and
-        "Güncel kategoriyi yeniden aç" in category_conflict[2] and
+        "siz açtıktan sonra değişmiş" in category_page and
+        'value="F22 second category"' in category_page and
+        "Güncel kategoriyi yeniden aç" in category_page and
         sql('SELECT "Name" FROM "Categories" WHERE "Id"=1001') == "F22 first category")
 
     post_url = base + "/AdminPost/Edit/2001"
@@ -79,12 +81,13 @@ def main() -> int:
                  "EditVersion": post_version, "__RequestVerificationToken": post_token}
     post_save = request(admin, post_url, data={**post_base, "Title": "F22 first post"})
     post_conflict = request(admin, post_url, data={**post_base, "Title": "F22 second post"})
+    post_page = html.unescape(post_conflict[2])
     checks["post_conflict_preserves_first_and_input"] = (
         post_save[1].endswith("/AdminPost") and
         post_conflict[0] == 409 and
-        "changed since" in post_conflict[2].lower() and
-        'value="F22 second post"' in post_conflict[2] and
-        "Güncel yazıyı yeniden aç" in post_conflict[2] and
+        "siz açtıktan sonra değişmiş" in post_page and
+        'value="F22 second post"' in post_page and
+        "Güncel yazıyı yeniden aç" in post_page and
         sql('SELECT "Title" FROM "Posts" WHERE "Id"=2001') == "F22 first post")
 
     # A visitor counter increment must not invalidate an otherwise fresh edit.
