@@ -70,15 +70,10 @@ public class HomeController : Controller
     [AcceptVerbs("GET", "HEAD")]
     public async Task<IActionResult> Index([FromQuery] PublicListInput input,
         [FromServices] PublicationIntroductionService introduction,
-        [FromServices] SubscriptionRegistrationAvailability registration,
         CancellationToken cancellationToken = default)
     {
         Response.Headers.CacheControl = "no-store";
         if (!ModelState.IsValid) return InvalidListRequest();
-        // Explicit authentication reuses current lifecycle/session validation without changing the admin identity.
-        var reader = await HttpContext.AuthenticateAsync(ReaderCookieAuthenticationEvents.Scheme);
-        if (HttpContext.Items.ContainsKey(ReaderCookieAuthenticationEvents.Unavailable))
-            return StatusCode(StatusCodes.Status503ServiceUnavailable);
         DevCoreBlog.Core.Publishing.PublicationIntroduction publicIntroduction;
         try { publicIntroduction = await introduction.ReadAsync(cancellationToken); }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { throw; }
@@ -92,7 +87,7 @@ public class HomeController : Controller
 
         // Pass the list of posts to the view
         return View(new HomePageModel(result.Posts, mostRead, input.Page, input.PageSize, result.TotalCount,
-            publicIntroduction, reader.Succeeded, registration.CanRegister, input.Kind));
+            publicIntroduction, input.Kind));
     }
 
     // GET: /post/{slug}; visible aliases redirect without incrementing the counter.

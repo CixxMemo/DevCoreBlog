@@ -447,17 +447,6 @@ html.dark .public-site .text-primary { color: var(--accent); }
   margin-bottom: 1.5rem;
 }
 .public-toolbar .public-search { order: 1; flex: 1 1 100%; }
-.public-sign-in {
-  margin-inline-start: auto;
-  flex-shrink: 0;
-  padding: 0.625rem 0.75rem;
-  border: var(--public-rule);
-  background: var(--bg-card);
-  color: var(--text-primary);
-  font: 700 var(--public-copy-size)/1.5 var(--font-mono);
-  text-decoration: none;
-}
-.public-sign-in:hover { border-color: var(--accent); }
 .public-search {
   display: flex;
   align-items: center;

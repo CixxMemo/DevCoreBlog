@@ -7,30 +7,13 @@
     var feed = Model.Posts.Skip(features.Count).ToList();
 }
 <div class="w-full min-w-0">
-    <section id="newsletter-introduction" aria-labelledby="newsletter-heading" class="border-2 border-gray-900 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-5 sm:p-8 mb-10 space-y-6">
+    <section id="home-introduction" aria-labelledby="home-heading" class="border-2 border-gray-900 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-5 sm:p-8 mb-10">
         <div class="max-w-3xl space-y-4">
             <p class="font-mono font-bold" id="publication-name">@Model.Introduction.Name</p>
-            <h1 id="newsletter-heading" class="font-mono font-bold text-3xl sm:text-4xl">Yapay zekâyı deneyerek öğren</h1>
+            <h1 id="home-heading" class="font-mono font-bold text-3xl sm:text-4xl">Yapay zekâyı deneyerek öğren</h1>
             <p class="text-lg">Kendi AI deneylerimi, işe yarayan yöntemleri ve öğrendiklerimi paylaşıyorum. Birlikte yöntemlere, sonuçlara ve sınırlarına bakalım.</p>
-            <p id="publication-cadence" class="font-mono text-sm">@Model.Introduction.Cadence</p>
-        </div>
-        <div class="max-w-xl space-y-4">
-            @if (Model.ReaderEligible)
-            {
-                <p>Okuyucu oturumunuz açık. Tam bülten arşivini okuyabilirsiniz.</p>
-                <a href="/bultenler" id="reader-archive-cta" class="inline-block border-2 border-gray-900 dark:border-zinc-400 px-4 py-3 font-bold underline">Bülten arşivine git</a>
-            }
-            else
-            {
-                <h2 class="font-mono font-bold text-xl">Deneyler e-posta kutunuza gelsin</h2>
-                <p>Bültene ücretsiz abone olun. Adresinizi doğruladıktan sonra bültenleri e-postayla alabilir, tam web arşivini okuyabilirsiniz.</p>
-                <partial name="_SubscriptionRegistration" model="new DevCoreBlog.Models.Subscriptions.SubscriptionRegistrationPage { Available = Model.RegistrationAvailable }" />
-                <p>Zaten abone misiniz? <a href="/sign-in" class="underline font-bold">Okuyucu girişi yapın</a>.</p>
-            }
-            <a href="/bulten" class="underline font-bold">Bülten sayılarını keşfet</a>
         </div>
     </section>
-    <partial name="_NewsletterInboxDemo" model="Model.Introduction.Name" />
     <nav aria-labelledby="discovery-heading" class="mb-10">
         <h2 id="discovery-heading" class="font-mono font-bold text-2xl mb-4">Merak ettiğiniz yerden başlayın</h2>
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -99,15 +82,5 @@
             @await Component.InvokeAsync("PublicCategoryNavigation", new { featured = true })
         </aside>
     </div>
-    <section aria-label="Bültene devam edin" class="mt-10 border-t-2 border-gray-900 dark:border-zinc-700 pt-6 space-y-3">
-        <h2 class="font-mono font-bold text-xl">Bir sonraki deneye birlikte bakalım</h2>
-        <a href="@(Model.ReaderEligible ? "/bultenler" : "#newsletter-introduction")" class="font-bold underline">@(Model.ReaderEligible ? "Tam bülten arşivini aç" : "Bülten aboneliğine geç")</a>
-    </section>
 </div>
 
-@section Styles {
-    <link rel="stylesheet" href="~/css/newsletter-demo.css" asp-append-version="true" />
-}
-@section Scripts {
-    <script src="~/js/newsletter-demo.js" asp-append-version="true" defer></script>
-}

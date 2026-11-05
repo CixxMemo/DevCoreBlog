@@ -91,8 +91,6 @@
                 <a href="/" aria-current="@(Context.Request.Path == "/" ? "page" : null)" class="block py-3 px-4 hover:bg-gray-900 hover:text-white dark:hover:bg-primary dark:hover:text-white rounded-none border-b border-gray-200 dark:border-zinc-800 transition-none font-bold text-sm text-gray-900 dark:text-zinc-200 no-underline">
                     Ana sayfa
                 </a>
-                <a href="/bulten" aria-current="@(Context.Request.Path == "/bulten" ? "page" : null)" class="block py-3 px-4 hover:bg-gray-900 hover:text-white dark:hover:bg-primary dark:hover:text-white border-b border-gray-200 dark:border-zinc-800 font-bold text-sm no-underline">Bülten</a>
-                <a href="/abone-ol" class="block py-3 px-4 border-b border-gray-200 dark:border-zinc-800 font-bold text-sm underline">Bültene abone ol</a>
                 @await Component.InvokeAsync("PublicCategoryNavigation")
             </nav>
         </div>
@@ -129,7 +127,6 @@
     <main id="main-content" tabindex="-1" class="flex-1 w-full md:ml-64 p-4 sm:p-6 lg:p-8 min-w-0">
         <div class="public-toolbar">
             <partial name="_PublicSearch" />
-            <a id="reader-sign-in-link" asp-controller="ReaderAccount" asp-action="SignIn" class="public-sign-in" aria-current="@(Context.Request.Path == "/sign-in" ? "page" : null)">Okuyucu girişi</a>
         </div>
         <div class="flex gap-8 min-w-0">
             @RenderBody()
