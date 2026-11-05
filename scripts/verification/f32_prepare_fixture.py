@@ -2,7 +2,7 @@
 import argparse
 from pathlib import Path
 p=argparse.ArgumentParser();p.add_argument('--source',type=Path,required=True);a=p.parse_args();source=a.source.resolve()
-assert source.name=='source' and str(source).startswith('/private/tmp/devcoreblog-f17.') and (source/'.env').read_text()=='' and not (source/'.git').exists()
+assert source.name=='source' and str(source).startswith(('/private/tmp/devcoreblog-f17.','/tmp/devcoreblog-f17.')) and (source/'.env').read_text()=='' and not (source/'.git').exists()
 program=source/'Program.cs';s=program.read_text();key='npgsqlOptions => npgsqlOptions.MigrationsAssembly(migrationsAssemblyName)));';assert key in s
 program.write_text(s.replace(key,'npgsqlOptions => npgsqlOptions.MigrationsAssembly(migrationsAssemblyName))\n        .AddInterceptors(new F32ProjectionCapture()));'))
 (source/'F32ProjectionCapture.cs').write_text('''using System.Data.Common;

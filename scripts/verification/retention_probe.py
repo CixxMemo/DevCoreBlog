@@ -16,7 +16,7 @@ def check(n,v):
  if not v:raise RuntimeError('Acceptance failed: '+n)
 if run(['pg_isready','-h','127.0.0.1','-p',a.port],required=False).returncode==0:raise SystemExit('Owned retention port occupied.')
 try:
- with tempfile.TemporaryDirectory(prefix='aether-retention-',dir='/private/tmp') as owned:
+ with tempfile.TemporaryDirectory(prefix='aether-retention-',dir='/tmp') as owned:
   f=Path(owned);(f/'socket').mkdir();started=False
   def connection(db):return f'Host=127.0.0.1;Port={a.port};Database={db};Username={getpass.getuser()};Timeout=5;Command Timeout=10;Include Error Detail=false'
   def sql(db,q):return run(['psql','-X','-h','127.0.0.1','-p',a.port,'-d',db,'-At','-v','ON_ERROR_STOP=1','-c',q]).stdout.strip()
