@@ -10,10 +10,10 @@ assert.throws(() => replaceSanitizer(upstream, purify + '\n'), /integrity change
 const rebuilt = await buildEditor(root);
 const shipped = await readFile(new URL('wwwroot/generated/toastui/toastui-editor-all.min.js', root), 'utf8');
 assert.equal(shipped, rebuilt);
-assert.ok(!shipped.includes('DOMPurify 2.3.3') && shipped.includes('DOMPurify 3.4.16'));
+assert.ok(!shipped.includes('DOMPurify 2.3.3') && shipped.includes('DOMPurify 3.4.17'));
 const receipt = JSON.parse(await readFile(new URL('wwwroot/generated/toastui/build.json', root), 'utf8'));
 assert.equal(receipt.sha256, sha256(shipped));
-assert.equal(receipt.dompurify, '3.4.16');
+assert.equal(receipt.dompurify, '3.4.17');
 console.log(JSON.stringify({ checks: {
     altered_upstream_fails_closed: true, altered_sanitizer_fails_closed: true,
     deterministic_rebuild_matches_distribution: true, old_sanitizer_absent: true,

@@ -4,7 +4,7 @@ import { parse } from 'acorn';
 import { minify } from 'terser';
 
 export const upstreamHash = '0d8c202706e3ea8d91c28307c445b55b746cf985d0994d70951b257ba207c8d9';
-export const purifyHash = '1144c3ba99465d58ff93ab2419ebd99b7d7e12525b1ca4f45308771acf34cfec';
+export const purifyHash = 'e89caec0717b7c1726e819b480133beaa1cdf7439c22fbfb753e5688be6922c3';
 export const sha256 = value => createHash('sha256').update(value).digest('hex');
 
 // Replace a complete, verified webpack module; never rewrite sanitizer internals.
@@ -38,7 +38,7 @@ export function replaceSanitizer(upstream, purify) {
     const code = upstream.slice(0, module.start) + 'function(module) {\n' + purify +
         '\n}' + upstream.slice(module.end);
     parse(code, { ecmaVersion: 'latest' });
-    if (code.includes('DOMPurify 2.3.3') || !code.includes('DOMPurify 3.4.16')) {
+    if (code.includes('DOMPurify 2.3.3') || !code.includes('DOMPurify 3.4.17')) {
         throw new Error('Sanitizer replacement did not produce the reviewed version.');
     }
     return code;

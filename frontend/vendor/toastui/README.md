@@ -2,7 +2,7 @@
 
 5 Ekim 2026: hazır CDN bundle’ı DOMPurify2.3.3 içeriyordu; runtime güvenlik
 bulgusu nedeniyle artık doğrudan kopyalanmaz. Aynı Editor3.2.2 ve CSS korunur.
-`npm run build`, resmî DOMPurify3.4.16 CJS modülünü bütün olarak webpack368
+`npm run build`, resmî DOMPurify3.4.17 CJS modülünü bütün olarak webpack368
 modülünün yerine koyup Terser ile yerel bundle üretir. Bu NHN’nin yeni resmî
 release’i değildir; DevCoreBlog tarafından bakımı yapılan dağıtımdır.
 
@@ -20,7 +20,7 @@ indirmez; mevcut script URL’si ve `asp-append-version` cache busting korunur.
 - [Resmî upstream JS](https://uicdn.toast.com/editor/3.2.2/toastui-editor-all.js): SHA256 `0d8c202706e3ea8d91c28307c445b55b746cf985d0994d70951b257ba207c8d9`.
 - [Resmî CSS](https://uicdn.toast.com/editor/3.2.2/toastui-editor.min.css): değişmedi, SHA256 `c70e24c68fefc205e8e504edc07fd6a5efd3044a623b4be7e3ac16cc8a736ed9`.
 - [Editor lisansı](https://github.com/nhn/tui.editor/blob/editor%403.2.2/LICENSE): MIT; ProseMirror MIT/Microsoft bildirimleri korunur.
-- [DOMPurify3.4.16 release](https://github.com/cure53/DOMPurify/releases/tag/3.4.16): MPL2.0 OR Apache2.0; npm integrity package-lock içinde. CJS SHA256 `1144c3ba99465d58ff93ab2419ebd99b7d7e12525b1ca4f45308771acf34cfec`; lisans dosyası doğrudan kilitli paketten sunulur.
+- [DOMPurify3.4.17 release](https://github.com/cure53/DOMPurify/releases/tag/3.4.17): MPL2.0 OR Apache2.0; npm integrity package-lock içinde. CJS SHA256 `e89caec0717b7c1726e819b480133beaa1cdf7439c22fbfb753e5688be6922c3`; lisans dosyası doğrudan kilitli paketten sunulur. 3.4.16 → 3.4.17 geçişi GHSA-cg2g-xh64-v4q7, GHSA-mrv2-3pqr-j5jr ve GHSA-c6gr-qvv4-5v3f içindir.
 - İlk E01 yamalı çıktı SHA256 `3887290898f676e4a398e0d120e6bfbfc2a6d0bf629bafde04568a6089191ce4`. `build.json` her build’de gerçek çıktı hash’ini içerir; `editor_build_probe.mjs` deterministik yeniden derlemeyi kıyaslar.
 
 DOMPurify, Acorn ve Terser exact dev dependency’dir; DOMPurify kodu runtime JS’ye

@@ -33,7 +33,7 @@ await copyFile(resolve(root, 'node_modules/dompurify/LICENSE'), resolve(editorOu
 const editor = await buildEditor(new URL('../../', import.meta.url));
 await writeFile(resolve(editorOutput, 'toastui-editor-all.min.js'), editor);
 await writeFile(resolve(editorOutput, 'build.json'), JSON.stringify({
-    editor: '3.2.2', dompurify: '3.4.16', sha256: sha256(editor)
+    editor: '3.2.2', dompurify: '3.4.17', sha256: sha256(editor)
 }, null, 2) + '\n');
 await buildTiptap(root, resolve(output, 'tiptap'));
 console.log('Frontend assets built: Tailwind 4.3.3/PostCSS, Prism 1.30.0, Tiptap 3.31.4.');
