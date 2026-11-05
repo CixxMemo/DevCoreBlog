@@ -41,12 +41,16 @@ public static class PostPublication
         return Expression.Lambda<Func<Post, bool>>(Expression.Equal(rule.Body, Expression.Constant(state)), rule.Parameters);
     }
 
-    /// <summary>Allow only known public body types, even if corrupt data bypassed DB constraints.</summary>
+    /// <summary>
+    /// Every published post is public, newsletters and former subscriber posts included (23 October 2026 decision).
+    /// Unknown kinds or access values stay hidden even if corrupt data bypassed DB constraints.
+    /// </summary>
     public static Expression<Func<Post, bool>> EligibleForPublicPublication() =>
         post => post.IsActive && post.IsPublished && post.Category.IsActive &&
-            post.AccessScope == PostAccessScope.Public &&
+            (post.AccessScope == PostAccessScope.Public || post.AccessScope == PostAccessScope.Subscribers) &&
             (post.ContentKind == PostContentKind.Unclassified || post.ContentKind == PostContentKind.AiNews ||
-             post.ContentKind == PostContentKind.Experience || post.ContentKind == PostContentKind.Philosophy);
+             post.ContentKind == PostContentKind.Experience || post.ContentKind == PostContentKind.Philosophy ||
+             post.ContentKind == PostContentKind.Newsletter);
 
     public static Expression<Func<Post, bool>> VisibleAt(DateTime utcNow)
     {

@@ -10,7 +10,7 @@ public enum PostContentKind
     Newsletter = 4
 }
 
-/// <summary>Body access is independent of site publication and future email delivery.</summary>
+/// <summary>Stored history of how a post was classified. Since 23 October 2026 it no longer limits who can read a published post.</summary>
 public enum PostAccessScope
 {
     Public = 0,

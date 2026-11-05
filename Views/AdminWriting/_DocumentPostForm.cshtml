@@ -99,7 +99,7 @@
             </section>
             <aside aria-label="Yazı bilgileri">
                 @if (Model.IsNewsletter) {
-                    <p class="writing-notice">Erişim: Abonelere özel. Tam arşiv doğrulanmış aktif abonelere açıktır.</p>
+                    <p class="writing-notice">Bu eski bülten kaydı yayımlanınca herkese açık olur.</p>
                     @if (!DevCoreBlog.Core.Email.EmailPaths.Suspended) { <p>Kaydetmek veya sitede yayımlamak e-posta göndermez. Gönderimi ayrı Gönderimler ekranından yönetin.</p> }
                 }
                 @if (Model.RecordedState is { } state) {
@@ -120,7 +120,7 @@
                 <label class="writing-checkbox"><input asp-for="IsActive" /> @(Model.IsNewsletter ? "Bülten etkin" : "Yazı etkin")</label>
                     <span asp-validation-for="IsActive"></span>
                 <button type="button" data-writing-preview disabled aria-describedby="writing-preview-status">Web önizlemesi (yeni sekme)</button>
-                <button type="button" data-writing-email-preview disabled aria-describedby="writing-preview-status">E-posta önizlemesi (yeni sekme)</button>
+                @if (!DevCoreBlog.Core.Email.EmailPaths.Suspended) { <button type="button" data-writing-email-preview disabled aria-describedby="writing-preview-status">E-posta önizlemesi (yeni sekme)</button> }
                 <p id="writing-preview-status" data-preview-status class="writing-help" role="status" aria-live="polite">Kaydetmeden içerik görünümünü ayrı sekmede inceleyin. Bu işlem yazıyı yayımlamaz.</p>
                 <div class="writing-actions" role="group" aria-label="Yayın işlemleri" aria-describedby="SaveAction__error">
                     @if (editing) { <button type="submit" name="SaveAction" value="Save" data-writing-save disabled>Değişiklikleri kaydet</button> }
@@ -129,7 +129,7 @@
                     <button type="submit" name="SaveAction" value="Publish" data-writing-save disabled>Şimdi sitede yayımla</button>
                 </div>
                 <span asp-validation-for="SaveAction"></span>
-                <p class="writing-help">Değişiklikleri kaydet mevcut yayın durumunu ve tarihini korur. Sitede yayımlamak e-posta göndermez.</p>
+                <p class="writing-help">Değişiklikleri kaydet mevcut yayın durumunu ve tarihini korur.</p>
                 <a href="@(Model.ReturnUrl ?? Url.Action("Index", Model.IsNewsletter ? "AdminNewsletter" : "AdminPost"))">@(Model.IsNewsletter ? "Bülten listesine dön" : "Yazı listesine dön")</a>
             </aside>
         </div>

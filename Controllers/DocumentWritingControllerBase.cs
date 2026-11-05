@@ -16,9 +16,11 @@ public abstract class DocumentWritingControllerBase(IPostWritingUseCase writing,
     PublicationTimeZone zone, TimeProvider clock, ContentDocumentValidator validator) : Controller
 {
     protected abstract bool IsNewsletter { get; }
+    // Existing newsletter records stay editable; new writing is an ordinary post once email paths are shelved.
+    private bool NewNewsletterClosed() => IsNewsletter && DevCoreBlog.Core.Email.EmailPaths.Suspended;
     private const int FormBytes = DocumentLimits.Utf8Bytes * 3 + 65_536;
     [HttpGet]
-    public Task<IActionResult> Create() => ShowAsync(new() {
+    public Task<IActionResult> Create() => NewNewsletterClosed() ? Task.FromResult<IActionResult>(RedirectToAction("Create", "AdminWriting")) : ShowAsync(new() {
         DocumentJson = "{\"version\":1,\"document\":{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\"}]}}",
         PublishDate = zone.ToSiteTime(clock.GetUtcNow().UtcDateTime)
     });
@@ -44,6 +46,7 @@ public abstract class DocumentWritingControllerBase(IPostWritingUseCase writing,
     [RequestFormLimits(ValueLengthLimit = FormBytes, ValueCountLimit = 32, MultipartBodyLengthLimit = FormBytes)]
     public Task<IActionResult> Create(DocumentPostFormInput input, CancellationToken cancellationToken)
     {
+        if (NewNewsletterClosed()) return Task.FromResult<IActionResult>(RedirectToAction("Create", "AdminWriting"));
         // Route, never a hidden input, owns creation identity.
         input.Id = 0; input.EditVersion = 0;
         return SaveAsync(input, cancellationToken);

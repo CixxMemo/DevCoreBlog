@@ -6,13 +6,13 @@
 <main class="writing-page newsletter-inventory" lang="tr">
     <h1>Bültenler</h1>
     <p class="writing-notice">Bu ekranda hazırlama ve site yayınını yönetebilirsiniz.@if (!DevCoreBlog.Core.Email.EmailPaths.Suspended) { <text> Site yayını ve e-posta gönderimi ayrı işlemlerdir; e-posta gönderimini ayrı Gönderimler ekranında yönetebilirsiniz.</text> }</p>
-    <p><a asp-action="Create" class="writing-list-link">Yeni bülten hazırla</a></p>
+    @if (!DevCoreBlog.Core.Email.EmailPaths.Suspended) { <p><a asp-action="Create" class="writing-list-link">Yeni bülten hazırla</a></p> }
     @if (Model.Items.Count == 0) { <p>Bu sayfada bülten bulunmuyor.</p> }
     @foreach (var item in Model.Items) {
         <article class="writing-notice">
             <h2><a asp-action="Edit" asp-route-id="@item.Newsletter.Id">@item.Newsletter.Title</a></h2>
             <p>@item.Newsletter.Summary</p>
-            <p>Site yayını: <partial name="~/Views/AdminWriting/_PublicationState.cshtml" model="item.State" /> — Abone erişimi</p>
+            <p>Site yayını: <partial name="~/Views/AdminWriting/_PublicationState.cshtml" model="item.State" /></p>
             <p>Site yayın zamanı: @SiteDates.DateAndTime(item.Newsletter.PublishDate)</p>
             @if (!DevCoreBlog.Core.Email.EmailPaths.Suspended)
             {

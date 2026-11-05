@@ -26,10 +26,8 @@ public sealed class SecurityHeadersMiddleware(RequestDelegate next)
         var homePath = (context.Request.Path.Value ?? "").TrimEnd('/');
         var homeResponse = homePath.Length == 0 || homePath.Equals("/Home", StringComparison.OrdinalIgnoreCase)
             || homePath.Equals("/Home/Index", StringComparison.OrdinalIgnoreCase);
-        // Error-page re-execution changes endpoint metadata before OnStarting; retain archive privacy for that response.
-        var privateArchivePath = context.Request.Path.Equals("/bultenler", StringComparison.OrdinalIgnoreCase)
-            || (context.Request.Path.StartsWithSegments("/bulten", StringComparison.OrdinalIgnoreCase, out var remainder) && remainder.HasValue)
-            || context.Request.Path.Equals(Controllers.ResendWebhookController.Path, StringComparison.OrdinalIgnoreCase)
+        // Error-page re-execution changes endpoint metadata before OnStarting; retain private headers for that response.
+        var privateResponsePath = context.Request.Path.Equals(Controllers.ResendWebhookController.Path, StringComparison.OrdinalIgnoreCase)
             || DevCoreBlog.Services.Subscriptions.OneClickUnsubscriptionLinks.IsPath(context.Request.Path.Value)
             || context.Request.Path.StartsWithSegments("/Admin", StringComparison.OrdinalIgnoreCase)
             || context.Request.Path.StartsWithSegments("/AdminPost", StringComparison.OrdinalIgnoreCase)
@@ -52,7 +50,7 @@ public sealed class SecurityHeadersMiddleware(RequestDelegate next)
             // Retain no-store even when an error response re-executes another endpoint.
             if (homeResponse || action is { ControllerName: "Home", ActionName: "Index" })
                 context.Response.Headers.CacheControl = "no-store";
-            if (privateArchivePath || action?.ControllerName is "SubscriberVerification" or "SubscriptionRegistration" or "SubscriberUnsubscription" or "OneClickUnsubscription" or "ReaderAccount" or "NewsletterArchive")
+            if (privateResponsePath || action?.ControllerName is "SubscriberVerification" or "SubscriptionRegistration" or "SubscriberUnsubscription" or "OneClickUnsubscription" or "ReaderAccount")
             {
                 context.Response.Headers["Referrer-Policy"] = "no-referrer";
                 context.Response.Headers["Cache-Control"] = "no-store";

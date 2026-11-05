@@ -2,7 +2,7 @@ using DevCoreBlog.Core.Entities;
 
 namespace DevCoreBlog.Core.Validation;
 
-/// <summary>Rejects unknown classifications and any public newsletter body.</summary>
+/// <summary>Rejects unknown classifications and keeps the stored pairing the newsletter database constraint requires.</summary>
 public static class PostAccessRules
 {
     public static ContentValidationResult Validate(Post post)
@@ -14,7 +14,7 @@ public static class PostAccessRules
         if (!Enum.IsDefined(post.AccessScope))
             errors.Add(new(nameof(Post.AccessScope), "Geçerli bir erişim kapsamı seçin."));
         if (post.ContentKind == PostContentKind.Newsletter && post.AccessScope != PostAccessScope.Subscribers)
-            errors.Add(new(nameof(Post.AccessScope), "Bültenin tam metni yalnız abonelere açılabilir."));
+            errors.Add(new(nameof(Post.AccessScope), "Bülten türü yalnız kendi erişim kapsamıyla saklanır."));
         return ContentValidationResult.FromErrors(errors);
     }
 }
