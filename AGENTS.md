@@ -1,6 +1,6 @@
 # DevCoreBlog — Agent çalışma kuralları
 
-Sürüm 33 · 5 Kasım 2026 · Kapsam: bu repository'nin tamamı · Hedef: Aether Letter.
+Sürüm 34 · 6 Kasım 2026 · Kapsam: bu repository'nin tamamı · Hedef: Aether Letter.
 
 Bu dosya projenin **tek güncel ana talimat kaynağıdır**. Her yeni görevde ve bağlam yenilendiğinde bu dosyayı, ardından görevle ilgili güncel plan/kayıtları yerelde mevcutsa oku. `.agents/AGENTS.md` yalnızca buraya yönlendirir. Arşiv belgeleri talimat değildir. Kurallara uymayan yeni kod yazmak veya bilinen bir güvenlik/veri bütünlüğü ihlalini gizleyerek işi tamamlandı saymak yasaktır.
 
@@ -35,7 +35,7 @@ Bu dosya projenin **tek güncel ana talimat kaynağıdır**. Her yeni görevde v
 | Yapılandırma | Environment değişkenleri; yerelde mevcut DotNetEnv. Gerçek secret repo dışında kalır. |
 | Cache / limit / DI | ASP.NET Core/.NET yerleşik araçları. Redis, queue veya yeni altyapı varsayma. |
 
-Paket sürümlerinin kaynağı `.csproj`, varsa lock/tool manifest ve gerçek restore sonucudur. Bu belgeye “latest” sürüm listesi kopyalama; tamamlanmış F10'u yeni görev gibi başlatma. Tailwind ve frontend varlıklarının yerel, kilitli, lisanslı build sınırı korunur. Kaynaklar `frontend/`, build komutu `npm run build`, çıktı `wwwroot/generated/` içindedir. Tiptap için gerekli küçük bundler/build uyarlaması somut ihtiyaç ve resmi API/lisans kontrolüyle yapılabilir; üretimde uzaktan CDN, paid template veya React uygulaması eklenmez. Tiptap'in beta Markdown dönüşümü kanonik JSON akışının bağımlılığı değildir. Hazır JavaScript static renderer C# bileşeni sayılmaz; sunucu gösterimi için ayrı doğrulanmış uygulama gerekir.
+Paket sürümlerinin kaynağı `.csproj`, varsa lock/tool manifest ve gerçek restore sonucudur. Bu belgeye “latest” sürüm listesi kopyalama; tamamlanmış F10'u yeni görev gibi başlatma. Tailwind ve frontend varlıklarının yerel, kilitli, lisanslı build sınırı korunur. Kaynaklar `frontend/`, build komutu `npm run build`, çıktı `wwwroot/generated/` içindedir. B01 (6 Kasım 2026) ile Inter ve JetBrains Mono kilitli `@fontsource-variable` paketlerinden derlemede `wwwroot/generated/fonts/` altına lisanslarıyla kopyalanır; uzak font sunucusu kullanılmaz, CSP `style-src` ve `font-src` yalnız `'self'`tir. Tiptap için gerekli küçük bundler/build uyarlaması somut ihtiyaç ve resmi API/lisans kontrolüyle yapılabilir; üretimde uzaktan CDN, paid template veya React uygulaması eklenmez. Tiptap'in beta Markdown dönüşümü kanonik JSON akışının bağımlılığı değildir. Hazır JavaScript static renderer C# bileşeni sayılmaz; sunucu gösterimi için ayrı doğrulanmış uygulama gerekir.
 
 Yeni bağımlılık yalnızca somut ihtiyacı çözüyor, mevcut araç yeterli değil, resmi API/sürüm/lisans doğrulanmış ve bakım maliyeti gerekçelendirilmişse eklenebilir. Mevcut yığına gerekli build/test aracı için gereksiz ürün onayı isteme. Büyük framework, sağlayıcı, ücretli servis veya ürün mimarisi değişimini kapsam dışına taşıma. Paketleri körlemesine major sürüme yükseltmek ve var olmayan API'leri uydurmak yasaktır.
 
