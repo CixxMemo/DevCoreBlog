@@ -16,10 +16,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <partial name="_SeoHead" model='@(ViewData["Metadata"] as DevCoreBlog.Models.Seo.PageMetadata ?? PageMetadata.Private(ViewData["Title"]?.ToString() ?? "Sayfa", Context.Request.Path.ToUriComponent()))' />
 
-    @* Google Fonts — JetBrains Mono for tech headings/UI, Inter for body text *@
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
+    @* Self-hosted fonts: JetBrains Mono for tech headings/UI, Inter for body text *@
+    <link rel="stylesheet" href="~/generated/fonts/fonts.css" asp-append-version="true" />
 
     @* Compiled Tailwind CSS — existing public theme *@
     <link rel="stylesheet" href="~/generated/tailwind-public.css" asp-append-version="true" />

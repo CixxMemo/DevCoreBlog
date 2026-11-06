@@ -4,6 +4,7 @@ import { resolve } from 'node:path';
 import { buildEditor, sha256 } from './editor-bundle.mjs';
 import { buildTiptap } from './tiptap-bundle.mjs';
 import { buildTailwind } from './tailwind-bundle.mjs';
+import { buildFonts } from './fonts-bundle.mjs';
 
 // Resolve paths from this file so the same command works in MSBuild and npm.
 const root = fileURLToPath(new URL('../../', import.meta.url));
@@ -11,6 +12,7 @@ const output = resolve(root, 'wwwroot/generated');
 await rm(output, { recursive: true, force: true });
 await mkdir(output, { recursive: true });
 await buildTailwind(root, output);
+await buildFonts(root, output);
 
 // Ship upstream files unchanged, with their licenses and autoloaded grammars.
 for (const [name, source, files] of [
@@ -36,4 +38,4 @@ await writeFile(resolve(editorOutput, 'build.json'), JSON.stringify({
     editor: '3.2.2', dompurify: '3.4.17', sha256: sha256(editor)
 }, null, 2) + '\n');
 await buildTiptap(root, resolve(output, 'tiptap'));
-console.log('Frontend assets built: Tailwind 4.3.3/PostCSS, Prism 1.30.0, Tiptap 3.31.4.');
+console.log('Frontend assets built: Tailwind 4.3.3/PostCSS, Inter and JetBrains Mono 5.3.0, Prism 1.30.0, Tiptap 3.31.4.');

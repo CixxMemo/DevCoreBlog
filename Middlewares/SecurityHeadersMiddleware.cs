@@ -10,8 +10,8 @@ public sealed class SecurityHeadersMiddleware(RequestDelegate next)
 {
     private const string CommonPolicy =
         "default-src 'none'; script-src 'self'; script-src-attr 'none'; " +
-        "style-src 'self' https://fonts.googleapis.com; " +
-        "font-src 'self' https://fonts.gstatic.com; " +
+        "style-src 'self'; " +
+        "font-src 'self'; " +
         // HTTPS images preserve the existing Markdown/legacy-cover contract; data icons come from editor CSS.
         "img-src 'self' https: data:; connect-src 'self'; " +
         "frame-src https://www.youtube-nocookie.com; object-src 'none'; " +
