@@ -10,7 +10,6 @@ const cards=p=>p.locator('a.post-card');
 (async()=>{
  browser=await chromium.launch({headless:true,executablePath:process.env.DEVCORE_BROWSER_EXECUTABLE});const context=await browser.newContext({viewport:{width:1440,height:1000}});
  await context.exposeBinding('__publicDocCsp',(_source,directive)=>violations.push(directive));await context.addInitScript(()=>document.addEventListener('securitypolicyviolation',e=>void window.__publicDocCsp(e.effectiveDirective)));
- await context.route('https://fonts.googleapis.com/**',r=>r.fulfill({contentType:'text/css',body:''}));
  // Renderer URL/reference assertions only; no provider delivery/playback claim.
  await context.route('https://example.test/**',r=>r.fulfill({contentType:'image/png',body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/lSUAAAAASUVORK5CYII=','base64')}));
  await context.route('https://www.youtube-nocookie.com/**',r=>r.fulfill({contentType:'text/html',body:'<!doctype html><title>Reference fixture</title>'}));

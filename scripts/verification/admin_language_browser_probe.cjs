@@ -9,7 +9,6 @@ function check(name,value){checks[name]=!!value;assert.ok(value,name);}
  context=await browser.newContext({viewport:{width:1440,height:1000},locale:'tr-TR'});
  await context.exposeBinding('__f44Csp',(_s,v)=>csp.push(v));await context.addInitScript(()=>document.addEventListener('securitypolicyviolation',e=>void window.__f44Csp(e.effectiveDirective)));
  context.on('page',p=>{p.on('pageerror',e=>errors.push(e.name));p.on('console',m=>{if(m.type()==='error'&&!m.text().startsWith('Failed to load resource:'))consoleErrors.push(m.text());});});
- await context.route('https://fonts.googleapis.com/**',r=>r.fulfill({contentType:'text/css',body:''}));
  const p=await context.newPage();await p.goto(base+'/fixture-admin/login');
  check('login_labels_turkish',await p.getByLabel('Kullanıcı adı',{exact:true}).count()===1&&await p.getByLabel('Parola',{exact:true}).count()===1);
  await p.getByLabel('Kullanıcı adı',{exact:true}).fill('fixture-admin');await p.keyboard.press('Tab');

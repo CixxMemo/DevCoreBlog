@@ -39,7 +39,6 @@ function check(name, condition) { checks[name] = !!condition; assert.ok(conditio
     // Deterministic media responses verify browser DOM/CSP/layout, not YouTube availability or upload.
     await context.route('https://example.test/fixture.gif', route => route.fulfill({ contentType: 'image/gif', body: Buffer.from('R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==', 'base64') }));
     await context.route('https://www.youtube-nocookie.com/embed/abcdefghijk', route => route.fulfill({ contentType: 'text/html', body: '<!doctype html><title>Sentetik video</title><p>Video alanı</p>' }));
-    await context.route('https://fonts.googleapis.com/**', route => route.fulfill({ contentType: 'text/css', body: '' }));
     await context.addInitScript(() => document.addEventListener('securitypolicyviolation', event => {
         window.__documentViolations = [...(window.__documentViolations || []), event.effectiveDirective];
     }));

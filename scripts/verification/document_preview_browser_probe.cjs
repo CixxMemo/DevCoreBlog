@@ -29,7 +29,6 @@ async function preview(p,expected=200){
  browser=await chromium.launch({headless:true,executablePath:process.env.DEVCORE_BROWSER_EXECUTABLE});context=await browser.newContext({viewport:{width:1440,height:1000}});
  await context.exposeBinding('__previewCsp',(_source,directive)=>violations.push(directive));await context.addInitScript(()=>document.addEventListener('securitypolicyviolation',e=>void window.__previewCsp(e.effectiveDirective)));
  context.on('page',p=>{p.on('pageerror',e=>errors.push(e.name));p.on('console',m=>{if(m.type()==='error'&&!m.text().startsWith('Failed to load resource:'))consoleErrors.push(m.text());});p.on('dialog',d=>{if(d.type()==='beforeunload'){beforeUnload++;return d.accept();}return d.dismiss();});});
- await context.route('https://fonts.googleapis.com/**',r=>r.fulfill({contentType:'text/css',body:''}));
  // Reference rendering only; no claim of provider upload or video playback.
  await context.route('https://example.test/**',r=>r.fulfill({contentType:'image/png',body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/lSUAAAAASUVORK5CYII=','base64')}));
  await context.route('https://www.youtube-nocookie.com/**',r=>r.fulfill({contentType:'text/html',body:'<!doctype html><title>Reference only</title>'}));

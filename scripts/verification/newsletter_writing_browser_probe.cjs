@@ -14,7 +14,6 @@ const editor=p=>p.getByRole('textbox',{name:'Yazı metni',exact:true});
  await context.exposeBinding('__newsletterCsp',(_source,directive)=>violations.push(directive));
  await context.addInitScript(()=>document.addEventListener('securitypolicyviolation',e=>void window.__newsletterCsp(e.effectiveDirective)));
  context.on('page',p=>{p.on('pageerror',e=>errors.push(e.name));p.on('dialog',d=>{if(d.type()==='beforeunload')beforeUnload++;return d.accept();});});
- await context.route('https://fonts.googleapis.com/**',r=>r.fulfill({contentType:'text/css',body:''}));
  // Existing remote media references are rendered with deterministic bytes; no upload/delivery assertion.
  await context.route('https://example.test/**',r=>r.fulfill({contentType:'image/png',body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/lSUAAAAASUVORK5CYII=','base64')}));
  await context.route('https://i.ytimg.com/**',r=>r.fulfill({contentType:'image/png',body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/lSUAAAAASUVORK5CYII=','base64')}));

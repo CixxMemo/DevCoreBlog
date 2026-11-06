@@ -18,7 +18,6 @@ const restoreDates=()=>{for(const r of original)sql(`UPDATE "Posts" SET "Publish
  browser=await chromium.launch({headless:true,executablePath:process.env.DEVCORE_BROWSER_EXECUTABLE});
  for(const [index,locale,timezoneId] of [[0,'en-US','America/Los_Angeles'],[1,'fr-FR','Asia/Tokyo']]){
   const context=await browser.newContext({locale,timezoneId,viewport:{width:1440,height:1000}});
-  await context.route('https://fonts.googleapis.com/**',r=>r.fulfill({contentType:'text/css',body:''}));
   await context.exposeBinding('__dateCsp',(_source,directive)=>violations.push(directive));await context.addInitScript(()=>document.addEventListener('securitypolicyviolation',e=>void window.__dateCsp(e.effectiveDirective)));
   const p=await context.newPage();p.on('pageerror',e=>errors.push(e.message));p.on('dialog',d=>d.dismiss());await p.goto(base+'/about');
   const outputs=await p.evaluate(async cases=>{const m=await import('/js/site-date.js');return cases.map(c=>({date:m.formatSiteDate(c.Iso,c.Zone),time:m.formatRecoveryDate(c.Iso,c.Zone)}));},server.cases);

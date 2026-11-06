@@ -17,7 +17,6 @@ async function state(p){return{doc:await p.locator('[name=DocumentJson]').inputV
  browser=await chromium.launch({headless:true,executablePath:process.env.DEVCORE_BROWSER_EXECUTABLE});context=await browser.newContext({viewport:{width:1440,height:1000},colorScheme:'light'});
  await context.exposeBinding('__f38Csp',(_source,directive)=>violations.push(directive));await context.addInitScript(()=>document.addEventListener('securitypolicyviolation',e=>void window.__f38Csp(e.effectiveDirective)));
  context.on('page',p=>{p.on('pageerror',e=>errors.push(e.name));p.on('console',m=>{if(m.type()==='error'&&!m.text().startsWith('Failed to load resource:'))consoleErrors.push(m.text());});p.on('dialog',d=>d.accept());});
- await context.route('https://fonts.googleapis.com/**',r=>r.fulfill({contentType:'text/css',body:''}));
  const p=await context.newPage();await p.goto(base+'/fixture-admin/login');await p.locator('#username').fill('fixture-admin');await p.locator('#password').fill('f38-synthetic-password');
  await p.getByRole('button',{name:'Giriş yap',exact:true}).click();await p.waitForURL('**/Admin/Dashboard');await p.goto(base+'/AdminWriting/Create');await text(p).waitFor();
  await text(p).fill('Tarayıcı F38 Türkçe 👋 <script> yalnız metin');await p.waitForFunction(()=>localStorage.getItem('devcore_document_draft_v1_create')?.includes('Tarayıcı'));

@@ -11,7 +11,6 @@ const snapshot=()=>sql('SELECT to_jsonb(p)-\'ViewCount\' FROM "Posts" p ORDER BY
  check('synthetic_fixture_verified',sql('SELECT "Slug" FROM "Posts" WHERE "Id"=2001')==='f01-visible');const before=snapshot();
  browser=await chromium.launch({headless:true,executablePath:process.env.DEVCORE_BROWSER_EXECUTABLE});
  const context=await browser.newContext({viewport:{width:1440,height:1000}});
- await context.route('https://fonts.googleapis.com/**',r=>r.fulfill({contentType:'text/css',body:''}));
  await context.exposeBinding('__brandCsp',(_source,directive)=>violations.push(directive));
  await context.addInitScript(()=>document.addEventListener('securitypolicyviolation',e=>void window.__brandCsp(e.effectiveDirective)));
  const p=await context.newPage();p.on('pageerror',e=>errors.push(e.message));

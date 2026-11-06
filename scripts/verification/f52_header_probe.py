@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Check the real HTML-only, static policy and cache contract on the disposable host."""
-import argparse, http.client, json, os
+import argparse, http.client, json, os, re
 from urllib.parse import urlparse
 from http_probe_support import admin_login_url, admin_login_path, cookie_opener, submit_login, request_with_headers
 p = argparse.ArgumentParser()
@@ -40,6 +40,15 @@ for route in ['/', '/category/f01-active', admin_login_path(), '/Admin/Dashboard
     # Followed redirects may reach the JSON editor, whose policy needs no style exception.
     editor = status == 200 and urlparse(final_url).path.startswith(('/AdminPost/Create', '/AdminPost/Edit'))
     checks[route + '_style_scope'] = ("style-src-attr 'unsafe-inline'" if editor else "style-src-attr 'none'") in policy
+    checks[route + '_fonts_only_from_this_site'] = 'fonts.g' not in body and "style-src 'self';" in policy and "font-src 'self';" in policy
+_, _, font_css, font_css_headers = request_with_headers(visitor, base + '/generated/fonts/fonts.css')
+font_files = set(re.findall(r"url\(([^)]+)\) format\('woff2'\)", font_css))
+checks['font_stylesheet_names_only_local_files'] = 'text/css' in font_css_headers.get('Content-Type', '') and len(font_files) == 6 and not any('/' in name or ':' in name for name in font_files)
+for name in sorted(font_files):
+    with visitor.open(base + '/generated/fonts/' + name) as font:
+        checks[name + '_is_served_as_woff2'] = font.status == 200 and font.headers.get('Content-Type') == 'font/woff2' and font.headers.get('X-Content-Type-Options') == 'nosniff' and font.read(4) == b'wOF2'
+for name in ['INTER-LICENSE', 'JETBRAINS-MONO-LICENSE']:
+    checks[name + '_ships_with_fonts'] = 'SIL Open Font License' in request_with_headers(visitor, base + '/generated/fonts/' + name)[2]
 for route in ['/js/public-theme.js', '/css/admin-shell.css', '/api/categories', '/sitemap.xml', '/robots.txt']:
     status, _, body, headers = request_with_headers(visitor, base + route)
     checks[route + '_security_headers'] = security_headers(headers)

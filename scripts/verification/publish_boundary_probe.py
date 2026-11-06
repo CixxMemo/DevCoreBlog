@@ -50,7 +50,9 @@ def main():
             'DevCoreBlog.Services.dll', 'appsettings.json',
             'wwwroot/generated/tailwind-public.css', 'wwwroot/generated/tailwind-admin.css',
             'wwwroot/generated/toastui/toastui-editor-all.min.js',
-            'wwwroot/generated/toastui/DOMPURIFY-LICENSE'))
+            'wwwroot/generated/toastui/DOMPURIFY-LICENSE',
+            'wwwroot/generated/fonts/fonts.css', 'wwwroot/generated/fonts/inter-latin-ext-wght-normal.woff2',
+            'wwwroot/generated/fonts/INTER-LICENSE', 'wwwroot/generated/fonts/JETBRAINS-MONO-LICENSE'))
         retired = ('RssDocumentWriter', 'IRssPostReader', 'RssPost', 'GetRssPostsAsync', 'application/rss+xml', '/rss.xml')
         runtime_roots = ('Controllers', 'Models', 'Routing', 'Views', 'DevCoreBlog.Core', 'DevCoreBlog.Data', 'DevCoreBlog.Services')
         runtime_sources = [source / 'Program.cs'] + [p for directory in runtime_roots for p in (source / directory).rglob('*')

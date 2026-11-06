@@ -24,7 +24,6 @@ function canonical(node) {
 (async () => {
     browser = await chromium.launch({ headless: true, executablePath: process.env.DEVCORE_BROWSER_EXECUTABLE });
     const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
-    await context.route('https://fonts.googleapis.com/**', r => r.fulfill({ contentType: 'text/css', body: '' }));
     await context.addInitScript(() => document.addEventListener('securitypolicyviolation', e => {
         window.__writingViolations = [...(window.__writingViolations || []), e.effectiveDirective];
     }));

@@ -7,7 +7,6 @@ function check(name,value){checks[name]=!!value;assert.ok(value,name);}
  browser=await chromium.launch({headless:true,executablePath:process.env.DEVCORE_BROWSER_EXECUTABLE});context=await browser.newContext({viewport:{width:1440,height:1000}});
  await context.exposeBinding('__f40Csp',(_s,v)=>csp.push(v));await context.addInitScript(()=>document.addEventListener('securitypolicyviolation',e=>void window.__f40Csp(e.effectiveDirective)));
  context.on('page',p=>{p.on('pageerror',e=>errors.push(e.name));p.on('console',m=>{if(m.type()==='error'&&!m.text().startsWith('Failed to load resource:'))consoleErrors.push(m.text());});});
- await context.route('https://fonts.googleapis.com/**',r=>r.fulfill({contentType:'text/css',body:''}));
  const p=await context.newPage();await p.goto(base+'/fixture-admin/login');await p.locator('#username').fill('fixture-admin');await p.locator('#password').fill('f40-synthetic-password');await p.getByRole('button',{name:'Giriş yap',exact:true}).click();await p.waitForURL('**/Admin/Dashboard');await p.getByRole('link',{name:'Aboneler',exact:true}).click();
  check('dedicated_turkish_inventory_and_labels',await p.locator('html').getAttribute('lang')==='tr'&&await p.getByRole('heading',{name:'Aboneler',exact:true}).count()===1&&await p.getByLabel('Liste durumu').count()===1);
  check('server_bounded_25_addresses',await p.locator('.subscriber-row').count()===25);

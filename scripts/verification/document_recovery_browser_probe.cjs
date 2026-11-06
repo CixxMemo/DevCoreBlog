@@ -15,7 +15,6 @@ const doc=p=>p.locator('[name=DocumentJson]').inputValue();
 async function attach(p){p.on('console',m=>{if(m.type()==='error'){if(m.text().startsWith('Failed to load resource:'))resourceErrors.push(m.text());else consoleErrors.push(m.text());}});p.on('pageerror',e=>errors.push(e.name+':'+e.message));p.on('dialog',d=>d.type()==='beforeunload'?d.accept():d.dismiss());}
 async function launch(){
  context=await chromium.launchPersistentContext(profile,{headless:true,executablePath:process.env.DEVCORE_BROWSER_EXECUTABLE,viewport:{width:1440,height:1000}});
- await context.route('https://fonts.googleapis.com/**',r=>r.fulfill({contentType:'text/css',body:''}));
  // No provider playback claim: test only recovery of the admitted image/video references.
  await context.route('https://example.test/**',r=>r.fulfill({status:200,contentType:'image/png',body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/lSUAAAAASUVORK5CYII=','base64')}));
  await context.route('https://www.youtube-nocookie.com/**',r=>r.fulfill({contentType:'text/html',body:'<!doctype html><title>Reference fixture</title>'}));
